@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@heroui/react"
 
 import { ErrorLayout } from "./ErrorLayout"
 
@@ -11,7 +11,7 @@ export function RootErrorBoundary({ error }: RootErrorBoundaryProps) {
     <ErrorLayout
       title="Something went wrong"
       description={error.message || "An unexpected error occurred."}
-      action={<Button onClick={() => window.location.reload()}>Reload</Button>}
+      action={<Button onPress={() => window.location.reload()}>Reload</Button>}
     />
   )
 }

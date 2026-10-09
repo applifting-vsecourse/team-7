@@ -2,7 +2,7 @@
 
 Starter template for [4IT580](https://4it580.vse.cz) team projects: a minimal, working full-stack app you fork and grow into your own product.
 
-**Stack:** React + Vite + TanStack Router/Query + Tailwind/shadcn (frontend) · NestJS + Prisma + PostgreSQL + BetterAuth (backend) · pnpm workspaces.
+**Stack:** React 19 + Vite + TanStack Router/Query + Tailwind 4/HeroUI v3 (frontend) · NestJS + Prisma + PostgreSQL + BetterAuth (backend) · pnpm workspaces.
 
 What's included: working login/signup (BetterAuth — you use it, you don't build it), one worked-example feature (the quack feed: read a list, post a new one — copy its pattern), seeded demo data, example tests, CI. The full demo app this template was trimmed from lives on the `reference/full-app` branch.
 
@@ -90,7 +90,15 @@ Two things worth knowing:
 
 ```
 apps/backend/   NestJS — src/modules (features), src/core, src/shared; prisma/ (schema, migrations)
-apps/frontend/  React — src/routes (pages), src/features (feature folders), src/components (UI kit)
+apps/frontend/  React — src/routes (pages), src/features (feature folders), src/components (shared app components)
 ```
 
 Working conventions for AI-assisted development: [`CLAUDE.md`](CLAUDE.md). UI rules every screen must follow: [`DESIGN.md`](DESIGN.md).
+
+### Frontend UI and themes
+
+Import accessible controls directly from `@heroui/react`, using HeroUI v3 compound components. Forms retain React Hook Form and Zod validation; navigation uses TanStack Router anchors, with HeroUI `buttonVariants` for button-looking links.
+
+`apps/frontend/src/styles/global.css` imports `@heroui/styles` after Tailwind. HeroUI's default light/dark tokens provide colours, fields, radius and focus states; Geist fonts are configured locally. Use semantic utilities such as `text-muted`, `bg-surface`, and `text-danger`. Inputs and textareas use `shadow-none` per the design contract.
+
+The theme menu offers Light, Dark and System (the default). A single `ThemeController` above the router runs HeroUI's native `useTheme`, follows OS changes in System mode, and saves the preference in `localStorage` under `heroui-theme`. Existing preferences from the previous `theme` key are carried forward. Toasts use HeroUI's `Toast.Provider` at the root.

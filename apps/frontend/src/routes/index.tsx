@@ -1,9 +1,9 @@
+import { buttonVariants } from "@heroui/react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 
 import { ROUTES } from "@/app/routes"
 import { Header } from "@/components/Header/Header"
 import { Seo } from "@/components/Seo"
-import { Button } from "@/components/ui/button"
 
 import { HeaderMenu } from "@/features/auth/components/HeaderMenu"
 import { useSession } from "@/features/auth/hooks/useSession"
@@ -45,7 +45,7 @@ function LandingPage() {
           <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl">
             Say it in a few words.
           </h1>
-          <p className="mx-auto mt-4 max-w-md text-lg text-pretty text-muted-foreground">
+          <p className="mx-auto mt-4 max-w-md text-lg text-pretty text-muted">
             Quacker is a tiny social network for short messages. Post a quack, read what everyone
             else is up to.
           </p>
@@ -54,27 +54,26 @@ function LandingPage() {
               account to someone who already has one. */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             {user ? (
-              <Button
-                asChild
-                size="lg"
+              <Link
+                to={ROUTES.quacks}
+                className={buttonVariants({ size: "lg" })}
               >
-                <Link to={ROUTES.quacks}>Go to your feed</Link>
-              </Button>
+                Go to your feed
+              </Link>
             ) : (
               <>
-                <Button
-                  asChild
-                  size="lg"
+                <Link
+                  to={ROUTES.signup}
+                  className={buttonVariants({ size: "lg" })}
                 >
-                  <Link to={ROUTES.signup}>Create an account</Link>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
+                  Create an account
+                </Link>
+                <Link
+                  to={ROUTES.login}
+                  className={buttonVariants({ size: "lg", variant: "outline" })}
                 >
-                  <Link to={ROUTES.login}>Sign in</Link>
-                </Button>
+                  Sign in
+                </Link>
               </>
             )}
           </div>
@@ -86,11 +85,11 @@ function LandingPage() {
         >
           <h2
             id="preview-heading"
-            className="mb-3 text-center text-xs font-medium tracking-widest text-muted-foreground uppercase"
+            className="mb-3 text-center text-xs font-medium tracking-widest text-muted uppercase"
           >
             A peek at the feed
           </h2>
-          <div className="rounded-xl border border-border bg-card px-5 py-2">
+          <div className="rounded-xl border border-border bg-surface px-5 py-2">
             {SAMPLE_QUACKS.map((quack) => (
               <QuackItem
                 key={quack.id}

@@ -1,4 +1,5 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar } from "@heroui/react"
+
 import { formatDate } from "@/lib/date"
 
 import type { Quack } from "@/features/quack/api/quackSchemas"
@@ -19,8 +20,11 @@ export function QuackItem({ quack }: QuackItemProps) {
 
   return (
     <article className="flex w-full gap-4 border-b border-border pt-2 pb-4 last:border-b-0">
-      <Avatar className="size-12">
-        <AvatarFallback>{initials}</AvatarFallback>
+      <Avatar
+        className="size-12"
+        aria-label={name}
+      >
+        <Avatar.Fallback>{initials}</Avatar.Fallback>
       </Avatar>
 
       <div className="flex flex-1 flex-col gap-1">
@@ -28,8 +32,8 @@ export function QuackItem({ quack }: QuackItemProps) {
           <span>
             <UsersName name={name} /> <UsersUserName username={username} />
           </span>
-          <span className="text-xs text-muted-foreground">·</span>
-          <time className="text-xs text-muted-foreground">{formatDate(quack.createdAt)}</time>
+          <span className="text-xs text-muted">·</span>
+          <time className="text-xs text-muted">{formatDate(quack.createdAt)}</time>
         </div>
         <p className="text-sm break-words whitespace-pre-line">{quack.text}</p>
       </div>
