@@ -70,6 +70,7 @@ Respondentce hypotézy nikdy neříkáme.
 
 - ↳ Jak? Můžete mi to ukázat?
 - ↳ Hledáte v tom třeba zpětně? Kdy naposledy?
+- ↳ Co vás nejvíc na současných řešeních, která jste zkusil/a, štve?
 - Jak hodnotíte zda tréning šel dobře?
 
 ### Blok 3 · Komunikace s klienty (8–17 min)
