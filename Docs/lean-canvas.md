@@ -12,7 +12,7 @@
 
 - Sešit a tužka, poznámky v telefonu
 - Aplikace s hotovými kurzy (Dogo, Woofz, Puppr, PawChamp): bez vlastního plánu i vlastního trenéra
-- SW pro trenéry (HeelYeah, Pawgress): anglicky, 29–249 $/měs.
+- SW pro trenéry (HeelYeah, Pawgress)
 
 ## Řešení
 
@@ -70,7 +70,7 @@ Týdenní plánovač a tréninkový deník pro psa, do kterého nahlíží i tre
 
 ## První vlaštovky
 
-- Sportovní psovodi jako Verča, kteří trénují s trenérkou a posílají jí screenshoty sešitu
+- Psovodi jako Verča, kteří trénují s trenérkou a posílají jí screenshoty sešitu
 - Trenéři s prodlouženou zkušební verzí a jejich klienti
 - Psí školy, jejich trenéři a klienti
 

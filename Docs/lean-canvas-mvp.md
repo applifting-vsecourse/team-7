@@ -8,9 +8,9 @@ Canvas pro první verzi produktu. Konečný produkt (Full release) popisuje [lea
 
 ## Problém
 
-1. Nejde porovnat pokrok: poznámky jsou volný text, nedá se zjistit, co fungovalo (jeden den 98 %, druhý 0 %, trend není vidět).
-2. Týdenní plán napříč psy a disciplínami se píše stále znovu, něco zůstane pozadu.
-3. Psovod dojde na plac a neví, co má cvičit: každý pes a disciplína mají vlastní sešit, sešitů jsou desítky.
+1. Trénink je roztříštěný: sešit, videa v mobilu a screenshoty pro trenérku nejsou propojené.
+2. Nejde porovnat pokrok: poznámky jsou volný text, nedá se zjistit, co fungovalo.
+3. Týdenní plán napříč psy a disciplínami se píše stále znovu, něco zůstane pozadu.
 
 ## Existující alternativy
 
@@ -21,21 +21,18 @@ Canvas pro první verzi produktu. Konečný produkt (Full release) popisuje [lea
 
 - Vlastní disciplíny → cíle → cvičení pro každého psa, upravitelné kdykoli
 - Týdenní kalendář s opakováním a přesunem nesplněných cvičení
-- Záznam: úspěšné pokusy z celku (%) a poznámka u každého cvičení
+- Záznam: úspěšné pokusy z celku a poznámka u každého cvičení
 - Historie a graf pokroku; psovod sám označí cíl jako splněný
 
 ## Indikátory
 
-- **Aktivace:** ≥ 60 % registrovaných vytvoří plán a zapíše první trénink v 1. týdnu
-- **Používání:** ≥ 3 záznamy týdně na aktivního uživatele, podíl zapsaných z naplánovaných cvičení
 - **Retence:** ≥ 40 % aktivních po 4 týdnech, ≥ 25 % po 3 měsících
-- **Ověření placení:** ≥ 30 % aktivních v dotazníku/rozhovoru deklaruje, že by za Plus zaplatilo; trenéři by chtěli vidět záznamy klientů
+- **Počet návštěv/registrací**
 
 ## Unikátní nabídka hodnoty
 
-**Plán na týden a deník úspěšnosti pro všechny psy na jednom místě: na placu víš, co cvičit, a po tréninku vidíš, co funguje.**
-
 - Strukturovaný záznam (% úspěšnosti) místo volného textu → trend v grafu
+- Plně editovatelný cvičební plán
 - Jeden přehled místo desítek sešitů
 - Česky, zdarma
 
@@ -55,14 +52,14 @@ Plánovač a tréninkový deník pro psa.
 
 ## Zákazníci
 
-- **Uživatelé (zdarma):** sportovní psovodi, kteří plánují trénink svých psů sami nebo podle trenéra
-- Trenéři zatím jen jako uživatelé pro vlastní psy, ne jako zákazníci
+- **Uživatelé (zdarma):** psovodi, kteří plánují trénink svých psů sami nebo podle trenéra
+- Trenéři zatím jen jako uživatelé pro vlastní psy
 
 ## První vlaštovky
 
-- Sportovní psovodi jako Verča, kteří trénují s trenérkou a vedou si sešity
-- Trenérka se 3 psy a desítkami sešitů pro vlastní trénink
-- Klienti trenérky, kterým trenérka zadává domácí úkoly
+- Psovodi jako Verča, kteří trénují s trenérkou a vedou si sešity
+- Trenéři jako Týna
+- Klienti trenérů, kterým trenéři zadávají domácí úkoly
 
 ## Struktura nákladů
 
@@ -74,5 +71,5 @@ Plánovač a tréninkový deník pro psa.
 
 ## Cenový model
 
-- **Zdarma pro všechny**, MVP nemá příjmy (ztráta 3,5–10,5 tis. Kč/měs).
-- Ceny z konečného produktu (Plus 89 Kč/měs., Pro 139 Kč/měs.) jsou v MVP jen hypotéza, kterou ověřujeme rozhovory a dotazníkem.
+- **Zdarma pro všechny**, MVP nemá příjmy.
+- MVP je ztrátové
