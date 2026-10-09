@@ -75,20 +75,17 @@ Respondentce hypotézy nikdy neříkáme.
 
 ### Blok 3 · Komunikace s klienty (8–17 min)
 
-**3.1 Vezměme klienta, se kterým jste byla v kontaktu naposledy. Jak spolu komunikujete mezi hodinami?** (H1, H7)
+**3.1 Jak s klienty komunikujete mimo tréninky?** (H1, H7, H3, C2)
 
 - ↳ Čím si píšete? Kolikrát jste si za poslední měsíc psali?
-
-**3.2 Když se s klienty nevidíte osobně, o čem si píšete?** (H3, C2)
-
 - ↳ Co vám klienti posílají? Ukážete mi poslední takovou zprávu?
 - ↳ Co jste s tím pak dělala? Chybělo vám v tom něco?
 
-**3.3 Vzpomenete si na klienta, se kterým to probíhalo jinak než s ostatními?** (H1)
+**3.2 Vzpomenete si na klienta, se kterým to probíhalo jinak než s ostatními?** (H1)
 
 - ↳ Co bylo jinak?
 
-**3.4 Kolik času vám minulý týden zabrala práce s klienty mimo hodiny?** (H3, H4)
+**3.3 Kolik času vám minulý týden zabrala práce s klienty mimo hodiny?** (H3, H4)
 
 ### Blok 4 · Plány a úpravy (17–24 min)
 
