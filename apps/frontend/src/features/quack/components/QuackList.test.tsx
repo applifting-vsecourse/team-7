@@ -16,6 +16,20 @@ const quack = (overrides: Partial<Quack> = {}): Quack => ({
 })
 
 describe("QuackList", () => {
+  it("shows loading and empty states", () => {
+    const view = render(
+      <QuackList
+        quacks={[]}
+        isLoading
+      />,
+    )
+    expect(screen.getByRole("status", { name: "Loading quacks" })).toBeInTheDocument()
+    expect(screen.queryByText("No quacks yet. Post the first one.")).not.toBeInTheDocument()
+    view.rerender(<QuackList quacks={[]} />)
+    expect(screen.queryByRole("status")).not.toBeInTheDocument()
+    expect(screen.getByText("No quacks yet. Post the first one.")).toBeInTheDocument()
+  })
+
   it("renders quacks with author info", () => {
     render(<QuackList quacks={[quack()]} />)
 

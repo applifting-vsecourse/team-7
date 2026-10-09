@@ -3,14 +3,14 @@ import { RouterProvider } from "@tanstack/react-router"
 
 import { router } from "@/app/router"
 import { queryClient } from "@/config/react-query"
-import { ThemeProvider } from "@/hooks/useTheme"
+import { ThemeController } from "@/hooks/useTheme"
 
 export function Providers() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
+      <ThemeController>
         <RouterProvider router={router} />
-      </ThemeProvider>
+      </ThemeController>
     </QueryClientProvider>
   )
 }

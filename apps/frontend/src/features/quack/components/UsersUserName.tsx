@@ -3,5 +3,5 @@ type UsersUserNameProps = {
 }
 
 export function UsersUserName({ username }: UsersUserNameProps) {
-  return <span className="text-sm text-muted-foreground">@{username}</span>
+  return <span className="text-sm text-muted">@{username}</span>
 }

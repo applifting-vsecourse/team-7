@@ -3,7 +3,7 @@
 Full-stack teaching template: pnpm monorepo with two apps.
 
 - `apps/backend` — NestJS + Prisma + Postgres. Auth: BetterAuth (mounted at `/api/auth/*`, treat as a black box). API docs: Swagger at `/api/docs`.
-- `apps/frontend` — React + Vite + TanStack Router/Query, Tailwind + shadcn/ui, `ky` + `zod` API client. Feature folders under `src/features/`.
+- `apps/frontend` — React 19 + Vite + TanStack Router/Query, Tailwind 4 + HeroUI v3, `ky` + `zod` API client. Feature folders under `src/features/`.
 
 The worked example is the quack feed: `Quack` model → seed → repository → service → `GET`/`POST /api/quacks` (DTO-validated, author taken from the session) → zod schema → TanStack Query → list page + post form. Copy its pattern for new features.
 
@@ -22,9 +22,13 @@ Deliberately sparse — this file grows as the team learns what it expects from 
 
 ### UI controls come from the kit
 
-Need a control that isn't in `src/components/ui/`? Add it with `pnpm dlx shadcn@latest add <name>` — don't hand-roll one in a feature folder, even where a native input would do the job. One accessibility implementation to reason about beats a per-control judgement call.
+Import controls directly from `@heroui/react` and use HeroUI v3 compound APIs (`Alert.Content`, `Avatar.Fallback`, `Dropdown.Menu`). Check current v3 documentation before introducing a component. One accessibility implementation to reason about beats a per-control judgement call.
 
-The CLI puts `shadow-xs`/`shadow-sm` on inputs, textareas and cards. [`DESIGN.md`](DESIGN.md) keeps shadows for things that genuinely float — dialogs, dropdowns, toasts. Strip them.
+HeroUI's default light/dark semantic tokens come from `@heroui/styles` in `apps/frontend/src/styles/global.css`. Keep field and focus tokens intact; apply `shadow-none` to inputs, textareas and cards. [`DESIGN.md`](DESIGN.md) keeps shadows for things that genuinely float — dialogs, dropdowns, toasts.
+
+Use `onPress` / `isDisabled` / `isPending` for buttons. Button-looking navigation is a TanStack Router `Link` styled with `buttonVariants`, so it remains an anchor. Forms compose `Form`, `TextField`, `Label`, `Input`/`TextArea`, and `FieldError` with React Hook Form controllers and Zod; put the controller ref on the input for invalid-field focus.
+
+`ThemeController` above the router owns a single native HeroUI `useTheme` instance. The menu consumes its shared state, defaults to System, and persists preferences under `heroui-theme` (carrying over the old `theme` key).
 
 ### The app is already running
 

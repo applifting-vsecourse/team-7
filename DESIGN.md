@@ -4,17 +4,17 @@ Read this before writing or changing any UI — human or agent.
 
 These are rules, not suggestions. When a rule and a "nicer looking" idea disagree, the rule wins. Consistency across every screen beats a clever one.
 
-`src/components/ui/**` is vendored shadcn — treat it as a third-party kit and restyle via tokens rather than rewriting it.
+Controls come directly from `@heroui/react` (HeroUI v3). Use its accessible compound components rather than vendoring or hand-rolling controls.
 
-**Tokens live in `apps/frontend/src/styles/global.css`.** That file is the only source of truth for colour, radius and shadows. This file says how to _use_ them.
+**Tokens enter through `apps/frontend/src/styles/global.css`.** It imports Tailwind 4 followed by `@heroui/styles`, whose default light/dark themes are the source of truth for colour, radius, fields, focus and shadows. Keep the default palette; local font configuration preserves Geist. This file says how to _use_ the tokens.
 
 ## Colour
 
-- **Never hardcode a colour.** No `#hex`, no `bg-blue-500`, no `rgb()`. Use the semantic classes only: `bg-background`, `text-foreground`, `text-muted-foreground`, `bg-card`, `bg-primary`, `bg-secondary`, `border-border`, `bg-destructive`.
-- **`primary` is for actions, not decoration.** One primary button per view. Everything else is `outline`, `ghost` or a plain link.
-- **`destructive` only for destructive actions and errors.** Never for emphasis.
-- **`accent` is a hover/active surface, not a brand colour.** It tints menu items and ghost buttons on hover, so it must stay quiet. The brand colour is `primary`.
-- Body text is `foreground`; supporting text is `muted-foreground`. There is no third level.
+- **Never hardcode a colour.** No `#hex`, no `bg-blue-500`, no `rgb()`. Use HeroUI semantic classes: `bg-background`, `text-foreground`, `text-muted`, `bg-surface`, `bg-overlay`, `bg-accent`, `bg-default`, `border-border`, `text-danger`.
+- **`primary` buttons use the `accent` action token.** One primary button per view. Everything else is `outline`, `ghost`, `secondary` or a plain link.
+- **`danger` only for destructive actions and errors.** Never for emphasis.
+- Keep HeroUI's built-in hover/active colours, field tokens and focus states. `accent` is the action colour; `default` is a neutral surface.
+- Body text is `foreground`; supporting text is `muted`. There is no third level.
 
 ## Layout
 
@@ -38,12 +38,14 @@ Use the scale only: `1, 2, 3, 4, 6, 8, 12, 16` (Tailwind units — 4px…64px). 
 
 - **Borders are hairlines**: `border border-border`. One border, not two adjacent ones.
 - **Shadows are rare.** Only for things that genuinely float above the page — dropdowns, dialogs, toasts. Cards and inputs do not get shadows.
+- HeroUI inputs, textareas and cards get `shadow-none`; floating components retain the kit's overlay shadows.
 - Radius comes from the token (`rounded-lg`/`rounded-md`). Never mix radii in one component.
 
 ## Forms
 
 - Every input has a visible `<label>`. Placeholders are examples, never labels.
 - Validation runs client-side _and_ server-side. The client message appears under the field.
+- Compose HeroUI `Form`, `TextField`, `Label` and `FieldError` with React Hook Form and Zod (`validationBehavior="aria"`). Keep the input ref for invalid-field focus and let HeroUI associate labels and errors.
 - The submit button shows a pending state and is disabled while submitting.
 - Never disable a submit button just because the form is untouched — let the user try and show them what's wrong.
 
@@ -56,6 +58,7 @@ Data refreshes itself: refetch when the tab regains focus, and invalidate the qu
 ## Accessibility (the floor, not the ceiling)
 
 - Buttons are `<button>`, links are `<a>`/`<Link>`. Never a `div` with `onClick`.
+- Style TanStack Router links with HeroUI `buttonVariants` for button-looking navigation. Use `onPress` for HeroUI actions.
 - Every icon-only control has an `aria-label`.
 - Focus rings are never removed. If you restyle focus, it must stay clearly visible.
 - Text contrast at least 4.5:1 — the tokens are chosen to satisfy this; hardcoded colours are how you break it.
