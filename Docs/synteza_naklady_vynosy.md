@@ -9,35 +9,35 @@ Uživatelé = měsíčně aktivní uživatelé (MAU). Sloupce označené * jsou 
 |                                                                   |        300 |      1 500 |       3 000 |     10 000* |     50 000* |     100 000* |
 | ----------------------------------------------------------------- | ---------: | ---------: | ----------: | ----------: | ----------: | -----------: |
 | **MVP** – vývoj jednorázově **1,19 mil. Kč** (0,82–1,53)          |            |            |             |             |             |              |
-| Infrastruktura                                                    |      1 100 |      1 800 |       2 300 |       2 700 |       7 500 |       13 000 |
+| Infrastruktura                                                    |         20 |        480 |       1 080 |       1 100 |       2 500 |        4 300 |
 | Podpora                                                           |      1 050 |      2 800 |       7 000 |      17 500 |      52 500 |       87 500 |
 | Údržba kódu                                                       |      2 400 |      2 400 |       2 400 |       2 400 |       2 400 |        2 400 |
-| **Náklady MVP**                                                   |  **4 550** |  **7 000** |  **11 700** |  **22 600** |  **62 400** |  **102 900** |
+| **Náklady MVP**                                                   |  **3 470** |  **5 680** |  **10 480** |  **21 000** |  **57 400** |   **94 200** |
 | **Příjmy MVP**                                                    |      **0** |      **0** |       **0** |       **0** |       **0** |        **0** |
-| **Výsledek MVP**                                                  | **−4 550** | **−7 000** | **−11 700** | **−22 600** | **−62 400** | **−102 900** |
+| **Výsledek MVP**                                                  | **−3 470** | **−5 680** | **−10 480** | **−21 000** | **−57 400** |  **−94 200** |
 | **Full Release** – vývoj jednorázově **1,53 mil. Kč** (1,05–1,97) |            |            |             |             |             |              |
-| Infrastruktura                                                    |      1 100 |      1 800 |       2 300 |       2 700 |       7 500 |       13 000 |
+| Infrastruktura                                                    |         20 |        480 |       1 080 |       1 100 |       2 500 |        4 300 |
 | Videa a přenosy                                                   |        100 |        200 |         500 |       1 500 |       7 500 |       15 000 |
 | Podpora                                                           |      1 050 |      2 800 |       7 000 |      17 500 |      52 500 |       87 500 |
 | Moderace                                                          |        700 |      1 750 |       4 200 |      10 500 |      35 000 |       56 000 |
 | Údržba kódu                                                       |      2 400 |      2 400 |       2 400 |       2 400 |       2 400 |        2 400 |
-| **Náklady Full**                                                  |  **5 350** |  **8 950** |  **16 400** |  **34 600** | **104 900** |  **173 900** |
+| **Náklady Full**                                                  |  **4 270** |  **7 630** |  **15 180** |  **33 000** |  **99 900** |  **165 200** |
 | Plus pro psovody                                                  |        400 |      1 800 |       3 700 |      12 200 |      60 900 |      121 800 |
 | Předplatné trenérů                                                |        100 |        700 |       1 300 |       4 400 |      22 000 |       44 000 |
 | Psí školy                                                         |          0 |          0 |       1 300 |       3 900 |      19 400 |       38 700 |
 | Reklamy                                                           |        100 |        700 |       1 400 |       4 700 |      23 300 |       46 500 |
 | Partnerství                                                       |        100 |        500 |         900 |       5 000 |      25 000 |       50 000 |
 | **Příjmy Full**                                                   |    **700** |  **3 700** |   **8 600** |  **30 200** | **150 600** |  **301 000** |
-| **Výsledek Full**                                                 | **−4 650** | **−5 250** |  **−7 800** |  **−4 400** | **+45 700** | **+127 100** |
-| Návratnost vývoje Full                                            |          – |          – |           – |           – |    ~34 měs. |     ~12 měs. |
+| **Výsledek Full**                                                 | **−3 570** | **−3 930** |  **−6 580** |  **−2 800** | **+50 700** | **+135 800** |
+| Návratnost vývoje Full                                            |          – |          – |           – |           – |    ~30 měs. |     ~11 měs. |
 | _Pro kontext:_                                                    |            |            |             |             |             |              |
 | Předplatitelé Plus                                                |          9 |         46 |          91 |         305 |       1 520 |        3 045 |
 | Platící trenéři                                                   |          1 |          6 |          12 |          40 |         200 |          400 |
 | Psí školy                                                         |          0 |          0 |           1 |           3 |          15 |           30 |
-| Náklady Full na uživatele                                         |       17,8 |        6,0 |         5,5 |         3,5 |         2,1 |          1,7 |
+| Náklady Full na uživatele                                         |       14,2 |        5,1 |         5,1 |         3,3 |         2,0 |          1,7 |
 | Příjmy Full na uživatele                                          |        2,3 |        2,5 |         2,9 |         3,0 |         3,0 |          3,0 |
 
-Od 2. roku jsou náklady obou fází nižší o 800 Kč/měs, od 3. roku o 1 600 Kč/měs (klesající údržba). Bod zvratu Full Release je přibližně při **13 500 MAU**.
+Od 2. roku jsou náklady obou fází nižší o 800 Kč/měs, od 3. roku o 1 600 Kč/měs (klesající údržba). Bod zvratu Full Release je přibližně při **12 100 MAU**.
 
 ## 2. Předpoklady
 
@@ -51,7 +51,7 @@ Od 2. roku jsou náklady obou fází nižší o 800 Kč/měs, od 3. roku o 1 600
 
 - Do 3 000 uživatelů přesně podle `naklady_provoz.md`; podpora 350 Kč/h, údržba 6 h/měs v 1. roce.
 - **Dopočet nad 3 000 uživatelů (můj odhad):**
-  - Infrastruktura: Railway škáluje podle RAM a CPU (100 000 MAU ≈ 16 GB RAM a 6 vCPU ≈ 8 700 Kč), Sentry Team, e-maily (týdenní souhrn, ~5 e-mailů na uživatele měsíčně) přes Resend nebo Amazon SES.
+  - Infrastruktura: doména, Sentry Team, e-maily (týdenní souhrn, ~5 e-mailů na uživatele měsíčně) přes Resend nebo Amazon SES; 1 100 / 2 500 / 4 300 Kč při 10 000 / 50 000 / 100 000 MAU.
   - Videa: ~0,15 Kč na uživatele (20 % uživatelů nahrává, Bunny Stream).
   - Podpora: 50 / 150 / 250 h; s růstem klesá z ~5 na ~2,5 h na 1 000 uživatelů díky FAQ a samoobsluze.
   - Moderace: 30 / 100 / 160 h; klesá z ~3 na ~1,6 h na 1 000 uživatelů.
@@ -74,8 +74,8 @@ Kontrola: při 1 000 MAU vychází ~2 400 Kč/měs, Monetizace bez tržiště uv
 
 ## 3. Závěry
 
-- **MVP nic nevydělává** a s růstem uživatelů jen roste ztráta (4,6–103 tis. Kč/měs). Hodí se pro ověření produktu na stovkách až nízkých tisících uživatelů, ne pro růst.
-- **Full Release je do ~13 500 MAU ve ztrátě** 4–8 tis. Kč/měs. Výnos na uživatele (2,3–3,0 Kč) je pod náklady, dokud se nerozloží podpora a údržba.
-- **Vývoj se vrátí až od desítek tisíc uživatelů:** ~34 měsíců při 50 000 MAU, ~12 měsíců při 100 000 MAU. Monetizace upozorňuje, že 100 000 MAU do 2 let zvládne jen malý zlomek aplikací, a jen v ČR/SK je to výrazně těžší.
+- **MVP nic nevydělává** a s růstem uživatelů jen roste ztráta (3,5–94 tis. Kč/měs). Hodí se pro ověření produktu na stovkách až nízkých tisících uživatelů, ne pro růst.
+- **Full Release je do ~12 100 MAU ve ztrátě** 3–7 tis. Kč/měs. Výnos na uživatele (2,3–3,0 Kč) je pod náklady, dokud se nerozloží podpora a údržba.
+- **Vývoj se vrátí až od desítek tisíc uživatelů:** ~30 měsíců při 50 000 MAU, ~11 měsíců při 100 000 MAU. Monetizace upozorňuje, že 100 000 MAU do 2 let zvládne jen malý zlomek aplikací, a jen v ČR/SK je to výrazně těžší.
 - **Největší páka je Plus** (~40 % příjmů). Bez něj by Full Release nebyl ziskový ani při 50 000 MAU.
 - **Největší náklad jsou lidé:** podpora a moderace tvoří od 10 000 MAU přes 80 % nákladů. Udržet samoobsluhu (FAQ, nahlašování, ověřování trenérů) je klíčové.
