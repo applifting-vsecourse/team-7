@@ -85,6 +85,7 @@ Týdenní plánovač a tréninkový deník pro psa, do kterého nahlíží i tre
 
 ## Cenový model
 
-- **Psovodi:** Zdarma (1 pes, 2 rozpracované cíle) · Plus 89 Kč/měs. nebo 890 Kč/rok (do 5 psů, foto a video, měsíc zdarma).
-- **Trenéři:** Pro za 139 Kč/měs. (do 20 psů klientů), Pro MAX za 249 Kč/měs.; klienti trenéra mají dostupné veškeré plány od trenéra.
-- **Psí školy:** (S - M - L) 349/650/1290 Kč/měs.
+- **Psovodi:** Zdarma (1 pes, 2 aktivní plány) · Plus 99 Kč/měs. nebo 790 Kč/rok (2 psi, +29 Kč/měs. za každého dalšího psa, měsíc zdarma).
+- **Trenéři:** Pro 20 za 199 Kč/měs. nebo 1 990 Kč/rok (do 20 psů klientů, +12 Kč za psa navíc), Pro+ za 399 Kč/měs. nebo 3 990 Kč/rok (do 60 psů klientů, +6 Kč za psa navíc); klienti trenéra mají dostupné veškeré plány od trenéra.
+- **Psí školy:** (S - M - L) 549/1 090/1 990 Kč/měs. bez DPH (3/8/neomezeně trenérů, 60/180/450 psů).
+- **Reklamy:** dodatečný příjem očekáváme z nenápadných reklam u uživatelů zdarma (nikdy během tréninku).
