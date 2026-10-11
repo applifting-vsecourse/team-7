@@ -63,11 +63,10 @@ Plánovač a tréninkový deník pro psa.
 
 ## Struktura nákladů
 
-- **Vývoj (jednorázově):** realisticky **1,19 mil. Kč** (0,82–1,53 mil. Kč); úvodní týden + 7 sprintů, 10,25 člověkoměsíce.
-- **Provoz (1. rok):** ≈ 3,5 tis. (300 uživ.) / 5,7 tis. (1 500) / 10,5 tis. Kč/měs (3 000).
-- ->**Fixní:** doména, monitoring, e-mail ≈ 0–1 tis. Kč/měs; údržba kódu ≈ 2,4 tis. Kč/měs.
-- ->**Variabilní:** podpora uživatelů (1–7 tis. Kč/měs). Bez videí a moderace.
-- **Jednorázově:** právník (VOP, GDPR) 10–30 tis. Kč, uživatelské testování 3–5 tis. Kč.
+- **Vývoj MVP (jednorázově):** ≈ 1,19 mil. Kč
+- **Provoz:** ≈ 20,9 tis. Kč/měs
+- ->**Fixní:** doména, e-maily (Resend), databáze/backend ≈ 1,1 tis. Kč/měs
+- ->**Pracovníci (částečné úvazky):** údržba kódu 7,7 tis. · podpora 5,8 tis. · účetní 4,6 tis. · moderace 1,8 tis. Kč/měs
 
 ## Cenový model
 

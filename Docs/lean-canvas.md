@@ -76,18 +76,12 @@ Týdenní plánovač a tréninkový deník pro psa, do kterého nahlíží i tre
 
 ## Struktura nákladů
 
-- **Provoz** (hosting, DB, doména, e-maily, analytika).
-- ->**Fixní:** doména, monitoring, e-mail ≈ 0–1 tis. Kč/měs; údržba kódu (záplaty, opravy, aktualizace) nezávisle na počtu uživatelů ≈ 2,4 tis. Kč/měs v 1. roce, od 3. roku ≈ 0,8 tis. Kč/měs.
-- ->**Variabilní:** úložiště a přehrávání videí, podpora a moderace trenérů (2–11 tis. Kč/měs); roste s uživateli.
-- ->**Celkem provoz (1. rok):** ≈ 4,3 tis. (300 uživ.) / 7,6 tis. (1 500) / 15,2 tis. Kč/měs (3 000+). Od 3. roku o 1,6 tis. Kč/měs méně.
-
-- **Xtra:** Procenta za platby (zpracování transakcí apod.) 1 - 3% + fixně 3-10 Kč za platbu + 0,7 % Billing.
-
-| **Vývoj:**               | Nízký         | Realistický   | Vysoký        |
-| ------------------------ | ------------- | ------------- | ------------- |
-| MVP                      | 818 230       | 1 194 130     | 1 534 730     |
-| Premium dodatečně        | 232 780       | 337 080       | 432 280       |
-| **Celkem MVP + premium** | **1 051 010** | **1 531 210** | **1 967 010** |
+- **Vývoj (jednorázově):**
+- ->**MVP:** ≈ 1,19 mil. Kč
+- ->**Premium:** ≈ 0,35 mil. Kč
+- **Provoz:** ≈ 20,9 tis. Kč/měs
+- ->**Fixní:** doména, e-maily (Resend), databáze/backend ≈ 1,1 tis. Kč/měs
+- ->**Pracovníci (částečné úvazky):** údržba kódu 7,7 tis. · podpora 5,8 tis. · účetní 4,6 tis. · moderace 1,8 tis. Kč/měs
 
 ## Cenový model
 
