@@ -2,7 +2,7 @@ import { Avatar } from "@heroui/react"
 
 import { formatDate } from "@/lib/date"
 
-import type { Quack } from "@/features/quack/api/quackSchemas"
+import { type Quack } from "@/features/quack/api/quackSchemas"
 import { UsersName } from "@/features/quack/components/UsersName"
 import { UsersUserName } from "@/features/quack/components/UsersUserName"
 

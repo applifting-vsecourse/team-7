@@ -1,0 +1,80 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "singleQuote": true,
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "pnpm-lock.yaml",
+    "node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**",
+    ".claude/**",
+    ".opencode/**",
+    "apps/backend/src/generated/**",
+    "apps/frontend/src/routeTree.gen.ts"
+  ],
+  "overrides": [
+    {
+      "files": ["apps/backend/**"],
+      "options": {
+        "printWidth": 80,
+        "singleQuote": true,
+        "trailingComma": "all",
+        "sortImports": {
+          "customGroups": [
+            {
+              "groupName": "app-alias",
+              "elementNamePattern": ["@/**", "src/**"]
+            }
+          ],
+          "newlinesBetween": false,
+          "groups": [
+            ["builtin", "external", "type"],
+            "app-alias",
+            ["internal", "subpath"],
+            ["parent", "sibling", "index"],
+            "unknown"
+          ]
+        }
+      }
+    },
+    {
+      "files": ["apps/frontend/**"],
+      "options": {
+        "printWidth": 100,
+        "semi": false,
+        "singleQuote": false,
+        "trailingComma": "all",
+        "singleAttributePerLine": true,
+        "endOfLine": "lf",
+        "sortTailwindcss": {
+          "stylesheet": "./apps/frontend/src/styles/global.css",
+          "functions": ["cva", "cn"]
+        },
+        "sortImports": {
+          "customGroups": [
+            {
+              "groupName": "react-first",
+              "elementNamePattern": ["react", "react/**"]
+            },
+            {
+              "groupName": "features",
+              "elementNamePattern": ["@/features/**"]
+            },
+            { "groupName": "app-alias", "elementNamePattern": ["@/**"] }
+          ],
+          "groups": [
+            "react-first",
+            { "newlinesBetween": false },
+            ["builtin", "external", "type"],
+            "app-alias",
+            "features",
+            ["parent", "sibling", "index"],
+            "unknown"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,9 +1,10 @@
 // Example unit test — the pattern to copy for your own services.
 // The repository is mocked, so the test exercises the service in isolation.
+
+import { mock } from 'jest-mock-extended';
 import { Quack } from '@/modules/quack/domain/quack';
 import { QuackRepository } from '@/modules/quack/repositories/quack.repository';
 import { Identity } from '@/shared/auth/domain/identity';
-import { mock } from 'jest-mock-extended';
 import { QuacksService } from './quacks.service';
 
 const aQuack = (overrides: Partial<Quack> = {}): Quack => ({

@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 import tailwindcss from "@tailwindcss/vite"
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite"
+import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig, loadEnv } from "vite"
 import { checker } from "vite-plugin-checker"
@@ -11,16 +11,13 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
-      TanStackRouterVite({ target: "react", autoCodeSplitting: true }),
-      react(),
+      tanstackRouter({ target: "react", autoCodeSplitting: true }),
+      react({ compiler: true }),
       tailwindcss(),
       svgr(),
       checker({
         typescript: true,
-        eslint: {
-          useFlatConfig: true,
-          lintCommand: "eslint './src/**/*.{ts,tsx,js,cjs,mjs}'",
-        },
+        oxlint: { lintCommand: "oxlint src", watchPath: "./src" },
         overlay: { initialIsOpen: false },
       }),
     ],

@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
-import type { Quack } from "@/features/quack/api/quackSchemas"
+import { type Quack } from "@/features/quack/api/quackSchemas"
 import { QuackList } from "@/features/quack/components/QuackList"
 
 const quack = (overrides: Partial<Quack> = {}): Quack => ({

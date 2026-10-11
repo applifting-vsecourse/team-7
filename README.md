@@ -48,6 +48,9 @@ Verification/reset emails are printed to the backend terminal (console mailer) u
 
 ```shell
 pnpm check-all                     # lint + type-check + tests + builds (what CI runs)
+pnpm lint                          # lint with Oxlint
+pnpm lint:fix                      # apply lint fixes
+pnpm format                        # format files with Oxfmt
 pnpm backend test                  # backend unit tests (jest)
 pnpm frontend test:ci              # frontend component tests (vitest)
 pnpm backend prisma:migrations:run # create + apply a migration after schema changes
@@ -55,6 +58,16 @@ pnpm backend prisma:studio         # browse/edit the database
 pnpm backend seed                  # re-seed the database
 pnpm dev:down                      # stop the database container
 ```
+
+## Linting and formatting
+
+Oxlint uses the root `.oxlintrc.json` with the standard correctness category, built-in TypeScript/React/accessibility/import plugins, and app-specific overrides. Type-aware checks are provided by `oxlint-tsgolint`. Explicit rules retain TanStack Query/Router checks, promise handling, unsafe-type checks, import cycles, restricted imports, and backend explicit-return-type warnings. Generated clients, generated routes, and build output are excluded. This uses Oxlint's defaults rather than an exact copy of the old ESLint presets.
+
+TanStack's ESLint-named plugins are loaded directly by Oxlint; there is no separate ESLint pass. The old custom feature/shared-layer boundaries, double-negation ban, boolean naming, and separate React deprecation/config/gating checks are no longer enforced. TypeScript checks unresolved imports; parent-relative import restrictions and backend DTO boundaries remain lint rules.
+
+Oxfmt uses the root `.oxfmtrc.json` with app-specific overrides. Backend files retain single quotes, semicolons, and an 80-column width; frontend files retain double quotes, optional semicolons, a 100-column width, import groups, and Tailwind 4 stylesheet-aware class sorting (`cn` and `cva`). Markdown and YAML formatting is restored. JSON keys retain their existing order. Formatter output is not guaranteed byte-for-byte identical to Prettier.
+
+Install the recommended Oxc VS Code extension for formatting and lint fixes on save. TypeScript stays on 5.9 for Nest/Jest; Oxlint's type-aware engine is a separate dependency.
 
 ## Deployment
 

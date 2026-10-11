@@ -1,8 +1,8 @@
-import { PrismaClient } from '@/generated/prisma/client';
-import { betterAuthCoreConfig } from '@/shared/auth/config/better-auth.config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { PrismaClient } from '@/generated/prisma/client';
+import { betterAuthCoreConfig } from '@/shared/auth/config/better-auth.config';
 
 // Prisma 7 takes its connection from a driver adapter, same as PrismaService.
 const prisma = new PrismaClient({

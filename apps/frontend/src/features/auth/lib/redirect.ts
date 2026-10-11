@@ -1,4 +1,4 @@
-import type { ParsedLocation } from "@tanstack/react-router"
+import { type ParsedLocation } from "@tanstack/react-router"
 
 export const encodeRedirectUri = (location: ParsedLocation) => encodeURIComponent(location.href)
 

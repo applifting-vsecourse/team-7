@@ -1,5 +1,5 @@
-import { Config } from '@/shared/config/config.service';
 import { Global, Module } from '@nestjs/common';
+import { Config } from '@/shared/config/config.service';
 import { ConsoleMailerAdapterFactory } from './adapters/console-mailer/console-mailer.adapter.factory';
 import { ResendAdapterFactory } from './adapters/resend/resend.adapter.factory';
 import { SMTPAdapterFactory } from './adapters/smtp/smtp.adapter.factory';

@@ -14,7 +14,9 @@ export const env = ((): EnvSchema => {
     console.error("❌ Invalid environment variables:")
     const fieldErrors = parsed.error.flatten().fieldErrors
     Object.entries(fieldErrors).forEach(([field, errors]) => {
-      errors?.forEach((error) => console.error(`  ${field}: ${error}`))
+      errors?.forEach((error) => {
+        console.error(`  ${field}: ${error}`)
+      })
     })
     throw new Error("Invalid environment variables")
   }
@@ -23,6 +25,6 @@ export const env = ((): EnvSchema => {
 })()
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-empty-object-type
+  // oxlint-disable-next-line typescript/consistent-type-definitions -- Vite environment types require declaration merging.
   interface ImportMetaEnv extends EnvSchema {}
 }

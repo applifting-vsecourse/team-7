@@ -1,0 +1,136 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": { "correctness": "error" },
+  "plugins": ["typescript", "unicorn", "react", "jsx-a11y", "import"],
+  "jsPlugins": [
+    "@tanstack/eslint-plugin-query",
+    "@tanstack/eslint-plugin-router"
+  ],
+  "options": { "typeAware": true },
+  "settings": { "react": { "version": "19.2" } },
+  "ignorePatterns": [
+    ".claude/**",
+    ".opencode/**",
+    "**/node_modules/**",
+    "**/build/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "apps/backend/prisma/**",
+    "apps/backend/src/generated/**",
+    "apps/frontend/src/routeTree.gen.ts",
+    "apps/frontend/src/components/ui/**"
+  ],
+  "rules": { "typescript/no-floating-promises": "error" },
+  "overrides": [
+    {
+      "files": ["apps/frontend/**"],
+      "env": { "browser": true, "serviceworker": true },
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off",
+        "@tanstack/query/exhaustive-deps": "error",
+        "@tanstack/query/infinite-query-property-order": "error",
+        "@tanstack/query/mutation-property-order": "error",
+        "@tanstack/query/no-rest-destructuring": "warn",
+        "@tanstack/query/no-unstable-deps": "error",
+        "@tanstack/query/no-void-query-fn": "error",
+        "@tanstack/query/stable-query-client": "error",
+        "@tanstack/router/create-route-property-order": "warn",
+        "@tanstack/router/route-param-names": "error",
+        "import/no-cycle": "error",
+        "react/rules-of-hooks": "error",
+        "react/exhaustive-deps": "warn",
+        "no-console": ["warn", { "allow": ["warn", "error"] }],
+        "no-unused-vars": [
+          "error",
+          {
+            "argsIgnorePattern": "^_",
+            "caughtErrorsIgnorePattern": "^_",
+            "varsIgnorePattern": "^_"
+          }
+        ],
+        "curly": ["error", "multi-line"],
+        "typescript/consistent-type-definitions": ["error", "type"],
+        "typescript/consistent-type-imports": [
+          "warn",
+          { "fixStyle": "inline-type-imports" }
+        ],
+        "typescript/no-explicit-any": "error",
+        "typescript/no-unsafe-argument": "error",
+        "typescript/no-unsafe-assignment": "error",
+        "typescript/no-unsafe-call": "error",
+        "typescript/no-unsafe-member-access": "error",
+        "typescript/no-unsafe-return": "error",
+        "typescript/no-misused-promises": [
+          "error",
+          { "checksVoidReturn": { "attributes": false } }
+        ],
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "react",
+                "importNames": ["default"],
+                "message": "Use named React imports; JSX does not need a default import."
+              }
+            ],
+            "patterns": [
+              {
+                "group": ["..*"],
+                "message": "Use absolute imports except for sibling files."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["apps/backend/**"],
+      "env": { "node": true, "jest": true },
+      "rules": {
+        "typescript/unbound-method": "off",
+        "typescript/no-explicit-any": "warn"
+      }
+    },
+    {
+      "files": ["apps/backend/src/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "regex": "^\\.\\./",
+                "message": "Use the @/ alias instead of parent-relative imports."
+              },
+              {
+                "group": ["**/dto/**", "**/*.dto"],
+                "message": "DTOs belong to the HTTP boundary. Import domain types outside controllers and DTOs."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "apps/backend/src/**/*.controller.ts",
+        "apps/backend/src/**/controllers/**",
+        "apps/backend/src/**/dto/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "regex": "^\\.\\./",
+                "message": "Use the @/ alias instead of parent-relative imports."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

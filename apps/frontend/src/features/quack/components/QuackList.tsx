@@ -1,7 +1,7 @@
 import { Alert, Button } from "@heroui/react"
 import { Loader2, RefreshCw } from "lucide-react"
 
-import type { Quack } from "@/features/quack/api/quackSchemas"
+import { type Quack } from "@/features/quack/api/quackSchemas"
 import { QuackItem } from "@/features/quack/components/QuackItem"
 
 type QuackListProps = {
