@@ -34,16 +34,16 @@ Na tyto otázky odpovídáme my po rozhovoru, respondentce je takhle nepokládá
 
 Respondentce hypotézy nikdy neříkáme.
 
-| ID | Hypotéza | Podpoří ji, když… | Vyvrátí ji, když… | Zdroj |
-| --- | --- | --- | --- | --- |
-| H1 | Komunikace s klienty probíhá u většiny klientů podobně (stejný kanál, rytmus, typ podkladů). | Dva poslední klienti vypadají skoro stejně. | Každý klient jinak, jiné kanály, jiný rytmus. | Tým |
-| H2 | Trenérka plány klientům průběžně upravuje podle toho, jak psovi jde. | Popíše konkrétní nedávnou úpravu mezi hodinami. | Plán mění jen na hodině, nebo písemný plán vůbec nedává. | Tým |
-| H3 | Orientace v podkladech od klientů (fotky sešitu, videa, zprávy) ji stojí čas a štve ji. | Zmíní to sama, s emocí nebo s počtem minut; má vlastní obcházku. | Klienti posílají málo, vše se řeší na hodině. | Tým |
-| H4 | Za nástroj, který jí ušetří čas s klienty, by platila, protože se tím živí. | Už dnes platí za pracovní nástroj (rezervace, web, aplikace). | Vše řeší zdarma (WhatsApp, Excel) a za nástroje neplatí. | Tým |
-| H5 | Plány nebere jako produkt k prodeji – jsou individuální a jsou to, čím se živí. | Plán je pro každého psa jiný; zmíní obavu sdílet postupy. | Má šablony, prodává kurzy nebo materiály. | Claude |
-| H6 | Pro vlastní psy plánuje jinak (méně formálně) než pro klienty. | Vlastní trénink má „v hlavě“, klientům píše. | Obojí řeší stejným nástrojem a stejně. | Claude |
-| H7 | Klienti jsou zvyklí na chat (WhatsApp/Messenger) a jiný nástroj nechtějí. | Zmíní, že klienti nic dalšího neinstalují; jiný nástroj selhal. | Už s klienty používá jiný nástroj bez potíží. | Claude |
-| H8 | Pokrok posuzuje hlavně z videa a vlastního oka, procenta úspěšnosti nepoužívá. | Popíše, co sleduje na videu; čísla nezmíní. | Sama si vede procenta nebo počty opakování. | Claude |
+| ID | Hypotéza | Podpoří ji, když… | Vyvrátí ji, když… |
+| --- | --- | --- | --- |
+| H1 | Komunikace s klienty probíhá u většiny klientů podobně (stejný kanál, rytmus, typ podkladů). | Dva poslední klienti vypadají skoro stejně. | Každý klient jinak, jiné kanály, jiný rytmus. |
+| H2 | Trenérka plány klientům průběžně upravuje podle toho, jak psovi jde. | Popíše konkrétní nedávnou úpravu mezi hodinami. | Plán mění jen na hodině, nebo písemný plán vůbec nedává. |
+| H3 | Orientace v podkladech od klientů (fotky sešitu, videa, zprávy) ji stojí čas a štve ji. | Zmíní to sama, s emocí nebo s počtem minut; má vlastní obcházku. | Klienti posílají málo, vše se řeší na hodině. |
+| H4 | Za nástroj, který jí ušetří čas s klienty, by platila, protože se tím živí. | Už dnes platí za pracovní nástroj (rezervace, web, aplikace). | Vše řeší zdarma (WhatsApp, Excel) a za nástroje neplatí. |
+| H5 | Plány nebere jako produkt k prodeji – jsou individuální a jsou to, čím se živí. | Plán je pro každého psa jiný; zmíní obavu sdílet postupy. | Má šablony, prodává kurzy nebo materiály. |
+| H6 | Pro vlastní psy plánuje jinak (méně formálně) než pro klienty. | Vlastní trénink má „v hlavě“, klientům píše. | Obojí řeší stejným nástrojem a stejně. |
+| H7 | Klienti jsou zvyklí na chat (WhatsApp/Messenger) a jiný nástroj nechtějí. | Zmíní, že klienti nic dalšího neinstalují; jiný nástroj selhal. | Už s klienty používá jiný nástroj bez potíží. |
+| H8 | Pokrok posuzuje hlavně z videa a vlastního oka, procenta úspěšnosti nepoužívá. | Popíše, co sleduje na videu; čísla nezmíní. | Sama si vede procenta nebo počty opakování. |
 
 ## Scénář (30 min)
 
