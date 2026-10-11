@@ -44,8 +44,5 @@
     ],
     "types": ["node", "express", "jest"]
   },
-  "include": [
-    "src/**/*",
-    "test/**/*",
-  ]
+  "include": ["src/**/*", "test/**/*"]
 }

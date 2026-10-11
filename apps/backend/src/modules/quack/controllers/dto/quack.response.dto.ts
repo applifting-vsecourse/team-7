@@ -1,5 +1,5 @@
-import { Quack } from '@/modules/quack/domain/quack';
 import { ApiProperty } from '@nestjs/swagger';
+import { Quack } from '@/modules/quack/domain/quack';
 
 class QuackUserDto {
   @ApiProperty()

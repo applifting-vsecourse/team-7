@@ -1,7 +1,3 @@
-import { QuacksService } from '@/modules/quack/services/quacks.service';
-import { User } from '@/shared/auth/decorators/user.decorator';
-import { Identity } from '@/shared/auth/domain/identity';
-import { AuthenticatedUserGuard } from '@/shared/auth/guards/authenticated-user.guard';
 import {
   Body,
   Controller,
@@ -19,6 +15,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { QuacksService } from '@/modules/quack/services/quacks.service';
+import { User } from '@/shared/auth/decorators/user.decorator';
+import { Identity } from '@/shared/auth/domain/identity';
+import { AuthenticatedUserGuard } from '@/shared/auth/guards/authenticated-user.guard';
 import { CreateQuackDto } from './dto/create-quack.dto';
 import { QuackResponseDto } from './dto/quack.response.dto';
 

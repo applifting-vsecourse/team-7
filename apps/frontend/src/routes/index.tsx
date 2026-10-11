@@ -7,7 +7,7 @@ import { Seo } from "@/components/Seo"
 
 import { HeaderMenu } from "@/features/auth/components/HeaderMenu"
 import { useSession } from "@/features/auth/hooks/useSession"
-import type { Quack } from "@/features/quack/api/quackSchemas"
+import { type Quack } from "@/features/quack/api/quackSchemas"
 import { QuackItem } from "@/features/quack/components/QuackItem"
 
 export const Route = createFileRoute("/")({

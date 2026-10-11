@@ -1,7 +1,7 @@
+import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '@/core/prisma/prisma.service';
 import { BetterAuth } from '@/shared/auth/providers/better-auth.provider';
 import { Config } from '@/shared/config/config.service';
-import { Inject, Injectable } from '@nestjs/common';
 import { seedDatabase } from './seed/seed-database';
 
 /**

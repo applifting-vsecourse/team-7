@@ -1,5 +1,4 @@
 import "@testing-library/jest-dom/vitest"
-
 import { vi } from "vitest"
 
 // jsdom has no layout engine or media-query implementation. Keep the real

@@ -1,12 +1,12 @@
-import { Identity } from '@/shared/auth/domain/identity';
 import {
   createParamDecorator,
   ExecutionContext,
   NotImplementedException,
 } from '@nestjs/common';
+import { Identity } from '@/shared/auth/domain/identity';
 
 export const User = createParamDecorator(
-  async (data: unknown, context: ExecutionContext): Promise<Identity> => {
+  async (_data: unknown, context: ExecutionContext): Promise<Identity> => {
     if (context.getType() === 'http') {
       const request = context.switchToHttp().getRequest();
       return request.session.user;

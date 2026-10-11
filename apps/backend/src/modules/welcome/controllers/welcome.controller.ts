@@ -1,6 +1,6 @@
-import { Config } from '@/shared/config/config.service';
 import { Controller, Get, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
+import { Config } from '@/shared/config/config.service';
 import { WelcomeDto } from './dto/welcome.dto';
 
 @Controller()

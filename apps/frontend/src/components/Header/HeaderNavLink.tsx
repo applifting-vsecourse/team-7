@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import { type ReactNode } from "react"
 import { Link, type LinkProps } from "@tanstack/react-router"
 
 import { cn } from "@/lib/utils"

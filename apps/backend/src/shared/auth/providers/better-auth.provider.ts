@@ -1,3 +1,6 @@
+import { Inject, Provider } from '@nestjs/common';
+import { betterAuth } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { EmailService } from '@/core/email/interfaces/email-service.interface';
 import { renderEmail } from '@/core/email/render';
 import { ResetPassword } from '@/core/email/templates/reset-password';
@@ -5,15 +8,11 @@ import { VerifyEmail } from '@/core/email/templates/verify-email';
 import { PrismaService } from '@/core/prisma/prisma.service';
 import { betterAuthCoreConfig } from '@/shared/auth/config/better-auth.config';
 import { Config } from '@/shared/config/config.service';
-import { Inject, Provider } from '@nestjs/common';
-import { betterAuth } from 'better-auth';
-import { prismaAdapter } from 'better-auth/adapters/prisma';
 
 const createAuth = (
   prismaService: PrismaService,
   config: Config,
   emailProvider: EmailService,
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 ) =>
   betterAuth({
     // Without this better-auth can only guess its own URL from the request,

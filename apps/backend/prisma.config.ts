@@ -1,6 +1,5 @@
 // Prisma 7 no longer loads .env automatically for CLI commands.
 import 'dotenv/config';
-
 import { defineConfig } from 'prisma/config';
 
 // Prisma 7 no longer accepts `url` inside schema.prisma — the connection string

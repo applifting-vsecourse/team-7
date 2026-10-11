@@ -1,10 +1,10 @@
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/core/prisma/prisma.service';
 import {
   Quack as PrismaQuack,
   User as PrismaUser,
 } from '@/generated/prisma/client';
 import { Quack } from '@/modules/quack/domain/quack';
-import { Injectable } from '@nestjs/common';
 
 const mapPrismaQuackToDomain = (
   quack: PrismaQuack & { user?: PrismaUser },

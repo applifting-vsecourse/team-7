@@ -1,7 +1,7 @@
+import { Injectable } from '@nestjs/common';
 import { Quack } from '@/modules/quack/domain/quack';
 import { QuackRepository } from '@/modules/quack/repositories/quack.repository';
 import { Identity } from '@/shared/auth/domain/identity';
-import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class QuacksService {

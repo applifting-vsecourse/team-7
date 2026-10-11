@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import { type ReactNode } from "react"
 
 import { HeaderLogo } from "@/components/Header/HeaderLogo"
 import { HeaderNav } from "@/components/Header/HeaderNav"
