@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Quack } from '@/modules/quack/domain/quack';
+import { ApiProperty } from "@nestjs/swagger";
+import { Quack } from "@/modules/quack/domain/quack";
 
 class QuackUserDto {
   @ApiProperty()
@@ -22,7 +22,7 @@ export class QuackResponseDto {
   @ApiProperty()
   userId!: string;
 
-  @ApiProperty({ type: String, format: 'date-time' })
+  @ApiProperty({ type: String, format: "date-time" })
   createdAt!: Date;
 
   @ApiProperty({ type: QuackUserDto })

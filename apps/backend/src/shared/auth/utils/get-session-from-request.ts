@@ -1,6 +1,6 @@
-import { fromNodeHeaders } from 'better-auth/node';
-import { Request } from 'express';
-import { BetterAuth } from '@/shared/auth/providers/better-auth.provider';
+import { fromNodeHeaders } from "better-auth/node";
+import { Request } from "express";
+import { BetterAuth } from "@/shared/auth/providers/better-auth.provider";
 
 export const getSessionFromRequest = async (
   req: Request,

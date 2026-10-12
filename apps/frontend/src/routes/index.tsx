@@ -1,17 +1,17 @@
-import { buttonVariants } from "@heroui/react"
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { buttonVariants } from "@heroui/react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { ROUTES } from "@/app/routes"
 import Layout from "@/components/Layout"
 
-import { HeaderMenu } from "@/features/auth/components/HeaderMenu"
-import { useSession } from "@/features/auth/hooks/useSession"
-import { type Quack } from "@/features/quack/api/quackSchemas"
-import { QuackItem } from "@/features/quack/components/QuackItem"
+import { HeaderMenu } from "@/features/auth/components/HeaderMenu";
+import { useSession } from "@/features/auth/hooks/useSession";
+import { type Quack } from "@/features/quack/api/quackSchemas";
+import { QuackItem } from "@/features/quack/components/QuackItem";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
-})
+});
 
 // Static sample for the preview below. It renders through the same <Quack />
 // component as the real feed, so the landing page can never drift from it.
@@ -21,19 +21,27 @@ const SAMPLE_QUACKS: Quack[] = [
     text: "me: throws one crumb into the pond\nducks: assemble like the Avengers\ni fear i may have started something",
     userId: "sample-user-1",
     createdAt: new Date("2026-09-22T09:12:00"),
-    user: { id: "sample-user-1", name: "Caffeinated Duck", username: "CaffeinatedDuck" },
+    user: {
+      id: "sample-user-1",
+      name: "Caffeinated Duck",
+      username: "CaffeinatedDuck",
+    },
   },
   {
     id: "sample-2",
     text: "If ducks wore pants, would they wear them on their legs or over their whole lower half like a cape?\nAsking for a friend. A feathery friend.",
     userId: "sample-user-2",
     createdAt: new Date("2026-09-22T08:40:00"),
-    user: { id: "sample-user-2", name: "Deep Duck Thoughts", username: "DeepDuckThoughts" },
+    user: {
+      id: "sample-user-2",
+      name: "Deep Duck Thoughts",
+      username: "DeepDuckThoughts",
+    },
   },
-]
+];
 
 function LandingPage() {
-  const { user } = useSession()
+  const { user } = useSession();
 
   return (
     <Layout
@@ -46,8 +54,8 @@ function LandingPage() {
             Say it in a few words.
           </h1>
           <p className="mx-auto mt-4 max-w-md text-lg text-pretty text-muted">
-            Quacker is a tiny social network for short messages. Post a quack, read what everyone
-            else is up to.
+            Quacker is a tiny social network for short messages. Post a quack,
+            read what everyone else is up to.
           </p>
 
           {/* The call to action depends on who is asking: no point offering an
@@ -91,10 +99,7 @@ function LandingPage() {
           </h2>
           <div className="rounded-xl border border-border bg-surface px-5 py-2">
             {SAMPLE_QUACKS.map((quack) => (
-              <QuackItem
-                key={quack.id}
-                quack={quack}
-              />
+              <QuackItem key={quack.id} quack={quack} />
             ))}
           </div>
         </section>

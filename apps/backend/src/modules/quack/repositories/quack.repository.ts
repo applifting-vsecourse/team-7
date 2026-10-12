@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@/core/prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "@/core/prisma/prisma.service";
 import {
   Quack as PrismaQuack,
   User as PrismaUser,
-} from '@/generated/prisma/client';
-import { Quack } from '@/modules/quack/domain/quack';
+} from "@/generated/prisma/client";
+import { Quack } from "@/modules/quack/domain/quack";
 
 const mapPrismaQuackToDomain = (
   quack: PrismaQuack & { user?: PrismaUser },
@@ -18,7 +18,7 @@ const mapPrismaQuackToDomain = (
     ? {
         id: quack.user.id,
         name: quack.user.name,
-        username: quack.user.username ?? '',
+        username: quack.user.username ?? "",
       }
     : undefined,
 });
@@ -34,7 +34,7 @@ export class QuackRepository {
   async getQuacks(): Promise<Quack[]> {
     const quacks = await this.prisma.quack.findMany({
       include: { user: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
     return quacks.map(mapPrismaQuackToDomain);
   }

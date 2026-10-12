@@ -1,8 +1,8 @@
-import ky, { HTTPError } from "ky"
+import ky, { HTTPError } from "ky";
 
-import { env } from "@/config/env"
-import { queryClient } from "@/config/react-query"
-import { authKeys } from "@/lib/auth-keys"
+import { env } from "@/config/env";
+import { queryClient } from "@/config/react-query";
+import { authKeys } from "@/lib/auth-keys";
 
 // Single shared HTTP client. Per the Applifting frontend playbook:
 // - send credentials so better-auth's session cookie travels with every request
@@ -22,25 +22,29 @@ export const api = ky.create({
     // code 400" and never learn what was actually wrong.
     beforeError: [
       async ({ error }) => {
-        if (!(error instanceof HTTPError)) return error
+        if (!(error instanceof HTTPError)) return error;
         try {
-          const body = (await error.response.clone().json()) as { message?: string | string[] }
-          const message = Array.isArray(body.message) ? body.message.join(", ") : body.message
-          if (message) error.message = message
+          const body = (await error.response.clone().json()) as {
+            message?: string | string[];
+          };
+          const message = Array.isArray(body.message)
+            ? body.message.join(", ")
+            : body.message;
+          if (message) error.message = message;
         } catch {
           // response had no JSON body — keep ky's default message
         }
-        return error
+        return error;
       },
     ],
     afterResponse: [
       ({ response }) => {
         if (response.status === 401) {
-          void queryClient.invalidateQueries({ queryKey: authKeys.session() })
+          void queryClient.invalidateQueries({ queryKey: authKeys.session() });
         }
       },
     ],
   },
-})
+});
 
-export { HTTPError }
+export { HTTPError };

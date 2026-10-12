@@ -1,5 +1,5 @@
-import "@testing-library/jest-dom/vitest"
-import { vi } from "vitest"
+import "@testing-library/jest-dom/vitest";
+import { vi } from "vitest";
 
 // jsdom has no layout engine or media-query implementation. Keep the real
 // HeroUI/React Aria controls and supply only the missing browser primitives.
@@ -15,12 +15,12 @@ Object.defineProperty(window, "matchMedia", {
     removeListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
-})
+});
 
 globalThis.ResizeObserver = class {
-  observe = vi.fn()
-  unobserve = vi.fn()
-  disconnect = vi.fn()
-}
-Element.prototype.scrollIntoView = vi.fn()
-window.scrollTo = vi.fn()
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+};
+Element.prototype.scrollIntoView = vi.fn();
+window.scrollTo = vi.fn();

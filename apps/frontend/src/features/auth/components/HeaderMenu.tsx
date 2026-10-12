@@ -1,23 +1,20 @@
-import { Avatar, Button, buttonVariants, Dropdown, Label } from "@heroui/react"
-import { Link } from "@tanstack/react-router"
-import { LogOut } from "lucide-react"
+import { Avatar, Button, buttonVariants, Dropdown, Label } from "@heroui/react";
+import { Link } from "@tanstack/react-router";
+import { LogOut } from "lucide-react";
 
-import { useSession } from "@/features/auth/hooks/useSession"
-import { useSignOut } from "@/features/auth/hooks/useSignOut"
+import { useSession } from "@/features/auth/hooks/useSession";
+import { useSignOut } from "@/features/auth/hooks/useSignOut";
 
 export function HeaderMenu() {
-  const { user } = useSession()
-  const signOut = useSignOut()
+  const { user } = useSession();
+  const signOut = useSignOut();
 
   if (!user) {
     return (
-      <Link
-        to="/login"
-        className={buttonVariants({ size: "sm" })}
-      >
+      <Link to="/login" className={buttonVariants({ size: "sm" })}>
         Sign in
       </Link>
-    )
+    );
   }
 
   const initials = user.name
@@ -25,7 +22,7 @@ export function HeaderMenu() {
     .map((word) => word[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase()
+    .toUpperCase();
 
   return (
     <Dropdown>
@@ -35,17 +32,11 @@ export function HeaderMenu() {
         aria-label="User menu"
         className="rounded-full"
       >
-        <Avatar
-          size="sm"
-          aria-hidden="true"
-        >
+        <Avatar size="sm" aria-hidden="true">
           <Avatar.Fallback>{initials}</Avatar.Fallback>
         </Avatar>
       </Button>
-      <Dropdown.Popover
-        placement="bottom end"
-        className="w-48"
-      >
+      <Dropdown.Popover placement="bottom end" className="w-48">
         <div className="px-3 py-3">
           <p className="text-sm font-medium">{user.name}</p>
           <p className="text-xs text-muted">@{user.username}</p>
@@ -53,7 +44,7 @@ export function HeaderMenu() {
         <Dropdown.Menu
           aria-label="User actions"
           onAction={() => {
-            if (!signOut.isPending) signOut.mutate()
+            if (!signOut.isPending) signOut.mutate();
           }}
         >
           <Dropdown.Item
@@ -67,5 +58,5 @@ export function HeaderMenu() {
         </Dropdown.Menu>
       </Dropdown.Popover>
     </Dropdown>
-  )
+  );
 }

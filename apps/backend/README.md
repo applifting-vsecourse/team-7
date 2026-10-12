@@ -174,5 +174,5 @@ To render a template to HTML at runtime, use the `renderEmail` helper in `src/co
 
 ```ts
 const html = await renderEmail(VerifyEmail, { url });
-await emailProvider.sendEmail(user.email, 'Verify your email address', html);
+await emailProvider.sendEmail(user.email, "Verify your email address", html);
 ```

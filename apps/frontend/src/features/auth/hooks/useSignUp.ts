@@ -1,18 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { authKeys } from "@/lib/auth-keys"
+import { authKeys } from "@/lib/auth-keys";
 
-import { authClient } from "@/features/auth/lib/auth-client"
+import { authClient } from "@/features/auth/lib/auth-client";
 
 export type SignUpInput = {
-  name: string
-  username: string
-  email: string
-  password: string
-}
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+};
 
 export function useSignUp() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: SignUpInput) => {
@@ -22,11 +22,11 @@ export function useSignUp() {
         username: input.username,
         email: input.email,
         password: input.password,
-      })
-      if (error) throw new Error(error.message ?? "Sign up failed")
+      });
+      if (error) throw new Error(error.message ?? "Sign up failed");
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: authKeys.session() })
+      await queryClient.invalidateQueries({ queryKey: authKeys.session() });
     },
-  })
+  });
 }

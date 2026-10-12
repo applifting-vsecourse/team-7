@@ -29,6 +29,9 @@
     "oxlint-tsgolint": "7.0.2004",
     "typescript": "catalog:"
   },
+  "engines": {
+    "node": ">=24"
+  },
   "packageManager": "pnpm@10.15.0",
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -40,8 +43,5 @@
       "sharp",
       "unrs-resolver"
     ]
-  },
-  "engines": {
-    "node": ">=24"
   }
 }

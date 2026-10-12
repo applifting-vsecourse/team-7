@@ -1,29 +1,26 @@
-import { Avatar } from "@heroui/react"
+import { Avatar } from "@heroui/react";
 
-import { formatDate } from "@/lib/date"
+import { formatDate } from "@/lib/date";
 
-import { type Quack } from "@/features/quack/api/quackSchemas"
-import { UsersName } from "@/features/quack/components/UsersName"
-import { UsersUserName } from "@/features/quack/components/UsersUserName"
+import { type Quack } from "@/features/quack/api/quackSchemas";
+import { UsersName } from "@/features/quack/components/UsersName";
+import { UsersUserName } from "@/features/quack/components/UsersUserName";
 
-type QuackItemProps = { quack: Quack }
+type QuackItemProps = { quack: Quack };
 
 export function QuackItem({ quack }: QuackItemProps) {
-  const { name, username } = quack.user
+  const { name, username } = quack.user;
 
   const initials = name
     .split(" ")
     .map((word) => word[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase()
+    .toUpperCase();
 
   return (
     <article className="flex w-full gap-4 border-b border-border pt-2 pb-4 last:border-b-0">
-      <Avatar
-        className="size-12"
-        aria-label={name}
-      >
+      <Avatar className="size-12" aria-label={name}>
         <Avatar.Fallback>{initials}</Avatar.Fallback>
       </Avatar>
 
@@ -33,10 +30,12 @@ export function QuackItem({ quack }: QuackItemProps) {
             <UsersName name={name} /> <UsersUserName username={username} />
           </span>
           <span className="text-xs text-muted">·</span>
-          <time className="text-xs text-muted">{formatDate(quack.createdAt)}</time>
+          <time className="text-xs text-muted">
+            {formatDate(quack.createdAt)}
+          </time>
         </div>
         <p className="text-sm break-words whitespace-pre-line">{quack.text}</p>
       </div>
     </article>
-  )
+  );
 }

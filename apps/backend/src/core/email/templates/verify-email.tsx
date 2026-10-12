@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from "react";
 import {
   Body,
   Button,
@@ -11,7 +11,7 @@ import {
   Section,
   Tailwind,
   Text,
-} from 'react-email';
+} from "react-email";
 
 export interface VerifyEmailProps {
   url: string;

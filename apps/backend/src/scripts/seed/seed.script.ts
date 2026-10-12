@@ -1,6 +1,6 @@
-import { NestFactory } from '@nestjs/core';
-import { SeedModule } from './seed.module';
-import { SeedService } from './seed.service';
+import { NestFactory } from "@nestjs/core";
+import { SeedModule } from "./seed.module";
+import { SeedService } from "./seed.service";
 
 async function main() {
   const app = await NestFactory.createApplicationContext(SeedModule);
@@ -8,7 +8,7 @@ async function main() {
   try {
     await seedService.run();
   } catch (error) {
-    console.error('Error seeding data:', error);
+    console.error("Error seeding data:", error);
     process.exit(1);
   } finally {
     await app.close();

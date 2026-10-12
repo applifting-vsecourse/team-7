@@ -1,5 +1,5 @@
-import { openAPI, username } from 'better-auth/plugins';
-import { BetterAuthOptions } from 'better-auth/types';
+import { openAPI, username } from "better-auth/plugins";
+import { BetterAuthOptions } from "better-auth/types";
 
 export const betterAuthCoreConfig: BetterAuthOptions = {
   emailAndPassword: {
@@ -8,9 +8,9 @@ export const betterAuthCoreConfig: BetterAuthOptions = {
   user: {
     additionalFields: {
       role: {
-        type: 'string',
+        type: "string",
         required: true,
-        defaultValue: 'user',
+        defaultValue: "user",
         input: false,
       },
     },

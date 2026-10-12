@@ -3,4 +3,4 @@ export const ROUTES = {
   quacks: "/quacks",
   login: "/login",
   signup: "/signup",
-} as const
+} as const;

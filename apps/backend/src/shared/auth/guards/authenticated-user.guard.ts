@@ -3,12 +3,12 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   BetterAuth,
   InjectBetterAuth,
-} from '@/shared/auth/providers/better-auth.provider';
-import { getSessionFromRequest } from '@/shared/auth/utils/get-session-from-request';
+} from "@/shared/auth/providers/better-auth.provider";
+import { getSessionFromRequest } from "@/shared/auth/utils/get-session-from-request";
 
 @Injectable()
 export class AuthenticatedUserGuard implements CanActivate {

@@ -1,10 +1,10 @@
-import { type ReactNode } from "react"
+import { type ReactNode } from "react";
 
 type ErrorLayoutProps = {
-  title: string
-  description?: ReactNode
-  action?: ReactNode
-}
+  title: string;
+  description?: ReactNode;
+  action?: ReactNode;
+};
 
 export function ErrorLayout({ title, description, action }: ErrorLayoutProps) {
   return (
@@ -13,5 +13,5 @@ export function ErrorLayout({ title, description, action }: ErrorLayoutProps) {
       {description ? <p className="mt-3 text-muted">{description}</p> : null}
       {action ? <div className="mt-6">{action}</div> : null}
     </main>
-  )
+  );
 }

@@ -1,11 +1,11 @@
-import { ConfigModule } from '@applifting-io/nestjs-decorated-config';
-import { Module } from '@nestjs/common';
-import { ConsoleMailerAdapterFactory } from '@/core/email/adapters/console-mailer/console-mailer.adapter.factory';
-import { EmailModule } from '@/core/email/email.module';
-import { PrismaService } from '@/core/prisma/prisma.service';
-import { betterAuthProvider } from '@/shared/auth/providers/better-auth.provider';
-import { Config } from '@/shared/config/config.service';
-import { SeedService } from './seed.service';
+import { ConfigModule } from "@applifting-io/nestjs-decorated-config";
+import { Module } from "@nestjs/common";
+import { ConsoleMailerAdapterFactory } from "@/core/email/adapters/console-mailer/console-mailer.adapter.factory";
+import { EmailModule } from "@/core/email/email.module";
+import { PrismaService } from "@/core/prisma/prisma.service";
+import { betterAuthProvider } from "@/shared/auth/providers/better-auth.provider";
+import { Config } from "@/shared/config/config.service";
+import { SeedService } from "./seed.service";
 
 @Module({
   imports: [

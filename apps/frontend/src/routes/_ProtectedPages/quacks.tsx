@@ -1,18 +1,18 @@
-import { useQuery } from "@tanstack/react-query"
-import { createFileRoute } from "@tanstack/react-router"
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { Seo } from "@/components/Seo"
+import { Seo } from "@/components/Seo";
 
-import { quacksQueryOptions } from "@/features/quack/api/quacksQueryOptions"
-import { QuackForm } from "@/features/quack/components/QuackForm"
-import { QuackList } from "@/features/quack/components/QuackList"
+import { quacksQueryOptions } from "@/features/quack/api/quacksQueryOptions";
+import { QuackForm } from "@/features/quack/components/QuackForm";
+import { QuackList } from "@/features/quack/components/QuackList";
 
 export const Route = createFileRoute("/_ProtectedPages/quacks")({
   component: QuacksPage,
-})
+});
 
 function QuacksPage() {
-  const quacksQuery = useQuery(quacksQueryOptions())
+  const quacksQuery = useQuery(quacksQueryOptions());
 
   return (
     <>
@@ -32,5 +32,5 @@ function QuacksPage() {
         />
       </section>
     </>
-  )
+  );
 }

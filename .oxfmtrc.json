@@ -1,8 +1,6 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "printWidth": 80,
-  "singleQuote": true,
-  "sortPackageJson": false,
   "ignorePatterns": [
     "pnpm-lock.yaml",
     "node_modules/**",
@@ -18,9 +16,6 @@
     {
       "files": ["apps/backend/**"],
       "options": {
-        "printWidth": 80,
-        "singleQuote": true,
-        "trailingComma": "all",
         "sortImports": {
           "customGroups": [
             {
@@ -42,12 +37,6 @@
     {
       "files": ["apps/frontend/**"],
       "options": {
-        "printWidth": 100,
-        "semi": false,
-        "singleQuote": false,
-        "trailingComma": "all",
-        "singleAttributePerLine": true,
-        "endOfLine": "lf",
         "sortTailwindcss": {
           "stylesheet": "./apps/frontend/src/styles/global.css",
           "functions": ["cva", "cn"]

@@ -1,6 +1,6 @@
-import { PrismaService } from '@/core/prisma/prisma.service';
-import { User, UserRole } from '@/generated/prisma/client';
-import { BetterAuth } from '@/shared/auth/providers/better-auth.provider';
+import { PrismaService } from "@/core/prisma/prisma.service";
+import { User, UserRole } from "@/generated/prisma/client";
+import { BetterAuth } from "@/shared/auth/providers/better-auth.provider";
 
 type CreateUserParams = {
   email: string;

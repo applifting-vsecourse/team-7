@@ -1,52 +1,61 @@
-import { useRef } from "react"
-import { Alert, Button, FieldError, Form, Input, Label, TextField } from "@heroui/react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2 } from "lucide-react"
-import { Controller, useForm } from "react-hook-form"
-import { z } from "zod"
+import { useRef } from "react";
+import {
+  Alert,
+  Button,
+  FieldError,
+  Form,
+  Input,
+  Label,
+  TextField,
+} from "@heroui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
 
 const schema = z.object({
   email: z.string().trim().min(1, "Email is required").email("Invalid email"),
   password: z.string().trim().min(1, "Password is required"),
-})
+});
 
-type FormValues = z.infer<typeof schema>
+type FormValues = z.infer<typeof schema>;
 
 type SignInFormProps = {
-  isLoading: boolean
-  errorMessage?: string | null
-  onSubmit: (values: FormValues) => void | Promise<void>
-}
+  isLoading: boolean;
+  errorMessage?: string | null;
+  onSubmit: (values: FormValues) => void | Promise<void>;
+};
 
-export function SignInForm({ isLoading, errorMessage, onSubmit }: SignInFormProps) {
-  const submitting = useRef(false)
+export function SignInForm({
+  isLoading,
+  errorMessage,
+  onSubmit,
+}: SignInFormProps) {
+  const submitting = useRef(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { email: "", password: "" },
-  })
-  const isPending = isLoading || form.formState.isSubmitting
+  });
+  const isPending = isLoading || form.formState.isSubmitting;
 
   return (
     <Form
       validationBehavior="aria"
       onSubmit={(event) =>
         form.handleSubmit(async (values) => {
-          if (submitting.current || isLoading) return
-          submitting.current = true
+          if (submitting.current || isLoading) return;
+          submitting.current = true;
           try {
-            await onSubmit(values)
+            await onSubmit(values);
           } finally {
-            submitting.current = false
+            submitting.current = false;
           }
         })(event)
       }
       className="space-y-4"
     >
       {errorMessage ? (
-        <Alert
-          status="danger"
-          role="alert"
-        >
+        <Alert status="danger" role="alert">
           <Alert.Content>
             <Alert.Description>{errorMessage}</Alert.Description>
           </Alert.Content>
@@ -108,5 +117,5 @@ export function SignInForm({ isLoading, errorMessage, onSubmit }: SignInFormProp
         Sign in
       </Button>
     </Form>
-  )
+  );
 }

@@ -1,17 +1,22 @@
-import { Alert, Button } from "@heroui/react"
-import { Loader2, RefreshCw } from "lucide-react"
+import { Alert, Button } from "@heroui/react";
+import { Loader2, RefreshCw } from "lucide-react";
 
-import { type Quack } from "@/features/quack/api/quackSchemas"
-import { QuackItem } from "@/features/quack/components/QuackItem"
+import { type Quack } from "@/features/quack/api/quackSchemas";
+import { QuackItem } from "@/features/quack/components/QuackItem";
 
 type QuackListProps = {
-  quacks: Quack[]
-  isLoading?: boolean
-  error?: Error
-  onReload?: () => void
-}
+  quacks: Quack[];
+  isLoading?: boolean;
+  error?: Error;
+  onReload?: () => void;
+};
 
-export function QuackList({ quacks, isLoading, error, onReload }: QuackListProps) {
+export function QuackList({
+  quacks,
+  isLoading,
+  error,
+  onReload,
+}: QuackListProps) {
   return (
     <div className="flex flex-col">
       {isLoading && quacks.length === 0 ? (
@@ -25,21 +30,13 @@ export function QuackList({ quacks, isLoading, error, onReload }: QuackListProps
       ) : null}
 
       {error ? (
-        <Alert
-          status="danger"
-          role="alert"
-          className="mb-4"
-        >
+        <Alert status="danger" role="alert" className="mb-4">
           <Alert.Content>
             <Alert.Title>Couldn&apos;t load quacks</Alert.Title>
             <Alert.Description>{error.message}</Alert.Description>
           </Alert.Content>
           {onReload ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onPress={onReload}
-            >
+            <Button variant="outline" size="sm" onPress={onReload}>
               <RefreshCw className="size-4" />
               Reload
             </Button>
@@ -48,15 +45,14 @@ export function QuackList({ quacks, isLoading, error, onReload }: QuackListProps
       ) : null}
 
       {!isLoading && !error && quacks.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted">No quacks yet. Post the first one.</p>
+        <p className="py-8 text-center text-sm text-muted">
+          No quacks yet. Post the first one.
+        </p>
       ) : null}
 
       {quacks.map((quack) => (
-        <QuackItem
-          key={quack.id}
-          quack={quack}
-        />
+        <QuackItem key={quack.id} quack={quack} />
       ))}
     </div>
-  )
+  );
 }

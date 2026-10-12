@@ -1,13 +1,13 @@
-import { type ReactNode } from "react"
+import { type ReactNode } from "react";
 
 import Layout from "@/components/Layout"
 
 type AuthLayoutProps = {
-  title: string
-  description: string
-  children: ReactNode
-  footer: ReactNode
-}
+  title: string;
+  description: string;
+  children: ReactNode;
+  footer: ReactNode;
+};
 
 /**
  * Sign-in / sign-up pages keep the app chrome — they are pages of this app,
@@ -15,7 +15,12 @@ type AuthLayoutProps = {
  * The header omits the auth menu here; offering "Sign in" on the sign-in page
  * would be noise.
  */
-export function AuthLayout({ title, description, children, footer }: AuthLayoutProps) {
+export function AuthLayout({
+  title,
+  description,
+  children,
+  footer,
+}: AuthLayoutProps) {
   return (
     <Layout
       title={title}
