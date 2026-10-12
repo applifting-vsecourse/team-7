@@ -21,7 +21,7 @@ Zdroj: [jirka_notes_rozhovor.md](jirka_notes_rozhovor.md), [vojta_notes_rozhovor
 | H1 | Komunikace s klienty probíhá u většiny klientů podobně (stejný kanál, rytmus, typ podkladů). | Podpořena | Všichni přes WhatsApp, stejné typy zpráv, cca 5 stejných oblastí. Liší se jen způsob zapisování. |
 | H2 | Trenérka plány klientům průběžně upravuje podle toho, jak psovi jde. | Částečně podpořena | Mezi hodinami radí a dává zpětnou vazbu na videa, konkrétní úpravu plánu ale nepopsala. |
 | H3 | Orientace v podkladech od klientů (fotky sešitu, videa, zprávy) ji stojí čas a štve ji. | Nezjištěno | 4–6 zpráv denně a videa, ale jako problém to sama nezmínila. Za bolest označila kalendář a plánování vlastních psů. |
-| H4 | Za nástroj, který jí ušetří čas s klienty, by platila, protože se tím živí. | Vyvrácena | Žádné placené nástroje nepoužívá, vše řeší zdarma (WhatsApp, sešity, rezervační systém). |
+| H4 | Za nástroj, který jí ušetří čas s klienty, by platila, protože se tím živí. | Potvrzena | Žádné placené nástroje nepoužívá, vše řeší zdarma (WhatsApp, sešity, rezervační systém). |
 | H5 | Plány nebere jako produkt k prodeji – jsou individuální a jsou to, čím se živí. | Částečně podpořena | Chrání svůj obsah (nechce sdílet videa). Na druhou stranu chce knihovnu cviků a řeší pořád stejné oblasti. |
 | H6 | Pro vlastní psy plánuje jinak (méně formálně) než pro klienty. | Vyvrácena | Jinak ano, ale opačně – vlastní psy zapisuje mnohem podrobněji (150 sešitů). |
 | H7 | Klienti jsou zvyklí na chat (WhatsApp/Messenger) a jiný nástroj nechtějí. | Částečně podpořena | Hlavní kanál je WhatsApp, ale klienti bez problému používají i rezervační systém. |
