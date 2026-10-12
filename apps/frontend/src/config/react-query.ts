@@ -1,4 +1,4 @@
-import { type DefaultOptions, QueryClient } from "@tanstack/react-query"
+import { type DefaultOptions, QueryClient } from "@tanstack/react-query";
 
 const defaultQueryConfig = {
   queries: {
@@ -8,8 +8,8 @@ const defaultQueryConfig = {
     // Fail fast and visibly in development rather than hiding errors behind retries.
     retry: 0,
   },
-} satisfies DefaultOptions
+} satisfies DefaultOptions;
 
 export const queryClient = new QueryClient({
   defaultOptions: defaultQueryConfig,
-})
+});

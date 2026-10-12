@@ -1,13 +1,13 @@
-import { type ReactNode } from "react"
+import { type ReactNode } from "react";
 
-import Layout from "@/components/Layout"
+import Layout from "@/components/Layout";
 
 type AuthLayoutProps = {
-  title: string
-  description: string
-  children: ReactNode
-  footer: ReactNode
-}
+  title: string;
+  description: string;
+  children: ReactNode;
+  footer: ReactNode;
+};
 
 /**
  * Sign-in / sign-up pages keep the app chrome — they are pages of this app,
@@ -15,12 +15,14 @@ type AuthLayoutProps = {
  * The header omits the auth menu here; offering "Sign in" on the sign-in page
  * would be noise.
  */
-export function AuthLayout({ title, description, children, footer }: AuthLayoutProps) {
+export function AuthLayout({
+  title,
+  description,
+  children,
+  footer,
+}: AuthLayoutProps) {
   return (
-    <Layout
-      title={title}
-      userMenu={null}
-    >
+    <Layout title={title} userMenu={null}>
       <section className="mx-auto w-full max-w-sm px-4 py-16">
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         <p className="mt-2 text-sm text-muted">{description}</p>
@@ -30,5 +32,5 @@ export function AuthLayout({ title, description, children, footer }: AuthLayoutP
         <p className="mt-6 text-sm text-muted">{footer}</p>
       </section>
     </Layout>
-  )
+  );
 }

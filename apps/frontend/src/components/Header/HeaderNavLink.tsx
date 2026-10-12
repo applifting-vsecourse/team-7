@@ -1,14 +1,18 @@
-import { type ReactNode } from "react"
-import { Link, type LinkProps } from "@tanstack/react-router"
+import { type ReactNode } from "react";
+import { Link, type LinkProps } from "@tanstack/react-router";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 type HeaderNavLinkProps = LinkProps & {
-  children: ReactNode
-  className?: string
-}
+  children: ReactNode;
+  className?: string;
+};
 
-export function HeaderNavLink({ children, className, ...props }: HeaderNavLinkProps) {
+export function HeaderNavLink({
+  children,
+  className,
+  ...props
+}: HeaderNavLinkProps) {
   return (
     <Link
       {...props}
@@ -23,5 +27,5 @@ export function HeaderNavLink({ children, className, ...props }: HeaderNavLinkPr
     >
       {children}
     </Link>
-  )
+  );
 }

@@ -1,9 +1,9 @@
-import { PrismaService } from '@/core/prisma/prisma.service';
-import { User } from '@/generated/prisma/client';
-import { BetterAuth } from '@/shared/auth/providers/better-auth.provider';
-import { Config } from '@/shared/config/config.service';
-import { createQuack } from './create-quack';
-import { createUser } from './create-user';
+import { PrismaService } from "@/core/prisma/prisma.service";
+import { User } from "@/generated/prisma/client";
+import { BetterAuth } from "@/shared/auth/providers/better-auth.provider";
+import { Config } from "@/shared/config/config.service";
+import { createQuack } from "./create-quack";
+import { createUser } from "./create-user";
 
 const MINUTE_IN_MS = 60 * 1000;
 
@@ -20,7 +20,7 @@ export const seedDatabase = async (
   if (existingUsers > 0) {
     console.log(
       `Database already has ${existingUsers} user(s) — skipping seed. ` +
-        'Run `pnpm backend db:reset` to wipe and start over.',
+        "Run `pnpm backend db:reset` to wipe and start over.",
     );
     return;
   }
@@ -31,58 +31,58 @@ export const seedDatabase = async (
       'TRUNCATE TABLE "quack", "session", "account", "verification", "user" RESTART IDENTITY CASCADE;',
     );
   } catch (error) {
-    console.error('Error truncating tables:', error);
+    console.error("Error truncating tables:", error);
   }
 
-  console.log('Creating superadmin user');
+  console.log("Creating superadmin user");
 
   // Create a superadmin user. This should be delete in prod app
   await createUser(prisma, auth, {
     email: config.superadminEmail,
     password: config.superadminPassword,
-    name: 'Admin (Delete in Prod)',
-    username: 'superadmin',
-    role: 'admin',
+    name: "Admin (Delete in Prod)",
+    username: "superadmin",
+    role: "admin",
   });
 
-  console.log('Creating example users');
+  console.log("Creating example users");
 
   const caffeinatedDuck = await createUser(prisma, auth, {
-    email: 'caffeinatedduck@example.com',
-    password: 'password1',
-    name: 'Caffeinated Duck',
-    username: 'CaffeinatedDuck',
+    email: "caffeinatedduck@example.com",
+    password: "password1",
+    name: "Caffeinated Duck",
+    username: "CaffeinatedDuck",
   });
 
   const deepDuckThoughts = await createUser(prisma, auth, {
-    email: 'deepduckthoughts@example.com',
-    password: 'password2',
-    name: 'Deep Duck Thoughts',
-    username: 'DeepDuckThoughts',
+    email: "deepduckthoughts@example.com",
+    password: "password2",
+    name: "Deep Duck Thoughts",
+    username: "DeepDuckThoughts",
   });
 
   const breadCritic = await createUser(prisma, auth, {
-    email: 'breadcritic@example.com',
-    password: 'password3',
-    name: 'The Bread Critic',
-    username: 'BreadCritic',
+    email: "breadcritic@example.com",
+    password: "password3",
+    name: "The Bread Critic",
+    username: "BreadCritic",
   });
 
   const migrationSeason = await createUser(prisma, auth, {
-    email: 'migrationseason@example.com',
-    password: 'password4',
-    name: 'Migration Season',
-    username: 'MigrationSeason',
+    email: "migrationseason@example.com",
+    password: "password4",
+    name: "Migration Season",
+    username: "MigrationSeason",
   });
 
   const pondAdmin = await createUser(prisma, auth, {
-    email: 'pondadmin@example.com',
-    password: 'password5',
-    name: 'Pond Admin',
-    username: 'PondAdmin',
+    email: "pondadmin@example.com",
+    password: "password5",
+    name: "Pond Admin",
+    username: "PondAdmin",
   });
 
-  console.log('Creating example quacks');
+  console.log("Creating example quacks");
 
   // Listed oldest first. The feed sorts newest first, so the last entry here is
   // the one at the top of the screen.

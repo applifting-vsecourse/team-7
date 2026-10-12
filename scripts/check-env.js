@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-const fs = require('node:fs');
-const path = require('node:path');
+const fs = require("node:fs");
+const path = require("node:path");
 
-const root = path.resolve(__dirname, '..');
+const root = path.resolve(__dirname, "..");
 const envFiles = [
-  { env: 'apps/backend/.env', example: 'apps/backend/.env.example' },
-  { env: 'apps/frontend/.env', example: 'apps/frontend/.env.example' },
+  { env: "apps/backend/.env", example: "apps/backend/.env.example" },
+  { env: "apps/frontend/.env", example: "apps/frontend/.env.example" },
 ];
 
 for (const { env, example } of envFiles) {

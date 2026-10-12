@@ -1,6 +1,6 @@
 // Prisma 7 no longer loads .env automatically for CLI commands.
-import 'dotenv/config';
-import { defineConfig } from 'prisma/config';
+import "dotenv/config";
+import { defineConfig } from "prisma/config";
 
 // Prisma 7 no longer accepts `url` inside schema.prisma — the connection string
 // for CLI commands (migrate, studio) lives here instead. The running app gets
@@ -10,13 +10,13 @@ import { defineConfig } from 'prisma/config';
 // throws while merely loading this file. `prisma generate` needs no database
 // and runs at image build time, where DATABASE_URL rightly doesn't exist.
 export default defineConfig({
-  schema: 'prisma/schema.prisma',
+  schema: "prisma/schema.prisma",
   migrations: {
-    path: 'prisma/migrations',
+    path: "prisma/migrations",
     // `prisma migrate reset` drops everything and replays the migrations. Without
     // this it stops there, leaving an empty database and an app that looks broken
     // to whoever just ran it.
-    seed: 'pnpm seed',
+    seed: "pnpm seed",
   },
-  datasource: { url: process.env.DATABASE_URL ?? '' },
+  datasource: { url: process.env.DATABASE_URL ?? "" },
 });

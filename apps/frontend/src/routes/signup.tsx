@@ -1,46 +1,55 @@
-import { useState } from "react"
-import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router"
+import { useState } from "react";
+import {
+  createFileRoute,
+  Link,
+  redirect,
+  useNavigate,
+} from "@tanstack/react-router";
 
-import { ROUTES } from "@/app/routes"
-import { AuthLayout } from "@/components/AuthLayout"
+import { ROUTES } from "@/app/routes";
+import { AuthLayout } from "@/components/AuthLayout";
 
-import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions"
-import { SignUpForm } from "@/features/auth/components/SignUpForm"
-import { useSignUp } from "@/features/auth/hooks/useSignUp"
+import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
+import { SignUpForm } from "@/features/auth/components/SignUpForm";
+import { useSignUp } from "@/features/auth/hooks/useSignUp";
 
 export const Route = createFileRoute("/signup")({
   component: SignUpPage,
   loader: async ({ context }) => {
-    const session = await context.queryClient.ensureQueryData(authSessionQueryOptions())
-    if (!session) return
-    throw redirect({ to: ROUTES.quacks })
+    const session = await context.queryClient.ensureQueryData(
+      authSessionQueryOptions(),
+    );
+    if (!session) return;
+    throw redirect({ to: ROUTES.quacks });
   },
-})
+});
 
 function SignUpPage() {
-  const navigate = useNavigate()
-  const signUp = useSignUp()
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const navigate = useNavigate();
+  const signUp = useSignUp();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (values: {
-    email: string
-    name: string
-    username: string
-    password: string
+    email: string;
+    name: string;
+    username: string;
+    password: string;
   }) => {
-    setErrorMessage(null)
+    setErrorMessage(null);
     try {
       await signUp.mutateAsync({
         email: values.email,
         password: values.password,
         name: values.name,
         username: values.username,
-      })
-      await navigate({ to: ROUTES.quacks })
+      });
+      await navigate({ to: ROUTES.quacks });
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Sign up failed")
+      setErrorMessage(
+        error instanceof Error ? error.message : "Sign up failed",
+      );
     }
-  }
+  };
 
   return (
     <AuthLayout
@@ -64,5 +73,5 @@ function SignUpPage() {
         onSubmit={handleSubmit}
       />
     </AuthLayout>
-  )
+  );
 }

@@ -1,14 +1,14 @@
-import { type ReactNode } from "react"
+import { type ReactNode } from "react";
 
-import { HeaderLogo } from "@/components/Header/HeaderLogo"
-import { HeaderNav } from "@/components/Header/HeaderNav"
-import { ThemeSwitcher } from "@/components/Header/ThemeSwitcher"
+import { HeaderLogo } from "@/components/Header/HeaderLogo";
+import { HeaderNav } from "@/components/Header/HeaderNav";
+import { ThemeSwitcher } from "@/components/Header/ThemeSwitcher";
 
 type HeaderProps = {
   // Auth-aware menu (sign-in CTA / user dropdown). Passed as a slot so
   // `components/` doesn't have to import from `features/auth`.
-  userMenu: ReactNode
-}
+  userMenu: ReactNode;
+};
 
 export function Header({ userMenu }: HeaderProps) {
   return (
@@ -22,5 +22,5 @@ export function Header({ userMenu }: HeaderProps) {
         {userMenu}
       </div>
     </header>
-  )
+  );
 }

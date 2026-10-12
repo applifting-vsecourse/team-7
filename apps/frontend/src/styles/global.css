@@ -6,7 +6,8 @@
 @theme {
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-serif: Georgia, serif;
-  --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono:
+    "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Size Collection — the --container-* namespace generates w-*, min-w-* and max-w-* utilities */
   --container-sidebar: 264px;

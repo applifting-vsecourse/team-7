@@ -1,12 +1,9 @@
 {
   "name": "backend",
   "version": "0.1.0",
-  "description": "Quacker backend \u2014 NestJS + Prisma + Postgres teaching template",
   "private": true,
+  "description": "Quacker backend — NestJS + Prisma + Postgres teaching template",
   "license": "MIT",
-  "engines": {
-    "node": ">=24"
-  },
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "prisma generate && nest build",
@@ -83,22 +80,10 @@
     "typescript": "catalog:"
   },
   "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "./",
-    "moduleDirectories": [
-      "node_modules"
-    ],
-    "testRegex": "\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
     "collectCoverageFrom": [
       "**/*.ts"
     ],
+    "coverageDirectory": "coverage",
     "coveragePathIgnorePatterns": [
       "dist",
       "interfaces",
@@ -115,10 +100,25 @@
       "text-summary",
       "cobertura"
     ],
-    "coverageDirectory": "coverage",
-    "testEnvironment": "node",
+    "moduleDirectories": [
+      "node_modules"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
+    },
+    "rootDir": "./",
+    "testEnvironment": "node",
+    "testRegex": "\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
     }
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

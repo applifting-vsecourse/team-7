@@ -8,22 +8,22 @@ import {
   UseGuards,
   UsePipes,
   ValidationPipe,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   ApiCookieAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
-} from '@nestjs/swagger';
-import { QuacksService } from '@/modules/quack/services/quacks.service';
-import { User } from '@/shared/auth/decorators/user.decorator';
-import { Identity } from '@/shared/auth/domain/identity';
-import { AuthenticatedUserGuard } from '@/shared/auth/guards/authenticated-user.guard';
-import { CreateQuackDto } from './dto/create-quack.dto';
-import { QuackResponseDto } from './dto/quack.response.dto';
+} from "@nestjs/swagger";
+import { QuacksService } from "@/modules/quack/services/quacks.service";
+import { User } from "@/shared/auth/decorators/user.decorator";
+import { Identity } from "@/shared/auth/domain/identity";
+import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
+import { CreateQuackDto } from "./dto/create-quack.dto";
+import { QuackResponseDto } from "./dto/quack.response.dto";
 
-@ApiTags('quacks')
-@Controller('quacks')
+@ApiTags("quacks")
+@Controller("quacks")
 @UseGuards(AuthenticatedUserGuard)
 @ApiCookieAuth()
 @UsePipes(
@@ -37,9 +37,9 @@ export class QuacksController {
   constructor(private readonly quacksService: QuacksService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List all quacks' })
+  @ApiOperation({ summary: "List all quacks" })
   @ApiResponse({ status: 200, type: [QuackResponseDto] })
-  @ApiResponse({ status: 401, description: 'Not signed in' })
+  @ApiResponse({ status: 401, description: "Not signed in" })
   async list(): Promise<QuackResponseDto[]> {
     const quacks = await this.quacksService.getQuacks();
     return quacks.map(QuackResponseDto.fromDomain);
@@ -47,9 +47,9 @@ export class QuacksController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a quack' })
+  @ApiOperation({ summary: "Create a quack" })
   @ApiResponse({ status: 201, type: QuackResponseDto })
-  @ApiResponse({ status: 401, description: 'Not signed in' })
+  @ApiResponse({ status: 401, description: "Not signed in" })
   async create(
     @User() user: Identity,
     @Body() body: CreateQuackDto,

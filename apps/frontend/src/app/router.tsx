@@ -1,10 +1,10 @@
-import { createRouter } from "@tanstack/react-router"
+import { createRouter } from "@tanstack/react-router";
 
-import { AppLoadingScreen } from "@/components/AppLoadingScreen"
-import { NotFound } from "@/components/Error/NotFound"
-import { RootErrorBoundary } from "@/components/Error/RootErrorBoundary"
-import { queryClient } from "@/config/react-query"
-import { routeTree } from "@/routeTree.gen"
+import { AppLoadingScreen } from "@/components/AppLoadingScreen";
+import { NotFound } from "@/components/Error/NotFound";
+import { RootErrorBoundary } from "@/components/Error/RootErrorBoundary";
+import { queryClient } from "@/config/react-query";
+import { routeTree } from "@/routeTree.gen";
 
 export const router = createRouter({
   routeTree,
@@ -15,11 +15,11 @@ export const router = createRouter({
   defaultNotFoundComponent: NotFound,
   defaultErrorComponent: ({ error }) => <RootErrorBoundary error={error} />,
   defaultPendingComponent: AppLoadingScreen,
-})
+});
 
 declare module "@tanstack/react-router" {
   // oxlint-disable-next-line typescript/consistent-type-definitions -- TanStack Router registration requires declaration merging.
   interface Register {
-    router: typeof router
+    router: typeof router;
   }
 }
