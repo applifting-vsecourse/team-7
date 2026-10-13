@@ -53,14 +53,10 @@ function LoginPage() {
   return (
     <AuthLayout
       title="Sign in"
-      description="Welcome back to Quacker."
       footer={
         <>
           No account?{" "}
-          <Link
-            to={ROUTES.signup}
-            className="font-medium text-foreground underline underline-offset-4"
-          >
+          <Link to={ROUTES.signup} className="font-medium text-foreground">
             Sign up
           </Link>
         </>
