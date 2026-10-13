@@ -6,7 +6,7 @@ These are rules, not suggestions. When a rule and a "nicer looking" idea disagre
 
 Controls come directly from `@heroui/react` (HeroUI v3). Use its accessible compound components rather than vendoring or hand-rolling controls.
 
-**Tokens enter through `apps/frontend/src/styles/global.css`.** It imports Tailwind 4 followed by `@heroui/styles`, whose default light/dark themes are the source of truth for colour, radius, fields, focus and shadows. Keep the default palette; local font configuration preserves Geist. This file says how to _use_ the tokens.
+**Tokens enter through `apps/frontend/src/styles/global.css`.** It imports Tailwind 4 followed by `@heroui/styles`, whose default light/dark themes are the source of truth for colour, radius, fields, focus and shadows. Keep the default palette; local font configuration uses Inter as the primary font and Lily Script One (`font-lily`, regular weight) for selected decorative text such as the logo. This file says how to _use_ the tokens.
 
 ## Colour
 
