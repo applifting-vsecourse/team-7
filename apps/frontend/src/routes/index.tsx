@@ -1,8 +1,8 @@
 import { buttonVariants } from "@heroui/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { ROUTES } from "@/app/routes"
-import Layout from "@/components/Layout"
+import { ROUTES } from "@/app/routes";
+import Layout from "@/components/Layout";
 
 import { HeaderMenu } from "@/features/auth/components/HeaderMenu";
 import { useSession } from "@/features/auth/hooks/useSession";
@@ -44,10 +44,7 @@ function LandingPage() {
   const { user } = useSession();
 
   return (
-    <Layout
-      title="Welcome"
-      userMenu={<HeaderMenu />}
-    >
+    <Layout title="Welcome" userMenu={<HeaderMenu />}>
       <div className="w-full">
         <section className="mx-auto w-full max-w-2xl px-4 pt-16 pb-12 text-center">
           <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl">
@@ -105,5 +102,5 @@ function LandingPage() {
         </section>
       </div>
     </Layout>
-  )
+  );
 }

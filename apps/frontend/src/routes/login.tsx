@@ -7,8 +7,8 @@ import {
 } from "@tanstack/react-router";
 import { z } from "zod";
 
-import { ROUTES } from "@/app/routes"
-import { AuthLayout } from "@/components/AuthLayout"
+import { ROUTES } from "@/app/routes";
+import { AuthLayout } from "@/components/AuthLayout";
 
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
 import { SignInForm } from "@/features/auth/components/SignInForm";
@@ -53,14 +53,10 @@ function LoginPage() {
   return (
     <AuthLayout
       title="Sign in"
-      description="Welcome back to Quacker."
       footer={
         <>
           No account?{" "}
-          <Link
-            to={ROUTES.signup}
-            className="font-medium text-foreground underline underline-offset-4"
-          >
+          <Link to={ROUTES.signup} className="font-medium text-foreground">
             Sign up
           </Link>
         </>
@@ -72,5 +68,5 @@ function LoginPage() {
         onSubmit={handleSubmit}
       />
     </AuthLayout>
-  )
+  );
 }

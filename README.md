@@ -114,6 +114,6 @@ Working conventions for AI-assisted development: [`CLAUDE.md`](CLAUDE.md). UI ru
 
 Import accessible controls directly from `@heroui/react`, using HeroUI v3 compound components. Forms retain React Hook Form and Zod validation; navigation uses TanStack Router anchors, with HeroUI `buttonVariants` for button-looking links.
 
-`apps/frontend/src/styles/global.css` imports `@heroui/styles` after Tailwind. HeroUI's default light/dark tokens provide colours, fields, radius and focus states; Geist fonts are configured locally. Use semantic utilities such as `text-muted`, `bg-surface`, and `text-danger`. Inputs and textareas use `shadow-none` per the design contract.
+`apps/frontend/src/styles/global.css` imports `@heroui/styles` after Tailwind. HeroUI's default light/dark tokens provide colours, fields, radius and focus states; Inter is the primary font, and Lily Script One is available through `font-lily` for selected decorative text. Use semantic utilities such as `text-muted`, `bg-surface`, and `text-danger`. Inputs and textareas use `shadow-none` per the design contract.
 
 The theme menu offers Light, Dark and System (the default). A single `ThemeController` above the router runs HeroUI's native `useTheme`, follows OS changes in System mode, and saves the preference in `localStorage` under `heroui-theme`. Existing preferences from the previous `theme` key are carried forward. Toasts use HeroUI's `Toast.Provider` at the root.

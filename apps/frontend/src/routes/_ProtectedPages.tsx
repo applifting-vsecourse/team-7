@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
-import { ROUTES } from "@/app/routes"
-import Layout from "@/components/Layout"
+import { ROUTES } from "@/app/routes";
+import Layout from "@/components/Layout";
 
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
 import { HeaderMenu } from "@/features/auth/components/HeaderMenu";
@@ -20,12 +20,12 @@ export const Route = createFileRoute("/_ProtectedPages")({
     });
   },
   component: ProtectedPage,
-})
+});
 
 function ProtectedPage() {
   return (
     <Layout userMenu={<HeaderMenu />}>
       <Outlet />
     </Layout>
-  )
+  );
 }

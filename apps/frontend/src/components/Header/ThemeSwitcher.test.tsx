@@ -23,7 +23,7 @@ function renderTheme() {
   );
 }
 
-describe("theme controller and menu", () => {
+describe("theme controller and switch", () => {
   let isDark: boolean;
   let changes: Set<() => void>;
 
@@ -98,49 +98,39 @@ describe("theme controller and menu", () => {
     );
   });
 
-  it("selects by keyboard, indicates the preference, persists and returns focus", async () => {
+  it("toggles by keyboard, indicates the preference, persists and keeps focus", async () => {
     const user = userEvent.setup();
     const view = renderTheme();
-    const trigger = screen.getByRole("button", { name: "Toggle theme" });
-    act(() => trigger.focus());
-    await user.keyboard("{ArrowDown}");
-    expect(
-      await screen.findByRole("menuitemradio", { name: "System" }),
-    ).toHaveAttribute("aria-checked", "true");
-    await user.keyboard("{Home}{ArrowDown}{Enter}");
+    const toggle = screen.getByRole("switch", { name: "Light" });
+    expect(toggle).not.toBeChecked();
+    await user.tab();
+    expect(toggle).toHaveFocus();
+    await user.keyboard(" ");
     await waitFor(() =>
       expect(localStorage.getItem("heroui-theme")).toBe("dark"),
     );
+    expect(screen.getByRole("switch", { name: "Dark" })).toBeChecked();
     expect(screen.getByLabelText("Current theme")).toHaveTextContent(
       "dark/dark",
     );
+    changeOS(true);
     changeOS(false);
     expect(document.documentElement).toHaveAttribute("data-theme", "dark");
-    await waitFor(() => expect(trigger).toHaveFocus());
-
-    await user.click(trigger);
-    expect(
-      await screen.findByRole("menuitemradio", { name: "Dark" }),
-    ).toHaveAttribute("aria-checked", "true");
-    await user.keyboard("{Escape}");
-    await waitFor(() =>
-      expect(screen.queryByRole("menu")).not.toBeInTheDocument(),
-    );
-    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(toggle).toHaveFocus();
 
     view.unmount();
     renderTheme();
+    expect(screen.getByRole("switch", { name: "Dark" })).toBeChecked();
     expect(screen.getByLabelText("Current theme")).toHaveTextContent(
       "dark/dark",
     );
-    await user.click(screen.getByRole("button", { name: "Toggle theme" }));
-    await user.click(
-      await screen.findByRole("menuitemradio", { name: "System" }),
-    );
-    expect(localStorage.getItem("heroui-theme")).toBe("system");
+    await user.click(screen.getByRole("switch", { name: "Dark" }));
+    expect(localStorage.getItem("heroui-theme")).toBe("light");
+    expect(screen.getByRole("switch", { name: "Light" })).not.toBeChecked();
     changeOS(true);
     expect(screen.getByLabelText("Current theme")).toHaveTextContent(
-      "system/dark",
+      "light/light",
     );
+    expect(document.documentElement).toHaveAttribute("data-theme", "light");
   });
 });
