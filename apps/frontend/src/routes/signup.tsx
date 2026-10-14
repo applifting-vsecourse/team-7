@@ -3,7 +3,6 @@ import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-ro
 
 import { ROUTES } from "@/app/routes"
 import { AuthLayout } from "@/components/AuthLayout"
-import { Seo } from "@/components/Seo"
 
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions"
 import { SignUpForm } from "@/features/auth/components/SignUpForm"
@@ -44,29 +43,26 @@ function SignUpPage() {
   }
 
   return (
-    <>
-      <Seo title="Sign up" />
-      <AuthLayout
-        title="Sign up"
-        description="Create your Quacker account."
-        footer={
-          <>
-            Already have an account?{" "}
-            <Link
-              to={ROUTES.login}
-              className="font-medium text-foreground underline underline-offset-4"
-            >
-              Sign in
-            </Link>
-          </>
-        }
-      >
-        <SignUpForm
-          isLoading={signUp.isPending}
-          errorMessage={errorMessage}
-          onSubmit={handleSubmit}
-        />
-      </AuthLayout>
-    </>
+    <AuthLayout
+      title="Sign up"
+      description="Create your Quacker account."
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link
+            to={ROUTES.login}
+            className="font-medium text-foreground underline underline-offset-4"
+          >
+            Sign in
+          </Link>
+        </>
+      }
+    >
+      <SignUpForm
+        isLoading={signUp.isPending}
+        errorMessage={errorMessage}
+        onSubmit={handleSubmit}
+      />
+    </AuthLayout>
   )
 }

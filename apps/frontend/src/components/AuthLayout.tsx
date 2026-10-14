@@ -1,6 +1,6 @@
 import { type ReactNode } from "react"
 
-import { Header } from "@/components/Header/Header"
+import Layout from "@/components/Layout"
 
 type AuthLayoutProps = {
   title: string
@@ -17,18 +17,18 @@ type AuthLayoutProps = {
  */
 export function AuthLayout({ title, description, children, footer }: AuthLayoutProps) {
   return (
-    <>
-      <Header userMenu={null} />
-      <main className="min-h-svh">
-        <section className="mx-auto w-full max-w-sm px-4 py-16">
-          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-          <p className="mt-2 text-sm text-muted">{description}</p>
+    <Layout
+      title={title}
+      userMenu={null}
+    >
+      <section className="mx-auto w-full max-w-sm px-4 py-16">
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        <p className="mt-2 text-sm text-muted">{description}</p>
 
-          <div className="mt-8">{children}</div>
+        <div className="mt-8">{children}</div>
 
-          <p className="mt-6 text-sm text-muted">{footer}</p>
-        </section>
-      </main>
-    </>
+        <p className="mt-6 text-sm text-muted">{footer}</p>
+      </section>
+    </Layout>
   )
 }

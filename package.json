@@ -10,6 +10,8 @@
     "dev:down": "pnpm backend docker:down",
     "lint": "pnpm -r --stream run lint:check",
     "lint:fix": "pnpm -r --stream run lint:fix",
+    "ts": "pnpm -r --stream run type-check",
+    "check": "run-s lint ts",
     "check-all": "run-s lint \"backend test\" \"backend build\" \"frontend type-check\" \"frontend test:ci\" \"frontend build\" format:check",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",

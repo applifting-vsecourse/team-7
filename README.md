@@ -48,6 +48,8 @@ Verification/reset emails are printed to the backend terminal (console mailer) u
 
 ```shell
 pnpm check-all                     # lint + type-check + tests + builds (what CI runs)
+pnpm ts                            # type-check all workspaces
+pnpm check                         # lint + type-check all workspaces
 pnpm lint                          # lint with Oxlint
 pnpm lint:fix                      # apply lint fixes
 pnpm format                        # format files with Oxfmt

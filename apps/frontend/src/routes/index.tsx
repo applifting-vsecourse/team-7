@@ -2,8 +2,7 @@ import { buttonVariants } from "@heroui/react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 
 import { ROUTES } from "@/app/routes"
-import { Header } from "@/components/Header/Header"
-import { Seo } from "@/components/Seo"
+import Layout from "@/components/Layout"
 
 import { HeaderMenu } from "@/features/auth/components/HeaderMenu"
 import { useSession } from "@/features/auth/hooks/useSession"
@@ -37,10 +36,11 @@ function LandingPage() {
   const { user } = useSession()
 
   return (
-    <>
-      <Seo title="Welcome" />
-      <Header userMenu={<HeaderMenu />} />
-      <main className="min-h-svh">
+    <Layout
+      title="Welcome"
+      userMenu={<HeaderMenu />}
+    >
+      <div className="w-full">
         <section className="mx-auto w-full max-w-2xl px-4 pt-16 pb-12 text-center">
           <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl">
             Say it in a few words.
@@ -98,7 +98,7 @@ function LandingPage() {
             ))}
           </div>
         </section>
-      </main>
-    </>
+      </div>
+    </Layout>
   )
 }

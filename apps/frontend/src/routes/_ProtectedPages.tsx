@@ -1,8 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
 
 import { ROUTES } from "@/app/routes"
-import { Header } from "@/components/Header/Header"
-import { Seo } from "@/components/Seo"
+import Layout from "@/components/Layout"
 
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions"
 import { HeaderMenu } from "@/features/auth/components/HeaderMenu"
@@ -18,17 +17,13 @@ export const Route = createFileRoute("/_ProtectedPages")({
       search: { from: encodeRedirectUri(location) },
     })
   },
-  component: Layout,
+  component: ProtectedPage,
 })
 
-function Layout() {
+function ProtectedPage() {
   return (
-    <>
-      <Seo />
-      <Header userMenu={<HeaderMenu />} />
-      <main className="min-h-svh">
-        <Outlet />
-      </main>
-    </>
+    <Layout userMenu={<HeaderMenu />}>
+      <Outlet />
+    </Layout>
   )
 }

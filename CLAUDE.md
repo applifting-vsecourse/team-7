@@ -20,6 +20,12 @@ The worked example is the quack feed: `Quack` model → seed → repository → 
 
 Deliberately sparse — this file grows as the team learns what it expects from generated code. Add rules here when you find yourself repeating the same review feedback.
 
+### Verification
+
+- At the end of every change, run `pnpm check`.
+- If you added or modified tests, also run `pnpm check-all`.
+- Fix any failures caused by your changes before finishing. Report any remaining failures.
+
 ### UI controls come from the kit
 
 Import controls directly from `@heroui/react` and use HeroUI v3 compound APIs (`Alert.Content`, `Avatar.Fallback`, `Dropdown.Menu`). Check current v3 documentation before introducing a component. One accessibility implementation to reason about beats a per-control judgement call.
