@@ -38,7 +38,11 @@ function LoginPage() {
   const signIn = useSignIn();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = async (values: { email: string; password: string }) => {
+  const handleSubmit = async (values: {
+    email: string;
+    password: string;
+    rememberMe: boolean;
+  }) => {
     setErrorMessage(null);
     try {
       await signIn.mutateAsync(values);
