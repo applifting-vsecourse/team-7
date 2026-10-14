@@ -47,10 +47,14 @@ describe("auth forms", () => {
       expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
         email: "duck@example.com",
         password: "password",
+        rememberMe: false,
       }),
     );
     expect(button).toBeDisabled();
     expect(screen.getByLabelText("Email")).toBeDisabled();
+    expect(
+      screen.getByRole("checkbox", { name: "Remember me" }),
+    ).toBeDisabled();
     fireEvent.submit(view.container.querySelector("form")!);
     await user.click(button);
     expect(onSubmit).toHaveBeenCalledOnce();
@@ -59,6 +63,25 @@ describe("auth forms", () => {
       await Promise.resolve();
     });
     await waitFor(() => expect(button).toBeEnabled());
+  });
+
+  it("submits the selected remember me preference", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<SignInForm isLoading={false} onSubmit={onSubmit} />);
+    const rememberMe = screen.getByRole("checkbox", { name: "Remember me" });
+    expect(rememberMe).not.toBeChecked();
+    await user.click(rememberMe);
+    await user.type(screen.getByLabelText("Email"), "duck@example.com");
+    await user.type(screen.getByLabelText("Password"), "password");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
+        email: "duck@example.com",
+        password: "password",
+        rememberMe: true,
+      }),
+    );
   });
 
   it("shows server errors and respects external pending state", () => {

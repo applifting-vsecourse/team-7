@@ -2,10 +2,12 @@ import { useRef } from "react";
 import {
   Alert,
   Button,
+  Checkbox,
   FieldError,
   Form,
   Input,
   Label,
+  Link,
   TextField,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,9 +15,12 @@ import { Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { ROUTES } from "@/app/routes";
+
 const schema = z.object({
   email: z.string().trim().min(1, "Email is required").email("Invalid email"),
   password: z.string().trim().min(1, "Password is required"),
+  rememberMe: z.boolean(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -34,7 +39,7 @@ export function SignInForm({
   const submitting = useRef(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "", password: "", rememberMe: false },
   });
   const isPending = isLoading || form.formState.isSubmitting;
 
@@ -77,7 +82,7 @@ export function SignInForm({
             <Input
               ref={ref}
               autoComplete="email"
-              placeholder="e.g. john@doe.com"
+              placeholder="e.g. jana@example.com"
               className="shadow-none"
             />
             <FieldError>{fieldState.error?.message}</FieldError>
@@ -106,6 +111,33 @@ export function SignInForm({
           </TextField>
         )}
       />
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+        <Controller
+          control={form.control}
+          name="rememberMe"
+          render={({ field }) => (
+            <Checkbox
+              name={field.name}
+              isSelected={field.value}
+              onChange={field.onChange}
+              isDisabled={isPending}
+            >
+              <Checkbox.Content className="gap-3 text-sm font-medium">
+                <Checkbox.Control className="size-4 shadow-none">
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                Remember me
+              </Checkbox.Content>
+            </Checkbox>
+          )}
+        />
+        <Link
+          href={ROUTES["forgot-password"]}
+          className="text-sm font-medium text-foreground"
+        >
+          Forgot password?
+        </Link>
+      </div>
       <Button
         type="submit"
         size="lg"
