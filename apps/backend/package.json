@@ -10,6 +10,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "prisma generate && nest build",
+    "type-check": "prisma generate && tsc --noEmit --incremental false",
     "format:check": "oxfmt --check .",
     "format:write": "oxfmt --write .",
     "start": "prisma generate && nest start --path tsconfig.dev.json --env-file .env",

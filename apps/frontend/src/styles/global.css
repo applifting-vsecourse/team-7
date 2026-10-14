@@ -7,10 +7,44 @@
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Size Collection — the --container-* namespace generates w-*, min-w-* and max-w-* utilities */
+  --container-sidebar: 264px;
+  --container-content: 1920px;
+  --container-calendar-cell: 200px;
+  --container-login-form: 400px;
+  --container-login-block: 900px;
+}
+
+:root,
+.light,
+[data-theme="light"] {
+  /* Theme Collection */
+  --event-tile-default: #ebf7ff;
+  --event-tile-success: #f2fff2;
+  --event-tile-warning: #fff4eb;
+}
+
+.dark,
+[data-theme="dark"] {
+  /* Theme Collection */
+  --event-tile-default: #010313;
+  --event-tile-success: #021301;
+  --event-tile-warning: #130c01;
+}
+
+@theme inline {
+  --color-event-tile-default: var(--event-tile-default);
+  --color-event-tile-success: var(--event-tile-success);
+  --color-event-tile-warning: var(--event-tile-warning);
 }
 
 @layer base {
   body {
-    @apply bg-background font-sans text-foreground antialiased;
+    @apply flex min-h-svh flex-col items-center bg-background font-sans text-foreground antialiased;
+  }
+  /* The Figma "Layout" frame: fills the page width up to --container-content, centred by body. */
+  #root {
+    @apply flex w-full max-w-content flex-1 flex-col items-start;
   }
 }
