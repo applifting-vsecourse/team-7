@@ -10,19 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ProtectedPagesRouteImport } from './routes/_ProtectedPages'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
-import { Route as ProtectedPagesQuacksRouteImport } from './routes/_ProtectedPages/quacks'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProtectedPagesRoute = ProtectedPagesRouteImport.update({
-  id: '/_ProtectedPages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -40,53 +34,36 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProtectedPagesQuacksRoute = ProtectedPagesQuacksRouteImport.update({
-  id: '/quacks',
-  path: '/quacks',
-  getParentRoute: () => ProtectedPagesRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/quacks': typeof ProtectedPagesQuacksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/quacks': typeof ProtectedPagesQuacksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/_ProtectedPages': typeof ProtectedPagesRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/_ProtectedPages/quacks': typeof ProtectedPagesQuacksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/forgot-password' | '/login' | '/signup' | '/quacks'
+  fullPaths: '/' | '/forgot-password' | '/login' | '/signup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/forgot-password' | '/login' | '/signup' | '/quacks'
-  id:
-    | '__root__'
-    | '/'
-    | '/_ProtectedPages'
-    | '/forgot-password'
-    | '/login'
-    | '/signup'
-    | '/_ProtectedPages/quacks'
+  to: '/' | '/forgot-password' | '/login' | '/signup'
+  id: '__root__' | '/' | '/forgot-password' | '/login' | '/signup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ProtectedPagesRoute: typeof ProtectedPagesRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
@@ -99,13 +76,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_ProtectedPages': {
-      id: '/_ProtectedPages'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof ProtectedPagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -129,31 +99,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_ProtectedPages/quacks': {
-      id: '/_ProtectedPages/quacks'
-      path: '/quacks'
-      fullPath: '/quacks'
-      preLoaderRoute: typeof ProtectedPagesQuacksRouteImport
-      parentRoute: typeof ProtectedPagesRoute
-    }
   }
 }
 
-interface ProtectedPagesRouteChildren {
-  ProtectedPagesQuacksRoute: typeof ProtectedPagesQuacksRoute
-}
-
-const ProtectedPagesRouteChildren: ProtectedPagesRouteChildren = {
-  ProtectedPagesQuacksRoute: ProtectedPagesQuacksRoute,
-}
-
-const ProtectedPagesRouteWithChildren = ProtectedPagesRoute._addFileChildren(
-  ProtectedPagesRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ProtectedPagesRoute: ProtectedPagesRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
