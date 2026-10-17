@@ -11,6 +11,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { NotFound } from "@/components/Error/NotFound";
+import { Route as RootRoute } from "@/routes/__root";
 
 import { HeaderMenu } from "@/features/auth/components/HeaderMenu";
 
@@ -26,8 +27,12 @@ vi.mock("@/features/auth/hooks/useSignOut", () => ({
   useSignOut: () => ({ isPending: state.isPending, mutate: state.mutate }),
 }));
 
-function renderNavigation() {
-  const root = createRootRoute({ component: Outlet });
+function renderNavigation(initialEntry = "/") {
+  const root = createRootRoute({
+    component: Outlet,
+    validateSearch: RootRoute.options.validateSearch,
+    search: RootRoute.options.search,
+  });
   const home = createRoute({
     getParentRoute: () => root,
     path: "/",
@@ -45,9 +50,10 @@ function renderNavigation() {
   });
   const router = createRouter({
     routeTree: root.addChildren([home, login]),
-    history: createMemoryHistory({ initialEntries: ["/"] }),
+    history: createMemoryHistory({ initialEntries: [initialEntry] }),
   });
-  return render(<RouterProvider router={router} />);
+  render(<RouterProvider router={router} />);
+  return router;
 }
 
 describe("user menu and navigation", () => {
@@ -100,4 +106,21 @@ describe("user menu and navigation", () => {
     await userEvent.click(signIn);
     expect(await screen.findByText("Login destination")).toBeInTheDocument();
   });
+
+  it.each(["cs", "en"])(
+    "keeps the %s URL language preference through internal links",
+    async (language) => {
+      state.user = null;
+      const router = renderNavigation(`/?lng=${language}`);
+      const signIn = await screen.findByRole("link", { name: "Sign in" });
+      expect(signIn).toHaveAttribute("href", `/login?lng=${language}`);
+      expect(screen.getByRole("link", { name: "Go home" })).toHaveAttribute(
+        "href",
+        `/?lng=${language}`,
+      );
+      await userEvent.click(signIn);
+      expect(await screen.findByText("Login destination")).toBeInTheDocument();
+      expect(router.state.location.search).toEqual({ lng: language });
+    },
+  );
 });

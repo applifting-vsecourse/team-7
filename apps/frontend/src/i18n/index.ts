@@ -11,21 +11,21 @@ void i18n
   .init({
     resources: { cs: { translation: cs }, en: { translation: en } },
     supportedLngs: ["cs", "en"],
-    fallbackLng: "en",
+    fallbackLng: "cs",
     load: "languageOnly",
     enableSelector: "optimize",
     keySeparator: ".",
     nsSeparator: false,
     interpolation: { escapeValue: false },
     detection: {
-      order: ["querystring", "localStorage", "navigator"],
+      order: ["querystring", "localStorage"],
       lookupQuerystring: "lng",
       caches: ["localStorage"],
     },
   });
 
 function updateDocumentLanguage() {
-  document.documentElement.lang = i18n.resolvedLanguage ?? "en";
+  document.documentElement.lang = i18n.resolvedLanguage ?? "cs";
 }
 
 i18n.on("languageChanged", updateDocumentLanguage);
