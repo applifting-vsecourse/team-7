@@ -1,6 +1,8 @@
 import { type ReactNode } from "react";
+import { useMediaQuery } from "@heroui/react";
 
 import { Header } from "@/components/Header/Header";
+import { MobileSidebar } from "@/components/MobileSidebar";
 import { Seo } from "@/components/Seo";
 import { cn } from "@/lib/utils";
 
@@ -24,20 +26,30 @@ export default function Layout({
   sidebar,
   children,
 }: AppLayoutProps) {
+  const isMobile = useMediaQuery("(max-width: 767px)");
   return (
     <>
       <Seo title={title} />
-      <Header userMenu={userMenu} showNavigation={!sidebar} />
+      <Header
+        userMenu={userMenu}
+        showNavigation={!sidebar}
+        compactLogo={Boolean(sidebar) && isMobile}
+        sidebarToggle={
+          sidebar && isMobile ? (
+            <MobileSidebar>{sidebar}</MobileSidebar>
+          ) : undefined
+        }
+      />
       {/* Wrapper Figma component */}
       <main
         className={cn(
-          "flex w-full flex-1 px-4 pb-4",
+          "flex w-full flex-1 px-2 pb-2 md:px-4 md:pb-4",
           sidebar
             ? "min-h-0 flex-col items-stretch bg-background md:flex-row"
             : "items-start",
         )}
       >
-        {sidebar}
+        {!isMobile && sidebar}
         {children}
       </main>
     </>

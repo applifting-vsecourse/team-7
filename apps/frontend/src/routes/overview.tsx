@@ -36,7 +36,7 @@ function OverviewPage() {
     >
       <section
         aria-labelledby="overview-heading"
-        className="flex min-w-0 flex-1 flex-col gap-8 rounded-3xl bg-surface px-6 pt-5 pb-6"
+        className="flex min-w-0 flex-1 flex-col gap-8 rounded-3xl bg-surface px-5 pt-4 pb-5 md:px-6 md:pt-5 md:pb-6"
       >
         <div className="flex items-center gap-3">
           <Rectangles4

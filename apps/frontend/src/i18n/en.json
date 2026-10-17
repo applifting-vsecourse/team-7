@@ -50,6 +50,8 @@
     }
   },
   "navigation": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
     "userMenu": "User menu",
     "userActions": "User actions",
     "goHome": "Go home",
@@ -60,6 +62,14 @@
     "plans": "Plans",
     "myDogs": "My dogs",
     "addDog": "Add dog"
+  },
+  "dogs": {
+    "name": "Dog’s name",
+    "cancel": "Cancel",
+    "addError": "Unable to add your dog. Please try again.",
+    "loading": "Loading dogs…",
+    "loadError": "Unable to load your dogs.",
+    "empty": "No dogs yet."
   },
   "theme": {
     "dark": "Dark",

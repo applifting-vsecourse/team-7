@@ -54,3 +54,38 @@
     @apply min-h-svh bg-surface;
   }
 }
+
+@keyframes sidebar-slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes sidebar-slide-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@layer components {
+  .mobile-sidebar[data-entering="true"] {
+    animation: sidebar-slide-in 250ms ease-out;
+  }
+
+  .mobile-sidebar[data-exiting="true"] {
+    animation: sidebar-slide-out 200ms ease-in;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-sidebar[data-entering="true"],
+    .mobile-sidebar[data-exiting="true"] {
+      animation: none;
+    }
+  }
+}
