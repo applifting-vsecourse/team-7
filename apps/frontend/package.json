@@ -29,6 +29,7 @@
     "date-fns": "^4.4.0",
     "i18next": "^26.4.7",
     "i18next-browser-languagedetector": "^8.2.1",
+    "jotai": "^3.0.1",
     "ky": "^2.0.2",
     "lucide-react": "^1.33.0",
     "react": "catalog:react19",

@@ -9,6 +9,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
 import { HeaderMenu } from "@/features/auth/components/HeaderMenu";
 import { encodeRedirectUri } from "@/features/auth/lib/redirect";
+import { DogFilter } from "@/features/dogs/components/DogFilter";
 
 export const Route = createFileRoute("/overview")({
   beforeLoad: async ({ context, location }) => {
@@ -50,6 +51,7 @@ function OverviewPage() {
             {t(($) => $.navigation.overview)}
           </h1>
         </div>
+        <DogFilter />
       </section>
     </Layout>
   );

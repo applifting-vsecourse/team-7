@@ -2,7 +2,7 @@
 
 Starter template for [4IT580](https://4it580.vse.cz) team projects: a minimal, working full-stack app you fork and grow into your own product.
 
-**Stack:** React 19 + Vite + TanStack Router/Query + Tailwind 4/HeroUI v3 (frontend) · NestJS + Prisma + PostgreSQL + BetterAuth (backend) · pnpm workspaces.
+**Stack:** React 19 + Vite + TanStack Router/Query + Jotai + Tailwind 4/HeroUI v3 (frontend) · NestJS + Prisma + PostgreSQL + BetterAuth (backend) · pnpm workspaces.
 
 What's included: working login/signup (BetterAuth — you use it, you don't build it), one worked-example feature (the quack feed: read a list, post a new one — copy its pattern), seeded demo data, example tests, CI. The full demo app this template was trimmed from lives on the `reference/full-app` branch.
 
@@ -109,6 +109,10 @@ apps/frontend/  React — src/routes (pages), src/features (feature folders), sr
 ```
 
 Working conventions for AI-assisted development: [`CLAUDE.md`](CLAUDE.md). UI rules every screen must follow: [`DESIGN.md`](DESIGN.md).
+
+### Frontend state management
+
+TanStack Query (React Query) manages server state: fetching, caching, mutations and refetching API data. Jotai manages shared client state, such as selected dog IDs, filters and UI preferences that do not belong in the query cache. Define atoms in the relevant feature's `atoms/` directory; for example, the overview dog filter uses `src/features/dogs/atoms/selectedDogIdsAtom.ts`. Keep state used by only one component local with React state, and avoid copying query results into atoms.
 
 ### Frontend UI and themes
 
