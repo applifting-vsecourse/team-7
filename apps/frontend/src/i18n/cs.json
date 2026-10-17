@@ -50,7 +50,14 @@
   "navigation": {
     "userMenu": "Uživatelské menu",
     "userActions": "Uživatelské akce",
-    "goHome": "Přejít na úvod"
+    "goHome": "Přejít na úvod",
+    "main": "Hlavní navigace",
+    "overview": "Přehled",
+    "calendar": "Kalendář",
+    "disciplines": "Disciplíny",
+    "plans": "Plány",
+    "myDogs": "Moji psi",
+    "addDog": "Přidat psa"
   },
   "theme": {
     "dark": "Tmavý",

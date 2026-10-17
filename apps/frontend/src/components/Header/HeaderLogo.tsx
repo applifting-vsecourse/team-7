@@ -3,12 +3,18 @@ import { Link } from "@tanstack/react-router";
 import { ROUTES } from "@/app/routes";
 import { Logo } from "@/components/Logo";
 
-export function HeaderLogo({ isLink = true }: { isLink?: boolean }) {
+export function HeaderLogo({
+  isLink = true,
+  size = "md",
+}: {
+  isLink?: boolean;
+  size?: "md" | "lg";
+}) {
   return isLink ? (
     <Link to={ROUTES.home} className="inline-flex">
-      <Logo />
+      <Logo size={size} />
     </Link>
   ) : (
-    <Logo />
+    <Logo size={size} />
   );
 }
