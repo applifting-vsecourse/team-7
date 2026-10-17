@@ -1,3 +1,4 @@
+import { RouterProvider as AriaRouterProvider } from "@heroui/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 
@@ -9,7 +10,12 @@ export function Providers() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeController>
-        <RouterProvider router={router} />
+        <AriaRouterProvider
+          navigate={(to) => router.navigate({ to })}
+          useHref={(to) => router.buildLocation({ to }).href}
+        >
+          <RouterProvider router={router} />
+        </AriaRouterProvider>
       </ThemeController>
     </QueryClientProvider>
   );
