@@ -78,12 +78,7 @@ export function QuackForm({ className }: QuackFormProps) {
             fullWidth
           >
             <Label>New quack</Label>
-            <TextArea
-              ref={ref}
-              rows={3}
-              placeholder="Quack something..."
-              className="shadow-none"
-            />
+            <TextArea ref={ref} rows={3} placeholder="Quack something..." />
             <FieldError>{fieldState.error?.message}</FieldError>
           </TextField>
         )}

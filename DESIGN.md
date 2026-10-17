@@ -37,8 +37,6 @@ Use the scale only: `1, 2, 3, 4, 6, 8, 12, 16` (Tailwind units — 4px…64px). 
 ## Surfaces
 
 - **Borders are hairlines**: `border border-border`. One border, not two adjacent ones.
-- **Shadows are rare.** Only for things that genuinely float above the page — dropdowns, dialogs, toasts. Cards and inputs do not get shadows.
-- HeroUI inputs, textareas and cards get `shadow-none`; floating components retain the kit's overlay shadows.
 - Radius comes from the token (`rounded-lg`/`rounded-md`). Never mix radii in one component.
 
 ## Forms
