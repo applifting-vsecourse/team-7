@@ -1,6 +1,8 @@
 {
   "auth": {
     "signIn": "Přihlásit se",
+    "signInTitle": "Přihlášení",
+    "createAccount": "Vytvořit účet",
     "signUp": "Zaregistrovat se",
     "noAccount": "Nemáte účet?",
     "existingAccount": "Už máte účet?",
@@ -10,7 +12,7 @@
       "name": "Jméno",
       "username": "Uživatelské jméno",
       "confirmPassword": "Potvrzení hesla",
-      "emailExample": "např. jana@example.com",
+      "passwordHint": "Použijte alespoň 8 znaků.",
       "emailPlaceholder": "jana@example.com"
     },
     "rememberMe": "Zapamatovat si mě",
@@ -18,9 +20,9 @@
     "reset": {
       "title": "Obnovení hesla",
       "back": "Zpět na přihlášení",
-      "description": "Zadejte svůj e-mail a my vám pošleme odkaz pro nastavení nového hesla.",
+      "description": "Zadejte e-mail a pošleme vám odkaz pro nastavení nového hesla.",
       "confirmation": "Pokud pro tento e-mail existuje účet, obdržíte odkaz pro obnovení hesla.",
-      "submit": "Odeslat odkaz pro obnovení"
+      "submit": "Poslat odkaz"
     },
     "errors": {
       "reset": "Odkaz pro obnovení se nepodařilo odeslat",

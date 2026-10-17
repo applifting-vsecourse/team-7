@@ -100,12 +100,15 @@ describe("auth forms", () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<SignUpForm isLoading={false} onSubmit={onSubmit} />);
+    expect(screen.getByLabelText("Password")).toHaveAccessibleDescription(
+      "Use at least 8 characters.",
+    );
     await user.type(screen.getByLabelText("Name"), "Duck");
     await user.type(screen.getByLabelText("Username"), "duck");
     await user.type(screen.getByLabelText("Email"), "duck@example.com");
     await user.type(screen.getByLabelText("Password"), "password1");
     await user.type(screen.getByLabelText("Confirm password"), "password2");
-    await user.click(screen.getByRole("button", { name: "Sign up" }));
+    await user.click(screen.getByRole("button", { name: "Create account" }));
     expect(await screen.findByText("Passwords must match")).toBeInTheDocument();
     const confirmation = screen.getByLabelText("Confirm password");
     expect(confirmation).toHaveAccessibleDescription("Passwords must match");
@@ -113,7 +116,7 @@ describe("auth forms", () => {
     expect(onSubmit).not.toHaveBeenCalled();
     await user.clear(confirmation);
     await user.type(confirmation, "password1");
-    await user.click(screen.getByRole("button", { name: "Sign up" }));
+    await user.click(screen.getByRole("button", { name: "Create account" }));
     await waitFor(() =>
       expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
         name: "Duck",

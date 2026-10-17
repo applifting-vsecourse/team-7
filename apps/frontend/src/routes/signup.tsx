@@ -55,7 +55,7 @@ function SignUpPage() {
 
   return (
     <AuthLayout
-      title={t(($) => $.auth.signUp)}
+      title={t(($) => $.auth.createAccount)}
       footer={
         <>
           {t(($) => $.auth.existingAccount)}{" "}

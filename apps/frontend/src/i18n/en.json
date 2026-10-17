@@ -1,6 +1,8 @@
 {
   "auth": {
     "signIn": "Sign in",
+    "signInTitle": "Sign in",
+    "createAccount": "Create account",
     "signUp": "Sign up",
     "noAccount": "No account?",
     "existingAccount": "Already have an account?",
@@ -10,7 +12,7 @@
       "name": "Name",
       "username": "Username",
       "confirmPassword": "Confirm password",
-      "emailExample": "e.g. jana@example.com",
+      "passwordHint": "Use at least 8 characters.",
       "emailPlaceholder": "jane@example.com"
     },
     "rememberMe": "Remember me",
@@ -20,7 +22,7 @@
       "back": "Back to sign in",
       "description": "Enter your email and we’ll send you a link to set a new password.",
       "confirmation": "If an account exists for this email, you’ll receive a password reset link.",
-      "submit": "Send reset link"
+      "submit": "Send link"
     },
     "errors": {
       "reset": "Unable to send reset link",

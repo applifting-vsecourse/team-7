@@ -14,9 +14,7 @@ describe("forgot password form", () => {
 
   it("validates email before requesting a reset", async () => {
     render(<ForgotPasswordForm />);
-    await userEvent.click(
-      screen.getByRole("button", { name: "Send reset link" }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: "Send link" }));
     expect(await screen.findByText("Email is required")).toBeInTheDocument();
     await waitFor(() => expect(screen.getByLabelText("Email")).toHaveFocus());
     expect(authClient.requestPasswordReset).not.toHaveBeenCalled();
@@ -29,9 +27,7 @@ describe("forgot password form", () => {
     });
     render(<ForgotPasswordForm />);
     await userEvent.type(screen.getByLabelText("Email"), " duck@example.com ");
-    await userEvent.click(
-      screen.getByRole("button", { name: "Send reset link" }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: "Send link" }));
     expect(authClient.requestPasswordReset).toHaveBeenCalledExactlyOnceWith({
       email: "duck@example.com",
     });
@@ -46,14 +42,10 @@ describe("forgot password form", () => {
     );
     render(<ForgotPasswordForm />);
     await userEvent.type(screen.getByLabelText("Email"), "duck@example.com");
-    await userEvent.click(
-      screen.getByRole("button", { name: "Send reset link" }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: "Send link" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Connection failed",
     );
-    expect(
-      screen.getByRole("button", { name: "Send reset link" }),
-    ).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Send link" })).toBeEnabled();
   });
 });
