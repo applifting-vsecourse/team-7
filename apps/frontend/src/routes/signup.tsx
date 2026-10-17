@@ -19,7 +19,7 @@ export const Route = createFileRoute("/signup")({
       authSessionQueryOptions(),
     );
     if (!session) return;
-    throw redirect({ to: ROUTES.quacks });
+    throw redirect({ to: ROUTES.home });
   },
 });
 
@@ -43,7 +43,7 @@ function SignUpPage() {
         name: values.name,
         username: values.username,
       });
-      await navigate({ to: ROUTES.quacks });
+      await navigate({ to: ROUTES.home });
     } catch (error) {
       setErrorMessage(
         error instanceof Error
