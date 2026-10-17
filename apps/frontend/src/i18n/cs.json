@@ -1,0 +1,73 @@
+{
+  "auth": {
+    "signIn": "Přihlásit se",
+    "signUp": "Zaregistrovat se",
+    "noAccount": "Nemáte účet?",
+    "existingAccount": "Už máte účet?",
+    "fields": {
+      "email": "E-mail",
+      "password": "Heslo",
+      "name": "Jméno",
+      "username": "Uživatelské jméno",
+      "confirmPassword": "Potvrzení hesla",
+      "emailExample": "např. jana@example.com",
+      "emailPlaceholder": "jana@example.com"
+    },
+    "rememberMe": "Zapamatovat si mě",
+    "forgotPassword": "Zapomněli jste heslo?",
+    "reset": {
+      "title": "Obnovení hesla",
+      "back": "Zpět na přihlášení",
+      "description": "Zadejte svůj e-mail a my vám pošleme odkaz pro nastavení nového hesla.",
+      "confirmation": "Pokud pro tento e-mail existuje účet, obdržíte odkaz pro obnovení hesla.",
+      "submit": "Odeslat odkaz pro obnovení"
+    },
+    "errors": {
+      "reset": "Odkaz pro obnovení se nepodařilo odeslat",
+      "signIn": "Přihlášení se nezdařilo",
+      "signUp": "Registrace se nezdařila"
+    },
+    "signOut": "Odhlásit se"
+  },
+  "validation": {
+    "email": {
+      "required": "Zadejte e-mail",
+      "invalid": "Neplatný e-mail"
+    },
+    "password": {
+      "required": "Zadejte heslo",
+      "minLength": "Heslo musí mít alespoň 8 znaků",
+      "confirmationRequired": "Potvrďte heslo",
+      "mismatch": "Hesla se musí shodovat"
+    },
+    "name": {
+      "required": "Zadejte jméno"
+    },
+    "username": {
+      "required": "Zadejte uživatelské jméno"
+    }
+  },
+  "navigation": {
+    "userMenu": "Uživatelské menu",
+    "userActions": "Uživatelské akce",
+    "goHome": "Přejít na úvod"
+  },
+  "theme": {
+    "dark": "Tmavý",
+    "light": "Světlý"
+  },
+  "images": {
+    "dog": "pes"
+  },
+  "errors": {
+    "notFound": {
+      "title": "Stránka nenalezena",
+      "description": "Hledaná stránka neexistuje nebo byla přesunuta."
+    },
+    "unexpected": {
+      "title": "Něco se pokazilo",
+      "description": "Došlo k neočekávané chybě."
+    },
+    "reload": "Načíst znovu"
+  }
+}

@@ -9,49 +9,77 @@ import {
   TextField,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { keyFromSelector } from "i18next";
 import { Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
+
+import {
+  messageSelectors,
+  translateMessage,
+  type TranslationSelector,
+} from "@/i18n/messages";
 
 const schema = z
   .object({
-    email: z.string().trim().min(1, "Email is required").email("Invalid email"),
-    name: z.string().trim().min(1, "Name is required"),
-    username: z.string().trim().min(1, "Username is required"),
+    email: z
+      .string()
+      .trim()
+      .min(1, keyFromSelector(messageSelectors.emailRequired))
+      .email(keyFromSelector(messageSelectors.emailInvalid)),
+    name: z
+      .string()
+      .trim()
+      .min(1, keyFromSelector(messageSelectors.nameRequired)),
+    username: z
+      .string()
+      .trim()
+      .min(1, keyFromSelector(messageSelectors.usernameRequired)),
     password: z
       .string()
       .trim()
-      .min(8, "Password must be at least 8 characters"),
+      .min(8, keyFromSelector(messageSelectors.passwordMinLength)),
     passwordConfirmation: z
       .string()
       .trim()
-      .min(1, "Password confirmation is required"),
+      .min(1, keyFromSelector(messageSelectors.passwordConfirmationRequired)),
   })
   .refine((values) => values.password === values.passwordConfirmation, {
-    message: "Passwords must match",
+    message: keyFromSelector(messageSelectors.passwordMismatch),
     path: ["passwordConfirmation"],
   });
 
 type FormValues = z.infer<typeof schema>;
 
 const fields = [
-  { name: "name", label: "Name", autoComplete: "name", type: "text" },
+  {
+    name: "name",
+    label: (($) => $.auth.fields.name) satisfies TranslationSelector,
+    autoComplete: "name",
+    type: "text",
+  },
   {
     name: "username",
-    label: "Username",
+    label: (($) => $.auth.fields.username) satisfies TranslationSelector,
     autoComplete: "username",
     type: "text",
   },
-  { name: "email", label: "Email", autoComplete: "email", type: "email" },
+  {
+    name: "email",
+    label: (($) => $.auth.fields.email) satisfies TranslationSelector,
+    autoComplete: "email",
+    type: "email",
+  },
   {
     name: "password",
-    label: "Password",
+    label: (($) => $.auth.fields.password) satisfies TranslationSelector,
     autoComplete: "new-password",
     type: "password",
   },
   {
     name: "passwordConfirmation",
-    label: "Confirm password",
+    label: (($) => $.auth.fields.confirmPassword) satisfies TranslationSelector,
     autoComplete: "new-password",
     type: "password",
   },
@@ -68,6 +96,7 @@ export function SignUpForm({
   errorMessage,
   onSubmit,
 }: SignUpFormProps) {
+  const { t } = useTranslation();
   const submitting = useRef(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -100,7 +129,9 @@ export function SignUpForm({
       {errorMessage ? (
         <Alert status="danger" role="alert">
           <Alert.Content>
-            <Alert.Description>{errorMessage}</Alert.Description>
+            <Alert.Description>
+              {translateMessage(t, errorMessage)}
+            </Alert.Description>
           </Alert.Content>
         </Alert>
       ) : null}
@@ -118,15 +149,21 @@ export function SignUpForm({
               isDisabled={isPending}
               fullWidth
             >
-              <Label>{label}</Label>
+              <Label>{t(label)}</Label>
               <Input
                 ref={ref}
                 autoComplete={autoComplete}
                 placeholder={
-                  name === "email" ? "e.g. jana@example.com" : undefined
+                  name === "email"
+                    ? t(($) => $.auth.fields.emailExample)
+                    : undefined
                 }
               />
-              <FieldError>{fieldState.error?.message}</FieldError>
+              <FieldError>
+                {fieldState.error?.message
+                  ? translateMessage(t, fieldState.error.message)
+                  : undefined}
+              </FieldError>
             </TextField>
           )}
         />
@@ -139,7 +176,7 @@ export function SignUpForm({
         isDisabled={isPending}
       >
         {isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-        Sign up
+        {t(($) => $.auth.signUp)}
       </Button>
     </Form>
   );

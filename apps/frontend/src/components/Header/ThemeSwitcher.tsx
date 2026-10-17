@@ -1,9 +1,11 @@
 import { Moon, Sun } from "@gravity-ui/icons";
 import { Switch } from "@heroui/react";
+import { useTranslation } from "react-i18next";
 
 import { useTheme } from "@/hooks/useTheme";
 
 export function ThemeSwitcher() {
+  const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
 
   return (
@@ -25,7 +27,7 @@ export function ThemeSwitcher() {
               </Switch.Icon>
             </Switch.Thumb>
           </Switch.Control>
-          {theme === "dark" ? "Dark" : "Light"}
+          {t(($) => $.theme[theme === "dark" ? "dark" : "light"])}
         </Switch.Content>
       )}
     </Switch>

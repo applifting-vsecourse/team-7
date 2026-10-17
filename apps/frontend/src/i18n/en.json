@@ -1,0 +1,73 @@
+{
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "noAccount": "No account?",
+    "existingAccount": "Already have an account?",
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "name": "Name",
+      "username": "Username",
+      "confirmPassword": "Confirm password",
+      "emailExample": "e.g. jana@example.com",
+      "emailPlaceholder": "jane@example.com"
+    },
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "reset": {
+      "title": "Reset password",
+      "back": "Back to sign in",
+      "description": "Enter your email and we’ll send you a link to set a new password.",
+      "confirmation": "If an account exists for this email, you’ll receive a password reset link.",
+      "submit": "Send reset link"
+    },
+    "errors": {
+      "reset": "Unable to send reset link",
+      "signIn": "Sign in failed",
+      "signUp": "Sign up failed"
+    },
+    "signOut": "Sign out"
+  },
+  "validation": {
+    "email": {
+      "required": "Email is required",
+      "invalid": "Invalid email"
+    },
+    "password": {
+      "required": "Password is required",
+      "minLength": "Password must be at least 8 characters",
+      "confirmationRequired": "Password confirmation is required",
+      "mismatch": "Passwords must match"
+    },
+    "name": {
+      "required": "Name is required"
+    },
+    "username": {
+      "required": "Username is required"
+    }
+  },
+  "navigation": {
+    "userMenu": "User menu",
+    "userActions": "User actions",
+    "goHome": "Go home"
+  },
+  "theme": {
+    "dark": "Dark",
+    "light": "Light"
+  },
+  "images": {
+    "dog": "dog"
+  },
+  "errors": {
+    "notFound": {
+      "title": "Page not found",
+      "description": "The page you're looking for doesn't exist or has been moved."
+    },
+    "unexpected": {
+      "title": "Something went wrong",
+      "description": "An unexpected error occurred."
+    },
+    "reload": "Reload"
+  }
+}

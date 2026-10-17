@@ -1,4 +1,7 @@
 import { Button } from "@heroui/react";
+import { useTranslation } from "react-i18next";
+
+import { translateMessage } from "@/i18n/messages";
 
 import { ErrorLayout } from "./ErrorLayout";
 
@@ -7,11 +10,20 @@ type RootErrorBoundaryProps = {
 };
 
 export function RootErrorBoundary({ error }: RootErrorBoundaryProps) {
+  const { t } = useTranslation();
   return (
     <ErrorLayout
-      title="Something went wrong"
-      description={error.message || "An unexpected error occurred."}
-      action={<Button onPress={() => window.location.reload()}>Reload</Button>}
+      title={t(($) => $.errors.unexpected.title)}
+      description={
+        error.message
+          ? translateMessage(t, error.message)
+          : t(($) => $.errors.unexpected.description)
+      }
+      action={
+        <Button onPress={() => window.location.reload()}>
+          {t(($) => $.errors.reload)}
+        </Button>
+      }
     />
   );
 }

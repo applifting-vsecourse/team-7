@@ -9,17 +9,26 @@ import {
   TextField,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { keyFromSelector } from "i18next";
 import { Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
+
+import { messageSelectors, translateMessage } from "@/i18n/messages";
 
 import { authClient } from "@/features/auth/lib/auth-client";
 
 const schema = z.object({
-  email: z.string().trim().min(1, "Email is required").email("Invalid email"),
+  email: z
+    .string()
+    .trim()
+    .min(1, keyFromSelector(messageSelectors.emailRequired))
+    .email(keyFromSelector(messageSelectors.emailInvalid)),
 });
 
 export function ForgotPasswordForm() {
+  const { t } = useTranslation();
   const [sent, setSent] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const form = useForm<z.infer<typeof schema>>({
@@ -39,14 +48,16 @@ export function ForgotPasswordForm() {
         try {
           const { error } = await authClient.requestPasswordReset({ email });
           if (error) {
-            throw new Error(error.message ?? "Unable to send reset link");
+            throw new Error(
+              error.message ?? keyFromSelector(messageSelectors.resetFailed),
+            );
           }
           setSent(true);
         } catch (error) {
           setErrorMessage(
             error instanceof Error
               ? error.message
-              : "Unable to send reset link",
+              : keyFromSelector(messageSelectors.resetFailed),
           );
         }
       })}
@@ -55,8 +66,7 @@ export function ForgotPasswordForm() {
         <Alert status="success" role="status">
           <Alert.Content>
             <Alert.Description>
-              If an account exists for this email, you’ll receive a password
-              reset link.
+              {t(($) => $.auth.reset.confirmation)}
             </Alert.Description>
           </Alert.Content>
         </Alert>
@@ -64,7 +74,9 @@ export function ForgotPasswordForm() {
       {errorMessage ? (
         <Alert status="danger" role="alert">
           <Alert.Content>
-            <Alert.Description>{errorMessage}</Alert.Description>
+            <Alert.Description>
+              {translateMessage(t, errorMessage)}
+            </Alert.Description>
           </Alert.Content>
         </Alert>
       ) : null}
@@ -80,13 +92,17 @@ export function ForgotPasswordForm() {
             isInvalid={fieldState.invalid}
             isDisabled={isPending}
           >
-            <Label>Email</Label>
+            <Label>{t(($) => $.auth.fields.email)}</Label>
             <Input
               ref={ref}
               autoComplete="email"
-              placeholder="jane@example.com"
+              placeholder={t(($) => $.auth.fields.emailPlaceholder)}
             />
-            <FieldError>{fieldState.error?.message}</FieldError>
+            <FieldError>
+              {fieldState.error?.message
+                ? translateMessage(t, fieldState.error.message)
+                : undefined}
+            </FieldError>
           </TextField>
         )}
       />
@@ -97,7 +113,7 @@ export function ForgotPasswordForm() {
         isDisabled={isPending}
       >
         {isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-        Send reset link
+        {t(($) => $.auth.reset.submit)}
       </Button>
     </Form>
   );

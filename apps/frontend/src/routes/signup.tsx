@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Link } from "@heroui/react";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { keyFromSelector } from "i18next";
+import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
 import { AuthLayout } from "@/components/AuthLayout";
+import { messageSelectors } from "@/i18n/messages";
 
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
 import { SignUpForm } from "@/features/auth/components/SignUpForm";
@@ -21,6 +24,7 @@ export const Route = createFileRoute("/signup")({
 });
 
 function SignUpPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const signUp = useSignUp();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -42,19 +46,21 @@ function SignUpPage() {
       await navigate({ to: ROUTES.quacks });
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : "Sign up failed",
+        error instanceof Error
+          ? error.message
+          : keyFromSelector(messageSelectors.signUpFailed),
       );
     }
   };
 
   return (
     <AuthLayout
-      title="Sign up"
+      title={t(($) => $.auth.signUp)}
       footer={
         <>
-          Already have an account?{" "}
+          {t(($) => $.auth.existingAccount)}{" "}
           <Link href={ROUTES.login} className="font-medium text-foreground">
-            Sign in
+            {t(($) => $.auth.signIn)}
           </Link>
         </>
       }
