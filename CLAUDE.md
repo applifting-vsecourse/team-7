@@ -30,7 +30,7 @@ Deliberately sparse — this file grows as the team learns what it expects from 
 
 Import controls directly from `@heroui/react` and use HeroUI v3 compound APIs (`Alert.Content`, `Avatar.Fallback`, `Dropdown.Menu`). Check current v3 documentation before introducing a component. One accessibility implementation to reason about beats a per-control judgement call.
 
-HeroUI's default light/dark semantic tokens come from `@heroui/styles` in `apps/frontend/src/styles/global.css`. Inter is the primary font; use `font-lily` at regular weight for selected decorative text such as the logo. Keep field and focus tokens intact; apply `shadow-none` to inputs, textareas and cards. [`DESIGN.md`](DESIGN.md) keeps shadows for things that genuinely float — dialogs, dropdowns, toasts.
+HeroUI's default light/dark semantic tokens come from `@heroui/styles` in `apps/frontend/src/styles/global.css`. Inter is the primary font; use `font-lily` at regular weight for selected decorative text such as the logo. Keep field and focus tokens intact.
 
 Use `onPress` / `isDisabled` / `isPending` for buttons. Button-looking navigation is a TanStack Router `Link` styled with `buttonVariants`, so it remains an anchor. Forms compose `Form`, `TextField`, `Label`, `Input`/`TextArea`, and `FieldError` with React Hook Form controllers and Zod; put the controller ref on the input for invalid-field focus.
 

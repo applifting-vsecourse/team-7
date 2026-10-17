@@ -85,7 +85,6 @@ export function ForgotPasswordForm() {
               ref={ref}
               autoComplete="email"
               placeholder="jane@example.com"
-              className="shadow-none"
             />
             <FieldError>{fieldState.error?.message}</FieldError>
           </TextField>

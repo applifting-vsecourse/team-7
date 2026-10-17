@@ -83,7 +83,6 @@ export function SignInForm({
               ref={ref}
               autoComplete="email"
               placeholder="e.g. jana@example.com"
-              className="shadow-none"
             />
             <FieldError>{fieldState.error?.message}</FieldError>
           </TextField>
@@ -102,16 +101,12 @@ export function SignInForm({
             fullWidth
           >
             <Label>Password</Label>
-            <Input
-              ref={ref}
-              autoComplete="current-password"
-              className="shadow-none"
-            />
+            <Input ref={ref} autoComplete="current-password" />
             <FieldError>{fieldState.error?.message}</FieldError>
           </TextField>
         )}
       />
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
         <Controller
           control={form.control}
           name="rememberMe"
@@ -123,7 +118,7 @@ export function SignInForm({
               isDisabled={isPending}
             >
               <Checkbox.Content className="gap-3 text-sm font-medium">
-                <Checkbox.Control className="size-4 shadow-none">
+                <Checkbox.Control className="size-4">
                   <Checkbox.Indicator />
                 </Checkbox.Control>
                 Remember me

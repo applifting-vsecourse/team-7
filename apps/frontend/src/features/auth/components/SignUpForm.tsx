@@ -125,7 +125,6 @@ export function SignUpForm({
                 placeholder={
                   name === "email" ? "e.g. jana@example.com" : undefined
                 }
-                className="shadow-none"
               />
               <FieldError>{fieldState.error?.message}</FieldError>
             </TextField>
