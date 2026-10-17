@@ -1,10 +1,6 @@
 import { useState } from "react";
-import {
-  createFileRoute,
-  Link,
-  redirect,
-  useNavigate,
-} from "@tanstack/react-router";
+import { Link } from "@heroui/react";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 
 import { ROUTES } from "@/app/routes";
 import { AuthLayout } from "@/components/AuthLayout";
@@ -57,7 +53,7 @@ function SignUpPage() {
       footer={
         <>
           Already have an account?{" "}
-          <Link to={ROUTES.login} className="font-medium text-foreground">
+          <Link href={ROUTES.login} className="font-medium text-foreground">
             Sign in
           </Link>
         </>
