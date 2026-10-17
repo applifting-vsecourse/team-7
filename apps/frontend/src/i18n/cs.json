@@ -50,6 +50,8 @@
     }
   },
   "navigation": {
+    "openMenu": "Otevřít menu",
+    "closeMenu": "Zavřít menu",
     "userMenu": "Uživatelské menu",
     "userActions": "Uživatelské akce",
     "goHome": "Přejít na úvod",
@@ -60,6 +62,14 @@
     "plans": "Plány",
     "myDogs": "Moji psi",
     "addDog": "Přidat psa"
+  },
+  "dogs": {
+    "name": "Jméno psa",
+    "cancel": "Zrušit",
+    "addError": "Psa se nepodařilo přidat. Zkuste to znovu.",
+    "loading": "Načítání psů…",
+    "loadError": "Vaše psy se nepodařilo načíst.",
+    "empty": "Zatím nemáte žádné psy."
   },
   "theme": {
     "dark": "Tmavý",

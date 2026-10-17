@@ -9,13 +9,16 @@ const sizes = {
 
 type LogoProps = {
   size?: keyof typeof sizes;
+  iconOnly?: boolean;
 };
 
-export function Logo({ size = "md" }: LogoProps) {
+export function Logo({ size = "md", iconOnly = false }: LogoProps) {
   return (
     <span className="inline-flex items-center gap-2">
       <VectorCircle className={`shrink-0 text-accent ${sizes[size].icon}`} />
-      <span className={`font-lily font-normal ${sizes[size].text}`}>
+      <span
+        className={`${iconOnly ? "sr-only" : ""} font-lily font-normal ${sizes[size].text}`}
+      >
         TrainLoop
       </span>
     </span>
