@@ -95,7 +95,7 @@ export function SignInForm({
             <Input
               ref={ref}
               autoComplete="email"
-              placeholder={t(($) => $.auth.fields.emailExample)}
+              placeholder={t(($) => $.auth.fields.emailPlaceholder)}
               className="shadow-none"
             />
             <FieldError>

@@ -2,6 +2,7 @@ import { useRef } from "react";
 import {
   Alert,
   Button,
+  Description,
   FieldError,
   Form,
   Input,
@@ -155,10 +156,15 @@ export function SignUpForm({
                 autoComplete={autoComplete}
                 placeholder={
                   name === "email"
-                    ? t(($) => $.auth.fields.emailExample)
+                    ? t(($) => $.auth.fields.emailPlaceholder)
                     : undefined
                 }
               />
+              {name === "password" ? (
+                <Description>
+                  {t(($) => $.auth.fields.passwordHint)}
+                </Description>
+              ) : null}
               <FieldError>
                 {fieldState.error?.message
                   ? translateMessage(t, fieldState.error.message)
@@ -176,7 +182,7 @@ export function SignUpForm({
         isDisabled={isPending}
       >
         {isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-        {t(($) => $.auth.signUp)}
+        {t(($) => $.auth.createAccount)}
       </Button>
     </Form>
   );

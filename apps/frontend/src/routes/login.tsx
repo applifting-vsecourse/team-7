@@ -58,7 +58,7 @@ function LoginPage() {
 
   return (
     <AuthLayout
-      title={t(($) => $.auth.signIn)}
+      title={t(($) => $.auth.signInTitle)}
       footer={
         <>
           {t(($) => $.auth.noAccount)}{" "}
