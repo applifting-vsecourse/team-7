@@ -145,7 +145,6 @@ export function SignUpForm({
             <TextField
               {...field}
               type={type}
-              isRequired
               isInvalid={fieldState.invalid}
               isDisabled={isPending}
               fullWidth

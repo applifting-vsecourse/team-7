@@ -18,7 +18,7 @@ type AuthLayoutProps = {
  */
 export function AuthLayout({ title, children, footer }: AuthLayoutProps) {
   return (
-    <Layout title={title} userMenu={null}>
+    <Layout title={title}>
       <section className="m-auto flex w-full max-w-login-block justify-center gap-8 overflow-clip rounded-3xl bg-background px-6 pt-4 pb-6 md:pt-6">
         <div className="flex max-w-login-form min-w-0 flex-1 flex-col items-center gap-8">
           <Logo size="lg" />

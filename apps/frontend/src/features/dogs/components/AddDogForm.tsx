@@ -63,7 +63,6 @@ export function AddDogForm({
           render={({ field: { ref, ...field }, fieldState }) => (
             <TextField
               {...field}
-              isRequired
               isDisabled={isSubmitting}
               isInvalid={fieldState.invalid}
               fullWidth
@@ -71,12 +70,7 @@ export function AddDogForm({
               <Label>{t(($) => $.dogs.name)}</Label>
               {/* The dialog opens on request, so focus the field for immediate typing. */}
               {/* oxlint-disable jsx-a11y/no-autofocus */}
-              <Input
-                ref={ref}
-                autoFocus
-                autoComplete="off"
-                className="shadow-none"
-              />
+              <Input ref={ref} autoFocus autoComplete="off" />
               <FieldError>
                 {fieldState.error?.message
                   ? translateMessage(t, fieldState.error.message)

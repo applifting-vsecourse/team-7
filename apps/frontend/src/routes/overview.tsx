@@ -7,7 +7,6 @@ import Layout from "@/components/Layout";
 import { Sidebar } from "@/components/Sidebar";
 
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
-import { HeaderMenu } from "@/features/auth/components/HeaderMenu";
 import { encodeRedirectUri } from "@/features/auth/lib/redirect";
 import { DogFilter } from "@/features/dogs/components/DogFilter";
 
@@ -30,11 +29,7 @@ function OverviewPage() {
   const { t } = useTranslation();
 
   return (
-    <Layout
-      title={t(($) => $.navigation.overview)}
-      userMenu={<HeaderMenu />}
-      sidebar={<Sidebar />}
-    >
+    <Layout title={t(($) => $.navigation.overview)} sidebar={<Sidebar />}>
       <section
         aria-labelledby="overview-heading"
         className="flex min-w-0 flex-1 flex-col gap-8 rounded-3xl bg-surface px-5 pt-4 pb-5 md:px-6 md:pt-5 md:pb-6"

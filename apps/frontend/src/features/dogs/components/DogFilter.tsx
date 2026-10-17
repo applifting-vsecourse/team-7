@@ -102,7 +102,7 @@ function FilterOption({
     >
       <Checkbox.Content className="min-h-12 max-w-full gap-3 rounded-3xl bg-surface-secondary px-3 py-1 text-sm leading-6 font-medium data-[indeterminate=true]:bg-accent-soft data-[selected=true]:bg-accent-soft">
         {children}
-        <Checkbox.Control className="shadow-none">
+        <Checkbox.Control>
           <Checkbox.Indicator />
         </Checkbox.Control>
       </Checkbox.Content>

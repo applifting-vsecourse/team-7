@@ -4,7 +4,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ROUTES } from "@/app/routes";
 import Layout from "@/components/Layout";
 
-import { HeaderMenu } from "@/features/auth/components/HeaderMenu";
 import { useSession } from "@/features/auth/hooks/useSession";
 
 export const Route = createFileRoute("/")({
@@ -15,14 +14,14 @@ function LandingPage() {
   const { user } = useSession();
 
   return (
-    <Layout title="Welcome" userMenu={<HeaderMenu />}>
+    <Layout title="Welcome">
       <div className="w-full">
         <section className="mx-auto w-full max-w-2xl px-4 pt-16 pb-12 text-center">
           <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl">
-            Welcome.
+            Landing page
           </h1>
           <p className="mx-auto mt-4 max-w-md text-lg text-pretty text-muted">
-            Sign in to your account or create one to get started.
+            Trainloop!
           </p>
 
           {/* The call to action depends on who is asking: no point offering an

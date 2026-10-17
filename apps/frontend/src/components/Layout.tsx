@@ -9,8 +9,6 @@ import { cn } from "@/lib/utils";
 export type AppLayoutProps = {
   // Document title; omit it when a nested route sets its own.
   title?: string;
-  // Forwarded to the header slot; `null` hides the auth menu.
-  userMenu: ReactNode;
   sidebar?: ReactNode;
   children: ReactNode;
 };
@@ -20,20 +18,14 @@ export type AppLayoutProps = {
  * row that holds the page content. Every page with a header renders through
  * this, so the frame is defined once.
  */
-export default function Layout({
-  title,
-  userMenu,
-  sidebar,
-  children,
-}: AppLayoutProps) {
+export default function Layout({ title, sidebar, children }: AppLayoutProps) {
   const isMobile = useMediaQuery("(max-width: 767px)");
   return (
     <>
       <Seo title={title} />
       <Header
-        userMenu={userMenu}
         showNavigation={!sidebar}
-        compactLogo={Boolean(sidebar) && isMobile}
+        compactLogo={isMobile}
         sidebarToggle={
           sidebar && isMobile ? (
             <MobileSidebar>{sidebar}</MobileSidebar>
@@ -43,9 +35,9 @@ export default function Layout({
       {/* Wrapper Figma component */}
       <main
         className={cn(
-          "flex w-full flex-1 px-2 pb-2 md:px-4 md:pb-4",
+          "flex w-full flex-1",
           sidebar
-            ? "min-h-0 flex-col items-stretch bg-background md:flex-row"
+            ? "flex-col items-stretch bg-background md:flex-row"
             : "items-start",
         )}
       >

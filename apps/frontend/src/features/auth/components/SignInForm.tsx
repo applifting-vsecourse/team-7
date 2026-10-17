@@ -86,7 +86,7 @@ export function SignInForm({
           <TextField
             {...field}
             type="email"
-            isRequired
+
             isInvalid={fieldState.invalid}
             isDisabled={isPending}
             fullWidth
@@ -96,7 +96,6 @@ export function SignInForm({
               ref={ref}
               autoComplete="email"
               placeholder={t(($) => $.auth.fields.emailPlaceholder)}
-              className="shadow-none"
             />
             <FieldError>
               {fieldState.error?.message
@@ -113,17 +112,12 @@ export function SignInForm({
           <TextField
             {...field}
             type="password"
-            isRequired
             isInvalid={fieldState.invalid}
             isDisabled={isPending}
             fullWidth
           >
             <Label>{t(($) => $.auth.fields.password)}</Label>
-            <Input
-              ref={ref}
-              autoComplete="current-password"
-              className="shadow-none"
-            />
+            <Input ref={ref} autoComplete="current-password" />
             <FieldError>
               {fieldState.error?.message
                 ? translateMessage(t, fieldState.error.message)
