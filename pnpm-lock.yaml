@@ -184,10 +184,10 @@ importers:
 
   apps/frontend:
     dependencies:
-      '@fontsource-variable/geist':
+      '@fontsource/inter':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource-variable/geist-mono':
+      '@fontsource/lily-script-one':
         specifier: ^5.3.0
         version: 5.3.0
       '@gravity-ui/icons':
@@ -958,11 +958,11 @@ packages:
       '@noble/hashes':
         optional: true
 
-  '@fontsource-variable/geist-mono@5.3.0':
-    resolution: {integrity: sha512-vBbuwDEo9AkrqADMXOrlAR3DFcJi4/JxeuU43FoiQERnNwsfXNnvxvReZG02cQKmyk4DZkZdBZX3oTDvy2zBAw==}
+  '@fontsource/inter@5.3.0':
+    resolution: {integrity: sha512-RofMylZmjlJEfELXeNHFWBRcSs75rGU/6bV2S2jfnvv/3rPXPGe0LgUJTklcHZ9lM4OZmAVFhcJPnACfb91A3g==}
 
-  '@fontsource-variable/geist@5.3.0':
-    resolution: {integrity: sha512-j0m+vLQuG5XAYoHtGCVu0spvlGreR3EzpECUVzkFmI1mTVnAO38l/NEPDCFgZ177JxzYJCLSmTQibIiYPilGrA==}
+  '@fontsource/lily-script-one@5.3.0':
+    resolution: {integrity: sha512-l2ZZB43sAtLipq7Io6oxOyobTAba3rAj+OVXPcCMGIWT57aiUu0k4ZzGkpcPGdy3b/l6dSb0EBVXxKzlm9c18Q==}
 
   '@gravity-ui/icons@2.22.1':
     resolution: {integrity: sha512-OIlyApn2z0qt4nfrKkvBizQOUuytzDe3g8oHt0xlJa/lcc7VnOvbrQJUHApHPjSUH4TlxpPIbAqSF/ABEQRVvQ==}
@@ -7886,9 +7886,9 @@ snapshots:
     optionalDependencies:
       '@noble/hashes': 2.3.0
 
-  '@fontsource-variable/geist-mono@5.3.0': {}
+  '@fontsource/inter@5.3.0': {}
 
-  '@fontsource-variable/geist@5.3.0': {}
+  '@fontsource/lily-script-one@5.3.0': {}
 
   '@gravity-ui/icons@2.22.1(react@19.2.8)':
     dependencies:

@@ -38,7 +38,11 @@ function LoginPage() {
   const signIn = useSignIn();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = async (values: { email: string; password: string }) => {
+  const handleSubmit = async (values: {
+    email: string;
+    password: string;
+    rememberMe: boolean;
+  }) => {
     setErrorMessage(null);
     try {
       await signIn.mutateAsync(values);
@@ -53,14 +57,10 @@ function LoginPage() {
   return (
     <AuthLayout
       title="Sign in"
-      description="Welcome back to Quacker."
       footer={
         <>
           No account?{" "}
-          <Link
-            to={ROUTES.signup}
-            className="font-medium text-foreground underline underline-offset-4"
-          >
+          <Link to={ROUTES.signup} className="font-medium text-foreground">
             Sign up
           </Link>
         </>

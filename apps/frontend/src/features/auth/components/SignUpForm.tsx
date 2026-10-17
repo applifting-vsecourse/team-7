@@ -122,7 +122,9 @@ export function SignUpForm({
               <Input
                 ref={ref}
                 autoComplete={autoComplete}
-                placeholder={name === "email" ? "e.g. john@doe.com" : undefined}
+                placeholder={
+                  name === "email" ? "e.g. jana@example.com" : undefined
+                }
                 className="shadow-none"
               />
               <FieldError>{fieldState.error?.message}</FieldError>

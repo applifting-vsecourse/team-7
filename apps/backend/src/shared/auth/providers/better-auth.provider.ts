@@ -15,6 +15,8 @@ const createAuth = (
   emailProvider: EmailService,
 ) =>
   betterAuth({
+    // Apply shared defaults first so they do not replace the email callbacks.
+    ...betterAuthCoreConfig,
     // Without this better-auth can only guess its own URL from the request,
     // which breaks callbacks and links built outside a request (e.g. the seed).
     baseURL: config.backendUrl,
@@ -54,8 +56,6 @@ const createAuth = (
       },
       sendOnSignUp: true,
     },
-    // If change (setup) affects database, must be in core config, in order to be able to run migrations
-    ...betterAuthCoreConfig,
     plugins: [...(betterAuthCoreConfig.plugins ?? [])],
   });
 
