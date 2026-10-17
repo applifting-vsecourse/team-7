@@ -3,5 +3,5 @@ export const ROUTES = {
   quacks: "/quacks",
   login: "/login",
   signup: "/signup",
-  "forgot-password": "/forgot-password",
+  forgotPassword: "/forgot-password",
 } as const;

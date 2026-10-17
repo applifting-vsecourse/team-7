@@ -132,7 +132,7 @@ export function SignInForm({
           )}
         />
         <Link
-          href={ROUTES["forgot-password"]}
+          href={ROUTES.forgotPassword}
           className="text-sm font-medium text-foreground"
         >
           Forgot password?
