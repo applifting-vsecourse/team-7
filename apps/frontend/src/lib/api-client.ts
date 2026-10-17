@@ -1,7 +1,7 @@
 import ky, { HTTPError } from "ky";
 
-import { env } from "@/config/env";
 import { queryClient } from "@/config/react-query";
+import { apiUrl } from "@/lib/api-url";
 import { authKeys } from "@/lib/auth-keys";
 
 // Single shared HTTP client. Per the Applifting frontend playbook:
@@ -13,7 +13,7 @@ import { authKeys } from "@/lib/auth-keys";
 // Paths are joined onto `prefix`, and a leading slash is normalised away, so
 // both `api.get("example")` and `api.get("/example")` hit the same endpoint.
 export const api = ky.create({
-  prefix: env.VITE_API_URL,
+  prefix: apiUrl("").href,
   credentials: "include",
   retry: { limit: 0 },
   hooks: {

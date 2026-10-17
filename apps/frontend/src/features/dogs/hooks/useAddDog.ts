@@ -7,12 +7,26 @@ import {
   type Dog,
 } from "@/features/dogs/api/dogsQueryOptions";
 
+import { photoFormData, type DogPhoto } from "../api/dogPhotos";
+
 export function useAddDog(userId: string | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (name: string) =>
-      api.post("dogs", { json: { text: name.trim() } }).json<Dog>(),
+    mutationFn: async ({
+      name,
+      photo,
+    }: {
+      name: string;
+      photo: DogPhoto | null;
+    }) => {
+      if (!photo) {
+        return api.post("dogs", { json: { text: name.trim() } }).json<Dog>();
+      }
+      const body = await photoFormData(photo);
+      body.set("text", name.trim());
+      return api.post("dogs", { body }).json<Dog>();
+    },
     onSuccess: () =>
       queryClient.invalidateQueries({
         queryKey: dogsQueryOptions(userId).queryKey,

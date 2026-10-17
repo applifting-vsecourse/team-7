@@ -1,8 +1,9 @@
-import { Dog } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { useDogs } from "@/features/dogs/hooks/useDogs";
+
+import { EditDogPhotoDialog } from "./EditDogPhotoDialog";
 
 export function SidebarDogs() {
   const { t } = useTranslation();
@@ -38,10 +39,7 @@ export function SidebarDogs() {
           key={dog.id}
           className="flex items-center gap-3 rounded-3xl px-3 py-1.5 text-sm font-medium md:px-4 md:py-3"
         >
-          <Dog
-            className="size-9 shrink-0 text-accent md:size-5"
-            aria-hidden="true"
-          />
+          <EditDogPhotoDialog dog={dog} />
           <span className="min-w-0 wrap-break-word">{dog.text}</span>
         </li>
       ))}

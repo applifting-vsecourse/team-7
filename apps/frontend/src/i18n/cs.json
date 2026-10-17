@@ -73,7 +73,18 @@
     "addError": "Psa se nepodařilo přidat. Zkuste to znovu.",
     "loading": "Načítání psů…",
     "loadError": "Vaše psy se nepodařilo načíst.",
-    "empty": "Zatím nemáte žádné psy."
+    "empty": "Zatím nemáte žádné psy.",
+    "photo": "Fotka psa (nepovinné)",
+    "photoHint": "JPEG, PNG nebo WebP, maximálně 5 MB. Uloží se čtvercový náhled.",
+    "photoInvalid": "Vyberte platnou fotku JPEG, PNG nebo WebP do 5 MB.",
+    "photoPreview": "Náhled avatara psa",
+    "clearPhoto": "Zrušit výběr",
+    "editPhotoFor": "Změnit fotku: {{name}}",
+    "removePhoto": "Odstranit fotku",
+    "savePhoto": "Uložit fotku",
+    "photoSaveError": "Fotku se nepodařilo uložit. Vyberte platnou fotku a zkuste to znovu.",
+    "photoMoveHint": "Přetažením fotky upravte výřez. Můžete použít i šipky na klávesnici.",
+    "photoZoom": "Přiblížení"
   },
   "theme": {
     "dark": "Tmavý",

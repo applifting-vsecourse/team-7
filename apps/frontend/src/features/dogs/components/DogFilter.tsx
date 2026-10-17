@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
-import { Avatar, Button, Checkbox, Separator } from "@heroui/react";
+import { Button, Checkbox, Separator } from "@heroui/react";
 import { useAtom } from "jotai";
-import { Dog } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
 import { useDogs } from "@/features/dogs/hooks/useDogs";
+
+import { DogAvatar } from "./DogAvatar";
 
 export function DogFilter() {
   const { t } = useTranslation();
@@ -73,11 +74,7 @@ export function DogFilter() {
             )
           }
         >
-          <Avatar className="size-9 shrink-0" aria-hidden="true">
-            <Avatar.Fallback>
-              <Dog className="size-5 text-accent" />
-            </Avatar.Fallback>
-          </Avatar>
+          <DogAvatar dog={dog} />
           <span className="min-w-0 wrap-break-word">{dog.text}</span>
         </FilterOption>
       ))}

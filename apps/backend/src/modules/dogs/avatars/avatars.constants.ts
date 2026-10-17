@@ -1,0 +1,1 @@
+export const AVATAR_UPLOAD_LIMIT = 100 * 1024;
