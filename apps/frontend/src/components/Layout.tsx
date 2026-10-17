@@ -10,6 +10,10 @@ export type AppLayoutProps = {
   // Document title; omit it when a nested route sets its own.
   title?: string;
   sidebar?: ReactNode;
+  // Hide the auth menu (sign-in CTA / user dropdown), e.g. on auth pages.
+  showMenu?: boolean;
+  // Extra classes for the <main> wrapper, e.g. to override its padding.
+  className?: string;
   children: ReactNode;
 };
 
@@ -18,14 +22,20 @@ export type AppLayoutProps = {
  * row that holds the page content. Every page with a header renders through
  * this, so the frame is defined once.
  */
-export default function Layout({ title, sidebar, children }: AppLayoutProps) {
+export default function Layout({
+  title,
+  sidebar,
+  showMenu = true,
+  className,
+  children,
+}: AppLayoutProps) {
   const isMobile = useMediaQuery("(max-width: 767px)");
   return (
     <>
       <Seo title={title} />
       <Header
-        showNavigation={!sidebar}
         compactLogo={isMobile}
+        showMenu={showMenu}
         sidebarToggle={
           sidebar && isMobile ? (
             <MobileSidebar>{sidebar}</MobileSidebar>
@@ -38,7 +48,8 @@ export default function Layout({ title, sidebar, children }: AppLayoutProps) {
           "flex w-full flex-1",
           sidebar
             ? "flex-col items-stretch bg-background md:flex-row"
-            : "items-start",
+            : "items-start justify-center",
+          className,
         )}
       >
         {!isMobile && sidebar}

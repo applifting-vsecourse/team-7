@@ -13,7 +13,10 @@ export function HeaderMenu() {
 
   if (!user) {
     return (
-      <Link to="/login" className={buttonVariants({ size: "sm" })}>
+      <Link
+        to="/login"
+        className={buttonVariants({ size: "sm", variant: "outline" })}
+      >
         {t(($) => $.auth.signIn)}
       </Link>
     );

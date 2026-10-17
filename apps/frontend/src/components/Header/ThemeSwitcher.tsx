@@ -12,10 +12,10 @@ export function ThemeSwitcher() {
     <Switch
       isSelected={theme === "dark"}
       onChange={(isDark) => setTheme(isDark ? "dark" : "light")}
-      className="inline-flex w-fit flex-row items-center rounded-3xl bg-surface md:bg-background md:px-3 md:py-1 md:dark:bg-surface"
+      className="inline-flex w-fit flex-row items-center"
     >
       {({ isSelected }) => (
-        <Switch.Content className="min-h-6 gap-2 leading-6 md:gap-4 md:leading-5">
+        <Switch.Content className="min-h-6 gap-2 leading-6 md:leading-5">
           <Switch.Control>
             <Switch.Thumb>
               <Switch.Icon>
