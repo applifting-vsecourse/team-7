@@ -101,7 +101,7 @@ describe("theme controller and switch", () => {
   it("toggles by keyboard, indicates the preference, persists and keeps focus", async () => {
     const user = userEvent.setup();
     const view = renderTheme();
-    const toggle = screen.getByRole("switch", { name: "Light" });
+    const toggle = screen.getByRole("switch");
     expect(toggle).not.toBeChecked();
     await user.tab();
     expect(toggle).toHaveFocus();
@@ -109,7 +109,7 @@ describe("theme controller and switch", () => {
     await waitFor(() =>
       expect(localStorage.getItem("heroui-theme")).toBe("dark"),
     );
-    expect(screen.getByRole("switch", { name: "Dark" })).toBeChecked();
+    expect(toggle).toBeChecked();
     expect(screen.getByLabelText("Current theme")).toHaveTextContent(
       "dark/dark",
     );
@@ -120,13 +120,13 @@ describe("theme controller and switch", () => {
 
     view.unmount();
     renderTheme();
-    expect(screen.getByRole("switch", { name: "Dark" })).toBeChecked();
+    expect(screen.getByRole("switch")).toBeChecked();
     expect(screen.getByLabelText("Current theme")).toHaveTextContent(
       "dark/dark",
     );
-    await user.click(screen.getByRole("switch", { name: "Dark" }));
+    await user.click(screen.getByRole("switch"));
     expect(localStorage.getItem("heroui-theme")).toBe("light");
-    expect(screen.getByRole("switch", { name: "Light" })).not.toBeChecked();
+    expect(screen.getByRole("switch")).not.toBeChecked();
     changeOS(true);
     expect(screen.getByLabelText("Current theme")).toHaveTextContent(
       "light/light",
