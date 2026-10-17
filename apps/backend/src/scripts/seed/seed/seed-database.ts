@@ -2,6 +2,7 @@ import { PrismaService } from "@/core/prisma/prisma.service";
 import { BetterAuth } from "@/shared/auth/providers/better-auth.provider";
 import { Config } from "@/shared/config/config.service";
 import { createUser } from "./create-user";
+import { seedDogs } from "./seed-dogs";
 
 export const seedDatabase = async (
   prisma: PrismaService,
@@ -15,9 +16,10 @@ export const seedDatabase = async (
   const existingUsers = await prisma.user.count();
   if (existingUsers > 0) {
     console.log(
-      `Database already has ${existingUsers} user(s) — skipping seed. ` +
+      `Database already has ${existingUsers} user(s) — skipping user seed. ` +
         "Run `pnpm backend db:reset` to wipe and start over.",
     );
+    await seedDogs(prisma);
     return;
   }
 
@@ -77,4 +79,6 @@ export const seedDatabase = async (
     name: "Pond Admin",
     username: "PondAdmin",
   });
+
+  await seedDogs(prisma);
 };
