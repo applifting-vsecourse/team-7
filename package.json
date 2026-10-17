@@ -13,6 +13,7 @@
     "ts": "pnpm -r --stream run type-check",
     "check": "run-s lint ts",
     "check-all": "run-s lint ts test \"backend build\" \"frontend build\" format:check",
+    "docs:heroui": "npx heroui-cli@latest agents-md --react --output HEROUI.md",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
     "prepare": "husky || true",

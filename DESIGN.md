@@ -4,44 +4,46 @@ Read this before writing or changing any UI — human or agent.
 
 These are rules, not suggestions. When a rule and a "nicer looking" idea disagree, the rule wins. Consistency across every screen beats a clever one.
 
-Controls come directly from `@heroui/react` (HeroUI v3). Use its accessible compound components rather than vendoring or hand-rolling controls.
+Controls come directly from `@heroui/react` (HeroUI v3). Use its accessible compound components rather than hand-rolling controls. The kit's own look (shadows, borders, radius, fields, focus) is the baseline; don't override it per component.
 
-**Tokens enter through `apps/frontend/src/styles/global.css`.** It imports Tailwind 4 followed by `@heroui/styles`, whose default light/dark themes are the source of truth for colour, radius, fields, focus and shadows. Keep the default palette; local font configuration uses Inter as the primary font and Lily Script One (`font-lily`, regular weight) for selected decorative text such as the logo. This file says how to _use_ the tokens.
+**Tokens enter through `apps/frontend/src/styles/global.css`.** It imports Tailwind 4 followed by `@heroui/styles`, whose light/dark themes are the source of truth for colour, radius, fields, focus and shadows. Project additions (fonts, layout sizes, calendar event tile colours) live there too. Inter is the primary font; `font-lily` is for selected decorative text such as the logo. The Figma file is the visual reference. This file says how to _use_ the tokens.
 
 ## Colour
 
-- **Never hardcode a colour.** No `#hex`, no `bg-blue-500`, no `rgb()`. Use HeroUI semantic classes: `bg-background`, `text-foreground`, `text-muted`, `bg-surface`, `bg-overlay`, `bg-accent`, `bg-default`, `border-border`, `text-danger`.
-- **`primary` buttons use the `accent` action token.** One primary button per view. Everything else is `outline`, `ghost`, `secondary` or a plain link.
+- **Never hardcode a colour.** No `#hex`, no `bg-blue-500`, no `rgb()`. Use semantic classes: `bg-background`, `text-foreground`, `text-muted`, `bg-surface`, `bg-accent`, `bg-default`, `border-border`, `text-danger`, or a token defined in `global.css`.
+- **One primary button per view.** Everything else is `outline`, `ghost`, `secondary` or a plain link.
 - **`danger` only for destructive actions and errors.** Never for emphasis.
-- Keep HeroUI's built-in hover/active colours, field tokens and focus states. `accent` is the action colour; `default` is a neutral surface.
 - Body text is `foreground`; supporting text is `muted`. There is no third level.
+- Never rely on colour alone to convey state (success, warning, error) — pair it with text or an icon.
 
 ## Layout
 
-- **Cards are for separable items in a list** — a quack, a search result, a product. They are not page sections and not layout tools.
+- **Cards are for separable items in a list** — a dog, an exercise, a training entry. They are not page sections and not layout tools.
 - **Never nest a card inside a card.** If content needs grouping inside a card, use spacing and a hairline divider.
-- **A page is not a card.** Page content sits on `background` in a centred column (`max-w-2xl` for reading, `max-w-4xl` for wide layouts), not inside a floating panel.
-- **Every page keeps the app chrome.** The header is present on every route, including login and sign-up. Pages never render as standalone islands.
+- **A page is not a card.** Page content sits on `background`, not inside a floating panel.
+- **Every page uses the shared app chrome** (`Layout` / `AuthLayout`). Pages never render as standalone islands.
+- Layouts are responsive: usable on a phone, since handlers log training at the training field.
 - Forbidden by default: the centred-hero-plus-three-feature-cards layout, carousels, and any section whose only purpose is to look full.
 
 ## Spacing
 
-Use the scale only: `1, 2, 3, 4, 6, 8, 12, 16` (Tailwind units — 4px…64px). No arbitrary values like `p-[13px]`. Related things get `gap-2`/`gap-3`; separate blocks get `gap-6`/`gap-8`.
+Use the Tailwind scale; no arbitrary values like `p-[13px]` unless a size token in `global.css` exists for it. Related things get `gap-2`/`gap-3`; separate blocks get `gap-6`/`gap-8`.
 
 ## Type
 
 - One `h1` per page. Headings step down without skipping.
 - Sizes come from the scale: `text-sm` supporting, `text-base` body, `text-lg`/`text-xl` subheads, `text-2xl`+ page titles. Headings get `tracking-tight`; body does not.
 - Sentence case everywhere. No ALL CAPS except a single small label style (`text-xs uppercase tracking-widest`), used sparingly.
+- Text is localized (Czech and English); layouts must tolerate longer strings without truncating or breaking.
 
 ## Surfaces
 
 - **Borders are hairlines**: `border border-border`. One border, not two adjacent ones.
-- Radius comes from the token (`rounded-lg`/`rounded-md`). Never mix radii in one component.
+- Radius comes from the token. Never mix radii in one component.
 
 ## Forms
 
-- Every input has a visible `<label>`. Placeholders are examples, never labels.
+- Every input has a visible label. Placeholders are examples, never labels.
 - Validation runs client-side _and_ server-side. The client message appears under the field.
 - Compose HeroUI `Form`, `TextField`, `Label` and `FieldError` with React Hook Form and Zod (`validationBehavior="aria"`). Keep the input ref for invalid-field focus and let HeroUI associate labels and errors.
 - The submit button shows a pending state and is disabled while submitting.
@@ -56,8 +58,9 @@ Data refreshes itself: refetch when the tab regains focus, and invalidate the qu
 ## Accessibility (the floor, not the ceiling)
 
 - Buttons are `<button>`, links are `<a>`/`<Link>`. Never a `div` with `onClick`.
-- Style TanStack Router links with HeroUI `buttonVariants` for button-looking navigation. Use `onPress` for HeroUI actions.
+- Use `onPress` for HeroUI actions; button-looking navigation stays an anchor.
 - Every icon-only control has an `aria-label`.
+- Images that carry meaning have alt text; decorative ones use `alt=""`.
 - Focus rings are never removed. If you restyle focus, it must stay clearly visible.
 - Text contrast at least 4.5:1 — the tokens are chosen to satisfy this; hardcoded colours are how you break it.
 
