@@ -16,9 +16,13 @@ export const Route = createFileRoute("/forgot-password")({
 function ForgotPasswordPage() {
   const { t } = useTranslation();
   return (
-    <Layout title={t(($) => $.auth.reset.title)}>
-      <section className="mt-4 flex w-full max-w-login-block justify-center gap-8 overflow-clip rounded-3xl bg-background p-6 md:m-auto">
-        <div className="flex max-w-login-form min-w-0 flex-1 flex-col gap-8">
+    <Layout
+      title={t(($) => $.auth.reset.title)}
+      showMenu={false}
+      className="p-4"
+    >
+      <section className="flex w-fit max-w-full justify-center gap-8 self-start overflow-clip rounded-3xl bg-background p-6 md:w-full md:max-w-login-block md:self-center">
+        <div className="flex w-login-form max-w-login-form min-w-0 flex-[0_1_auto] flex-col gap-8 md:flex-1">
           <div>
             <Link
               to={ROUTES.login}
