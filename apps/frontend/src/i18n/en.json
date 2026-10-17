@@ -73,7 +73,18 @@
     "addError": "Unable to add your dog. Please try again.",
     "loading": "Loading dogs…",
     "loadError": "Unable to load your dogs.",
-    "empty": "No dogs yet."
+    "empty": "No dogs yet.",
+    "photo": "Dog photo (optional)",
+    "photoHint": "JPEG, PNG or WebP, up to 5 MB. The square preview is what will be saved.",
+    "photoInvalid": "Choose a valid JPEG, PNG or WebP photo up to 5 MB.",
+    "photoPreview": "Dog avatar preview",
+    "clearPhoto": "Clear selection",
+    "editPhotoFor": "Change photo for {{name}}",
+    "removePhoto": "Remove photo",
+    "savePhoto": "Save photo",
+    "photoSaveError": "Unable to save the photo. Please choose a valid photo and try again.",
+    "photoMoveHint": "Drag the photo to frame your dog. You can also use the arrow keys.",
+    "photoZoom": "Zoom"
   },
   "theme": {
     "dark": "Dark",

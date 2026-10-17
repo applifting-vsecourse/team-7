@@ -5,6 +5,7 @@ import { api } from "@/lib/api-client";
 export type Dog = {
   id: string;
   text: string;
+  avatarVersion?: string | null;
 };
 
 export const dogsQueryOptions = (userId: string | undefined) =>

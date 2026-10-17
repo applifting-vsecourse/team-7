@@ -18,7 +18,15 @@ import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
 const state = vi.hoisted(() => ({
   signedIn: false,
   isMobile: false,
-  getDogs: vi.fn<() => Promise<{ id: string; text: string }[]>>(),
+  getDogs:
+    vi.fn<
+      () => Promise<
+        { id: string; text: string; avatarVersion?: string | null }[]
+      >
+    >(),
+  drawPhoto: vi.fn(),
+  savePhoto: vi.fn(),
+  removePhoto: vi.fn(),
   addDog: vi.fn<() => Promise<{ id: string; text: string }>>(),
 }));
 
@@ -26,6 +34,8 @@ vi.mock("@/lib/api-client", () => ({
   api: {
     get: vi.fn(() => ({ json: state.getDogs })),
     post: vi.fn(() => ({ json: state.addDog })),
+    put: vi.fn(() => ({ json: state.savePhoto })),
+    delete: vi.fn(() => ({ json: state.removePhoto })),
   },
 }));
 
@@ -82,6 +92,35 @@ describe("overview routing", () => {
     state.signedIn = false;
     state.isMobile = false;
     vi.clearAllMocks();
+    Object.defineProperty(URL, "createObjectURL", {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => "blob:dog-photo"),
+    });
+    Object.defineProperty(URL, "revokeObjectURL", {
+      configurable: true,
+      writable: true,
+      value: vi.fn(),
+    });
+    Object.defineProperty(HTMLImageElement.prototype, "decode", {
+      configurable: true,
+      writable: true,
+      value: vi.fn().mockResolvedValue(undefined),
+    });
+    vi.spyOn(HTMLImageElement.prototype, "naturalWidth", "get").mockReturnValue(
+      640,
+    );
+    vi.spyOn(
+      HTMLImageElement.prototype,
+      "naturalHeight",
+      "get",
+    ).mockReturnValue(320);
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
+      drawImage: state.drawPhoto,
+    } as unknown as CanvasRenderingContext2D);
+    vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation(
+      (callback) => callback(new Blob(["resized"], { type: "image/webp" })),
+    );
     vi.spyOn(window, "matchMedia").mockImplementation((media) => ({
       matches: state.isMobile && media === "(max-width: 767px)",
       media,
@@ -252,9 +291,15 @@ describe("overview routing", () => {
     const name = screen.getByRole("textbox", { name: "Dog’s name" });
     expect(name).toHaveFocus();
     const submit = screen.getAllByRole("button", { name: "Add dog" }).at(-1)!;
-    expect(submit).toBeDisabled();
+    expect(submit).toBeEnabled();
+    await user.click(submit);
+    expect(await screen.findByText("Name is required")).toBeInTheDocument();
+    expect(name).toHaveFocus();
+    expect(api.post).not.toHaveBeenCalled();
     await user.type(name, "   ");
-    expect(submit).toBeDisabled();
+    await user.click(submit);
+    expect(name).toHaveAccessibleDescription("Name is required");
+    expect(api.post).not.toHaveBeenCalled();
     await user.type(name, "Buddy  ");
     state.getDogs.mockResolvedValue([{ id: "dog-2", text: "Buddy" }]);
     await user.click(submit);
@@ -292,6 +337,207 @@ describe("overview routing", () => {
     await user.click(screen.getByRole("button", { name: "Add dog" }));
     expect(screen.getByRole("textbox", { name: "Dog’s name" })).toHaveValue("");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("validates the optional photo and allows clearing an invalid selection", async () => {
+    state.signedIn = true;
+    state.addDog.mockResolvedValue({ id: "dog-2", text: "Buddy" });
+    const user = userEvent.setup();
+    renderRoute("/overview");
+    await user.click(await screen.findByRole("button", { name: "Add dog" }));
+    await user.type(
+      screen.getByRole("textbox", { name: "Dog’s name" }),
+      "Buddy",
+    );
+    const photo = screen.getByLabelText("Dog photo (optional)");
+    await user.upload(
+      photo,
+      new File([new Uint8Array(5 * 1024 * 1024 + 1)], "large.png", {
+        type: "image/png",
+      }),
+    );
+    await user.click(screen.getByRole("button", { name: "Add dog" }));
+    expect(api.post).not.toHaveBeenCalled();
+    expect(photo).toHaveFocus();
+    expect(photo).toHaveAccessibleDescription(
+      expect.stringContaining("Choose a valid JPEG"),
+    );
+    await user.click(screen.getByRole("button", { name: "Clear selection" }));
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Add dog" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    expect(api.post).toHaveBeenCalledWith("dogs", { json: { text: "Buddy" } });
+  });
+
+  it("keeps the form open and disables controls while saving", async () => {
+    state.signedIn = true;
+    let finish!: (dog: { id: string; text: string }) => void;
+    state.addDog.mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    const user = userEvent.setup();
+    renderRoute("/overview");
+    await user.click(await screen.findByRole("button", { name: "Add dog" }));
+    await user.type(
+      screen.getByRole("textbox", { name: "Dog’s name" }),
+      "Buddy",
+    );
+    const submit = screen.getByRole("button", { name: "Add dog" });
+    await user.click(submit);
+    expect(submit).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    expect(screen.getByRole("textbox", { name: "Dog’s name" })).toBeDisabled();
+    await user.keyboard("{Escape}");
+    expect(screen.getByRole("dialog", { name: "Add dog" })).toBeInTheDocument();
+    finish({ id: "dog-2", text: "Buddy" });
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    expect(state.addDog).toHaveBeenCalledTimes(1);
+  });
+
+  it("adds a dog with a positioned photo in one request", async () => {
+    state.signedIn = true;
+    state.addDog.mockResolvedValue({ id: "dog-2", text: "Buddy" });
+    const user = userEvent.setup();
+    renderRoute("/overview");
+    await user.click(await screen.findByRole("button", { name: "Add dog" }));
+    await user.type(
+      screen.getByRole("textbox", { name: "Dog’s name" }),
+      "Buddy",
+    );
+    const file = new File(["photo"], "buddy.png", { type: "image/png" });
+    await user.upload(screen.getByLabelText("Dog photo (optional)"), file);
+    expect(
+      screen.getByRole("application", { name: "Dog avatar preview" }).tagName,
+    ).toBe("CANVAS");
+    await user.click(screen.getByRole("button", { name: "Add dog" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    const body = vi.mocked(api.post).mock.calls.at(-1)?.[1]?.body as FormData;
+    expect(body.get("file")).not.toBe(file);
+    expect((body.get("file") as File).name).toBe("avatar.webp");
+    expect((body.get("file") as File).type).toBe("image/webp");
+    expect(body.has("position")).toBe(false);
+    expect(body.get("text")).toBe("Buddy");
+    expect(vi.mocked(URL).revokeObjectURL).toHaveBeenCalledWith(
+      "blob:dog-photo",
+    );
+  });
+
+  it("replaces and removes an existing dog's photo from the sidebar", async () => {
+    state.signedIn = true;
+    state.savePhoto.mockResolvedValue({
+      id: "dog-1",
+      text: "Buddy",
+      avatarVersion: "new",
+    });
+    state.removePhoto.mockResolvedValue({
+      id: "dog-1",
+      text: "Buddy",
+      avatarVersion: null,
+    });
+    state.getDogs.mockResolvedValue([{ id: "dog-1", text: "Buddy" }]);
+    const user = userEvent.setup();
+    renderRoute("/overview");
+    await user.click(
+      await screen.findByRole("button", { name: "Change photo for Buddy" }),
+    );
+    const file = new File(["photo"], "buddy.webp", { type: "image/webp" });
+    await user.upload(screen.getByLabelText("Dog photo (optional)"), file);
+    await waitFor(() =>
+      expect(screen.getByRole("slider", { name: "Zoom" })).toBeEnabled(),
+    );
+    const canvas = screen.getByRole("application", {
+      name: "Dog avatar preview",
+    });
+    canvas.focus();
+    await user.keyboard("{ArrowLeft}");
+    expect(state.drawPhoto).toHaveBeenLastCalledWith(
+      expect.any(HTMLImageElement),
+      166.4,
+      0,
+      320,
+      320,
+      0,
+      0,
+      512,
+      512,
+    );
+    state.getDogs.mockResolvedValue([
+      { id: "dog-1", text: "Buddy", avatarVersion: "new" },
+    ]);
+    await user.click(screen.getByRole("button", { name: "Save photo" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    const body = vi.mocked(api.put).mock.calls[0]?.[1]?.body as FormData;
+    expect(body.get("file")).not.toBe(file);
+    expect((body.get("file") as File).type).toBe("image/webp");
+    expect(body.has("position")).toBe(false);
+    await user.click(
+      screen.getByRole("button", { name: "Change photo for Buddy" }),
+    );
+    state.getDogs.mockResolvedValue([{ id: "dog-1", text: "Buddy" }]);
+    await user.click(screen.getByRole("button", { name: "Remove photo" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    expect(api.delete).toHaveBeenCalledWith("dogs/dog-1/avatar");
+  });
+
+  it("rejects oversized photos and allows choosing another photo", async () => {
+    state.signedIn = true;
+    const user = userEvent.setup();
+    renderRoute("/overview");
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Change photo for Test User's dog",
+      }),
+    );
+    await user.upload(
+      screen.getByLabelText("Dog photo (optional)"),
+      new File([new Uint8Array(5 * 1024 * 1024 + 1)], "large.png", {
+        type: "image/png",
+      }),
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent("Choose a valid JPEG");
+    expect(screen.getByRole("button", { name: "Save photo" })).toBeDisabled();
+    await user.upload(
+      screen.getByLabelText("Dog photo (optional)"),
+      new File(["small"], "small.png", { type: "image/png" }),
+    );
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save photo" })).toBeEnabled();
+  });
+
+  it("keeps the selected photo after a failed save", async () => {
+    state.signedIn = true;
+    state.savePhoto.mockRejectedValue(new Error("Failed"));
+    const user = userEvent.setup();
+    renderRoute("/overview");
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Change photo for Test User's dog",
+      }),
+    );
+    await user.upload(
+      screen.getByLabelText("Dog photo (optional)"),
+      new File(["photo"], "dog.png", { type: "image/png" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Save photo" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unable to save the photo",
+    );
+    expect(
+      screen.getByRole("application", { name: "Dog avatar preview" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save photo" })).toBeEnabled();
   });
 
   it("shows an error when the dogs cannot be loaded", async () => {
