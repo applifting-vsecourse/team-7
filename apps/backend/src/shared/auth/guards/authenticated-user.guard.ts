@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import {
-  BetterAuth,
+  type BetterAuth,
   InjectBetterAuth,
 } from "@/shared/auth/providers/better-auth.provider";
 import { getSessionFromRequest } from "@/shared/auth/utils/get-session-from-request";

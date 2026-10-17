@@ -12,14 +12,20 @@
     "lint:fix": "pnpm -r --stream run lint:fix",
     "ts": "pnpm -r --stream run type-check",
     "check": "run-s lint ts",
-    "check-all": "run-s lint \"backend test\" \"backend build\" \"frontend type-check\" \"frontend test:ci\" \"frontend build\" format:check",
+    "check-all": "run-s lint ts test \"backend build\" \"frontend build\" format:check",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ci": "vitest run",
+    "test:cov": "vitest run --coverage",
+    "test:debug": "vitest run --inspect-brk --no-file-parallelism --maxWorkers=1"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "5.101.4",
     "@tanstack/eslint-plugin-router": "1.162.0",
+    "@vitest/coverage-v8": "4.1.11",
     "dotenv-flow": "^4.1.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
@@ -27,7 +33,10 @@
     "oxfmt": "0.72.0",
     "oxlint": "1.87.0",
     "oxlint-tsgolint": "7.0.2004",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite": "^8.2.1",
+    "vitest": "4.1.11",
+    "vitest-mock-extended": "^5.1.1"
   },
   "engines": {
     "node": ">=24"

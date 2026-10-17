@@ -19,11 +19,11 @@
     "start:migrate:prod": "prisma migrate deploy && npm run start:prod",
     "lint:check": "oxlint src",
     "lint:fix": "oxlint --fix src",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:watch": "pnpm test --watch",
-    "test:cov": "pnpm test --coverage",
-    "test:debug": "node --experimental-vm-modules --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:ci": "pnpm test --ci",
+    "test": "pnpm --workspace-root test --project backend",
+    "test:watch": "pnpm --workspace-root test:watch --project backend",
+    "test:cov": "pnpm --workspace-root test:cov --project backend",
+    "test:debug": "pnpm --workspace-root test:debug --project backend",
+    "test:ci": "pnpm --workspace-root test:ci --project backend",
     "docker:up": "docker compose up",
     "docker:up:wait": "docker compose up -d --wait",
     "docker:up-rebuild": "docker compose down; docker compose up --renew-anon-volumes --build --force-recreate be",
@@ -67,57 +67,14 @@
     "@nestjs/testing": "^11.2.1",
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
-    "@types/jest": "^30.0.0",
     "@types/multer": "^2.3.0",
     "@types/node": "^24.13.3",
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "jest": "^30.4.2",
-    "jest-mock-extended": "^4.0.1",
-    "ts-jest": "^29.4.12",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "catalog:"
-  },
-  "jest": {
-    "collectCoverageFrom": [
-      "**/*.ts"
-    ],
-    "coverageDirectory": "coverage",
-    "coveragePathIgnorePatterns": [
-      "dist",
-      "interfaces",
-      ".module.ts",
-      "<rootDir>/src/main.ts",
-      ".mock.ts",
-      ".type.ts",
-      ".dto.ts",
-      "<rootDir>/scripts"
-    ],
-    "coverageReporters": [
-      "html",
-      "text",
-      "text-summary",
-      "cobertura"
-    ],
-    "moduleDirectories": [
-      "node_modules"
-    ],
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/src/$1"
-    },
-    "rootDir": "./",
-    "testEnvironment": "node",
-    "testRegex": "\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    }
   },
   "engines": {
     "node": ">=24"

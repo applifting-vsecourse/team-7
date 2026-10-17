@@ -86,7 +86,7 @@
     },
     {
       "files": ["apps/backend/**"],
-      "env": { "node": true, "jest": true },
+      "env": { "node": true },
       "rules": {
         "typescript/unbound-method": "off",
         "typescript/no-explicit-any": "warn"

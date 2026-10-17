@@ -42,7 +42,7 @@
       "./node_modules/@types",
       "../node_modules/@types"
     ],
-    "types": ["node", "express", "jest"]
+    "types": ["node", "express"]
   },
   "include": ["src/**/*", "test/**/*"]
 }
