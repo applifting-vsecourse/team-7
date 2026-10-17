@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Link } from "@heroui/react";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { keyFromSelector } from "i18next";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { ROUTES } from "@/app/routes";
 import { AuthLayout } from "@/components/AuthLayout";
+import { messageSelectors } from "@/i18n/messages";
 
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
 import { SignInForm } from "@/features/auth/components/SignInForm";
@@ -28,6 +31,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
+  const { t } = useTranslation();
   const { from } = Route.useSearch();
   const redirectTo = from ? decodeRedirectUri(from) : ROUTES.quacks;
   const navigate = useNavigate();
@@ -45,19 +49,21 @@ function LoginPage() {
       await navigate({ to: redirectTo });
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : "Sign in failed",
+        error instanceof Error
+          ? error.message
+          : keyFromSelector(messageSelectors.signInFailed),
       );
     }
   };
 
   return (
     <AuthLayout
-      title="Sign in"
+      title={t(($) => $.auth.signIn)}
       footer={
         <>
-          No account?{" "}
+          {t(($) => $.auth.noAccount)}{" "}
           <Link href={ROUTES.signup} className="font-medium text-foreground">
-            Sign up
+            {t(($) => $.auth.signUp)}
           </Link>
         </>
       }

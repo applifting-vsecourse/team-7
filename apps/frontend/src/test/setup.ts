@@ -1,5 +1,11 @@
 import "@testing-library/jest-dom/vitest";
-import { vi } from "vitest";
+import { beforeEach, vi } from "vitest";
+
+import i18n from "@/i18n";
+
+beforeEach(async () => {
+  await i18n.changeLanguage("en");
+});
 
 // jsdom has no layout engine or media-query implementation. Keep the real
 // HeroUI/React Aria controls and supply only the missing browser primitives.

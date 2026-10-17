@@ -1,18 +1,20 @@
 import { Avatar, Button, buttonVariants, Dropdown, Label } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { useSignOut } from "@/features/auth/hooks/useSignOut";
 
 export function HeaderMenu() {
+  const { t } = useTranslation();
   const { user } = useSession();
   const signOut = useSignOut();
 
   if (!user) {
     return (
       <Link to="/login" className={buttonVariants({ size: "sm" })}>
-        Sign in
+        {t(($) => $.auth.signIn)}
       </Link>
     );
   }
@@ -29,7 +31,7 @@ export function HeaderMenu() {
       <Button
         variant="ghost"
         isIconOnly
-        aria-label="User menu"
+        aria-label={t(($) => $.navigation.userMenu)}
         className="rounded-full"
       >
         <Avatar size="sm" aria-hidden="true">
@@ -42,18 +44,18 @@ export function HeaderMenu() {
           <p className="text-xs text-muted">@{user.username}</p>
         </div>
         <Dropdown.Menu
-          aria-label="User actions"
+          aria-label={t(($) => $.navigation.userActions)}
           onAction={() => {
             if (!signOut.isPending) signOut.mutate();
           }}
         >
           <Dropdown.Item
             id="sign-out"
-            textValue="Sign out"
+            textValue={t(($) => $.auth.signOut)}
             isDisabled={signOut.isPending}
           >
             <LogOut className="size-4" />
-            <Label>Sign out</Label>
+            <Label>{t(($) => $.auth.signOut)}</Label>
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown.Popover>
