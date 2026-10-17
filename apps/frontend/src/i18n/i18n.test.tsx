@@ -92,15 +92,22 @@ describe("localization", () => {
     );
   });
 
-  it("detects URL preferences, persists them and falls back for unsupported languages", async () => {
-    window.history.replaceState(null, "", "/?lng=cs");
+  it("defaults to Czech without an explicit language preference", async () => {
+    localStorage.removeItem("i18nextLng");
     await i18n.changeLanguage();
     expect(i18n.resolvedLanguage).toBe("cs");
+    expect(document.documentElement.lang).toBe("cs");
+  });
+
+  it("detects URL preferences, persists them and falls back for unsupported languages", async () => {
+    window.history.replaceState(null, "", "/?lng=en");
+    await i18n.changeLanguage();
+    expect(i18n.resolvedLanguage).toBe("en");
     window.history.replaceState(null, "", "/");
     await i18n.changeLanguage();
-    expect(i18n.resolvedLanguage).toBe("cs");
-    await i18n.changeLanguage("de");
     expect(i18n.resolvedLanguage).toBe("en");
+    await i18n.changeLanguage("de");
+    expect(i18n.resolvedLanguage).toBe("cs");
   });
 
   it("resolves regional Czech", async () => {
