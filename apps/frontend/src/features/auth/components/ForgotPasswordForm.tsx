@@ -87,7 +87,6 @@ export function ForgotPasswordForm() {
           <TextField
             {...field}
             type="email"
-            isRequired
             fullWidth
             isInvalid={fieldState.invalid}
             isDisabled={isPending}

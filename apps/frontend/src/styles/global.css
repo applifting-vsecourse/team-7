@@ -51,7 +51,7 @@
     @apply flex w-full max-w-content flex-1 flex-col items-start;
   }
   main {
-    @apply min-h-svh bg-surface;
+    @apply bg-surface p-4 md:pt-0;
   }
 }
 

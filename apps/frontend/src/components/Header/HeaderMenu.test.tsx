@@ -11,9 +11,8 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { NotFound } from "@/components/Error/NotFound";
+import { HeaderMenu } from "@/components/Header/HeaderMenu";
 import { Route as RootRoute } from "@/routes/__root";
-
-import { HeaderMenu } from "@/features/auth/components/HeaderMenu";
 
 const state = vi.hoisted(() => ({
   user: null as { name: string; username: string } | null,

@@ -36,7 +36,7 @@ export function MobileSidebar({ children }: { children: ReactNode }) {
             className="h-full max-w-none gap-6 overflow-y-auto rounded-l-none rounded-r-3xl bg-background p-4 shadow-none"
           >
             <div className="flex shrink-0 items-center justify-between">
-              <HeaderLogo size="lg" iconOnly />
+              <HeaderLogo iconOnly />
               <Button
                 isIconOnly
                 variant="secondary"
