@@ -22,7 +22,7 @@ enum UserRole {
   @@map("user_role")
 }
 
-model Quack {
+model Dog {
   id        String   @id @default(cuid())
   text      String   @db.Text
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -31,7 +31,7 @@ model Quack {
   updatedAt DateTime @default(now()) @updatedAt
 
   @@index([userId])
-  @@map("quack")
+  @@map("dog")
 }
 
 model Session {
@@ -92,7 +92,7 @@ model User {
   updatedAt       DateTime
   sessions        Session[]
   accounts        Account[]
-  quacks          Quack[]
+  dogs            Dog[]
   role            UserRole  @default(user)
 
   username        String? @db.VarChar(50)

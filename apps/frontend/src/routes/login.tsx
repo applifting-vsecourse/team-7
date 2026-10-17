@@ -26,14 +26,14 @@ export const Route = createFileRoute("/login")({
       authSessionQueryOptions(),
     );
     if (!session) return;
-    throw redirect({ to: ROUTES.quacks });
+    throw redirect({ to: ROUTES.home });
   },
 });
 
 function LoginPage() {
   const { t } = useTranslation();
   const { from } = Route.useSearch();
-  const redirectTo = from ? decodeRedirectUri(from) : ROUTES.quacks;
+  const redirectTo = from ? decodeRedirectUri(from) : ROUTES.home;
   const navigate = useNavigate();
   const signIn = useSignIn();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
