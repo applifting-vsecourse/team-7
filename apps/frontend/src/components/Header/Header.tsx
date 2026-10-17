@@ -8,14 +8,15 @@ type HeaderProps = {
   // Auth-aware menu (sign-in CTA / user dropdown). Passed as a slot so
   // `components/` doesn't have to import from `features/auth`.
   userMenu: ReactNode;
+  showNavigation?: boolean;
 };
 
-export function Header({ userMenu }: HeaderProps) {
+export function Header({ userMenu, showNavigation = true }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between self-stretch px-2 md:p-4">
+    <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between self-stretch bg-background px-4">
       <div className="flex items-center gap-4">
-        <HeaderLogo />
-        <HeaderNav />
+        <HeaderLogo size={showNavigation ? "md" : "lg"} />
+        {showNavigation && <HeaderNav />}
       </div>
       <div className="flex items-center gap-2">
         <ThemeSwitcher />

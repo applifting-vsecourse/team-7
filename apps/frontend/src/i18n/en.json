@@ -52,7 +52,14 @@
   "navigation": {
     "userMenu": "User menu",
     "userActions": "User actions",
-    "goHome": "Go home"
+    "goHome": "Go home",
+    "main": "Main navigation",
+    "overview": "Overview",
+    "calendar": "Calendar",
+    "disciplines": "Disciplines",
+    "plans": "Plans",
+    "myDogs": "My dogs",
+    "addDog": "Add dog"
   },
   "theme": {
     "dark": "Dark",
