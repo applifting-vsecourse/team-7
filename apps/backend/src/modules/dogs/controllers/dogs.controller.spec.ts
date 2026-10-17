@@ -2,28 +2,38 @@ import { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { DogAvatarsController } from "@/modules/dogs/avatars/avatars.controller";
 import { DogAvatarsService } from "@/modules/dogs/avatars/avatars.service";
 import { getSessionFromRequest } from "@/shared/auth/utils/get-session-from-request";
 import { DogsController } from "./dogs.controller";
 
-jest.mock("@/shared/auth/providers/better-auth.provider", () => ({
-  InjectBetterAuth: require("@nestjs/common").Inject("BetterAuth"),
-}));
-jest.mock("@/shared/auth/utils/get-session-from-request", () => ({
-  getSessionFromRequest: jest.fn(),
+vi.mock("@/shared/auth/providers/better-auth.provider", async () => {
+  const { Inject } = await import("@nestjs/common");
+  return { InjectBetterAuth: Inject("BetterAuth") };
+});
+vi.mock("@/shared/auth/utils/get-session-from-request", () => ({
+  getSessionFromRequest: vi.fn(),
 }));
 
 describe("/api/dogs", () => {
   let app: INestApplication;
   let url: string;
-  const getSession = jest.mocked(getSessionFromRequest);
-  const findMany = jest.fn();
-  const findFirst = jest.fn();
-  const create = jest.fn();
-  const updateManyAndReturn = jest.fn();
-  const deleteMany = jest.fn();
+  const getSession = vi.mocked(getSessionFromRequest);
+  const findMany = vi.fn();
+  const findFirst = vi.fn();
+  const create = vi.fn();
+  const updateManyAndReturn = vi.fn();
+  const deleteMany = vi.fn();
   const initialDogs = [
     { id: "dog-a", text: "First dog", userId: "user-a" },
     { id: "dog-b", text: "Second dog", userId: "user-b" },
@@ -66,7 +76,7 @@ describe("/api/dogs", () => {
   });
 
   beforeEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
     dogs = initialDogs.map((dog) => ({ ...dog }));
     findMany.mockImplementation(({ where }: { where: { userId: string } }) =>
       Promise.resolve(

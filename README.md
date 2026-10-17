@@ -53,8 +53,11 @@ pnpm check                         # lint + type-check all workspaces
 pnpm lint                          # lint with Oxlint
 pnpm lint:fix                      # apply lint fixes
 pnpm format                        # format files with Oxfmt
-pnpm backend test                  # backend unit tests (jest)
-pnpm frontend test:ci              # frontend component tests (vitest)
+pnpm test                          # backend + frontend tests (Vitest)
+pnpm test:watch                    # watch tests across both apps
+pnpm test --project backend        # run only backend tests
+pnpm test --project frontend       # run only frontend tests
+pnpm test:cov                      # combined coverage report in coverage/
 pnpm backend prisma:migrations:run # create + apply a migration after schema changes
 pnpm backend prisma:studio         # browse/edit the database
 pnpm backend seed                  # re-seed the database
@@ -69,7 +72,7 @@ TanStack's ESLint-named plugins are loaded directly by Oxlint; there is no separ
 
 Oxfmt uses the root `.oxfmtrc.json` with app-specific overrides. Backend files retain single quotes, semicolons, and an 80-column width; frontend files retain double quotes, optional semicolons, a 100-column width, import groups, and Tailwind 4 stylesheet-aware class sorting (`cn` and `cva`). Markdown and YAML formatting is restored. JSON keys retain their existing order. Formatter output is not guaranteed byte-for-byte identical to Prettier.
 
-Install the recommended Oxc VS Code extension for formatting and lint fixes on save. TypeScript stays on 5.9 for Nest/Jest; Oxlint's type-aware engine is a separate dependency.
+Install the recommended Oxc VS Code extension for formatting and lint fixes on save. TypeScript stays on 5.9 for Nest; Oxlint's type-aware engine is a separate dependency.
 
 ## Deployment
 

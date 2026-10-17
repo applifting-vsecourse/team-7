@@ -11,8 +11,8 @@
     "lint:check": "oxlint src",
     "lint:fix": "oxlint --fix src",
     "start": "vite preview",
-    "test": "vitest",
-    "test:ci": "vitest run",
+    "test": "pnpm --workspace-root test:watch --project frontend",
+    "test:ci": "pnpm --workspace-root test --project frontend",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -56,8 +56,7 @@
     "tailwindcss": "^4.3.3",
     "vite": "^8.2.1",
     "vite-plugin-checker": "^0.14.5",
-    "vite-plugin-svgr": "^5.2.0",
-    "vitest": "^4.1.11"
+    "vite-plugin-svgr": "^5.2.0"
   },
   "engines": {
     "node": ">=24"

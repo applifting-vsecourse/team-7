@@ -1,4 +1,5 @@
-import { mockDeep } from "jest-mock-extended";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { mockDeep } from "vitest-mock-extended";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { User } from "@/generated/prisma/client";
 import { BetterAuth } from "@/shared/auth/providers/better-auth.provider";
@@ -6,19 +7,19 @@ import { Config } from "@/shared/config/config.service";
 import { createUser } from "./create-user";
 import { seedDatabase } from "./seed-database";
 
-jest.mock("./create-user", () => ({ createUser: jest.fn() }));
+vi.mock("./create-user", () => ({ createUser: vi.fn() }));
 
 describe("seedDatabase dog ownership", () => {
   const config = mockDeep<Config>();
   const auth = mockDeep<BetterAuth>();
 
   beforeEach(() => {
-    jest.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "log").mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
-    jest.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   it("adds dogs after creating users in an empty database", async () => {

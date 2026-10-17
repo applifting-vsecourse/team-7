@@ -33,14 +33,11 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Type-check frontend
-        run: pnpm frontend type-check
+      - name: Type-check
+        run: pnpm ts
 
-      - name: Test backend
-        run: pnpm backend test
-
-      - name: Test frontend
-        run: pnpm frontend test:ci
+      - name: Test
+        run: pnpm test
 
       - name: Build backend
         run: pnpm backend build
