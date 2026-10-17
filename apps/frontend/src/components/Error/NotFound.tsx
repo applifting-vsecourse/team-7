@@ -1,18 +1,20 @@
 import { buttonVariants } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
 
 import { ErrorLayout } from "./ErrorLayout";
 
 export function NotFound() {
+  const { t } = useTranslation();
   return (
     <ErrorLayout
-      title="Page not found"
-      description="The page you're looking for doesn't exist or has been moved."
+      title={t(($) => $.errors.notFound.title)}
+      description={t(($) => $.errors.notFound.description)}
       action={
         <Link to={ROUTES.home} className={buttonVariants()}>
-          Go home
+          {t(($) => $.navigation.goHome)}
         </Link>
       }
     />

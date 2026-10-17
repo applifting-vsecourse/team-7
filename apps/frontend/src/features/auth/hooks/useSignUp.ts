@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { keyFromSelector } from "i18next";
 
+import { messageSelectors } from "@/i18n/messages";
 import { authKeys } from "@/lib/auth-keys";
 
 import { authClient } from "@/features/auth/lib/auth-client";
@@ -23,7 +25,11 @@ export function useSignUp() {
         email: input.email,
         password: input.password,
       });
-      if (error) throw new Error(error.message ?? "Sign up failed");
+      if (error) {
+        throw new Error(
+          error.message ?? keyFromSelector(messageSelectors.signUpFailed),
+        );
+      }
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: authKeys.session() });
