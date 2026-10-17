@@ -11,15 +11,25 @@ import {
   TextField,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { keyFromSelector } from "i18next";
 import { Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { ROUTES } from "@/app/routes";
+import { messageSelectors, translateMessage } from "@/i18n/messages";
 
 const schema = z.object({
-  email: z.string().trim().min(1, "Email is required").email("Invalid email"),
-  password: z.string().trim().min(1, "Password is required"),
+  email: z
+    .string()
+    .trim()
+    .min(1, keyFromSelector(messageSelectors.emailRequired))
+    .email(keyFromSelector(messageSelectors.emailInvalid)),
+  password: z
+    .string()
+    .trim()
+    .min(1, keyFromSelector(messageSelectors.passwordRequired)),
   rememberMe: z.boolean(),
 });
 
@@ -36,6 +46,7 @@ export function SignInForm({
   errorMessage,
   onSubmit,
 }: SignInFormProps) {
+  const { t } = useTranslation();
   const submitting = useRef(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -62,7 +73,9 @@ export function SignInForm({
       {errorMessage ? (
         <Alert status="danger" role="alert">
           <Alert.Content>
-            <Alert.Description>{errorMessage}</Alert.Description>
+            <Alert.Description>
+              {translateMessage(t, errorMessage)}
+            </Alert.Description>
           </Alert.Content>
         </Alert>
       ) : null}
@@ -78,14 +91,18 @@ export function SignInForm({
             isDisabled={isPending}
             fullWidth
           >
-            <Label>Email</Label>
+            <Label>{t(($) => $.auth.fields.email)}</Label>
             <Input
               ref={ref}
               autoComplete="email"
-              placeholder="e.g. jana@example.com"
+              placeholder={t(($) => $.auth.fields.emailExample)}
               className="shadow-none"
             />
-            <FieldError>{fieldState.error?.message}</FieldError>
+            <FieldError>
+              {fieldState.error?.message
+                ? translateMessage(t, fieldState.error.message)
+                : undefined}
+            </FieldError>
           </TextField>
         )}
       />
@@ -101,13 +118,17 @@ export function SignInForm({
             isDisabled={isPending}
             fullWidth
           >
-            <Label>Password</Label>
+            <Label>{t(($) => $.auth.fields.password)}</Label>
             <Input
               ref={ref}
               autoComplete="current-password"
               className="shadow-none"
             />
-            <FieldError>{fieldState.error?.message}</FieldError>
+            <FieldError>
+              {fieldState.error?.message
+                ? translateMessage(t, fieldState.error.message)
+                : undefined}
+            </FieldError>
           </TextField>
         )}
       />
@@ -126,7 +147,7 @@ export function SignInForm({
                 <Checkbox.Control className="size-4 shadow-none">
                   <Checkbox.Indicator />
                 </Checkbox.Control>
-                Remember me
+                {t(($) => $.auth.rememberMe)}
               </Checkbox.Content>
             </Checkbox>
           )}
@@ -135,7 +156,7 @@ export function SignInForm({
           href={ROUTES["forgot-password"]}
           className="text-sm font-medium text-foreground"
         >
-          Forgot password?
+          {t(($) => $.auth.forgotPassword)}
         </Link>
       </div>
       <Button
@@ -146,7 +167,7 @@ export function SignInForm({
         isDisabled={isPending}
       >
         {isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-        Sign in
+        {t(($) => $.auth.signIn)}
       </Button>
     </Form>
   );
