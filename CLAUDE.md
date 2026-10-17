@@ -26,6 +26,10 @@ Deliberately sparse — this file grows as the team learns what it expects from 
 - If you added or modified tests, also run `pnpm check-all`.
 - Fix any failures caused by your changes before finishing. Report any remaining failures.
 
+### Frontend state management
+
+Use TanStack Query (React Query) for server state: fetching, caching, mutations and refetching API data. Use Jotai for shared client state, such as selected dog IDs, filters and UI preferences that do not belong in the query cache. Keep atoms in the relevant feature's `atoms/` directory. Keep state used by only one component local with React state, and avoid copying query results into atoms.
+
 ### UI controls come from the kit
 
 Import controls directly from `@heroui/react` and use HeroUI v3 compound APIs (`Alert.Content`, `Avatar.Fallback`, `Dropdown.Menu`). Check current v3 documentation before introducing a component. One accessibility implementation to reason about beats a per-control judgement call.

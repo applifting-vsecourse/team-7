@@ -64,6 +64,10 @@
     "addDog": "Add dog"
   },
   "dogs": {
+    "all": "All",
+    "filterLabel": "Filter by dog",
+    "filterEmpty": "Your dogs will appear here for filtering once you add them.",
+    "retry": "Try again",
     "name": "Dog’s name",
     "cancel": "Cancel",
     "addError": "Unable to add your dog. Please try again.",

@@ -64,6 +64,10 @@
     "addDog": "Přidat psa"
   },
   "dogs": {
+    "all": "Všichni",
+    "filterLabel": "Filtrovat podle psa",
+    "filterEmpty": "Po přidání psů se zde zobrazí jejich filtr.",
+    "retry": "Zkusit znovu",
     "name": "Jméno psa",
     "cancel": "Zrušit",
     "addError": "Psa se nepodařilo přidat. Zkuste to znovu.",

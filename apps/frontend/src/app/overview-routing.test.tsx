@@ -4,13 +4,16 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { createStore, Provider } from "jotai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ThemeController } from "@/hooks/useTheme";
 import { api } from "@/lib/api-client";
 import { routeTree } from "@/routeTree.gen";
+
+import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
 
 const state = vi.hoisted(() => ({
   signedIn: false,
@@ -50,7 +53,7 @@ vi.mock("@/features/auth/lib/auth-client", () => ({
   },
 }));
 
-function renderRoute(path: string) {
+function renderRoute(path: string, store = createStore()) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -61,11 +64,13 @@ function renderRoute(path: string) {
     defaultPendingMinMs: 0,
   });
   render(
-    <QueryClientProvider client={queryClient}>
-      <ThemeController>
-        <RouterProvider router={router} />
-      </ThemeController>
-    </QueryClientProvider>,
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeController>
+          <RouterProvider router={router} />
+        </ThemeController>
+      </QueryClientProvider>
+    </Provider>,
   );
   return router;
 }
@@ -118,11 +123,59 @@ describe("overview routing", () => {
     expect(
       screen.getByRole("button", { name: "User menu" }),
     ).toBeInTheDocument();
-    expect(await screen.findByText("Test User's dog")).toBeInTheDocument();
+    expect(
+      (await screen.findAllByText("Test User's dog")).length,
+    ).toBeGreaterThan(0);
     expect(vi.mocked(api.get).mock.calls[0]?.[0]).toBe("dogs");
     expect(vi.mocked(api.get).mock.calls[0]?.[1]?.signal).toBeInstanceOf(
       AbortSignal,
     );
+  });
+
+  it("updates the shared atom from individual and all-dog selections", async () => {
+    state.signedIn = true;
+    state.getDogs.mockResolvedValue([
+      { id: "dog-1", text: "Buddy" },
+      { id: "dog-2", text: "Luna" },
+    ]);
+    const store = createStore();
+    const user = userEvent.setup();
+    renderRoute("/overview", store);
+    const filter = within(
+      await screen.findByRole("group", { name: "Filter by dog" }),
+    );
+    const buddy = filter.getByRole("checkbox", { name: "Buddy" });
+    const luna = filter.getByRole("checkbox", { name: "Luna" });
+    const all = filter.getByRole("checkbox", { name: "All" });
+
+    await user.click(buddy);
+    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-1"]);
+    expect(buddy).toBeChecked();
+    expect(all).toBePartiallyChecked();
+    await user.click(luna);
+    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-1", "dog-2"]);
+    expect(all).toBeChecked();
+    await user.click(buddy);
+    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-2"]);
+    await user.click(all);
+    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-1", "dog-2"]);
+    await user.keyboard(" ");
+    expect(store.get(selectedDogIdsAtom)).toEqual([]);
+    expect(buddy).not.toBeChecked();
+    expect(luna).not.toBeChecked();
+  });
+
+  it("retries loading the dog filter after a failed request", async () => {
+    state.signedIn = true;
+    state.getDogs.mockRejectedValue(new Error("Request failed"));
+    const user = userEvent.setup();
+    renderRoute("/overview");
+    const retry = await screen.findByRole("button", { name: "Try again" });
+    state.getDogs.mockResolvedValue([{ id: "dog-1", text: "Buddy" }]);
+    await user.click(retry);
+    expect(
+      await screen.findByRole("checkbox", { name: "Buddy" }),
+    ).toBeInTheDocument();
   });
 
   it("shows an empty state when the user has no dogs", async () => {
@@ -148,7 +201,9 @@ describe("overview routing", () => {
     expect(
       screen.getByRole("dialog", { name: "Main navigation" }),
     ).toBeInTheDocument();
-    expect(await screen.findByText("Test User's dog")).toBeInTheDocument();
+    expect(
+      (await screen.findAllByText("Test User's dog")).length,
+    ).toBeGreaterThan(0);
     await user.click(screen.getByRole("button", { name: "Close menu" }));
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
@@ -208,7 +263,9 @@ describe("overview routing", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
     expect(api.post).toHaveBeenCalledWith("dogs", { json: { text: "Buddy" } });
-    expect(await screen.findByText("Buddy")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("checkbox", { name: "Buddy" }),
+    ).toBeInTheDocument();
   });
 
   it("allows cancelling the dialog and keeps the name after a failed save", async () => {
@@ -244,8 +301,10 @@ describe("overview routing", () => {
     renderRoute("/overview");
 
     expect(
-      await screen.findByText("Unable to load your dogs."),
-    ).toHaveAttribute("role", "alert");
+      (await screen.findAllByText("Unable to load your dogs.")).every(
+        (message) => message.getAttribute("role") === "alert",
+      ),
+    ).toBe(true);
   });
 
   it("opens overview after login even when the cached session was anonymous", async () => {

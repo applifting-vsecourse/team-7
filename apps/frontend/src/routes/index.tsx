@@ -28,7 +28,14 @@ function LandingPage() {
           {/* The call to action depends on who is asking: no point offering an
               account to someone who already has one. */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            {!user && (
+            {user ? (
+              <Link
+                to={ROUTES.overview}
+                className="rounded-lg bg-fuchsia-500 px-6 py-3 font-bold text-black motion-safe:animate-pulse"
+              >
+                Jdi na prehled
+              </Link>
+            ) : (
               <>
                 <Link
                   to={ROUTES.signup}
