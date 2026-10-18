@@ -3,6 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { ROUTES } from "@/app/routes.ts";
+
 import { useSession } from "@/features/auth/hooks/useSession";
 import { useSignOut } from "@/features/auth/hooks/useSignOut";
 
@@ -13,7 +15,10 @@ export function HeaderMenu() {
 
   if (!user) {
     return (
-      <Link to="/login" className={buttonVariants({ size: "sm" })}>
+      <Link
+        to={ROUTES.login}
+        className={buttonVariants({ size: "sm", variant: "outline" })}
+      >
         {t(($) => $.auth.signIn)}
       </Link>
     );

@@ -56,6 +56,7 @@ function SignUpPage() {
   return (
     <AuthLayout
       title={t(($) => $.auth.createAccount)}
+      backTo={ROUTES.login}
       footer={
         <>
           {t(($) => $.auth.existingAccount)}{" "}

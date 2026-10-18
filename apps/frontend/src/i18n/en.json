@@ -5,6 +5,7 @@
     "createAccount": "Create account",
     "signUp": "Sign up",
     "noAccount": "No account?",
+    "backToSignIn": "Back to sign in",
     "existingAccount": "Already have an account?",
     "fields": {
       "email": "Email",

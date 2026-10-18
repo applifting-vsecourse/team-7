@@ -5,6 +5,7 @@
     "createAccount": "Vytvořit účet",
     "signUp": "Zaregistrovat se",
     "noAccount": "Nemáte účet?",
+    "backToSignIn": "Zpět na přihlášení",
     "existingAccount": "Už máte účet?",
     "fields": {
       "email": "E-mail",
