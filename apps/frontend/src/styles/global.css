@@ -17,6 +17,7 @@
   --container-calendar-cell: 200px;
   --container-login-form: 400px;
   --container-login-block: 900px;
+  --container-weekly-stats-min: 292px;
 }
 
 :root,

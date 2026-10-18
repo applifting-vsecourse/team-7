@@ -87,6 +87,29 @@
     "photoMoveHint": "Přetažením fotky upravte výřez. Můžete použít i šipky na klávesnici.",
     "photoZoom": "Přiblížení"
   },
+  "events": {
+    "timeAndDuration": "{{time}} ({{duration}} min)",
+    "upcoming": "Naplánováno",
+    "completed": "Hotovo",
+    "unfinished": "Nesplněno",
+    "dateAndTime": "{{date}} – {{time}}"
+  },
+  "weeklyStats": {
+    "title": "Tento týden",
+    "dateRange": "{{start}} – {{end}}",
+    "completed": "Splněno {{completed}} z {{total}} cvičení",
+    "streak": "Streak",
+    "trainingTime": "Čas tréninků",
+    "duration": "{{hours}} h {{minutes}} min",
+    "satisfaction": "Spokojenost",
+    "rating": "{{value}} / 5",
+    "weeklySatisfaction": "Spokojenost po týdnech",
+    "emptyHistory": "Zde se zobrazí spokojenost z předchozích týdnů.",
+    "days": "{{value}}",
+    "remaining": "Do neděle zbývá {{count}} cvičení.",
+    "remainingOne": "Do neděle zbývá {{count}} cvičení.",
+    "remainingFew": "Do neděle zbývají {{count}} cvičení."
+  },
   "theme": {
     "dark": "Tmavý",
     "light": "Světlý"
@@ -104,5 +127,28 @@
       "description": "Došlo k neočekávané chybě."
     },
     "reload": "Načíst znovu"
+  },
+  "calendar": {
+    "today": "Dnes",
+    "tomorrow": "Zítra",
+    "unfinished": "Nesplněná cvičení",
+    "empty": "Žádná cvičení k zobrazení."
+  },
+  "calendarMocks": {
+    "dog": "Pes {{number}}",
+    "obedience": "Poslušnost",
+    "agility": "Agility",
+    "relaxation": "Relaxace",
+    "tracking": "Stopování",
+    "socialization": "Socializace",
+    "tricks": "Triky",
+    "stay": "Odložení – 3 série po 30 sekundách",
+    "course": "Sestava: skok, tunel, slalom, kladina, skok, pneumatika",
+    "mat": "Výdrž na podložce s odměnou za klid",
+    "track": "Stopa 500 m – 2 zlomy, předmět uprostřed",
+    "walk": "Procházka kolem hřiště, odměna za pohled na mě",
+    "jumps": "Skoky – 10 přeskoků laťky 40 cm",
+    "slalom": "Slalom – 5 průchodů se 6 tyčkami",
+    "spin": "Zatočit se dokola – 10 opakování"
   }
 }
