@@ -6,7 +6,7 @@ import {
   LayoutList,
   Rectangles4,
 } from "@gravity-ui/icons";
-import { Button, Separator } from "@heroui/react";
+import { Button, buttonVariants, Separator } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 import { useTranslation } from "react-i18next";
@@ -31,21 +31,35 @@ export function Sidebar() {
         <Link
           to={ROUTES.overview}
           onClick={() => setMobileSidebarOpen(false)}
-          aria-current="page"
-          className="flex h-9 items-center gap-2 rounded-3xl bg-accent px-4 text-sm font-medium text-accent-foreground"
+          className={buttonVariants({
+            variant: "ghost",
+            className:
+              "h-9 justify-start gap-2 px-4 data-[status=active]:bg-accent data-[status=active]:text-accent-foreground",
+          })}
         >
           <Rectangles4 className="size-4 shrink-0" aria-hidden="true" />
           <span className="flex-1">{t(($) => $.navigation.overview)}</span>
-          <Circle className="size-4 shrink-0" aria-hidden="true" />
+          <Circle
+            className="hidden size-4 shrink-0 in-[[data-status=active]]:block"
+            aria-hidden="true"
+          />
         </Link>
-        <Button
-          variant="ghost"
-          isDisabled
-          className="h-9 justify-start gap-2 rounded-3xl px-4 opacity-100 md:opacity-50"
+        <Link
+          to={ROUTES.calendar}
+          onClick={() => setMobileSidebarOpen(false)}
+          className={buttonVariants({
+            variant: "ghost",
+            className:
+              "h-9 justify-start gap-2 px-4 data-[status=active]:bg-accent data-[status=active]:text-accent-foreground",
+          })}
         >
           <Calendar className="size-4 shrink-0" aria-hidden="true" />
-          {t(($) => $.navigation.calendar)}
-        </Button>
+          <span className="flex-1">{t(($) => $.navigation.calendar)}</span>
+          <Circle
+            className="hidden size-4 shrink-0 in-[[data-status=active]]:block"
+            aria-hidden="true"
+          />
+        </Link>
         <Button
           variant="ghost"
           isDisabled

@@ -129,10 +129,17 @@
     "reload": "Načíst znovu"
   },
   "calendar": {
+    "scheduleExercise": "Naplánovat cvičení",
     "today": "Dnes",
     "tomorrow": "Zítra",
     "unfinished": "Nesplněná cvičení",
-    "empty": "Žádná cvičení k zobrazení."
+    "empty": "Žádná cvičení k zobrazení.",
+    "weeklyOverview": "Týdenní přehled",
+    "thisWeek": "Tento týden",
+    "previousWeek": "Předchozí týden",
+    "nextWeek": "Následující týden",
+    "weekRange": "{{start}} – {{end}}",
+    "currentWeekRange": "{{range}} (Tento týden)"
   },
   "calendarMocks": {
     "dog": "Pes {{number}}",
@@ -149,6 +156,19 @@
     "walk": "Procházka kolem hřiště, odměna za pohled na mě",
     "jumps": "Skoky – 10 přeskoků laťky 40 cm",
     "slalom": "Slalom – 5 průchodů se 6 tyčkami",
-    "spin": "Zatočit se dokola – 10 opakování"
+    "spin": "Zatočit se dokola – 10 opakování",
+    "recall": "Přivolání",
+    "retrieve": "Aport",
+    "heel": "Chůze u nohy – 10 sérií po 20 kroků",
+    "recallSignal": "Přivolání na signál – 8 opakování z 10 m",
+    "passingDog": "Míjení psa na vodítku ve vzdálenosti 5 m",
+    "shortTrack": "Stopa 300 m – 2 předměty na trase",
+    "heelTempo": "Chůze u nohy – změny tempa",
+    "aFrame": "A-stěna – 5 nástupů do kontaktní zóny",
+    "backwards": "Couvání mezi nohama – 8 opakování",
+    "recallPlay": "Přivolání ze hry – 6 opakování",
+    "retrieveHand": "Aport – 10 přinesení do ruky",
+    "groupStay": "Odložení – 3 série po 1 minutě ve skupině",
+    "waterRetrieve": "Aport z vody – 8 přinesení"
   }
 }

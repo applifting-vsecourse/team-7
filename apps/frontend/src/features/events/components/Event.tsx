@@ -16,6 +16,7 @@ export type EventProps = {
   durationMinutes: number;
   state?: "upcoming" | "completed" | "unfinished";
   className?: string;
+  headingLevel?: "h3" | "h4";
 };
 
 const backgrounds = {
@@ -33,6 +34,7 @@ export function Event({
   durationMinutes,
   state = "upcoming",
   className,
+  headingLevel: Heading = "h3",
 }: EventProps) {
   const { t, i18n } = useTranslation();
   const titleId = useId();
@@ -105,12 +107,12 @@ export function Event({
       <p className="text-xs leading-5 wrap-break-word text-muted">
         {discipline}
       </p>
-      <h3
+      <Heading
         id={titleId}
         className="text-sm leading-6 font-medium tracking-tight wrap-break-word"
       >
         {exercise}
-      </h3>
+      </Heading>
     </article>
   );
 }
