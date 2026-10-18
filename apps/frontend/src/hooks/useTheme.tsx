@@ -1,27 +1,31 @@
-import { createContext, type ReactNode, useContext, useState } from "react";
+import { type ReactNode, useEffect } from "react";
 import { useTheme as useHeroUITheme } from "@heroui/react";
+import { useAtom, useAtomValueRawSync, useSetAtom, useStore } from "jotai";
 
-const ThemeContext = createContext<ReturnType<typeof useHeroUITheme> | null>(
-  null,
-);
+import { resolvedThemeAtom, themeAtom } from "@/app/atoms/themeAtom";
 
 export function ThemeController({ children }: { children: ReactNode }) {
-  // Carry forward preferences saved by the previous theme controller.
-  const [defaultTheme] = useState(() => {
-    const saved = localStorage.getItem("theme");
-    const preference = saved === "light" || saved === "dark" ? saved : "system";
-    if (!localStorage.getItem("heroui-theme") && saved) {
-      localStorage.setItem("heroui-theme", preference);
-    }
-    return preference;
-  });
-  const theme = useHeroUITheme(defaultTheme);
+  const store = useStore();
+  const preference = useAtomValueRawSync(themeAtom);
+  const { theme, resolvedTheme, setTheme } = useHeroUITheme(preference);
+  const setResolvedTheme = useSetAtom(resolvedThemeAtom);
 
-  return <ThemeContext value={theme}>{children}</ThemeContext>;
+  // Keep one native HeroUI controller responsible for the DOM and OS changes.
+  useEffect(() => {
+    // The storage subscription may refresh the atom during this commit.
+    const currentPreference = store.get(themeAtom);
+    if (theme !== currentPreference) {
+      setTheme(currentPreference);
+    } else {
+      setResolvedTheme(resolvedTheme);
+    }
+  }, [preference, theme, resolvedTheme, setTheme, setResolvedTheme, store]);
+
+  return children;
 }
 
 export function useTheme() {
-  const theme = useContext(ThemeContext);
-  if (!theme) throw new Error("useTheme must be used within ThemeController");
-  return theme;
+  const [theme, setTheme] = useAtom(themeAtom);
+  const resolvedTheme = useAtomValueRawSync(resolvedThemeAtom);
+  return { theme, resolvedTheme, setTheme };
 }

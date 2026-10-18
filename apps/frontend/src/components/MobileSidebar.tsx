@@ -1,17 +1,15 @@
-import { createContext, type ReactNode, useState } from "react";
+import { type ReactNode } from "react";
 import { Bars, Xmark } from "@gravity-ui/icons";
 import { Button, Modal } from "@heroui/react";
+import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 
+import { mobileSidebarOpenAtom } from "@/app/atoms/mobileSidebarOpenAtom";
 import { HeaderLogo } from "@/components/Header/HeaderLogo";
-
-export const CloseMobileSidebarContext = createContext<
-  (() => void) | undefined
->(undefined);
 
 export function MobileSidebar({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useAtom(mobileSidebarOpenAtom);
 
   return (
     <Modal isOpen={isOpen} onOpenChange={setIsOpen}>
@@ -47,9 +45,7 @@ export function MobileSidebar({ children }: { children: ReactNode }) {
                 <Xmark className="size-4" aria-hidden="true" />
               </Button>
             </div>
-            <CloseMobileSidebarContext value={() => setIsOpen(false)}>
-              {children}
-            </CloseMobileSidebarContext>
+            {children}
           </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>

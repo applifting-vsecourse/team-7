@@ -6,11 +6,11 @@ import { useTheme } from "@/hooks/useTheme";
 
 export function ThemeSwitcher() {
   const { t } = useTranslation();
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
 
   return (
     <Switch
-      isSelected={theme === "dark"}
+      isSelected={resolvedTheme === "dark"}
       onChange={(isDark) => setTheme(isDark ? "dark" : "light")}
       className="inline-flex w-fit flex-row items-center"
     >
@@ -27,7 +27,7 @@ export function ThemeSwitcher() {
               </Switch.Icon>
             </Switch.Thumb>
           </Switch.Control>
-          {t(($) => $.theme[theme === "dark" ? "dark" : "light"])}
+          {t(($) => $.theme[isSelected ? "dark" : "light"])}
         </Switch.Content>
       )}
     </Switch>

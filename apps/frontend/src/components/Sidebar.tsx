@@ -1,4 +1,4 @@
-import { useContext, useId } from "react";
+import { useId } from "react";
 import {
   Calendar,
   ChartLine,
@@ -8,10 +8,11 @@ import {
 } from "@gravity-ui/icons";
 import { Button, Separator } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 
+import { mobileSidebarOpenAtom } from "@/app/atoms/mobileSidebarOpenAtom";
 import { ROUTES } from "@/app/routes";
-import { CloseMobileSidebarContext } from "@/components/MobileSidebar";
 
 import { AddDogDialog } from "@/features/dogs/components/AddDogDialog";
 import { SidebarDogs } from "@/features/dogs/components/SidebarDogs";
@@ -19,7 +20,7 @@ import { SidebarDogs } from "@/features/dogs/components/SidebarDogs";
 export function Sidebar() {
   const { t } = useTranslation();
   const headingId = useId();
-  const closeMobileSidebar = useContext(CloseMobileSidebarContext);
+  const setMobileSidebarOpen = useSetAtom(mobileSidebarOpenAtom);
 
   return (
     <aside className="flex w-full shrink-0 flex-col gap-6 md:w-sidebar md:py-5 md:pr-4">
@@ -29,7 +30,7 @@ export function Sidebar() {
       >
         <Link
           to={ROUTES.overview}
-          onClick={closeMobileSidebar}
+          onClick={() => setMobileSidebarOpen(false)}
           aria-current="page"
           className="flex h-9 items-center gap-2 rounded-3xl bg-accent px-4 text-sm font-medium text-accent-foreground"
         >
