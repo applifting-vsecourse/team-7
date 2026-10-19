@@ -16,6 +16,8 @@
       "passwordHint": "Use at least 8 characters.",
       "emailPlaceholder": "jane@example.com"
     },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "rememberMe": "Remember me",
     "forgotPassword": "Forgot password?",
     "reset": {

@@ -16,6 +16,8 @@
       "passwordHint": "Použijte alespoň 8 znaků.",
       "emailPlaceholder": "jana@example.com"
     },
+    "showPassword": "Zobrazit heslo",
+    "hidePassword": "Skrýt heslo",
     "rememberMe": "Zapamatovat si mě",
     "forgotPassword": "Zapomněli jste heslo?",
     "reset": {

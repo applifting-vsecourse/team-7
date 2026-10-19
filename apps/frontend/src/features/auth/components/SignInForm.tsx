@@ -20,6 +20,8 @@ import { z } from "zod";
 import { ROUTES } from "@/app/routes";
 import { messageSelectors, translateMessage } from "@/i18n/messages";
 
+import { PasswordInput } from "./PasswordInput";
+
 const schema = z.object({
   email: z
     .string()
@@ -72,10 +74,9 @@ export function SignInForm({
     >
       {errorMessage ? (
         <Alert status="danger" role="alert">
+          <Alert.Indicator />
           <Alert.Content>
-            <Alert.Description>
-              {translateMessage(t, errorMessage)}
-            </Alert.Description>
+            <Alert.Title>{translateMessage(t, errorMessage)}</Alert.Title>
           </Alert.Content>
         </Alert>
       ) : null}
@@ -111,13 +112,12 @@ export function SignInForm({
         render={({ field: { ref, ...field }, fieldState }) => (
           <TextField
             {...field}
-            type="password"
             isInvalid={fieldState.invalid}
             isDisabled={isPending}
             fullWidth
           >
             <Label>{t(($) => $.auth.fields.password)}</Label>
-            <Input ref={ref} autoComplete="current-password" />
+            <PasswordInput ref={ref} autoComplete="current-password" />
             <FieldError>
               {fieldState.error?.message
                 ? translateMessage(t, fieldState.error.message)

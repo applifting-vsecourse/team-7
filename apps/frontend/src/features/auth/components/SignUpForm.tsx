@@ -22,6 +22,8 @@ import {
   type TranslationSelector,
 } from "@/i18n/messages";
 
+import { PasswordInput } from "./PasswordInput";
+
 const schema = z
   .object({
     email: z
@@ -129,10 +131,9 @@ export function SignUpForm({
     >
       {errorMessage ? (
         <Alert status="danger" role="alert">
+          <Alert.Indicator />
           <Alert.Content>
-            <Alert.Description>
-              {translateMessage(t, errorMessage)}
-            </Alert.Description>
+            <Alert.Title>{translateMessage(t, errorMessage)}</Alert.Title>
           </Alert.Content>
         </Alert>
       ) : null}
@@ -150,15 +151,19 @@ export function SignUpForm({
               fullWidth
             >
               <Label>{t(label)}</Label>
-              <Input
-                ref={ref}
-                autoComplete={autoComplete}
-                placeholder={
-                  name === "email"
-                    ? t(($) => $.auth.fields.emailPlaceholder)
-                    : undefined
-                }
-              />
+              {type === "password" ? (
+                <PasswordInput ref={ref} autoComplete={autoComplete} />
+              ) : (
+                <Input
+                  ref={ref}
+                  autoComplete={autoComplete}
+                  placeholder={
+                    name === "email"
+                      ? t(($) => $.auth.fields.emailPlaceholder)
+                      : undefined
+                  }
+                />
+              )}
               {name === "password" ? (
                 <Description>
                   {t(($) => $.auth.fields.passwordHint)}
