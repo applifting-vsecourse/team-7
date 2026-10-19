@@ -34,7 +34,7 @@ export function Sidebar() {
           className={buttonVariants({
             variant: "ghost",
             className:
-              "h-9 justify-start gap-2 px-4 data-[status=active]:bg-accent data-[status=active]:text-accent-foreground",
+              "w-full h-9 justify-start gap-2 px-4 data-[status=active]:bg-accent data-[status=active]:text-accent-foreground",
           })}
         >
           <Rectangles4 className="size-4 shrink-0" aria-hidden="true" />
@@ -50,7 +50,7 @@ export function Sidebar() {
           className={buttonVariants({
             variant: "ghost",
             className:
-              "h-9 justify-start gap-2 px-4 data-[status=active]:bg-accent data-[status=active]:text-accent-foreground",
+              "w-full h-9 justify-start gap-2 px-4 data-[status=active]:bg-accent data-[status=active]:text-accent-foreground",
           })}
         >
           <Calendar className="size-4 shrink-0" aria-hidden="true" />
