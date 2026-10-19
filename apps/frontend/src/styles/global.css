@@ -52,7 +52,7 @@
     @apply flex w-full flex-1 flex-col items-center;
   }
   main {
-    @apply bg-surface p-2 sm:p-4;
+    @apply bg-surface px-2 pb-2 sm:px-4 sm:pb-4;
   }
 }
 

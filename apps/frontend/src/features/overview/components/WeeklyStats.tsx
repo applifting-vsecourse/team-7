@@ -81,7 +81,7 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
   return (
     <section
       aria-labelledby={headingId}
-      className="flex w-full min-w-weekly-stats-min flex-col items-start gap-4 self-stretch md:w-auto md:flex-1 md:shrink-0 md:self-auto"
+      className="flex w-full max-w-xl min-w-weekly-stats-min flex-col items-start gap-4 self-stretch md:w-auto md:flex-1 md:shrink-0 md:self-auto"
     >
       <div className="flex w-full flex-wrap items-center justify-between gap-2">
         <h2
