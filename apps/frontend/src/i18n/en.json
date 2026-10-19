@@ -172,5 +172,34 @@
     "retrieveHand": "Retrieve – 10 deliveries to hand",
     "groupStay": "Group stay – 3 sets of 1 minute",
     "waterRetrieve": "Water retrieve – 8 repetitions"
+  },
+  "landing": {
+    "title": "Training planner and log for your dog",
+    "heading": "Plan and log your dog's training",
+    "lead": "Build a plan for each dog, schedule exercises across the week and write down how each session went. The history shows how your dog is improving.",
+    "signUp": "Sign up",
+    "signIn": "Sign in",
+    "featuresHeading": "What's in the app",
+    "featuresLead": "For handlers who train on their own or with a trainer.",
+    "features": {
+      "plan": {
+        "title": "A plan for each dog",
+        "description": "Set up disciplines, goals and exercises the way you need them and change them whenever you like."
+      },
+      "calendar": {
+        "title": "Weekly calendar",
+        "description": "Exercises can repeat every week. Anything you don't get to, you move to another day."
+      },
+      "log": {
+        "title": "Training log",
+        "description": "Add a note to each exercise. It works on a phone right at the training field."
+      },
+      "progress": {
+        "title": "Training history",
+        "description": "Your records stay in the history, so you can look back at them any time. When your dog masters a goal, you mark it as achieved."
+      }
+    },
+    "closingHeading": "Try TrainLoop",
+    "closingLead": "Signing up is free. Once you're in, you can add your dog and set up a first plan right away."
   }
 }
