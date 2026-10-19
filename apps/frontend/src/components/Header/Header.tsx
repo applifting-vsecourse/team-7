@@ -20,20 +20,22 @@ export function Header({
   showMenu = true,
 }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between self-stretch bg-background px-2 md:px-4">
-      <div className="flex items-center gap-4">
-        <HeaderLogo iconOnly={compactLogo} />
-        {sidebarToggle}
-      </div>
-      <div
-        className={cn(
-          "flex shrink-0 items-center gap-4 rounded-3xl bg-surface py-1 pl-3",
-          // The menu is a button or avatar, which sits closer to the edge.
-          showMenu ? "pr-1" : "pr-3",
-        )}
-      >
-        <ThemeSwitcher />
-        {showMenu && <HeaderMenu />}
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-center bg-background">
+      <div className="flex max-w-content grow items-center justify-between px-2 md:px-4">
+        <div className="flex items-center gap-4">
+          <HeaderLogo iconOnly={compactLogo} />
+          {sidebarToggle}
+        </div>
+        <div
+          className={cn(
+            "flex shrink-0 items-center gap-4 rounded-3xl bg-surface py-1 pl-3",
+            // The menu is a button or avatar, which sits closer to the edge.
+            showMenu ? "pr-1" : "pr-3",
+          )}
+        >
+          <ThemeSwitcher />
+          {showMenu && <HeaderMenu />}
+        </div>
       </div>
     </header>
   );

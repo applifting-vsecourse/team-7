@@ -83,6 +83,32 @@ describe("theme controller and switch", () => {
     expect(document.documentElement).toHaveAttribute("data-theme", "light");
   });
 
+  it("shows the resolved System theme and lets a dark-system user switch to light", async () => {
+    isDark = true;
+    const user = userEvent.setup();
+    renderTheme();
+
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+    expect(screen.getByRole("switch", { name: "Dark" })).toBeChecked();
+    expect(screen.getByLabelText("Current theme")).toHaveTextContent(
+      "system/dark",
+    );
+    expect(localStorage.getItem("heroui-theme")).toBeNull();
+
+    changeOS(false);
+    expect(screen.getByRole("switch", { name: "Light" })).not.toBeChecked();
+    changeOS(true);
+    expect(screen.getByRole("switch", { name: "Dark" })).toBeChecked();
+
+    await user.click(screen.getByRole("switch"));
+    expect(screen.getByRole("switch", { name: "Light" })).not.toBeChecked();
+    expect(document.documentElement).toHaveAttribute("data-theme", "light");
+    expect(localStorage.getItem("heroui-theme")).toBe("light");
+    changeOS(false);
+    changeOS(true);
+    expect(document.documentElement).toHaveAttribute("data-theme", "light");
+  });
+
   it("carries forward the old preference, with the HeroUI key taking precedence", () => {
     localStorage.setItem("theme", "dark");
     const view = renderTheme();
@@ -132,5 +158,49 @@ describe("theme controller and switch", () => {
       "light/light",
     );
     expect(document.documentElement).toHaveAttribute("data-theme", "light");
+  });
+
+  it("syncs preferences from another tab and follows System after storage is cleared", () => {
+    renderTheme();
+    act(() => {
+      localStorage.setItem("heroui-theme", "dark");
+      window.dispatchEvent(
+        new StorageEvent("storage", {
+          key: "heroui-theme",
+          newValue: "dark",
+          storageArea: localStorage,
+        }),
+      );
+    });
+    expect(screen.getByRole("switch")).toBeChecked();
+    expect(screen.getByLabelText("Current theme")).toHaveTextContent(
+      "dark/dark",
+    );
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+
+    act(() => {
+      localStorage.clear();
+      window.dispatchEvent(
+        new StorageEvent("storage", { storageArea: localStorage }),
+      );
+    });
+    expect(screen.getByLabelText("Current theme")).toHaveTextContent(
+      "system/light",
+    );
+    changeOS(true);
+    expect(screen.getByLabelText("Current theme")).toHaveTextContent(
+      "system/dark",
+    );
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+  });
+
+  it("falls back to System for an invalid saved preference", () => {
+    localStorage.setItem("heroui-theme", "invalid");
+    renderTheme();
+    expect(screen.getByLabelText("Current theme")).toHaveTextContent(
+      "system/light",
+    );
+    expect(document.documentElement).toHaveAttribute("data-theme", "light");
+    expect(document.documentElement).not.toHaveClass("invalid");
   });
 });

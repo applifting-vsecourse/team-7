@@ -17,6 +17,7 @@
   --container-calendar-cell: 200px;
   --container-login-form: 400px;
   --container-login-block: 900px;
+  --container-weekly-stats-min: 292px;
 }
 
 :root,
@@ -44,14 +45,14 @@
 
 @layer base {
   body {
-    @apply flex min-h-svh flex-col items-center bg-background font-sans text-foreground antialiased;
+    @apply flex min-h-svh flex-col bg-background font-sans text-foreground antialiased;
   }
   /* The Figma "Layout" frame: fills the page width up to --container-content, centred by body. */
   #root {
-    @apply flex w-full max-w-content flex-1 flex-col items-start;
+    @apply flex w-full flex-1 flex-col items-center;
   }
   main {
-    @apply bg-surface p-2 sm:p-4;
+    @apply bg-surface px-2 pb-2 sm:px-4 sm:pb-4;
   }
 }
 

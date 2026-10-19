@@ -22,6 +22,8 @@ import {
   type TranslationSelector,
 } from "@/i18n/messages";
 
+import { PasswordInput } from "./PasswordInput";
+
 const schema = z
   .object({
     email: z
@@ -86,6 +88,8 @@ const fields = [
   },
 ] as const;
 
+const requiredFields = new Set<string>(["name", "username", "email"]);
+
 type SignUpFormProps = {
   isLoading: boolean;
   errorMessage?: string | null;
@@ -129,10 +133,9 @@ export function SignUpForm({
     >
       {errorMessage ? (
         <Alert status="danger" role="alert">
+          <Alert.Indicator />
           <Alert.Content>
-            <Alert.Description>
-              {translateMessage(t, errorMessage)}
-            </Alert.Description>
+            <Alert.Title>{translateMessage(t, errorMessage)}</Alert.Title>
           </Alert.Content>
         </Alert>
       ) : null}
@@ -145,20 +148,25 @@ export function SignUpForm({
             <TextField
               {...field}
               type={type}
+              isRequired={requiredFields.has(name)}
               isInvalid={fieldState.invalid}
               isDisabled={isPending}
               fullWidth
             >
               <Label>{t(label)}</Label>
-              <Input
-                ref={ref}
-                autoComplete={autoComplete}
-                placeholder={
-                  name === "email"
-                    ? t(($) => $.auth.fields.emailPlaceholder)
-                    : undefined
-                }
-              />
+              {type === "password" ? (
+                <PasswordInput ref={ref} autoComplete={autoComplete} />
+              ) : (
+                <Input
+                  ref={ref}
+                  autoComplete={autoComplete}
+                  placeholder={
+                    name === "email"
+                      ? t(($) => $.auth.fields.emailPlaceholder)
+                      : undefined
+                  }
+                />
+              )}
               {name === "password" ? (
                 <Description>
                   {t(($) => $.auth.fields.passwordHint)}

@@ -64,19 +64,17 @@ export function ForgotPasswordForm() {
     >
       {sent ? (
         <Alert status="success" role="status">
+          <Alert.Indicator />
           <Alert.Content>
-            <Alert.Description>
-              {t(($) => $.auth.reset.confirmation)}
-            </Alert.Description>
+            <Alert.Title>{t(($) => $.auth.reset.confirmation)}</Alert.Title>
           </Alert.Content>
         </Alert>
       ) : null}
       {errorMessage ? (
         <Alert status="danger" role="alert">
+          <Alert.Indicator />
           <Alert.Content>
-            <Alert.Description>
-              {translateMessage(t, errorMessage)}
-            </Alert.Description>
+            <Alert.Title>{translateMessage(t, errorMessage)}</Alert.Title>
           </Alert.Content>
         </Alert>
       ) : null}

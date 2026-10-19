@@ -1,18 +1,22 @@
 import { buttonVariants } from "@heroui/react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 
 import { ROUTES } from "@/app/routes";
 import Layout from "@/components/Layout";
 
-import { useSession } from "@/features/auth/hooks/useSession";
+import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: async ({ context }) => {
+    const session = await context.queryClient.fetchQuery(
+      authSessionQueryOptions(),
+    );
+    if (session) throw redirect({ to: ROUTES.overview });
+  },
   component: LandingPage,
 });
 
 function LandingPage() {
-  const { user } = useSession();
-
   return (
     <Layout title="Welcome">
       <div className="w-full">
@@ -24,32 +28,16 @@ function LandingPage() {
             Trainloop!
           </p>
 
-          {/* The call to action depends on who is asking: no point offering an
-              account to someone who already has one. */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            {user ? (
-              <Link
-                to={ROUTES.overview}
-                className="rounded-lg bg-fuchsia-500 px-6 py-3 font-bold text-black motion-safe:animate-pulse"
-              >
-                Jdi na prehled
-              </Link>
-            ) : (
-              <>
-                <Link
-                  to={ROUTES.signup}
-                  className={buttonVariants({ size: "lg" })}
-                >
-                  Create an account
-                </Link>
-                <Link
-                  to={ROUTES.login}
-                  className={buttonVariants({ size: "lg", variant: "outline" })}
-                >
-                  Sign in
-                </Link>
-              </>
-            )}
+            <Link to={ROUTES.signup} className={buttonVariants({ size: "lg" })}>
+              Create an account
+            </Link>
+            <Link
+              to={ROUTES.login}
+              className={buttonVariants({ size: "lg", variant: "outline" })}
+            >
+              Sign in
+            </Link>
           </div>
         </section>
       </div>

@@ -155,7 +155,10 @@ describe("overview routing", () => {
       "aria-current",
       "page",
     );
-    expect(screen.getByRole("button", { name: "Calendar" })).toBeDisabled();
+    expect(screen.getByRole("link", { name: "Calendar" })).toHaveAttribute(
+      "href",
+      "/calendar",
+    );
     expect(
       screen.getByRole("heading", { name: "My dogs" }),
     ).toBeInTheDocument();
@@ -169,6 +172,67 @@ describe("overview routing", () => {
     expect(vi.mocked(api.get).mock.calls[0]?.[1]?.signal).toBeInstanceOf(
       AbortSignal,
     );
+  });
+
+  it("protects the calendar and preserves its language in the login destination", async () => {
+    const router = renderRoute("/calendar?lng=en");
+    await waitFor(() => expect(router.state.location.pathname).toBe("/login"));
+    expect(decodeURIComponent(router.state.location.search.from ?? "")).toBe(
+      "/calendar?lng=en",
+    );
+  });
+
+  it("navigates to the calendar, changes weeks, and returns to this week", async () => {
+    state.signedIn = true;
+    const user = userEvent.setup();
+    const router = renderRoute("/overview?lng=en");
+    await user.click(await screen.findByRole("link", { name: "Calendar" }));
+    expect(
+      await screen.findByRole("heading", { name: "Calendar" }),
+    ).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/calendar");
+    expect(router.state.location.search.lng).toBe("en");
+    expect(screen.getByRole("link", { name: "Calendar" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(screen.getByRole("link", { name: "Overview" })).not.toHaveAttribute(
+      "aria-current",
+    );
+    const calendar = within(
+      screen.getByRole("region", { name: "Weekly overview" }),
+    );
+    expect(calendar.getAllByRole("time")).toHaveLength(7);
+    const currentWeek = calendar
+      .getAllByRole("time")
+      .map((time) => time.getAttribute("datetime"));
+    expect(calendar.getAllByRole("article")).toHaveLength(22);
+    await user.click(screen.getByRole("button", { name: "Next week" }));
+    const nextWeek = calendar
+      .getAllByRole("time")
+      .map((time) => time.getAttribute("datetime"));
+    expect(nextWeek).not.toEqual(currentWeek);
+    expect(calendar.queryByRole("article")).not.toBeInTheDocument();
+    expect(calendar.getAllByText("No exercises to display.")).toHaveLength(7);
+    await user.click(screen.getByRole("button", { name: "Previous week" }));
+    expect(
+      calendar
+        .getAllByRole("time")
+        .map((time) => time.getAttribute("datetime")),
+    ).toEqual(currentWeek);
+    await user.click(screen.getByRole("button", { name: "Previous week" }));
+    expect(
+      calendar
+        .getAllByRole("time")
+        .map((time) => time.getAttribute("datetime")),
+    ).not.toEqual(nextWeek);
+    await user.click(screen.getByRole("button", { name: "This week" }));
+    expect(
+      calendar
+        .getAllByRole("time")
+        .map((time) => time.getAttribute("datetime")),
+    ).toEqual(currentWeek);
+    expect(calendar.getAllByRole("article")).toHaveLength(22);
   });
 
   it("updates the shared atom from individual and all-dog selections", async () => {

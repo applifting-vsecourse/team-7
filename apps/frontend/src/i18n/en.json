@@ -16,6 +16,8 @@
       "passwordHint": "Use at least 8 characters.",
       "emailPlaceholder": "jane@example.com"
     },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "rememberMe": "Remember me",
     "forgotPassword": "Forgot password?",
     "reset": {
@@ -87,6 +89,29 @@
     "photoMoveHint": "Drag the photo to frame your dog. You can also use the arrow keys.",
     "photoZoom": "Zoom"
   },
+  "events": {
+    "timeAndDuration": "{{time}} ({{duration}} min)",
+    "upcoming": "Upcoming",
+    "completed": "Completed",
+    "unfinished": "Unfinished",
+    "dateAndTime": "{{date}} – {{time}}"
+  },
+  "weeklyStats": {
+    "title": "This week",
+    "dateRange": "{{start}} – {{end}}",
+    "completed": "Completed {{completed}} of {{total}} exercises",
+    "streak": "Streak",
+    "trainingTime": "Training time",
+    "duration": "{{hours}} h {{minutes}} min",
+    "satisfaction": "Satisfaction",
+    "rating": "{{value}} / 5",
+    "weeklySatisfaction": "Weekly satisfaction",
+    "emptyHistory": "Satisfaction from previous weeks will appear here.",
+    "days": "{{value}}",
+    "remaining": "{{count}} exercises left before Sunday.",
+    "remainingOne": "{{count}} exercise left before Sunday.",
+    "remainingFew": "{{count}} exercises left before Sunday."
+  },
   "theme": {
     "dark": "Dark",
     "light": "Light"
@@ -104,5 +129,48 @@
       "description": "An unexpected error occurred."
     },
     "reload": "Reload"
+  },
+  "calendar": {
+    "scheduleExercise": "Schedule exercise",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "unfinished": "Unfinished exercises",
+    "empty": "No exercises to display.",
+    "weeklyOverview": "Weekly overview",
+    "thisWeek": "This week",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
+    "weekRange": "{{start}} – {{end}}",
+    "currentWeekRange": "{{range}} (This week)"
+  },
+  "calendarMocks": {
+    "dog": "Dog {{number}}",
+    "obedience": "Obedience",
+    "agility": "Agility",
+    "relaxation": "Relaxation",
+    "tracking": "Tracking",
+    "socialization": "Socialization",
+    "tricks": "Tricks",
+    "stay": "Stay – 3 sets of 30 seconds",
+    "course": "Course: jump, tunnel, slalom, dog walk, jump, tire",
+    "mat": "Stay on the mat with rewards for calm behavior",
+    "track": "500 m track – 2 turns, an article in the middle",
+    "walk": "Walk around the playground, reward eye contact",
+    "jumps": "Jumps – 10 jumps over a 40 cm bar",
+    "slalom": "Slalom – 5 runs through 6 poles",
+    "spin": "Spin around – 10 repetitions",
+    "recall": "Recall",
+    "retrieve": "Retrieve",
+    "heel": "Heel – 10 sets of 20 steps",
+    "recallSignal": "Recall on cue – 8 repetitions from 10 m",
+    "passingDog": "Pass a dog on a leash at a distance of 5 m",
+    "shortTrack": "300 m track – 2 articles along the route",
+    "heelTempo": "Heel – changes of pace",
+    "aFrame": "A-frame – 5 approaches to the contact zone",
+    "backwards": "Back up between legs – 8 repetitions",
+    "recallPlay": "Recall from play – 6 repetitions",
+    "retrieveHand": "Retrieve – 10 deliveries to hand",
+    "groupStay": "Group stay – 3 sets of 1 minute",
+    "waterRetrieve": "Water retrieve – 8 repetitions"
   }
 }

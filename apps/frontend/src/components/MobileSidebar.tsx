@@ -1,17 +1,15 @@
-import { createContext, type ReactNode, useState } from "react";
+import { type ReactNode } from "react";
 import { Bars, Xmark } from "@gravity-ui/icons";
 import { Button, Modal } from "@heroui/react";
+import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 
+import { mobileSidebarOpenAtom } from "@/app/atoms/mobileSidebarOpenAtom";
 import { HeaderLogo } from "@/components/Header/HeaderLogo";
-
-export const CloseMobileSidebarContext = createContext<
-  (() => void) | undefined
->(undefined);
 
 export function MobileSidebar({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useAtom(mobileSidebarOpenAtom);
 
   return (
     <Modal isOpen={isOpen} onOpenChange={setIsOpen}>
@@ -33,7 +31,7 @@ export function MobileSidebar({ children }: { children: ReactNode }) {
           <Modal.Dialog
             id="mobile-sidebar"
             aria-label={t(($) => $.navigation.main)}
-            className="h-full max-w-none gap-6 overflow-y-auto rounded-l-none rounded-r-3xl bg-background p-4 shadow-none"
+            className="h-full max-w-none gap-6 overflow-hidden rounded-l-none rounded-r-3xl bg-surface p-4 shadow-none"
           >
             <div className="flex shrink-0 items-center justify-between">
               <HeaderLogo iconOnly />
@@ -47,9 +45,9 @@ export function MobileSidebar({ children }: { children: ReactNode }) {
                 <Xmark className="size-4" aria-hidden="true" />
               </Button>
             </div>
-            <CloseMobileSidebarContext value={() => setIsOpen(false)}>
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
               {children}
-            </CloseMobileSidebarContext>
+            </div>
           </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>
