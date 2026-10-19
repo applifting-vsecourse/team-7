@@ -88,6 +88,8 @@ const fields = [
   },
 ] as const;
 
+const requiredFields = new Set<string>(["name", "username", "email"]);
+
 type SignUpFormProps = {
   isLoading: boolean;
   errorMessage?: string | null;
@@ -146,6 +148,7 @@ export function SignUpForm({
             <TextField
               {...field}
               type={type}
+              isRequired={requiredFields.has(name)}
               isInvalid={fieldState.invalid}
               isDisabled={isPending}
               fullWidth
