@@ -1,4 +1,4 @@
-import { openAPI, username } from "better-auth/plugins";
+import { openAPI } from "better-auth/plugins";
 import { BetterAuthOptions } from "better-auth/types";
 
 export const betterAuthCoreConfig: BetterAuthOptions = {
@@ -15,5 +15,5 @@ export const betterAuthCoreConfig: BetterAuthOptions = {
       },
     },
   },
-  plugins: [openAPI(), username()],
+  plugins: [openAPI()],
 };

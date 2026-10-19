@@ -97,10 +97,6 @@ model User {
   dogs            Dog[]
   role            UserRole  @default(user)
 
-  username        String? @db.VarChar(50)
-  displayUsername String? @db.VarChar(50)
-
   @@unique([email])
-  @@unique([username])
   @@map("user")
 }

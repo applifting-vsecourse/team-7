@@ -6,7 +6,6 @@ type CreateUserParams = {
   email: string;
   password: string;
   name: string;
-  username: string;
   role?: string;
 };
 
@@ -15,7 +14,7 @@ export async function createUser(
   auth: BetterAuth,
   params: CreateUserParams,
 ): Promise<User> {
-  const { email, password, name, username, role } = params;
+  const { email, password, name, role } = params;
 
   // use better auth api to sign the user up using email & password
   await auth.api.signUpEmail({
@@ -39,7 +38,6 @@ export async function createUser(
   await prisma.user.update({
     where: { id: user.id },
     data: {
-      username,
       role: role as UserRole,
     },
   });
