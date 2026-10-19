@@ -118,7 +118,7 @@ export function WeeklyCalendar() {
                 key={format(date, "yyyy-MM-dd")}
                 aria-label={fullDateFormatter.format(date)}
                 className={cn(
-                  "box-content flex w-calendar-cell shrink-0 flex-col gap-3 rounded-2xl px-3 py-2",
+                  "box-content flex w-calendar-cell shrink-0 flex-col gap-3 rounded-2xl px-3 pt-2 pb-3",
                   isToday && "bg-accent text-accent-foreground",
                 )}
               >
