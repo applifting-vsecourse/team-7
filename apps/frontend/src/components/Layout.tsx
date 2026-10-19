@@ -47,7 +47,7 @@ export default function Layout({
         className={cn(
           "flex w-full flex-1",
           sidebar
-            ? "flex-col items-stretch bg-background md:flex-row"
+            ? "max-w-content flex-col items-stretch bg-background md:flex-row"
             : "items-start justify-center",
           className,
         )}
