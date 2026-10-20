@@ -34,13 +34,15 @@ export async function createUser(
     throw new Error(`Failed to create user with email: ${email}`);
   }
 
+  if (!role) {
+    return user;
+  }
+
   // assign a role to the user directly
-  await prisma.user.update({
+  return prisma.user.update({
     where: { id: user.id },
     data: {
       role: role as UserRole,
     },
   });
-
-  return user;
 }
