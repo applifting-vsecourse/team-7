@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TrainLoop — stav projektu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #fafaf9;
+        --fg: #1c1917;
+        --muted: #6b6560;
+        --border: #e4e2df;
+        --surface: #ffffff;
+        --done: #2f7d5b;
+        --todo: #d6d3cf;
+        --scope: #8a8580;
+        --mvp: #c2410c;
+        --forecast: #2563eb;
+        --sprint-band: rgba(28, 25, 23, 0.035);
+        --danger: #b91c1c;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #141312;
+          --fg: #f2f0ee;
+          --muted: #a29d97;
+          --border: #2e2b29;
+          --surface: #1c1a19;
+          --done: #4fb488;
+          --todo: #3d3936;
+          --scope: #8f8a85;
+          --mvp: #f08a4b;
+          --forecast: #6b9cff;
+          --sprint-band: rgba(255, 255, 255, 0.04);
+          --danger: #f87171;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        font-size: 15px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 32px 16px 64px;
+      }
+      main,
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+      }
+      h1,
+      h2 {
+        margin: 0;
+        letter-spacing: -0.015em;
+      }
+      h1 {
+        font-size: 28px;
+      }
+      h2 {
+        font-size: 18px;
+        margin-bottom: 4px;
+      }
+      p {
+        margin: 0;
+      }
+      a {
+        color: inherit;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .small {
+        font-size: 13px;
+      }
+
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .toggle {
+        display: inline-flex;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 3px;
+        background: var(--surface);
+      }
+      .toggle button {
+        font: inherit;
+        font-size: 14px;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        padding: 6px 14px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+      .toggle button[aria-pressed="true"] {
+        background: var(--fg);
+        color: var(--bg);
+      }
+      .toggle button:focus-visible,
+      .retry:focus-visible {
+        outline: 2px solid var(--forecast);
+        outline-offset: 2px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+      .stat {
+        padding: 18px 16px 18px 0;
+      }
+      .stat + .stat {
+        padding-left: 16px;
+        border-left: 1px solid var(--border);
+      }
+      .stat .value {
+        font-size: 30px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+      }
+      .stat .label {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .bar {
+        height: 6px;
+        border-radius: 999px;
+        background: var(--todo);
+        margin-top: 8px;
+        overflow: hidden;
+      }
+      .bar span {
+        display: block;
+        height: 100%;
+        background: var(--done);
+      }
+
+      section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+        gap: 40px;
+      }
+      .chart {
+        position: relative;
+        height: 340px;
+      }
+      .chart.tall {
+        height: 380px;
+      }
+      .chart.short {
+        height: 240px;
+      }
+
+      .note {
+        font-size: 13px;
+        color: var(--muted);
+        border-left: 2px solid var(--mvp);
+        padding-left: 10px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      th {
+        text-align: left;
+        font-weight: 500;
+        font-size: 13px;
+        color: var(--muted);
+        border-bottom: 1px solid var(--border);
+        padding: 8px 12px 8px 0;
+      }
+      td {
+        border-bottom: 1px solid var(--border);
+        padding: 9px 12px 9px 0;
+        vertical-align: top;
+      }
+      td.num,
+      th.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      .pill {
+        display: inline-block;
+        font-size: 12px;
+        padding: 1px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      .pill.mvp {
+        border-color: var(--mvp);
+        color: var(--mvp);
+      }
+      details summary {
+        cursor: pointer;
+        font-weight: 500;
+      }
+
+      .state {
+        padding: 48px 0;
+        text-align: center;
+        color: var(--muted);
+      }
+      .state.error {
+        color: var(--danger);
+      }
+      .retry {
+        margin-top: 12px;
+        font: inherit;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--fg);
+        border-radius: 999px;
+        padding: 6px 16px;
+        cursor: pointer;
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>TrainLoop — stav projektu</h1>
+          <p class="muted small" id="meta">Načítám issues z GitHubu…</p>
+        </div>
+        <div class="toggle" role="group" aria-label="Jednotka">
+          <button type="button" data-unit="issues" aria-pressed="true">
+            Počet issues
+          </button>
+          <button type="button" data-unit="points" aria-pressed="false">
+            Story points
+          </button>
+        </div>
+      </header>
+
+      <div id="state" class="state" role="status">Načítám…</div>
+
+      <div id="content" class="stack" hidden>
+        <div class="stats" id="stats"></div>
+
+        <p class="note" id="estimate-note" hidden></p>
+
+        <section>
+          <div>
+            <h2>Průběh do deadlinu</h2>
+            <p class="muted small">
+              Kumulativně hotovo z MVP oproti jeho rozsahu. Šedá čárkovaná je
+              rovnoměrný plán do konce posledního plánovaného sprintu, modrá
+              čárkovaná odhad podle dosavadního tempa MVP. Svislé pásy jsou
+              sprinty (* = zkouškové). Celkový rozsah včetně nice to have
+              zobrazíte kliknutím v legendě.
+            </p>
+          </div>
+          <div class="chart tall"><canvas id="burnup"></canvas></div>
+        </section>
+
+        <div class="grid-2">
+          <section>
+            <div>
+              <h2>Podle priority</h2>
+              <p class="muted small">Hotovo a zbývá v každé prioritě.</p>
+            </div>
+            <div class="chart short"><canvas id="priority"></canvas></div>
+          </section>
+          <section>
+            <div>
+              <h2>Dokončeno ve sprintech</h2>
+              <p class="muted small">
+                Uzavřená issues a mergnuté PR v jednotlivých sprintech.
+              </p>
+            </div>
+            <div class="chart short"><canvas id="velocity"></canvas></div>
+          </section>
+        </div>
+
+        <section>
+          <div>
+            <h2>Podle epiku</h2>
+            <p class="muted small">Co je hotovo a co chybí v každé oblasti.</p>
+          </div>
+          <div class="chart" id="epic-wrap"><canvas id="epic"></canvas></div>
+        </section>
+
+        <section>
+          <div>
+            <h2>Co zbývá</h2>
+            <p class="muted small" id="remaining-summary"></p>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Issue</th>
+                  <th>Priorita</th>
+                  <th>Epic</th>
+                  <th class="num">SP</th>
+                </tr>
+              </thead>
+              <tbody id="remaining"></tbody>
+            </table>
+          </div>
+          <details>
+            <summary id="done-summary">Hotovo</summary>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Issue</th>
+                    <th>Priorita</th>
+                    <th>Uzavřeno</th>
+                    <th class="num">SP</th>
+                  </tr>
+                </thead>
+                <tbody id="done"></tbody>
+              </table>
+            </div>
+          </details>
+        </section>
+      </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="./config.js"></script>
+    <script src="./dashboard.js"></script>
+  </body>
+</html>
