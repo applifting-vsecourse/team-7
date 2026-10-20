@@ -39,7 +39,6 @@ export const seedDatabase = async (
     email: config.superadminEmail,
     password: config.superadminPassword,
     name: "Admin (Delete in Prod)",
-    username: "superadmin",
     role: "admin",
   });
 
@@ -49,35 +48,30 @@ export const seedDatabase = async (
     email: "caffeinatedduck@example.com",
     password: "password1",
     name: "Caffeinated Duck",
-    username: "CaffeinatedDuck",
   });
 
   await createUser(prisma, auth, {
     email: "deepduckthoughts@example.com",
     password: "password2",
     name: "Deep Duck Thoughts",
-    username: "DeepDuckThoughts",
   });
 
   await createUser(prisma, auth, {
     email: "breadcritic@example.com",
     password: "password3",
     name: "The Bread Critic",
-    username: "BreadCritic",
   });
 
   await createUser(prisma, auth, {
     email: "migrationseason@example.com",
     password: "password4",
     name: "Migration Season",
-    username: "MigrationSeason",
   });
 
   await createUser(prisma, auth, {
     email: "pondadmin@example.com",
     password: "password5",
     name: "Pond Admin",
-    username: "PondAdmin",
   });
 
   await seedDogs(prisma);

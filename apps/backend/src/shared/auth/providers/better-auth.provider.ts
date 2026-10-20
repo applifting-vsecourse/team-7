@@ -28,7 +28,7 @@ const createAuth = (
       sendResetPassword: async ({ user, token }) => {
         const passwordResetUrl = `${config.frontendUrl}/${config.frontendResetPasswordUrl}?token=${token}`;
         const html = await renderEmail(ResetPassword, {
-          username: user.name,
+          name: user.name,
           url: passwordResetUrl,
         });
         await emailProvider.sendEmail(user.email, "Password reset", html);

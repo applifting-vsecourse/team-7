@@ -11,7 +11,6 @@
       "email": "E-mail",
       "password": "Heslo",
       "name": "Jméno",
-      "username": "Uživatelské jméno",
       "confirmPassword": "Potvrzení hesla",
       "passwordHint": "Použijte alespoň 8 znaků.",
       "emailPlaceholder": "jana@example.com"
@@ -47,9 +46,6 @@
     },
     "name": {
       "required": "Zadejte jméno"
-    },
-    "username": {
-      "required": "Zadejte uživatelské jméno"
     }
   },
   "navigation": {

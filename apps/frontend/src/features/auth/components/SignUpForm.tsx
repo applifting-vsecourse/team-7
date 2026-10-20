@@ -35,10 +35,6 @@ const schema = z
       .string()
       .trim()
       .min(1, keyFromSelector(messageSelectors.nameRequired)),
-    username: z
-      .string()
-      .trim()
-      .min(1, keyFromSelector(messageSelectors.usernameRequired)),
     password: z
       .string()
       .trim()
@@ -63,12 +59,6 @@ const fields = [
     type: "text",
   },
   {
-    name: "username",
-    label: (($) => $.auth.fields.username) satisfies TranslationSelector,
-    autoComplete: "username",
-    type: "text",
-  },
-  {
     name: "email",
     label: (($) => $.auth.fields.email) satisfies TranslationSelector,
     autoComplete: "email",
@@ -88,7 +78,7 @@ const fields = [
   },
 ] as const;
 
-const requiredFields = new Set<string>(["name", "username", "email"]);
+const requiredFields = new Set<string>(["name", "email"]);
 
 type SignUpFormProps = {
   isLoading: boolean;
@@ -108,7 +98,6 @@ export function SignUpForm({
     defaultValues: {
       email: "",
       name: "",
-      username: "",
       password: "",
       passwordConfirmation: "",
     },

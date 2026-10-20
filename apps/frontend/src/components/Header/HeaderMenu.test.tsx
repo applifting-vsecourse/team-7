@@ -15,7 +15,7 @@ import { HeaderMenu } from "@/components/Header/HeaderMenu";
 import { Route as RootRoute } from "@/routes/__root";
 
 const state = vi.hoisted(() => ({
-  user: null as { name: string; username: string } | null,
+  user: null as { name: string } | null,
   isPending: false,
   mutate: vi.fn(),
 }));
@@ -57,7 +57,7 @@ function renderNavigation(initialEntry = "/") {
 
 describe("user menu and navigation", () => {
   beforeEach(() => {
-    state.user = { name: "Test Duck", username: "duck" };
+    state.user = { name: "Test Duck" };
     state.isPending = false;
     state.mutate.mockClear();
   });
@@ -78,6 +78,12 @@ describe("user menu and navigation", () => {
     await waitFor(() => expect(trigger).toHaveFocus());
     await user.keyboard("{ArrowDown}{Enter}");
     await waitFor(() => expect(state.mutate).toHaveBeenCalledOnce());
+  });
+
+  it("shows the account name in the user menu", async () => {
+    render(<HeaderMenu />);
+    await userEvent.click(screen.getByRole("button", { name: "User menu" }));
+    expect(await screen.findByText("Test Duck")).toBeInTheDocument();
   });
 
   it("disables sign-out while the mutation is pending", async () => {

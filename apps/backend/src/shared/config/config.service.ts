@@ -73,7 +73,7 @@ export class Config {
 
   @Env("EMAIL_FROM", {
     expose: true,
-    defaultValue: "Quacker <onboarding@resend.dev>",
+    defaultValue: "TrainLoop <onboarding@resend.dev>",
   })
   @IsNotEmpty()
   readonly emailFrom!: string;

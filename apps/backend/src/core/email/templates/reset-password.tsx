@@ -14,17 +14,17 @@ import {
 } from "react-email";
 
 export interface ResetPasswordProps {
-  username: string;
+  name: string;
   url: string;
 }
 
 export const ResetPassword = ({
-  username,
+  name,
   url,
 }: ResetPasswordProps): React.JSX.Element => (
   <Html>
     <Head />
-    <Preview>Reset your Quacker password</Preview>
+    <Preview>Reset your TrainLoop password</Preview>
     <Tailwind>
       <Body className="bg-gray-50 font-sans py-10">
         <Container className="bg-white rounded-lg mx-auto p-8 max-w-xl">
@@ -32,7 +32,7 @@ export const ResetPassword = ({
             Reset your password
           </Heading>
           <Text className="text-gray-700 text-base leading-6 mt-4">
-            Hi {username}, we received a request to reset your Quacker password.
+            Hi {name}, we received a request to reset your TrainLoop password.
             Click the button below to choose a new one.
           </Text>
           <Section className="text-center my-8">

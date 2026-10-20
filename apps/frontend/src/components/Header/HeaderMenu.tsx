@@ -46,7 +46,6 @@ export function HeaderMenu() {
       <Dropdown.Popover placement="bottom end" className="w-48">
         <div className="px-3 py-3">
           <p className="text-sm font-medium">{user.name}</p>
-          <p className="text-xs text-muted">@{user.username}</p>
         </div>
         <Dropdown.Menu
           aria-label={t(($) => $.navigation.userActions)}

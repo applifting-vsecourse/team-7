@@ -96,7 +96,7 @@ describe("auth forms", () => {
     expect(screen.getByRole("button", { name: "Sign in" })).toBeDisabled();
   });
 
-  it("validates password confirmation, then submits all signup fields", async () => {
+  it("validates password confirmation, then signs up without a username", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<SignUpForm isLoading={false} onSubmit={onSubmit} />);
@@ -104,7 +104,7 @@ describe("auth forms", () => {
       "Use at least 8 characters.",
     );
     await user.type(screen.getByLabelText("Name"), "Duck");
-    await user.type(screen.getByLabelText("Username"), "duck");
+    expect(screen.queryByLabelText("Username")).not.toBeInTheDocument();
     await user.type(screen.getByLabelText("Email"), "duck@example.com");
     await user.type(screen.getByLabelText("Password"), "password1");
     await user.type(screen.getByLabelText("Confirm password"), "password2");
@@ -120,7 +120,6 @@ describe("auth forms", () => {
     await waitFor(() =>
       expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
         name: "Duck",
-        username: "duck",
         email: "duck@example.com",
         password: "password1",
         passwordConfirmation: "password1",

@@ -32,7 +32,6 @@ function SignUpPage() {
   const handleSubmit = async (values: {
     email: string;
     name: string;
-    username: string;
     password: string;
   }) => {
     setErrorMessage(null);
@@ -41,7 +40,6 @@ function SignUpPage() {
         email: values.email,
         password: values.password,
         name: values.name,
-        username: values.username,
       });
       await navigate({ to: ROUTES.overview });
     } catch (error) {
