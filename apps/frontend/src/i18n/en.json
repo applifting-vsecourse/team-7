@@ -139,8 +139,7 @@
     "thisWeek": "This week",
     "previousWeek": "Previous week",
     "nextWeek": "Next week",
-    "weekRange": "{{start}} – {{end}}",
-    "currentWeekRange": "{{range}} (This week)"
+    "weekRange": "{{start}} – {{end}}"
   },
   "calendarMocks": {
     "dog": "Dog {{number}}",

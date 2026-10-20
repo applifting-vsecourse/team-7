@@ -1,6 +1,7 @@
-import { useId, useEffect, useRef, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "@gravity-ui/icons";
 import { Button, ButtonGroup, ScrollShadow } from "@heroui/react";
+import { useRouter } from "@tanstack/react-router";
 import {
   addDays,
   addWeeks,
@@ -18,6 +19,7 @@ import { Event } from "./Event";
 
 export function WeeklyCalendar() {
   const { t, i18n } = useTranslation();
+  const router = useRouter();
   const headingId = useId();
   const scrollRef = useRef<HTMLDivElement>(null);
   const todayRef = useRef<HTMLElement>(null);
@@ -25,6 +27,9 @@ export function WeeklyCalendar() {
   const [week, setWeek] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
+  // The strip never shrinks while browsing weeks, so a shorter (e.g. empty)
+  // week doesn't collapse the page and jump the window scroll.
+  const [minHeight, setMinHeight] = useState<number>();
   const currentWeek = isSameWeek(week, today, { weekStartsOn: 1 });
   const locale = i18n.resolvedLanguage ?? "cs";
   const dateFormatter = new Intl.DateTimeFormat(locale, {
@@ -43,11 +48,33 @@ export function WeeklyCalendar() {
   });
   const events = getMockedWeeklyEvents(t);
 
-  useEffect(() => {
-    if (scrollRef.current && todayRef.current) {
-      scrollRef.current.scrollLeft = todayRef.current.offsetLeft;
-    }
-  }, []);
+  // Center today on the screen; the browser clamps scrollLeft, so when
+  // centering isn't possible (wide screens, week edges) it still ends up in view.
+  useLayoutEffect(() => {
+    if (!currentWeek) return;
+    const centerToday = () => {
+      const scroller = scrollRef.current;
+      const day = todayRef.current;
+      if (!scroller || !day) return;
+      const { left, width } = day.getBoundingClientRect();
+      const screenCenter = document.documentElement.clientWidth / 2;
+      scroller.scrollLeft += left + width / 2 - screenCenter;
+    };
+    centerToday();
+    // On refresh the router's scroll restoration reapplies the previous
+    // scrollLeft after this effect, so center again once it has run.
+    const unsubscribe = router.subscribe("onRendered", () => {
+      unsubscribe();
+      centerToday();
+    });
+    return unsubscribe;
+  }, [currentWeek, router]);
+
+  const changeWeek = (next: Date) => {
+    const height = scrollRef.current?.offsetHeight ?? 0;
+    setMinHeight((value) => Math.max(value ?? 0, height));
+    setWeek(next);
+  };
 
   return (
     <div className="flex min-w-0 flex-col gap-6 pb-4">
@@ -64,9 +91,7 @@ export function WeeklyCalendar() {
             aria-atomic="true"
             className="text-base leading-7 font-medium text-muted"
           >
-            {currentWeek
-              ? t(($) => $.calendar.currentWeekRange, { range })
-              : range}
+            {range}
           </p>
           <ButtonGroup
             variant="secondary"
@@ -76,21 +101,21 @@ export function WeeklyCalendar() {
             <Button
               isIconOnly
               aria-label={t(($) => $.calendar.previousWeek)}
-              onPress={() => setWeek((value) => addWeeks(value, -1))}
+              onPress={() => changeWeek(addWeeks(week, -1))}
             >
               <ChevronLeft className="size-4 text-accent" aria-hidden="true" />
             </Button>
             <Button
               isIconOnly
               aria-label={t(($) => $.calendar.nextWeek)}
-              onPress={() => setWeek((value) => addWeeks(value, 1))}
+              onPress={() => changeWeek(addWeeks(week, 1))}
             >
               <ButtonGroup.Separator />
               <ChevronRight className="size-4 text-accent" aria-hidden="true" />
             </Button>
             <Button
               onPress={() =>
-                setWeek(startOfWeek(new Date(), { weekStartsOn: 1 }))
+                changeWeek(startOfWeek(new Date(), { weekStartsOn: 1 }))
               }
             >
               <ButtonGroup.Separator />
@@ -103,6 +128,7 @@ export function WeeklyCalendar() {
         ref={scrollRef}
         orientation="horizontal"
         className="w-full pb-4"
+        style={{ minHeight }}
         tabIndex={0}
         role="region"
         aria-labelledby={headingId}

@@ -139,8 +139,7 @@
     "thisWeek": "Tento týden",
     "previousWeek": "Předchozí týden",
     "nextWeek": "Následující týden",
-    "weekRange": "{{start}} – {{end}}",
-    "currentWeekRange": "{{range}} (Tento týden)"
+    "weekRange": "{{start}} – {{end}}"
   },
   "calendarMocks": {
     "dog": "Pes {{number}}",
