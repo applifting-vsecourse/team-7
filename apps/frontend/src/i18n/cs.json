@@ -172,5 +172,34 @@
     "retrieveHand": "Aport – 10 přinesení do ruky",
     "groupStay": "Odložení – 3 série po 1 minutě ve skupině",
     "waterRetrieve": "Aport z vody – 8 přinesení"
+  },
+  "landing": {
+    "title": "Plánovač a tréninkový deník pro psa",
+    "heading": "Plánujte a zapisujte trénink svého psa",
+    "lead": "Sestavte si plán pro každého psa, rozvrhněte cvičení do týdne a po tréninku si zapište, jak šel. Z historie pak uvidíte, jak se pes zlepšuje.",
+    "signUp": "Zaregistrovat se",
+    "signIn": "Přihlásit se",
+    "featuresHeading": "Co v aplikaci najdete",
+    "featuresLead": "Pro psovody, kteří trénují sami nebo s trenérem.",
+    "features": {
+      "plan": {
+        "title": "Plán pro každého psa",
+        "description": "Disciplíny, cíle a cvičení si nastavíte podle sebe a můžete je kdykoli upravit."
+      },
+      "calendar": {
+        "title": "Týdenní kalendář",
+        "description": "Cvičení se mohou každý týden opakovat. Co nestihnete, přesunete na jiný den."
+      },
+      "log": {
+        "title": "Záznam z tréninku",
+        "description": "Ke každému cvičení si můžete zapsat poznámku. Zvládnete to i z telefonu přímo na cvičišti."
+      },
+      "progress": {
+        "title": "Historie tréninků",
+        "description": "Záznamy zůstávají v historii, takže se k nim můžete kdykoli vrátit. Když pes cíl zvládne, označíte ho jako splněný."
+      }
+    },
+    "closingHeading": "Vyzkoušejte TrainLoop",
+    "closingLead": "Registrace je zdarma. Po přihlášení si můžete hned přidat psa a založit první plán."
   }
 }
