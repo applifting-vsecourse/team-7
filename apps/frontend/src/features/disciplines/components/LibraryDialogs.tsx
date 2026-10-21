@@ -32,7 +32,9 @@ function ContextLine({
     <p className="flex min-w-0 items-center gap-1.5 text-sm">
       {icon}
       <span className="text-muted">{label}</span>
-      <span className="min-w-0 font-medium wrap-break-word">{value}</span>
+      <span className="min-w-0 font-medium wrap-break-word text-foreground">
+        {value}
+      </span>
     </p>
   );
 }
