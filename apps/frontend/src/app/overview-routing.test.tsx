@@ -474,7 +474,7 @@ describe("overview routing", () => {
     );
   });
 
-  it("replaces and removes an existing dog's photo from the sidebar", async () => {
+  it("replaces and removes an existing dog's photo on its page", async () => {
     state.signedIn = true;
     state.savePhoto.mockResolvedValue({
       id: "dog-1",
@@ -488,7 +488,7 @@ describe("overview routing", () => {
     });
     state.getDogs.mockResolvedValue([{ id: "dog-1", text: "Buddy" }]);
     const user = userEvent.setup();
-    renderRoute("/overview");
+    renderRoute("/dogs/dog-1");
     await user.click(
       await screen.findByRole("button", { name: "Change photo for Buddy" }),
     );
@@ -538,7 +538,7 @@ describe("overview routing", () => {
   it("rejects oversized photos and allows choosing another photo", async () => {
     state.signedIn = true;
     const user = userEvent.setup();
-    renderRoute("/overview");
+    renderRoute("/dogs/dog-1");
     await user.click(
       await screen.findByRole("button", {
         name: "Change photo for Test User's dog",
@@ -564,7 +564,7 @@ describe("overview routing", () => {
     state.signedIn = true;
     state.savePhoto.mockRejectedValue(new Error("Failed"));
     const user = userEvent.setup();
-    renderRoute("/overview");
+    renderRoute("/dogs/dog-1");
     await user.click(
       await screen.findByRole("button", {
         name: "Change photo for Test User's dog",
@@ -582,6 +582,29 @@ describe("overview routing", () => {
       screen.getByRole("application", { name: "Dog avatar preview" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save photo" })).toBeEnabled();
+  });
+
+  it("opens a dog's page from the sidebar and marks it active", async () => {
+    state.signedIn = true;
+    const user = userEvent.setup();
+    const router = renderRoute("/overview?lng=en");
+
+    const link = await screen.findByRole("link", { name: "Test User's dog" });
+    expect(link).toHaveAttribute("href", "/dogs/dog-1?lng=en");
+    await user.click(link);
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/dogs/dog-1"),
+    );
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Test User's dog" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Test User's dog" }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(
+      screen.getByRole("button", { name: "Change photo for Test User's dog" }),
+    ).toBeInTheDocument();
   });
 
   it("shows an error when the dogs cannot be loaded", async () => {

@@ -7,4 +7,5 @@ export const ROUTES = {
   calendar: "/calendar",
   disciplines: "/disciplines",
   discipline: "/disciplines/$disciplineId",
+  dog: "/dogs/$dogId",
 } as const;

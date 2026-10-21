@@ -93,7 +93,10 @@
     "savePhoto": "Uložit fotku",
     "photoSaveError": "Fotku se nepodařilo uložit. Vyberte platnou fotku a zkuste to znovu.",
     "photoMoveHint": "Přetažením fotky upravte výřez. Můžete použít i šipky na klávesnici.",
-    "photoZoom": "Přiblížení"
+    "photoZoom": "Přiblížení",
+    "pageLoading": "Načítám psa…",
+    "notFound": "Pes neexistuje nebo byl smazán.",
+    "pagePlaceholder": "Profil psa připravujeme. Zatím tu můžete změnit jeho fotku kliknutím na avatar."
   },
   "events": {
     "timeAndDuration": "{{time}} ({{duration}} min)",

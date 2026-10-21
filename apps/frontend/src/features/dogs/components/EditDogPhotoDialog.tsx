@@ -15,7 +15,14 @@ import { photoFormData, type DogPhoto } from "../api/dogPhotos";
 import { DogAvatar } from "./DogAvatar";
 import { DogPhotoPicker } from "./DogPhotoPicker";
 
-export function EditDogPhotoDialog({ dog }: { dog: Dog }) {
+export function EditDogPhotoDialog({
+  dog,
+  avatarClassName = "size-9 md:size-8",
+}: {
+  dog: Dog;
+  // Size of the avatar that opens the dialog.
+  avatarClassName?: string;
+}) {
   const { t } = useTranslation();
   const { user } = useSession();
   const queryClient = useQueryClient();
@@ -53,9 +60,9 @@ export function EditDogPhotoDialog({ dog }: { dog: Dog }) {
         variant="ghost"
         isIconOnly
         aria-label={t(($) => $.dogs.editPhotoFor, { name: dog.text })}
-        className="size-9 shrink-0 rounded-full p-0 md:size-8"
+        className={`shrink-0 rounded-full p-0 ${avatarClassName}`}
       >
-        <DogAvatar dog={dog} />
+        <DogAvatar dog={dog} className={avatarClassName} />
       </Button>
       <Modal.Backdrop
         isDismissable={!mutation.isPending}

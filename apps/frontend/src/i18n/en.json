@@ -93,7 +93,10 @@
     "savePhoto": "Save photo",
     "photoSaveError": "Unable to save the photo. Please choose a valid photo and try again.",
     "photoMoveHint": "Drag the photo to frame your dog. You can also use the arrow keys.",
-    "photoZoom": "Zoom"
+    "photoZoom": "Zoom",
+    "pageLoading": "Loading dog…",
+    "notFound": "The dog doesn't exist or was deleted.",
+    "pagePlaceholder": "The dog's profile is on its way. For now, click the avatar to change the photo."
   },
   "events": {
     "timeAndDuration": "{{time}} ({{duration}} min)",

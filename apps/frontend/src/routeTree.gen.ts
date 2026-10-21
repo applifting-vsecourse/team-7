@@ -17,6 +17,7 @@ import { Route as OverviewRouteImport } from './routes/overview'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as DisciplinesIndexRouteImport } from './routes/disciplines/index'
 import { Route as DisciplinesDisciplineIdRouteImport } from './routes/disciplines/$disciplineId'
+import { Route as DogsDogIdRouteImport } from './routes/dogs/$dogId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +59,11 @@ const DisciplinesDisciplineIdRoute = DisciplinesDisciplineIdRouteImport.update({
   path: '/disciplines/$disciplineId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DogsDogIdRoute = DogsDogIdRouteImport.update({
+  id: '/dogs/$dogId',
+  path: '/dogs/$dogId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/overview': typeof OverviewRoute
   '/signup': typeof SignupRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
+  '/dogs/$dogId': typeof DogsDogIdRoute
   '/disciplines/': typeof DisciplinesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/overview': typeof OverviewRoute
   '/signup': typeof SignupRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
+  '/dogs/$dogId': typeof DogsDogIdRoute
   '/disciplines': typeof DisciplinesIndexRoute
 }
 export interface FileRoutesById {
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/overview': typeof OverviewRoute
   '/signup': typeof SignupRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
+  '/dogs/$dogId': typeof DogsDogIdRoute
   '/disciplines/': typeof DisciplinesIndexRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/overview'
     | '/signup'
     | '/disciplines/$disciplineId'
+    | '/dogs/$dogId'
     | '/disciplines/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/overview'
     | '/signup'
     | '/disciplines/$disciplineId'
+    | '/dogs/$dogId'
     | '/disciplines'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/overview'
     | '/signup'
     | '/disciplines/$disciplineId'
+    | '/dogs/$dogId'
     | '/disciplines/'
   fileRoutesById: FileRoutesById
 }
@@ -131,6 +143,7 @@ export interface RootRouteChildren {
   OverviewRoute: typeof OverviewRoute
   SignupRoute: typeof SignupRoute
   DisciplinesDisciplineIdRoute: typeof DisciplinesDisciplineIdRoute
+  DogsDogIdRoute: typeof DogsDogIdRoute
   DisciplinesIndexRoute: typeof DisciplinesIndexRoute
 }
 
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DisciplinesDisciplineIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dogs/$dogId': {
+      id: '/dogs/$dogId'
+      path: '/dogs/$dogId'
+      fullPath: '/dogs/$dogId'
+      preLoaderRoute: typeof DogsDogIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -203,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   OverviewRoute: OverviewRoute,
   SignupRoute: SignupRoute,
   DisciplinesDisciplineIdRoute: DisciplinesDisciplineIdRoute,
+  DogsDogIdRoute: DogsDogIdRoute,
   DisciplinesIndexRoute: DisciplinesIndexRoute,
 }
 export const routeTree = rootRouteImport
