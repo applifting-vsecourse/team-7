@@ -24,9 +24,9 @@
 .light,
 [data-theme="light"] {
   /* Theme Collection */
-  --event-tile-default: #ebf7ff;
+  --event-tile-default: #f1f9ff;
   --event-tile-success: #f2fff2;
-  --event-tile-warning: #fff4eb;
+  --event-tile-warning: #fff7f0;
 }
 
 .dark,
