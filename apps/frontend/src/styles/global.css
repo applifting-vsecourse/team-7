@@ -93,6 +93,13 @@
     @apply text-2xl leading-8 font-semibold tracking-tight;
   }
 
+  /* The kit only reveals the toast close button on hover, so touch screens
+     never see it. Keep it visible; exiting toasts still hide it. */
+  .toast[data-frontmost="true"]:not([data-exiting="true"]) .toast__close-button,
+  .toast[data-expanded="true"]:not([data-exiting="true"]) .toast__close-button {
+    @apply pointer-events-auto opacity-100;
+  }
+
   /* 20px between title and content. Forms wrap body + footer, which hides
      the body from the kit's own `.modal__header + .modal__body` rule. */
   .modal__header + .modal__body,

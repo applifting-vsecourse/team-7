@@ -301,6 +301,8 @@
       "irreversible": "This can't be undone.",
       "confirm": "Delete",
       "error": "Deleting failed. Please try again."
-    }
+    },
+    "createdToast": "Discipline {{name}} was created",
+    "deletedToast": "Discipline {{name}} was deleted"
   }
 }

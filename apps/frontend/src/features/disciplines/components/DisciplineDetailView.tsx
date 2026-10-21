@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CircleDashed, FileArrowUp, Plus } from "@gravity-ui/icons";
-import { Breadcrumbs, Button, Separator } from "@heroui/react";
+import { Breadcrumbs, Button, Separator, toast } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -205,7 +205,13 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
         isError={remove.isError}
         onConfirm={() =>
           remove.mutate(discipline.id, {
-            onSuccess: () => void navigate({ to: ROUTES.disciplines }),
+            onSuccess: () => {
+              // The detail is gone and the user lands on the list.
+              toast.success(
+                t(($) => $.disciplines.deletedToast, { name: discipline.name }),
+              );
+              void navigate({ to: ROUTES.disciplines });
+            },
           })
         }
       />

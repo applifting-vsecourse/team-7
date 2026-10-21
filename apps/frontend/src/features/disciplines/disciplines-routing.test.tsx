@@ -2,6 +2,7 @@ import type {
   DisciplineDetail,
   DisciplineSummary,
 } from "./api/disciplinesQueryOptions";
+import { toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   createMemoryHistory,
@@ -139,6 +140,7 @@ describe("disciplines", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    toast.clear();
     state.responses = new Map<string, () => unknown>([
       ["dogs", () => []],
       ["disciplines", () => [poslusnost, agility]],
@@ -234,6 +236,31 @@ describe("disciplines", () => {
     expect(router.state.location.search.lng).toBe("en");
     expect(
       await screen.findByRole("heading", { level: 1, name: "Poslušnost" }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText("Discipline Agility was created"),
+    ).toBeInTheDocument();
+  });
+
+  it("deletes a discipline, returns to the list and confirms it", async () => {
+    const user = userEvent.setup();
+    state.delete.mockResolvedValue(undefined);
+    const router = renderRoute("/disciplines/d1?lng=en");
+
+    await user.click(
+      await screen.findByRole("button", { name: "More discipline actions" }),
+    );
+    await user.click(await screen.findByRole("menuitem", { name: "Delete" }));
+    const dialog = await screen.findByRole("alertdialog");
+    expect(within(dialog).getByText(/1 dog loses it\./)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole("button", { name: "Delete" }));
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/disciplines"),
+    );
+    expect(state.delete).toHaveBeenCalledWith("disciplines/d1");
+    expect(
+      await screen.findByText("Discipline Poslušnost was deleted"),
     ).toBeInTheDocument();
   });
 

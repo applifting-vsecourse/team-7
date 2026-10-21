@@ -301,6 +301,8 @@
       "irreversible": "Akci nelze vrátit.",
       "confirm": "Smazat",
       "error": "Smazání se nepodařilo. Zkuste to znovu."
-    }
+    },
+    "createdToast": "Disciplína {{name}} byla vytvořena",
+    "deletedToast": "Disciplína {{name}} byla smazána"
   }
 }

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { DogRef, Exercise, Goal } from "../api/disciplinesQueryOptions";
 import { ChartLine, Flag } from "@gravity-ui/icons";
-import { Alert } from "@heroui/react";
+import { Alert, toast } from "@heroui/react";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
@@ -83,6 +83,10 @@ export function DisciplineDialog({
         const saved = await save.mutateAsync({ id: discipline?.id, values });
         state.onOpenChange(false);
         if (!discipline) {
+          // The dialog closes and the page changes, so confirm what happened.
+          toast.success(
+            t(($) => $.disciplines.createdToast, { name: values.name }),
+          );
           await navigate({
             to: ROUTES.discipline,
             params: { disciplineId: saved.id },

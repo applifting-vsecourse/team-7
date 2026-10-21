@@ -23,7 +23,7 @@ function RootComponent() {
   return (
     <>
       <Outlet />
-      <Toast.Provider placement="top end" />
+      <Toast.Provider placement="top" />
     </>
   );
 }
