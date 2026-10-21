@@ -330,13 +330,8 @@ describe("overview routing", () => {
     renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Open menu" }));
     await user.click(screen.getByRole("button", { name: "Add dog" }));
-    await user.type(
-      screen.getByRole("textbox", { name: "Dog’s name" }),
-      "Buddy",
-    );
-    expect(screen.getByRole("textbox", { name: "Dog’s name" })).toHaveValue(
-      "Buddy",
-    );
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Buddy");
+    expect(screen.getByRole("textbox", { name: "Name" })).toHaveValue("Buddy");
     await user.click(screen.getByRole("button", { name: "Cancel" }));
     expect(
       await screen.findByRole("dialog", { name: "Main navigation" }),
@@ -351,7 +346,7 @@ describe("overview routing", () => {
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
 
     expect(screen.getByRole("dialog", { name: "Add dog" })).toBeInTheDocument();
-    const name = screen.getByRole("textbox", { name: "Dog’s name" });
+    const name = screen.getByRole("textbox", { name: "Name" });
     expect(name).toHaveFocus();
     const submit = screen.getAllByRole("button", { name: "Add dog" }).at(-1)!;
     expect(submit).toBeEnabled();
@@ -382,23 +377,18 @@ describe("overview routing", () => {
     const user = userEvent.setup();
     renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
-    await user.type(
-      screen.getByRole("textbox", { name: "Dog’s name" }),
-      "Buddy",
-    );
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Buddy");
     await user.click(screen.getByRole("button", { name: "Add dog" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Unable to add your dog",
     );
-    expect(screen.getByRole("textbox", { name: "Dog’s name" })).toHaveValue(
-      "Buddy",
-    );
+    expect(screen.getByRole("textbox", { name: "Name" })).toHaveValue("Buddy");
     await user.click(screen.getByRole("button", { name: "Cancel" }));
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
     await user.click(screen.getByRole("button", { name: "Add dog" }));
-    expect(screen.getByRole("textbox", { name: "Dog’s name" })).toHaveValue("");
+    expect(screen.getByRole("textbox", { name: "Name" })).toHaveValue("");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
@@ -408,11 +398,8 @@ describe("overview routing", () => {
     const user = userEvent.setup();
     renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
-    await user.type(
-      screen.getByRole("textbox", { name: "Dog’s name" }),
-      "Buddy",
-    );
-    const photo = screen.getByLabelText("Dog photo (optional)");
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Buddy");
+    const photo = screen.getByLabelText("Photo");
     await user.upload(
       photo,
       new File([new Uint8Array(5 * 1024 * 1024 + 1)], "large.png", {
@@ -445,15 +432,12 @@ describe("overview routing", () => {
     const user = userEvent.setup();
     renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
-    await user.type(
-      screen.getByRole("textbox", { name: "Dog’s name" }),
-      "Buddy",
-    );
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Buddy");
     const submit = screen.getByRole("button", { name: "Add dog" });
     await user.click(submit);
     expect(submit).toBeDisabled();
     expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
-    expect(screen.getByRole("textbox", { name: "Dog’s name" })).toBeDisabled();
+    expect(screen.getByRole("textbox", { name: "Name" })).toBeDisabled();
     await user.keyboard("{Escape}");
     expect(screen.getByRole("dialog", { name: "Add dog" })).toBeInTheDocument();
     finish({ id: "dog-2", text: "Buddy" });
@@ -469,12 +453,9 @@ describe("overview routing", () => {
     const user = userEvent.setup();
     renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
-    await user.type(
-      screen.getByRole("textbox", { name: "Dog’s name" }),
-      "Buddy",
-    );
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Buddy");
     const file = new File(["photo"], "buddy.png", { type: "image/png" });
-    await user.upload(screen.getByLabelText("Dog photo (optional)"), file);
+    await user.upload(screen.getByLabelText("Photo"), file);
     expect(
       screen.getByRole("application", { name: "Dog avatar preview" }).tagName,
     ).toBe("CANVAS");
@@ -512,7 +493,7 @@ describe("overview routing", () => {
       await screen.findByRole("button", { name: "Change photo for Buddy" }),
     );
     const file = new File(["photo"], "buddy.webp", { type: "image/webp" });
-    await user.upload(screen.getByLabelText("Dog photo (optional)"), file);
+    await user.upload(screen.getByLabelText("Photo"), file);
     await waitFor(() =>
       expect(screen.getByRole("slider", { name: "Zoom" })).toBeEnabled(),
     );
@@ -564,7 +545,7 @@ describe("overview routing", () => {
       }),
     );
     await user.upload(
-      screen.getByLabelText("Dog photo (optional)"),
+      screen.getByLabelText("Photo"),
       new File([new Uint8Array(5 * 1024 * 1024 + 1)], "large.png", {
         type: "image/png",
       }),
@@ -572,7 +553,7 @@ describe("overview routing", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Choose a valid JPEG");
     expect(screen.getByRole("button", { name: "Save photo" })).toBeDisabled();
     await user.upload(
-      screen.getByLabelText("Dog photo (optional)"),
+      screen.getByLabelText("Photo"),
       new File(["small"], "small.png", { type: "image/png" }),
     );
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -590,7 +571,7 @@ describe("overview routing", () => {
       }),
     );
     await user.upload(
-      screen.getByLabelText("Dog photo (optional)"),
+      screen.getByLabelText("Photo"),
       new File(["photo"], "dog.png", { type: "image/png" }),
     );
     await user.click(screen.getByRole("button", { name: "Save photo" }));

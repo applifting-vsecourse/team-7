@@ -21,9 +21,7 @@ describe("dog photo input", () => {
   it("keeps the filename, clears the selection and preview, and allows selecting the same file again", async () => {
     const user = userEvent.setup();
     render(<Picker />);
-    const input = screen.getByLabelText(
-      "Dog photo (optional)",
-    ) as HTMLInputElement;
+    const input = screen.getByLabelText("Photo") as HTMLInputElement;
     const file = new File(["photo"], "buddy.png", { type: "image/png" });
 
     await user.upload(input, file);
@@ -50,7 +48,7 @@ describe("dog photo input", () => {
   it("disables selection and clearing while saving", async () => {
     const user = userEvent.setup();
     const view = render(<Picker />);
-    const input = screen.getByLabelText("Dog photo (optional)");
+    const input = screen.getByLabelText("Photo");
     await user.upload(
       input,
       new File(["photo"], "buddy.png", { type: "image/png" }),

@@ -56,13 +56,14 @@ export function AddDogForm({
         }
       })}
     >
-      <Modal.Body className="flex flex-col gap-6">
+      <Modal.Body className="flex flex-col gap-5">
         <Controller
           control={form.control}
           name="name"
           render={({ field: { ref, ...field }, fieldState }) => (
             <TextField
               {...field}
+              isRequired
               isDisabled={isSubmitting}
               isInvalid={fieldState.invalid}
               fullWidth
@@ -104,9 +105,10 @@ export function AddDogForm({
           </p>
         ) : null}
       </Modal.Body>
-      <Modal.Footer>
+      <Modal.Footer className="flex-col-reverse sm:flex-row">
         <Button
           variant="secondary"
+          className="w-full sm:w-auto"
           isDisabled={isSubmitting}
           onPress={onCancel}
         >
@@ -114,6 +116,7 @@ export function AddDogForm({
         </Button>
         <Button
           type="submit"
+          className="w-full sm:w-auto"
           isPending={isSubmitting}
           isDisabled={isSubmitting}
         >
