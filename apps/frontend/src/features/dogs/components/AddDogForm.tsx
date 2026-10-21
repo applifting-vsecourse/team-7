@@ -1,8 +1,6 @@
+import { useState } from "react";
 import {
   Button,
-  Calendar,
-  DateField,
-  DatePicker,
   FieldError,
   Form,
   Input,
@@ -12,11 +10,7 @@ import {
   TextField,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  getLocalTimeZone,
-  today,
-  type DateValue,
-} from "@internationalized/date";
+import { format, isFuture, parseISO } from "date-fns";
 import { keyFromSelector } from "i18next";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -39,10 +33,14 @@ const schema = z.object({
     .max(NAME_MAX_LENGTH, tooLong),
   breed: z.string().trim().max(NAME_MAX_LENGTH, tooLong),
   birthDate: z
-    .custom<DateValue>()
-    .nullable()
+    .union([
+      z.literal(""),
+      z.iso.date({
+        error: keyFromSelector(messageSelectors.dogBirthDateInvalid),
+      }),
+    ])
     .refine(
-      (date) => !date || date.compare(today(getLocalTimeZone())) <= 0,
+      (date) => !date || !isFuture(parseISO(date)),
       keyFromSelector(messageSelectors.dogBirthDateFuture),
     ),
   photo: dogPhotoSchema.nullable(),
@@ -60,9 +58,10 @@ export function AddDogForm({
   isPending: boolean;
 }) {
   const { t } = useTranslation();
+  const [maxBirthDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const form = useForm<AddDogValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", breed: "", birthDate: null, photo: null },
+    defaultValues: { name: "", breed: "", birthDate: "", photo: null },
   });
   const isSubmitting = isPending || form.formState.isSubmitting;
   const errorText = (message: string | undefined) =>
@@ -136,59 +135,20 @@ export function AddDogForm({
             <Controller
               control={form.control}
               name="birthDate"
-              // DateField.Input takes no ref, so this field can't receive error focus.
-              render={({ field: { ref: _ref, ...field }, fieldState }) => (
-                <DatePicker
+              render={({ field: { ref, ...field }, fieldState }) => (
+                <TextField
                   {...field}
-                  maxValue={today(getLocalTimeZone())}
+                  type="date"
                   isDisabled={isSubmitting}
                   isInvalid={fieldState.invalid}
-                  className="w-full"
+                  fullWidth
                 >
                   <Label>{t(($) => $.dogs.birthDate)}</Label>
-                  <DateField.Group fullWidth>
-                    <DateField.Input>
-                      {(segment) => <DateField.Segment segment={segment} />}
-                    </DateField.Input>
-                    <DateField.Suffix>
-                      <DatePicker.Trigger>
-                        <DatePicker.TriggerIndicator />
-                      </DatePicker.Trigger>
-                    </DateField.Suffix>
-                  </DateField.Group>
+                  <Input ref={ref} max={maxBirthDate} />
                   <FieldError>
                     {errorText(fieldState.error?.message)}
                   </FieldError>
-                  <DatePicker.Popover>
-                    <Calendar aria-label={t(($) => $.dogs.birthDate)}>
-                      <Calendar.Header>
-                        <Calendar.YearPickerTrigger>
-                          <Calendar.YearPickerTriggerHeading />
-                          <Calendar.YearPickerTriggerIndicator />
-                        </Calendar.YearPickerTrigger>
-                        <Calendar.NavButton slot="previous" />
-                        <Calendar.NavButton slot="next" />
-                      </Calendar.Header>
-                      <Calendar.Grid>
-                        <Calendar.GridHeader>
-                          {(day) => (
-                            <Calendar.HeaderCell>{day}</Calendar.HeaderCell>
-                          )}
-                        </Calendar.GridHeader>
-                        <Calendar.GridBody>
-                          {(date) => <Calendar.Cell date={date} />}
-                        </Calendar.GridBody>
-                      </Calendar.Grid>
-                      <Calendar.YearPickerGrid>
-                        <Calendar.YearPickerGridBody>
-                          {({ year }) => (
-                            <Calendar.YearPickerCell year={year} />
-                          )}
-                        </Calendar.YearPickerGridBody>
-                      </Calendar.YearPickerGrid>
-                    </Calendar>
-                  </DatePicker.Popover>
-                </DatePicker>
+                </TextField>
               )}
             />
           </div>

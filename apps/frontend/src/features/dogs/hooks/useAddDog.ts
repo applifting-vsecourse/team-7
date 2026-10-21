@@ -19,7 +19,7 @@ export function useAddDog(userId: string | undefined) {
       const fields = {
         name: name.trim(),
         ...(breed.trim() && { breed: breed.trim() }),
-        ...(birthDate && { birthDate: birthDate.toString() }),
+        ...(birthDate && { birthDate }),
       };
       if (!photo) return api.post("dogs", { json: fields }).json<Dog>();
       const body = await photoFormData(photo);

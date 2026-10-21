@@ -80,6 +80,7 @@
     "breed": "Breed",
     "breedPlaceholder": "Border Collie",
     "birthDate": "Date of birth",
+    "birthDateInvalid": "Enter a valid date of birth.",
     "birthDateFuture": "The date of birth can't be in the future.",
     "cancel": "Cancel",
     "addError": "Unable to add your dog. Please try again.",

@@ -80,6 +80,7 @@
     "breed": "Plemeno",
     "breedPlaceholder": "Border kolie",
     "birthDate": "Datum narození",
+    "birthDateInvalid": "Zadejte platné datum narození.",
     "birthDateFuture": "Datum narození nemůže být v budoucnosti.",
     "cancel": "Zrušit",
     "addError": "Psa se nepodařilo přidat. Zkuste to znovu.",

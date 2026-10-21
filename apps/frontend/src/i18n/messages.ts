@@ -17,6 +17,7 @@ export const messageSelectors = {
   textTooLong: ($) => $.validation.title.tooLong,
   dogPhotoInvalid: ($) => $.dogs.photoInvalid,
   dogNameRequired: ($) => $.dogs.nameRequired,
+  dogBirthDateInvalid: ($) => $.dogs.birthDateInvalid,
   dogBirthDateFuture: ($) => $.dogs.birthDateFuture,
   signInFailed: ($) => $.auth.errors.signIn,
   signUpFailed: ($) => $.auth.errors.signUp,

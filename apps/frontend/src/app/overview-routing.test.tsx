@@ -5,7 +5,13 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createStore, Provider } from "jotai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -397,8 +403,9 @@ describe("overview routing", () => {
       screen.getByRole("textbox", { name: "Breed" }),
       "Border kolie",
     );
-    await user.click(screen.getAllByRole("spinbutton", { name: /month/i })[0]!);
-    await user.keyboard("05032022");
+    fireEvent.change(screen.getByLabelText("Date of birth"), {
+      target: { value: "2022-05-03" },
+    });
     await user.click(
       screen.getAllByRole("button", { name: "Add dog" }).at(-1)!,
     );
@@ -416,8 +423,9 @@ describe("overview routing", () => {
     renderRoute("/overview?lng=en");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
     await user.type(screen.getByRole("textbox", { name: "Name" }), "Bára");
-    await user.click(screen.getAllByRole("spinbutton", { name: /month/i })[0]!);
-    await user.keyboard("01012999");
+    fireEvent.change(screen.getByLabelText("Date of birth"), {
+      target: { value: "2999-01-01" },
+    });
     await user.click(
       screen.getAllByRole("button", { name: "Add dog" }).at(-1)!,
     );
