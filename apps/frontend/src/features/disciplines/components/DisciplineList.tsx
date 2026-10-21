@@ -48,7 +48,7 @@ export function DisciplineList() {
   }
 
   return (
-    <ul className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       {data.map((discipline) => (
         <li key={discipline.id} className="flex min-w-0 flex-col">
           <DisciplineCard discipline={discipline} />

@@ -91,7 +91,7 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
         </Breadcrumbs.Item>
         <Breadcrumbs.Item>{discipline.name}</Breadcrumbs.Item>
       </Breadcrumbs>
-      <div className="flex flex-col gap-4 md:flex-row md:items-start">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           <h1
             id="discipline-heading"
@@ -105,9 +105,9 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
             </p>
           ) : null}
         </div>
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <Button
-            className="w-full md:w-auto"
+            className="w-full lg:w-auto"
             onPress={() => setDialog("addGoal")}
           >
             <Plus className="size-4" aria-hidden="true" />
@@ -131,7 +131,9 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-8 md:flex-row">
+      {/* Capped so goal cards keep a readable width and their menus stay
+          close to the text on wide screens; the header stays full width. */}
+      <div className="flex w-full max-w-6xl flex-col gap-8 lg:flex-row">
         <section
           aria-labelledby="goals-heading"
           className="flex min-w-0 flex-1 flex-col gap-6"
@@ -178,8 +180,8 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
             </ul>
           )}
         </section>
-        <Separator orientation="vertical" className="hidden md:block" />
-        <div className="md:w-80 md:shrink-0">
+        <Separator orientation="vertical" className="hidden lg:block" />
+        <div className="lg:w-64 lg:shrink-0 xl:w-80">
           <DisciplineDogs dogs={discipline.dogs} />
         </div>
       </div>

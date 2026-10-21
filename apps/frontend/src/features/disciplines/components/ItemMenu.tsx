@@ -34,7 +34,10 @@ export function ItemMenu({
             textValue={t(($) => $.disciplines.delete)}
             variant="danger"
           >
-            <TrashBin className="size-4 shrink-0" aria-hidden="true" />
+            <TrashBin
+              className="size-4 shrink-0 text-danger"
+              aria-hidden="true"
+            />
             <Label>{t(($) => $.disciplines.delete)}</Label>
           </Dropdown.Item>
         </Dropdown.Menu>
