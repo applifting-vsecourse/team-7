@@ -29,9 +29,12 @@
     "errors": {
       "reset": "Odkaz pro obnovení se nepodařilo odeslat",
       "signIn": "Přihlášení se nezdařilo",
-      "signUp": "Registrace se nezdařila"
+      "signUp": "Registrace se nezdařila",
+      "google": "Přihlášení přes Google se nezdařilo"
     },
-    "signOut": "Odhlásit se"
+    "signOut": "Odhlásit se",
+    "or": "nebo",
+    "continueWithGoogle": "Pokračovat přes Google"
   },
   "validation": {
     "email": {

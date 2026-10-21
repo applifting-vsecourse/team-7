@@ -45,6 +45,22 @@ const createAuth = (
       },
     },
     trustedOrigins: [config.frontendUrl],
+    // Google is enabled only when configured, so dev and CI run without it.
+    socialProviders:
+      config.googleClientId && config.googleClientSecret
+        ? {
+            google: {
+              clientId: config.googleClientId,
+              clientSecret: config.googleClientSecret,
+              prompt: "select_account",
+            },
+          }
+        : {},
+    // Google verifies emails, so a matching password account is linked
+    // instead of failing the sign-in.
+    account: {
+      accountLinking: { enabled: true, trustedProviders: ["google"] },
+    },
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
         const html = await renderEmail(VerifyEmail, { url });

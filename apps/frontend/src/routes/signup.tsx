@@ -9,6 +9,7 @@ import { AuthLayout } from "@/components/AuthLayout";
 import { messageSelectors } from "@/i18n/messages";
 
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
+import { GoogleSignIn } from "@/features/auth/components/GoogleSignIn";
 import { SignUpForm } from "@/features/auth/components/SignUpForm";
 import { useSignUp } from "@/features/auth/hooks/useSignUp";
 
@@ -69,6 +70,7 @@ function SignUpPage() {
         errorMessage={errorMessage}
         onSubmit={handleSubmit}
       />
+      <GoogleSignIn redirectTo={ROUTES.overview} onError={setErrorMessage} />
     </AuthLayout>
   );
 }
