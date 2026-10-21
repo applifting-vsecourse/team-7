@@ -29,9 +29,12 @@
     "errors": {
       "reset": "Unable to send reset link",
       "signIn": "Sign in failed",
-      "signUp": "Sign up failed"
+      "signUp": "Sign up failed",
+      "google": "Google sign-in failed"
     },
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "or": "or",
+    "continueWithGoogle": "Continue with Google"
   },
   "validation": {
     "email": {

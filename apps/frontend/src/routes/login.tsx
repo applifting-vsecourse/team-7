@@ -10,12 +10,15 @@ import { AuthLayout } from "@/components/AuthLayout";
 import { messageSelectors } from "@/i18n/messages";
 
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
+import { GoogleSignIn } from "@/features/auth/components/GoogleSignIn";
 import { SignInForm } from "@/features/auth/components/SignInForm";
 import { useSignIn } from "@/features/auth/hooks/useSignIn";
 import { decodeRedirectUri } from "@/features/auth/lib/redirect";
 
 const loginSearchParamsSchema = z.object({
   from: z.string().optional(),
+  // Set by better-auth when it returns from a failed Google sign-in.
+  error: z.string().optional(),
 });
 
 export const Route = createFileRoute("/login")({
@@ -32,11 +35,13 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const { t } = useTranslation();
-  const { from } = Route.useSearch();
+  const { from, error } = Route.useSearch();
   const redirectTo = from ? decodeRedirectUri(from) : ROUTES.overview;
   const navigate = useNavigate();
   const signIn = useSignIn();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(
+    error ? keyFromSelector(messageSelectors.googleSignInFailed) : null,
+  );
 
   const handleSubmit = async (values: {
     email: string;
@@ -73,6 +78,7 @@ function LoginPage() {
         errorMessage={errorMessage}
         onSubmit={handleSubmit}
       />
+      <GoogleSignIn redirectTo={redirectTo} onError={setErrorMessage} />
     </AuthLayout>
   );
 }

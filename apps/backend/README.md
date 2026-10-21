@@ -152,6 +152,15 @@ Hopefully you won't need to use this command and the following part, unless you 
 
 Keep in mind that there are 2 better auth configurations, one in the src/shared/auth/providers/better-auth.provider.ts (the complete config that is being used in the whole app) and one in the src/shared/auth/config/better-auth.config.ts (this config is being used by the CLI command above). You need to add the necessary changes to the better-auth config file to generate new database schema changes.
 
+#### Google sign-in
+
+Google sign-in is enabled only when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set. Create an OAuth client of type "Web application" in the Google Cloud Console with:
+
+- Authorized JavaScript origins: `FRONTEND_URL` (locally `http://localhost:3050`)
+- Authorized redirect URIs: `BACKEND_URL/api/auth/callback/google` (locally `http://localhost:4050/api/auth/callback/google`)
+
+The callback goes to the backend, not the frontend. A Google account whose email matches an existing account is linked to it.
+
 ### Email Service
 
 Emails are sent via [Resend](https://resend.com). Templates are authored as React components using [react-email](https://react.email) and live in `src/core/email/templates/`.
