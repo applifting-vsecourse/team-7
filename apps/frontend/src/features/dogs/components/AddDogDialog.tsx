@@ -37,6 +37,7 @@ export function AddDogDialog() {
       >
         <Modal.Container size="sm">
           <Modal.Dialog>
+            <Modal.CloseTrigger />
             <Modal.Header>
               <Modal.Heading>{t(($) => $.navigation.addDog)}</Modal.Heading>
             </Modal.Header>

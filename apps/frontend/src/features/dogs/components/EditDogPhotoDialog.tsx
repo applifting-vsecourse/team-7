@@ -63,6 +63,7 @@ export function EditDogPhotoDialog({ dog }: { dog: Dog }) {
       >
         <Modal.Container size="sm">
           <Modal.Dialog>
+            <Modal.CloseTrigger />
             <Modal.Header>
               <Modal.Heading>
                 {t(($) => $.dogs.editPhotoFor, { name: dog.text })}
@@ -76,7 +77,7 @@ export function EditDogPhotoDialog({ dog }: { dog: Dog }) {
                 }
               }}
             >
-              <Modal.Body className="flex flex-col gap-6">
+              <Modal.Body className="flex flex-col gap-5">
                 {!photo ? (
                   <div className="self-center">
                     <DogAvatar dog={dog} className="size-32" />
@@ -103,9 +104,10 @@ export function EditDogPhotoDialog({ dog }: { dog: Dog }) {
                   </Button>
                 ) : null}
               </Modal.Body>
-              <Modal.Footer>
+              <Modal.Footer className="flex-col-reverse sm:flex-row">
                 <Button
                   variant="secondary"
+                  className="w-full sm:w-auto"
                   isDisabled={mutation.isPending}
                   onPress={() => {
                     setIsOpen(false);
@@ -116,6 +118,7 @@ export function EditDogPhotoDialog({ dog }: { dog: Dog }) {
                 </Button>
                 <Button
                   type="submit"
+                  className="w-full sm:w-auto"
                   isPending={mutation.isPending}
                   isDisabled={!photo || photoError || mutation.isPending}
                 >

@@ -80,6 +80,32 @@
 }
 
 @layer components {
+  /* Dialogs sit on --background rather than --overlay so fields stand out
+     against them; popovers and dropdowns keep the overlay surface. */
+  .modal__dialog,
+  .alert-dialog__dialog,
+  .drawer__dialog {
+    @apply bg-background;
+  }
+
+  /* Figma "Heading 3" for modal titles; alert dialogs keep the kit size. */
+  .modal__heading {
+    @apply text-2xl leading-8 font-semibold tracking-tight;
+  }
+
+  /* 20px between title and content. Forms wrap body + footer, which hides
+     the body from the kit's own `.modal__header + .modal__body` rule. */
+  .modal__header + .modal__body,
+  .modal__header + form > .modal__body {
+    @apply mt-5;
+  }
+
+  /* A form around body + footer must shrink with the height-capped dialog,
+     or the body can't scroll and the footer is clipped off-screen. */
+  .modal__dialog > form {
+    @apply flex min-h-0 flex-1 flex-col;
+  }
+
   .mobile-sidebar[data-entering="true"] {
     animation: sidebar-slide-in 250ms ease-out;
   }

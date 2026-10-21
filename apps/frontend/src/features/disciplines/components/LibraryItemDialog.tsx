@@ -119,7 +119,9 @@ function LibraryItemForm({
       })}
     >
       <Modal.Body className="flex flex-col gap-5">
-        {description ? <p className="text-sm">{description}</p> : null}
+        {description ? (
+          <p className="text-sm leading-6 text-foreground">{description}</p>
+        ) : null}
         {context}
         <Controller
           control={form.control}
