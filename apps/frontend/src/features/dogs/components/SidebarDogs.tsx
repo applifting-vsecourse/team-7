@@ -57,10 +57,10 @@ export function SidebarDogs() {
           >
             <DogAvatar dog={dog} />
             <span
-              title={dog.text}
+              title={dog.name}
               className="min-w-0 flex-1 truncate text-left"
             >
-              {dog.text}
+              {dog.name}
             </span>
             <Circle
               className="hidden size-4 shrink-0 in-[[data-status=active]]:block"

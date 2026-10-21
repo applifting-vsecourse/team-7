@@ -4,7 +4,10 @@ import { api } from "@/lib/api-client";
 
 export type Dog = {
   id: string;
-  text: string;
+  name: string;
+  breed?: string | null;
+  /** ISO timestamp at UTC midnight of the birth date. */
+  birthDate?: string | null;
   avatarVersion?: string | null;
 };
 

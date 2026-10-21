@@ -17,7 +17,7 @@ export function DisciplineCard({
   const dogNames = new Intl.ListFormat(i18n.resolvedLanguage ?? "cs", {
     style: "short",
     type: "unit",
-  }).format(discipline.dogs.map((dog) => dog.text));
+  }).format(discipline.dogs.map((dog) => dog.name));
 
   return (
     <Link

@@ -22,10 +22,10 @@ import {
 } from "@nestjs/swagger";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import type { Exercise } from "@/generated/prisma/client";
-import { optionalText } from "@/modules/disciplines/domain/discipline-details";
 import { User } from "@/shared/auth/decorators/user.decorator";
 import { Identity } from "@/shared/auth/domain/identity";
 import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
+import { optionalText } from "@/shared/utils/optional-text";
 import { ExerciseInputDto } from "./dto/library-input.dto";
 
 @ApiTags("disciplines")

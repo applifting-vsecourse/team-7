@@ -27,7 +27,6 @@ import type { Discipline, Goal } from "@/generated/prisma/client";
 import {
   disciplineDetailInclude,
   disciplineSummaryInclude,
-  optionalText,
   toDisciplineDetail,
   toDisciplineSummary,
   type DisciplineDetail,
@@ -36,6 +35,7 @@ import {
 import { User } from "@/shared/auth/decorators/user.decorator";
 import { Identity } from "@/shared/auth/domain/identity";
 import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
+import { optionalText } from "@/shared/utils/optional-text";
 import { DisciplineInputDto, GoalInputDto } from "./dto/library-input.dto";
 
 @ApiTags("disciplines")

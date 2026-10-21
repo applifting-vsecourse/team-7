@@ -96,7 +96,7 @@ describe("discipline library API", () => {
   });
 
   it("lists the user's disciplines with counts and distinct dogs", async () => {
-    const dog = { id: "dog-a", text: "Mája" };
+    const dog = { id: "dog-a", name: "Mája" };
     prisma.discipline.findMany.mockResolvedValue([
       {
         id: "d1",
@@ -154,7 +154,7 @@ describe("discipline library API", () => {
   });
 
   it("aggregates per-dog goal progress in the detail", async () => {
-    const dog = { id: "dog-a", text: "Mája" };
+    const dog = { id: "dog-a", name: "Mája" };
     prisma.discipline.findFirst.mockResolvedValue({
       id: "d1",
       name: "Poslušnost",

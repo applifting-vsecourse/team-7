@@ -35,7 +35,7 @@ function DogPage() {
   const dog = dogs?.find((item) => item.id === dogId);
 
   return (
-    <Layout title={dog?.text} sidebar={<Sidebar />}>
+    <Layout title={dog?.name} sidebar={<Sidebar />}>
       <section
         aria-labelledby="dog-heading"
         className="flex min-w-0 flex-1 flex-col gap-8 rounded-3xl bg-surface px-5 pt-4 pb-5 md:px-6 md:pt-5 md:pb-6"
@@ -60,7 +60,7 @@ function DogPage() {
                 id="dog-heading"
                 className="min-w-0 text-3xl leading-9 font-semibold tracking-tight wrap-break-word"
               >
-                {dog.text}
+                {dog.name}
               </h1>
             </div>
             <p className="text-base leading-7 text-muted">

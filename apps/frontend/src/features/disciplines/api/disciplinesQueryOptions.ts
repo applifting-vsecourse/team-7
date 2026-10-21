@@ -2,7 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { api } from "@/lib/api-client";
 
-export type DogRef = { id: string; text: string };
+export type DogRef = { id: string; name: string };
 
 export type DisciplineSummary = {
   id: string;

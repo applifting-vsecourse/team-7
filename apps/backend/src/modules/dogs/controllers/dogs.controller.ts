@@ -33,9 +33,21 @@ import type { DogDetails } from "@/modules/dogs/domain/dog-details";
 import { User } from "@/shared/auth/decorators/user.decorator";
 import { Identity } from "@/shared/auth/domain/identity";
 import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
+import { optionalText } from "@/shared/utils/optional-text";
 import { DogInputDto } from "./dto/dog-input.dto";
 
 const omitAvatar = { avatar: true } as const;
+
+/** Absent optional fields stay unchanged on update; blank ones are cleared. */
+function dogFields({ name, breed, birthDate }: DogInputDto) {
+  return {
+    name: name.trim(),
+    ...(breed !== undefined && { breed: optionalText(breed) }),
+    ...(birthDate !== undefined && {
+      birthDate: birthDate ? new Date(birthDate) : null,
+    }),
+  };
+}
 
 @ApiTags("dogs")
 @ApiCookieAuth()
@@ -69,7 +81,7 @@ export class DogsController {
   @ApiBadRequestResponse({ description: "Invalid dog data" })
   @UseInterceptors(
     FileInterceptor("file", {
-      limits: { fileSize: AVATAR_UPLOAD_LIMIT, files: 1, fields: 1 },
+      limits: { fileSize: AVATAR_UPLOAD_LIMIT, files: 1, fields: 3 },
     }),
   )
   async createDog(
@@ -80,7 +92,7 @@ export class DogsController {
     const avatar = file ? await this.avatars.prepareAvatar(file.buffer) : {};
     return this.prisma.dog.create({
       data: {
-        text: body.text,
+        ...dogFields(body),
         userId: user.id,
         ...avatar,
       },
@@ -99,7 +111,7 @@ export class DogsController {
   ): Promise<DogDetails> {
     const [dog] = await this.prisma.dog.updateManyAndReturn({
       where: { id, userId: user.id },
-      data: { text: body.text },
+      data: dogFields(body),
       omit: omitAvatar,
     });
 

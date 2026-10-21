@@ -39,7 +39,7 @@ export function DisciplineDogs({ dogs }: { dogs: DisciplineDog[] }) {
               <DogAvatar dog={dogsById.get(dog.id) ?? dog} />
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="text-sm leading-6 wrap-break-word">
-                  {dog.text}
+                  {dog.name}
                 </span>
                 <span className="text-xs leading-5 text-muted">
                   {t(($) => $.disciplines.dogProgress, {

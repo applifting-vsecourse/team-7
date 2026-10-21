@@ -77,7 +77,7 @@ export function DogFilter() {
           }
         >
           <DogAvatar dog={dog} />
-          <span className="min-w-0 wrap-break-word">{dog.text}</span>
+          <span className="min-w-0 wrap-break-word">{dog.name}</span>
         </FilterOption>
       ))}
     </div>

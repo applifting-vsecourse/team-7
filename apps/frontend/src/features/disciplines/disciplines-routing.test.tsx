@@ -66,8 +66,8 @@ const poslusnost: DisciplineSummary = {
   goalCount: 3,
   exerciseCount: 7,
   dogs: [
-    { id: "dog-1", text: "Terminátor" },
-    { id: "dog-2", text: "Mája" },
+    { id: "dog-1", name: "Terminátor" },
+    { id: "dog-2", name: "Mája" },
   ],
 };
 const agility: DisciplineSummary = {
@@ -96,8 +96,8 @@ const poslusnostDetail: DisciplineDetail = {
         },
       ],
       dogs: [
-        { id: "dog-1", text: "Terminátor" },
-        { id: "dog-2", text: "Mája" },
+        { id: "dog-1", name: "Terminátor" },
+        { id: "dog-2", name: "Mája" },
       ],
     },
     {
@@ -109,7 +109,7 @@ const poslusnostDetail: DisciplineDetail = {
     },
   ],
   dogs: [
-    { id: "dog-1", text: "Terminátor", goalCount: 1, completedGoalCount: 1 },
+    { id: "dog-1", name: "Terminátor", goalCount: 1, completedGoalCount: 1 },
   ],
 };
 

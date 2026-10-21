@@ -59,7 +59,7 @@ export function EditDogPhotoDialog({
       <Button
         variant="ghost"
         isIconOnly
-        aria-label={t(($) => $.dogs.editPhotoFor, { name: dog.text })}
+        aria-label={t(($) => $.dogs.editPhotoFor, { name: dog.name })}
         className={`shrink-0 rounded-full p-0 ${avatarClassName}`}
       >
         <DogAvatar dog={dog} className={avatarClassName} />
@@ -73,7 +73,7 @@ export function EditDogPhotoDialog({
             <Modal.CloseTrigger />
             <Modal.Header>
               <Modal.Heading>
-                {t(($) => $.dogs.editPhotoFor, { name: dog.text })}
+                {t(($) => $.dogs.editPhotoFor, { name: dog.name })}
               </Modal.Heading>
             </Modal.Header>
             <Form

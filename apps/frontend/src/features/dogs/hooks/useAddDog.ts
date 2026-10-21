@@ -21,10 +21,10 @@ export function useAddDog(userId: string | undefined) {
       photo: DogPhoto | null;
     }) => {
       if (!photo) {
-        return api.post("dogs", { json: { text: name.trim() } }).json<Dog>();
+        return api.post("dogs", { json: { name: name.trim() } }).json<Dog>();
       }
       const body = await photoFormData(photo);
-      body.set("text", name.trim());
+      body.set("name", name.trim());
       return api.post("dogs", { body }).json<Dog>();
     },
     onSuccess: () =>

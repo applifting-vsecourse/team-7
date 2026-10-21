@@ -21,13 +21,13 @@ const state = vi.hoisted(() => ({
   getDogs:
     vi.fn<
       () => Promise<
-        { id: string; text: string; avatarVersion?: string | null }[]
+        { id: string; name: string; avatarVersion?: string | null }[]
       >
     >(),
   drawPhoto: vi.fn(),
   savePhoto: vi.fn(),
   removePhoto: vi.fn(),
-  addDog: vi.fn<() => Promise<{ id: string; text: string }>>(),
+  addDog: vi.fn<() => Promise<{ id: string; name: string }>>(),
 }));
 
 vi.mock("@/lib/api-client", () => ({
@@ -130,7 +130,7 @@ describe("overview routing", () => {
       removeListener: vi.fn(),
       dispatchEvent: vi.fn(),
     }));
-    state.getDogs.mockResolvedValue([{ id: "dog-1", text: "Test User's dog" }]);
+    state.getDogs.mockResolvedValue([{ id: "dog-1", name: "Test User's dog" }]);
   });
 
   it("sends visitors to login and preserves the overview destination", async () => {
@@ -237,8 +237,8 @@ describe("overview routing", () => {
   it("selects all dogs by default and updates the shared atom from selections", async () => {
     state.signedIn = true;
     state.getDogs.mockResolvedValue([
-      { id: "dog-1", text: "Buddy" },
-      { id: "dog-2", text: "Luna" },
+      { id: "dog-1", name: "Buddy" },
+      { id: "dog-2", name: "Luna" },
     ]);
     const store = createStore();
     const user = userEvent.setup();
@@ -282,7 +282,7 @@ describe("overview routing", () => {
     const user = userEvent.setup();
     renderRoute("/overview");
     const retry = await screen.findByRole("button", { name: "Try again" });
-    state.getDogs.mockResolvedValue([{ id: "dog-1", text: "Buddy" }]);
+    state.getDogs.mockResolvedValue([{ id: "dog-1", name: "Buddy" }]);
     await user.click(retry);
     expect(
       await screen.findByRole("checkbox", { name: "Buddy" }),
@@ -349,7 +349,7 @@ describe("overview routing", () => {
 
   it("adds a named dog from the sidebar dialog and refreshes the list", async () => {
     state.signedIn = true;
-    state.addDog.mockResolvedValue({ id: "dog-2", text: "Buddy" });
+    state.addDog.mockResolvedValue({ id: "dog-2", name: "Buddy" });
     const user = userEvent.setup();
     renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
@@ -368,13 +368,13 @@ describe("overview routing", () => {
     expect(name).toHaveAccessibleDescription("Name is required");
     expect(api.post).not.toHaveBeenCalled();
     await user.type(name, "Buddy  ");
-    state.getDogs.mockResolvedValue([{ id: "dog-2", text: "Buddy" }]);
+    state.getDogs.mockResolvedValue([{ id: "dog-2", name: "Buddy" }]);
     await user.click(submit);
 
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
-    expect(api.post).toHaveBeenCalledWith("dogs", { json: { text: "Buddy" } });
+    expect(api.post).toHaveBeenCalledWith("dogs", { json: { name: "Buddy" } });
     expect(
       await screen.findByRole("checkbox", { name: "Buddy" }),
     ).toBeInTheDocument();
@@ -403,7 +403,7 @@ describe("overview routing", () => {
 
   it("validates the optional photo and allows clearing an invalid selection", async () => {
     state.signedIn = true;
-    state.addDog.mockResolvedValue({ id: "dog-2", text: "Buddy" });
+    state.addDog.mockResolvedValue({ id: "dog-2", name: "Buddy" });
     const user = userEvent.setup();
     renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
@@ -427,12 +427,12 @@ describe("overview routing", () => {
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
-    expect(api.post).toHaveBeenCalledWith("dogs", { json: { text: "Buddy" } });
+    expect(api.post).toHaveBeenCalledWith("dogs", { json: { name: "Buddy" } });
   });
 
   it("keeps the form open and disables controls while saving", async () => {
     state.signedIn = true;
-    let finish!: (dog: { id: string; text: string }) => void;
+    let finish!: (dog: { id: string; name: string }) => void;
     state.addDog.mockReturnValue(
       new Promise((resolve) => {
         finish = resolve;
@@ -449,7 +449,7 @@ describe("overview routing", () => {
     expect(screen.getByRole("textbox", { name: "Name" })).toBeDisabled();
     await user.keyboard("{Escape}");
     expect(screen.getByRole("dialog", { name: "Add dog" })).toBeInTheDocument();
-    finish({ id: "dog-2", text: "Buddy" });
+    finish({ id: "dog-2", name: "Buddy" });
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
@@ -458,7 +458,7 @@ describe("overview routing", () => {
 
   it("adds a dog with a positioned photo in one request", async () => {
     state.signedIn = true;
-    state.addDog.mockResolvedValue({ id: "dog-2", text: "Buddy" });
+    state.addDog.mockResolvedValue({ id: "dog-2", name: "Buddy" });
     const user = userEvent.setup();
     renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
@@ -477,7 +477,7 @@ describe("overview routing", () => {
     expect((body.get("file") as File).name).toBe("avatar.webp");
     expect((body.get("file") as File).type).toBe("image/webp");
     expect(body.has("position")).toBe(false);
-    expect(body.get("text")).toBe("Buddy");
+    expect(body.get("name")).toBe("Buddy");
     expect(vi.mocked(URL).revokeObjectURL).toHaveBeenCalledWith(
       "blob:dog-photo",
     );
@@ -487,15 +487,15 @@ describe("overview routing", () => {
     state.signedIn = true;
     state.savePhoto.mockResolvedValue({
       id: "dog-1",
-      text: "Buddy",
+      name: "Buddy",
       avatarVersion: "new",
     });
     state.removePhoto.mockResolvedValue({
       id: "dog-1",
-      text: "Buddy",
+      name: "Buddy",
       avatarVersion: null,
     });
-    state.getDogs.mockResolvedValue([{ id: "dog-1", text: "Buddy" }]);
+    state.getDogs.mockResolvedValue([{ id: "dog-1", name: "Buddy" }]);
     const user = userEvent.setup();
     renderRoute("/dogs/dog-1");
     await user.click(
@@ -523,7 +523,7 @@ describe("overview routing", () => {
       512,
     );
     state.getDogs.mockResolvedValue([
-      { id: "dog-1", text: "Buddy", avatarVersion: "new" },
+      { id: "dog-1", name: "Buddy", avatarVersion: "new" },
     ]);
     await user.click(screen.getByRole("button", { name: "Save photo" }));
     await waitFor(() =>
@@ -536,7 +536,7 @@ describe("overview routing", () => {
     await user.click(
       screen.getByRole("button", { name: "Change photo for Buddy" }),
     );
-    state.getDogs.mockResolvedValue([{ id: "dog-1", text: "Buddy" }]);
+    state.getDogs.mockResolvedValue([{ id: "dog-1", name: "Buddy" }]);
     await user.click(screen.getByRole("button", { name: "Remove photo" }));
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),

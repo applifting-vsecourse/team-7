@@ -35,12 +35,12 @@ describe("/api/dogs", () => {
   const updateManyAndReturn = vi.fn();
   const deleteMany = vi.fn();
   const initialDogs = [
-    { id: "dog-a", text: "First dog", userId: "user-a" },
-    { id: "dog-b", text: "Second dog", userId: "user-b" },
+    { id: "dog-a", name: "First dog", userId: "user-a" },
+    { id: "dog-b", name: "Second dog", userId: "user-b" },
   ];
   let dogs: Array<{
     id: string;
-    text: string;
+    name: string;
     userId: string;
     avatar?: Uint8Array | null;
     avatarVersion?: string | null;
@@ -92,7 +92,7 @@ describe("/api/dogs", () => {
         ),
     );
     create.mockImplementation(
-      ({ data }: { data: { text: string; userId: string } }) => {
+      ({ data }: { data: { name: string; userId: string } }) => {
         const dog = { id: "dog-new", ...data };
         dogs.push(dog);
         return Promise.resolve(withoutAvatar(dog));
@@ -188,7 +188,7 @@ describe("/api/dogs", () => {
       const response = await request(
         method,
         method === "POST" ? "" : "/dog-a",
-        { text: "Buddy" },
+        { name: "Buddy" },
       );
 
       expect(response.status).toBe(401);
@@ -201,16 +201,16 @@ describe("/api/dogs", () => {
   it("creates a dog owned by the signed-in user", async () => {
     signIn("user-a");
 
-    const response = await request("POST", "", { text: "Buddy" });
+    const response = await request("POST", "", { name: "Buddy" });
 
     expect(response.status).toBe(201);
     expect(await response.json()).toEqual({
       id: "dog-new",
-      text: "Buddy",
+      name: "Buddy",
       userId: "user-a",
     });
     expect(create).toHaveBeenCalledWith({
-      data: { text: "Buddy", userId: "user-a" },
+      data: { name: "Buddy", userId: "user-a" },
       omit: { avatar: true },
     });
   });
@@ -218,20 +218,82 @@ describe("/api/dogs", () => {
   it("updates an owned dog and returns it", async () => {
     signIn("user-a");
 
-    const response = await request("PATCH", "/dog-a", { text: "Buddy" });
+    const response = await request("PATCH", "/dog-a", { name: "Buddy" });
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
       id: "dog-a",
-      text: "Buddy",
+      name: "Buddy",
       userId: "user-a",
     });
     expect(updateManyAndReturn).toHaveBeenCalledWith({
       where: { id: "dog-a", userId: "user-a" },
-      data: { text: "Buddy" },
+      data: { name: "Buddy" },
       omit: { avatar: true },
     });
     expect(dogs[1]).toEqual(initialDogs[1]);
+  });
+
+  it("stores breed and birth date, trimming the name and clearing a blank breed", async () => {
+    signIn("user-a");
+
+    await request("POST", "", {
+      name: "  Bára ",
+      breed: "Border kolie",
+      birthDate: "2022-05-03",
+    });
+    await request("POST", "", { name: "Rex", breed: "  " });
+
+    expect(create).toHaveBeenNthCalledWith(1, {
+      data: {
+        name: "Bára",
+        breed: "Border kolie",
+        birthDate: new Date("2022-05-03"),
+        userId: "user-a",
+      },
+      omit: { avatar: true },
+    });
+    expect(create).toHaveBeenNthCalledWith(2, {
+      data: { name: "Rex", breed: null, userId: "user-a" },
+      omit: { avatar: true },
+    });
+  });
+
+  it("accepts breed and birth date alongside a photo in a multipart create", async () => {
+    signIn("user-a");
+    const body = new FormData();
+    body.set("name", "Bára");
+    body.set("breed", "Border kolie");
+    body.set("birthDate", "2022-05-03");
+
+    const response = await fetch(url, { method: "POST", body });
+
+    expect(response.status).toBe(201);
+    expect(create).toHaveBeenCalledWith({
+      data: {
+        name: "Bára",
+        breed: "Border kolie",
+        birthDate: new Date("2022-05-03"),
+        userId: "user-a",
+      },
+      omit: { avatar: true },
+    });
+  });
+
+  it("leaves omitted optional fields unchanged on update and clears null ones", async () => {
+    signIn("user-a");
+
+    await request("PATCH", "/dog-a", { name: "Buddy" });
+    await request("PATCH", "/dog-a", { name: "Buddy", birthDate: null });
+
+    expect(updateManyAndReturn).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ data: { name: "Buddy" } }),
+    );
+    expect(updateManyAndReturn).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ data: { name: "Buddy", birthDate: null } }),
+    );
   });
 
   it("deletes an owned dog and returns no content", async () => {
@@ -258,7 +320,7 @@ describe("/api/dogs", () => {
     const response = await request(
       method,
       `/${id}`,
-      method === "PATCH" ? { text: "Changed" } : undefined,
+      method === "PATCH" ? { name: "Changed" } : undefined,
     );
 
     expect(response.status).toBe(404);
@@ -268,13 +330,19 @@ describe("/api/dogs", () => {
   describe.each(["POST", "PATCH"])("%s body validation", (method) => {
     it.each([
       {},
-      { text: "" },
-      { text: " \n\t " },
-      { text: null },
-      { text: 123 },
-      { text: "Buddy", userId: "user-b" },
-      { text: "Buddy", id: "dog-b" },
-      { text: "Buddy", user: { connect: { id: "user-b" } } },
+      { name: "" },
+      { name: " \n\t " },
+      { name: null },
+      { name: 123 },
+      { name: "x".repeat(101) },
+      { name: "Buddy", breed: "x".repeat(101) },
+      { name: "Buddy", birthDate: "03.05.2022" },
+      { name: "Buddy", birthDate: "2022-13-01" },
+      { name: "Buddy", birthDate: "2022-05-03T10:00:00Z" },
+      { name: "Buddy", birthDate: "2999-01-01" },
+      { name: "Buddy", userId: "user-b" },
+      { name: "Buddy", id: "dog-b" },
+      { name: "Buddy", user: { connect: { id: "user-b" } } },
     ])("rejects invalid data %j without writing dogs", async (body) => {
       signIn("user-a");
 
@@ -308,7 +376,7 @@ describe("/api/dogs", () => {
         new Blob([image as Uint8Array<ArrayBuffer>], { type: "image/png" }),
         "photo.png",
       );
-      if (method === "POST") body.set("text", "Buddy");
+      if (method === "POST") body.set("name", "Buddy");
       return fetch(`${url}${path}`, { method, body });
     }
 

@@ -24,7 +24,9 @@ enum UserRole {
 
 model Dog {
   id            String    @id @default(cuid())
-  text          String    @db.Text
+  name          String    @db.Text
+  breed         String?
+  birthDate     DateTime? @db.Date
   avatar        Bytes?
   avatarVersion String?
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)

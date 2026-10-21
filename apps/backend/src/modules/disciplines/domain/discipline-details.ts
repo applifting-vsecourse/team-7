@@ -1,6 +1,6 @@
 import type { Dog, Prisma } from "@/generated/prisma/client";
 
-export type DogRef = Pick<Dog, "id" | "text">;
+export type DogRef = Pick<Dog, "id" | "name">;
 
 export type DisciplineSummary = {
   id: string;
@@ -40,7 +40,7 @@ export type DisciplineDetail = {
   dogs: DisciplineDog[];
 };
 
-const dogRef = { select: { id: true, text: true } } as const;
+const dogRef = { select: { id: true, name: true } } as const;
 const byCreation = { createdAt: "asc" } as const;
 
 export const disciplineSummaryInclude = {
@@ -125,9 +125,4 @@ export function toDisciplineDetail(row: DetailRow): DisciplineDetail {
     })),
     dogs: [...dogs.values()],
   };
-}
-
-/** Optional free text: trimmed, and blank becomes null. */
-export function optionalText(value: string | undefined): string | null {
-  return value?.trim() || null;
 }

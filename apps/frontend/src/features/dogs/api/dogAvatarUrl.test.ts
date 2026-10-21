@@ -18,14 +18,14 @@ describe("dog avatar URLs", () => {
     (base) => {
       env.VITE_API_URL = base;
       expect(
-        dogAvatarUrl({ id: "dog-1", text: "Buddy", avatarVersion: "v1" }),
+        dogAvatarUrl({ id: "dog-1", name: "Buddy", avatarVersion: "v1" }),
       ).toBe("https://example.com/api/dogs/dog-1/avatar?v=v1");
     },
   );
 
   it("encodes the dog ID as one path segment and the version as one query parameter", () => {
     const url = new URL(
-      dogAvatarUrl({ id: "dog/a?b", text: "Buddy", avatarVersion: "a&b=c +" })!,
+      dogAvatarUrl({ id: "dog/a?b", name: "Buddy", avatarVersion: "a&b=c +" })!,
     );
     expect(url.pathname).toBe("/api/dogs/dog%2Fa%3Fb/avatar");
     expect([...url.searchParams]).toEqual([["v", "a&b=c +"]]);
@@ -35,7 +35,7 @@ describe("dog avatar URLs", () => {
     "returns no image URL when the dog has no avatar (%s)",
     (avatarVersion) => {
       expect(
-        dogAvatarUrl({ id: "dog-1", text: "Buddy", avatarVersion }),
+        dogAvatarUrl({ id: "dog-1", name: "Buddy", avatarVersion }),
       ).toBeUndefined();
     },
   );

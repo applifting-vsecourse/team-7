@@ -159,7 +159,7 @@ function useDogNames(dogs: DogRef[]) {
   const { i18n } = useTranslation();
   return new Intl.ListFormat(i18n.resolvedLanguage ?? "cs", {
     type: "conjunction",
-  }).format(dogs.map((dog) => dog.text));
+  }).format(dogs.map((dog) => dog.name));
 }
 
 export function ExerciseDialog({
