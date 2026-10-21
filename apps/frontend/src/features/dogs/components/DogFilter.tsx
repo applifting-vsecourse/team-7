@@ -102,7 +102,8 @@ function FilterOption({
       onChange={onChange}
       className="max-w-full"
     >
-      <Checkbox.Content className="min-h-12 max-w-full gap-3 rounded-3xl bg-surface-secondary px-3 py-1 text-sm leading-6 font-medium data-[indeterminate=true]:bg-accent-soft data-[selected=true]:bg-accent-soft">
+      {/* Same hover lift as the discipline cards and calendar items. */}
+      <Checkbox.Content className="min-h-12 max-w-full cursor-pointer gap-3 rounded-3xl bg-surface-secondary px-3 py-1 text-sm leading-6 font-medium transition duration-100 ease-out hover:shadow-overlay data-[indeterminate=true]:bg-accent-soft data-[selected=true]:bg-accent-soft motion-safe:hover:-translate-y-0.5">
         {children}
         <Checkbox.Control>
           <Checkbox.Indicator />
