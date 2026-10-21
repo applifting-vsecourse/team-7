@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Plus } from "@gravity-ui/icons";
-import { Button, Modal } from "@heroui/react";
+import { Button, Modal, toast } from "@heroui/react";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+
+import { ROUTES } from "@/app/routes";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { useAddDog } from "@/features/dogs/hooks/useAddDog";
@@ -12,6 +15,7 @@ export function AddDogDialog() {
   const { t } = useTranslation();
   const { user } = useSession();
   const addDog = useAddDog(user?.id);
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -35,8 +39,8 @@ export function AddDogDialog() {
         isDismissable={!addDog.isPending}
         isKeyboardDismissDisabled={addDog.isPending}
       >
-        <Modal.Container size="sm">
-          <Modal.Dialog>
+        <Modal.Container size="lg">
+          <Modal.Dialog className="md:max-w-200">
             <Modal.CloseTrigger />
             <Modal.Header>
               <Modal.Heading>{t(($) => $.navigation.addDog)}</Modal.Heading>
@@ -46,8 +50,16 @@ export function AddDogDialog() {
                 isPending={addDog.isPending}
                 onCancel={() => setIsOpen(false)}
                 onSubmit={async (values) => {
-                  await addDog.mutateAsync(values);
+                  const dog = await addDog.mutateAsync(values);
                   setIsOpen(false);
+                  // The new dog opens straight away and is active in the sidebar.
+                  toast.success(
+                    t(($) => $.dogs.addedToast, { name: dog.name }),
+                  );
+                  void navigate({
+                    to: ROUTES.dog,
+                    params: { dogId: dog.id },
+                  });
                 }}
               />
             ) : null}

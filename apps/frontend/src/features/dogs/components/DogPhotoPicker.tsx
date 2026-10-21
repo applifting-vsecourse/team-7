@@ -80,7 +80,7 @@ export function DogPhotoPicker({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       <Label htmlFor={id}>{t(($) => $.dogs.photo)}</Label>
       {/* The native input stays focusable and labelled for assistive tech and
           keyboards; the browser's own button can't be localized or styled. */}
@@ -104,7 +104,7 @@ export function DogPhotoPicker({
         <div
           {...dropHandlers}
           className={cn(
-            "flex min-w-0 items-center gap-3 rounded-2xl bg-surface py-2 pr-2 pl-3 shadow-field peer-focus-visible:focus-ring",
+            "flex min-w-0 items-center gap-2 rounded-2xl bg-surface py-1 pr-1 pl-3 shadow-field peer-focus-visible:focus-ring",
             isDragging && "bg-accent-soft",
           )}
         >
@@ -118,7 +118,7 @@ export function DogPhotoPicker({
             htmlFor={id}
             aria-hidden="true"
             className={cn(
-              "shrink-0 cursor-pointer rounded-3xl px-3 py-1 text-sm font-medium text-accent hover:bg-default",
+              "shrink-0 cursor-pointer rounded-2xl px-3 py-1.5 text-sm font-medium hover:bg-default",
               isDisabled && "pointer-events-none opacity-50",
             )}
           >
@@ -142,16 +142,13 @@ export function DogPhotoPicker({
           aria-hidden="true"
           {...dropHandlers}
           className={cn(
-            "flex cursor-pointer flex-col items-center gap-1 rounded-2xl border border-dashed border-border bg-surface px-4 py-6 text-center transition-colors peer-focus-visible:focus-ring hover:bg-surface-secondary",
+            "flex cursor-pointer flex-col items-center gap-1 rounded-2xl border border-dashed border-border bg-surface px-4 py-8 text-center transition-colors peer-focus-visible:focus-ring hover:bg-surface-secondary",
             isDragging && "border-accent bg-accent-soft",
             isDisabled && "pointer-events-none opacity-50",
             (error || errorMessage) && "border-danger",
           )}
         >
-          <CloudArrowUpIn
-            className="mb-1 size-6 text-accent"
-            aria-hidden="true"
-          />
+          <CloudArrowUpIn className="size-8 text-muted" aria-hidden="true" />
           <span className="text-sm font-medium text-accent">
             {t(($) => $.dogs.choosePhoto)}
           </span>
@@ -160,11 +157,19 @@ export function DogPhotoPicker({
           </span>
         </label>
       )}
-      <p id={`${id}-hint`} className="text-sm text-muted">
+      {/* With a photo picked, the crop editor's own hint takes over. */}
+      <p
+        id={`${id}-hint`}
+        className={cn("text-xs leading-5 text-muted", value && "sr-only")}
+      >
         {t(($) => $.dogs.photoHint)}
       </p>
       {error || errorMessage ? (
-        <p id={`${id}-error`} role="alert" className="text-sm text-danger">
+        <p
+          id={`${id}-error`}
+          role="alert"
+          className="text-xs leading-5 text-danger"
+        >
           {errorMessage ?? t(($) => $.dogs.photoInvalid)}
         </p>
       ) : null}

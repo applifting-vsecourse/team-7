@@ -1,3 +1,4 @@
+import { toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   createMemoryHistory,
@@ -88,6 +89,7 @@ describe("overview routing", () => {
   afterEach(() => vi.restoreAllMocks());
 
   beforeEach(() => {
+    toast.clear();
     state.signedIn = false;
     state.isMobile = false;
     vi.clearAllMocks();
@@ -347,11 +349,11 @@ describe("overview routing", () => {
     ).toBeInTheDocument();
   });
 
-  it("adds a named dog from the sidebar dialog and refreshes the list", async () => {
+  it("adds a named dog from the sidebar dialog and opens its page", async () => {
     state.signedIn = true;
     state.addDog.mockResolvedValue({ id: "dog-2", name: "Buddy" });
     const user = userEvent.setup();
-    renderRoute("/overview");
+    const router = renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
 
     expect(screen.getByRole("dialog", { name: "Add dog" })).toBeInTheDocument();
@@ -360,12 +362,14 @@ describe("overview routing", () => {
     const submit = screen.getAllByRole("button", { name: "Add dog" }).at(-1)!;
     expect(submit).toBeEnabled();
     await user.click(submit);
-    expect(await screen.findByText("Name is required")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Enter the dog's name."),
+    ).toBeInTheDocument();
     expect(name).toHaveFocus();
     expect(api.post).not.toHaveBeenCalled();
     await user.type(name, "   ");
     await user.click(submit);
-    expect(name).toHaveAccessibleDescription("Name is required");
+    expect(name).toHaveAccessibleDescription("Enter the dog's name.");
     expect(api.post).not.toHaveBeenCalled();
     await user.type(name, "Buddy  ");
     state.getDogs.mockResolvedValue([{ id: "dog-2", name: "Buddy" }]);
@@ -375,9 +379,53 @@ describe("overview routing", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
     expect(api.post).toHaveBeenCalledWith("dogs", { json: { name: "Buddy" } });
+    expect(await screen.findByText("Buddy was added")).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/dogs/dog-2");
     expect(
-      await screen.findByRole("checkbox", { name: "Buddy" }),
+      await screen.findByRole("heading", { name: "Buddy" }),
     ).toBeInTheDocument();
+  });
+
+  it("sends the optional breed and birth date with a new dog", async () => {
+    state.signedIn = true;
+    state.addDog.mockResolvedValue({ id: "dog-2", name: "Bára" });
+    const user = userEvent.setup();
+    renderRoute("/overview?lng=en");
+    await user.click(await screen.findByRole("button", { name: "Add dog" }));
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Bára");
+    await user.type(
+      screen.getByRole("textbox", { name: "Breed" }),
+      "Border kolie",
+    );
+    await user.click(screen.getAllByRole("spinbutton", { name: /month/i })[0]!);
+    await user.keyboard("05032022");
+    await user.click(
+      screen.getAllByRole("button", { name: "Add dog" }).at(-1)!,
+    );
+
+    await waitFor(() =>
+      expect(api.post).toHaveBeenCalledWith("dogs", {
+        json: { name: "Bára", breed: "Border kolie", birthDate: "2022-05-03" },
+      }),
+    );
+  });
+
+  it("rejects a birth date in the future", async () => {
+    state.signedIn = true;
+    const user = userEvent.setup();
+    renderRoute("/overview?lng=en");
+    await user.click(await screen.findByRole("button", { name: "Add dog" }));
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Bára");
+    await user.click(screen.getAllByRole("spinbutton", { name: /month/i })[0]!);
+    await user.keyboard("01012999");
+    await user.click(
+      screen.getAllByRole("button", { name: "Add dog" }).at(-1)!,
+    );
+
+    expect(
+      await screen.findByText("The date of birth can't be in the future."),
+    ).toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
   });
 
   it("allows cancelling the dialog and keeps the name after a failed save", async () => {
