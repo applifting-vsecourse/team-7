@@ -1,20 +1,17 @@
 import { CircleDashed } from "@gravity-ui/icons";
 import { Button } from "@heroui/react";
-import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 
-import { disciplinesQueryOptions } from "../api/disciplinesQueryOptions";
+import { useDisciplines } from "../hooks/useDisciplines";
 import { DisciplineCard } from "./DisciplineCard";
 import { EmptyState } from "./EmptyState";
 
 export function DisciplineList() {
   const { t } = useTranslation();
   const { user } = useSession();
-  const { data, isPending, isError, refetch } = useQuery(
-    disciplinesQueryOptions(user?.id),
-  );
+  const { data, isPending, isError, refetch } = useDisciplines(user?.id);
 
   if (isPending) {
     return (

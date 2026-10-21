@@ -23,6 +23,7 @@ Controls come directly from `@heroui/react` (HeroUI v3). Use its accessible comp
 - **A page is not a card.** Page content sits on `background`, not inside a floating panel.
 - **Every page uses the shared app chrome** (`Layout` / `AuthLayout`). Pages never render as standalone islands.
 - Layouts are responsive: usable on a phone, since handlers log training at the training field.
+- **Nested pages show HeroUI `Breadcrumbs` above the page title, never a back button.** The trail ends with the current page, e.g. `Disciplíny › Poslušnost` or `Mája › Poslušnost`.
 - Forbidden by default: the centred-hero-plus-three-feature-cards layout, carousels, and any section whose only purpose is to look full.
 
 ## Spacing

@@ -1,20 +1,16 @@
 import { useState } from "react";
+import type { DisciplineDetail } from "../api/disciplinesQueryOptions";
 import { CircleDashed, FileArrowUp, Plus } from "@gravity-ui/icons";
 import { Breadcrumbs, Button, Separator, toast } from "@heroui/react";
-import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
-import { HTTPError } from "@/lib/api-client";
 import { pluralForm } from "@/lib/plural";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 
-import {
-  disciplineQueryOptions,
-  type DisciplineDetail,
-} from "../api/disciplinesQueryOptions";
+import { useDiscipline } from "../hooks/useDiscipline";
 import { useDeleteDiscipline } from "../hooks/useLibraryMutations";
 import { DeleteDialog } from "./DeleteDialog";
 import { DisciplineDogs } from "./DisciplineDogs";
@@ -30,8 +26,9 @@ export function DisciplineDetailView({
 }) {
   const { t } = useTranslation();
   const { user } = useSession();
-  const { data, isPending, isError, error, refetch } = useQuery(
-    disciplineQueryOptions(user?.id, disciplineId),
+  const { data, isPending, isError, error, refetch } = useDiscipline(
+    user?.id,
+    disciplineId,
   );
 
   if (isPending) {
@@ -43,8 +40,7 @@ export function DisciplineDetailView({
   }
 
   if (isError) {
-    const notFound =
-      error instanceof HTTPError && error.response.status === 404;
+    const notFound = error.response?.status === 404;
     return (
       <div role="alert" className="flex flex-col items-start gap-3">
         <p className="text-sm text-danger">
