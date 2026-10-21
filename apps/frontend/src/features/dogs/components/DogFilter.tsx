@@ -42,7 +42,11 @@ export function DogFilter() {
     return <p className="text-sm text-muted">{t(($) => $.dogs.filterEmpty)}</p>;
   }
 
-  const allSelected = dogs.every((dog) => selectedDogIds.includes(dog.id));
+  const selected = selectedDogIds ?? dogs.map((dog) => dog.id);
+  const allSelected = dogs.every((dog) => selected.includes(dog.id));
+  // Back to "all" once every dog is checked, so dogs added later are included.
+  const select = (ids: string[]) =>
+    setSelectedDogIds(dogs.every((dog) => ids.includes(dog.id)) ? null : ids);
 
   return (
     <div
@@ -53,11 +57,9 @@ export function DogFilter() {
       <FilterOption
         isSelected={allSelected}
         isIndeterminate={
-          !allSelected && dogs.some((dog) => selectedDogIds.includes(dog.id))
+          !allSelected && dogs.some((dog) => selected.includes(dog.id))
         }
-        onChange={(selected) =>
-          setSelectedDogIds(selected ? dogs.map((dog) => dog.id) : [])
-        }
+        onChange={(checked) => setSelectedDogIds(checked ? null : [])}
       >
         {t(($) => $.dogs.all)}
       </FilterOption>
@@ -65,12 +67,12 @@ export function DogFilter() {
       {dogs.map((dog) => (
         <FilterOption
           key={dog.id}
-          isSelected={selectedDogIds.includes(dog.id)}
-          onChange={(selected) =>
-            setSelectedDogIds((ids) =>
-              selected
-                ? [...ids.filter((id) => id !== dog.id), dog.id]
-                : ids.filter((id) => id !== dog.id),
+          isSelected={selected.includes(dog.id)}
+          onChange={(checked) =>
+            select(
+              checked
+                ? [...selected.filter((id) => id !== dog.id), dog.id]
+                : selected.filter((id) => id !== dog.id),
             )
           }
         >

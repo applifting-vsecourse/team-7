@@ -234,7 +234,7 @@ describe("overview routing", () => {
     expect(calendar.getAllByRole("article")).toHaveLength(22);
   });
 
-  it("updates the shared atom from individual and all-dog selections", async () => {
+  it("selects all dogs by default and updates the shared atom from selections", async () => {
     state.signedIn = true;
     state.getDogs.mockResolvedValue([
       { id: "dog-1", text: "Buddy" },
@@ -250,17 +250,26 @@ describe("overview routing", () => {
     const luna = filter.getByRole("checkbox", { name: "Luna" });
     const all = filter.getByRole("checkbox", { name: "All" });
 
-    await user.click(buddy);
-    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-1"]);
-    expect(buddy).toBeChecked();
-    expect(all).toBePartiallyChecked();
-    await user.click(luna);
-    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-1", "dog-2"]);
+    // Everything is selected by default.
+    expect(store.get(selectedDogIdsAtom)).toBeNull();
     expect(all).toBeChecked();
+    expect(buddy).toBeChecked();
+    expect(luna).toBeChecked();
+
     await user.click(buddy);
     expect(store.get(selectedDogIdsAtom)).toEqual(["dog-2"]);
+    expect(buddy).not.toBeChecked();
+    expect(all).toBePartiallyChecked();
+    await user.click(buddy);
+    expect(store.get(selectedDogIdsAtom)).toBeNull();
+    expect(all).toBeChecked();
     await user.click(all);
-    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-1", "dog-2"]);
+    expect(store.get(selectedDogIdsAtom)).toEqual([]);
+    expect(buddy).not.toBeChecked();
+    await user.click(luna);
+    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-2"]);
+    await user.click(all);
+    expect(store.get(selectedDogIdsAtom)).toBeNull();
     await user.keyboard(" ");
     expect(store.get(selectedDogIdsAtom)).toEqual([]);
     expect(buddy).not.toBeChecked();
