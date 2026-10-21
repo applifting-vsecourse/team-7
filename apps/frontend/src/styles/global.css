@@ -54,6 +54,11 @@
   main {
     @apply bg-surface px-2 pb-2 sm:px-4 sm:pb-4;
   }
+  /* Every overflow container gets the theme's thin scrollbar, like the kit's
+     own ScrollShadow; the page scrollbar on <html> stays native. */
+  body * {
+    @apply scrollbar;
+  }
 }
 
 @keyframes sidebar-slide-in {

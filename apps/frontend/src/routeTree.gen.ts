@@ -15,6 +15,8 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OverviewRouteImport } from './routes/overview'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as DisciplinesIndexRouteImport } from './routes/disciplines/index'
+import { Route as DisciplinesDisciplineIdRouteImport } from './routes/disciplines/$disciplineId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +48,16 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DisciplinesIndexRoute = DisciplinesIndexRouteImport.update({
+  id: '/disciplines/',
+  path: '/disciplines/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisciplinesDisciplineIdRoute = DisciplinesDisciplineIdRouteImport.update({
+  id: '/disciplines/$disciplineId',
+  path: '/disciplines/$disciplineId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +66,8 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/overview': typeof OverviewRoute
   '/signup': typeof SignupRoute
+  '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
+  '/disciplines/': typeof DisciplinesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +76,8 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/overview': typeof OverviewRoute
   '/signup': typeof SignupRoute
+  '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
+  '/disciplines': typeof DisciplinesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,14 +87,30 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/overview': typeof OverviewRoute
   '/signup': typeof SignupRoute
+  '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
+  '/disciplines/': typeof DisciplinesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/calendar' | '/forgot-password' | '/login' | '/overview' | '/signup'
+    | '/'
+    | '/calendar'
+    | '/forgot-password'
+    | '/login'
+    | '/overview'
+    | '/signup'
+    | '/disciplines/$disciplineId'
+    | '/disciplines/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/calendar' | '/forgot-password' | '/login' | '/overview' | '/signup'
+    | '/'
+    | '/calendar'
+    | '/forgot-password'
+    | '/login'
+    | '/overview'
+    | '/signup'
+    | '/disciplines/$disciplineId'
+    | '/disciplines'
   id:
     | '__root__'
     | '/'
@@ -87,6 +119,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/overview'
     | '/signup'
+    | '/disciplines/$disciplineId'
+    | '/disciplines/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -96,6 +130,8 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OverviewRoute: typeof OverviewRoute
   SignupRoute: typeof SignupRoute
+  DisciplinesDisciplineIdRoute: typeof DisciplinesDisciplineIdRoute
+  DisciplinesIndexRoute: typeof DisciplinesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -142,6 +178,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/disciplines/': {
+      id: '/disciplines/'
+      path: '/disciplines'
+      fullPath: '/disciplines/'
+      preLoaderRoute: typeof DisciplinesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/disciplines/$disciplineId': {
+      id: '/disciplines/$disciplineId'
+      path: '/disciplines/$disciplineId'
+      fullPath: '/disciplines/$disciplineId'
+      preLoaderRoute: typeof DisciplinesDisciplineIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -152,6 +202,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OverviewRoute: OverviewRoute,
   SignupRoute: SignupRoute,
+  DisciplinesDisciplineIdRoute: DisciplinesDisciplineIdRoute,
+  DisciplinesIndexRoute: DisciplinesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -77,7 +77,7 @@ export function WeeklyCalendar() {
   };
 
   return (
-    <div className="flex min-w-0 flex-col gap-6 pb-4">
+    <div className="flex min-w-0 flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2
           id={headingId}
@@ -127,7 +127,7 @@ export function WeeklyCalendar() {
       <ScrollShadow
         ref={scrollRef}
         orientation="horizontal"
-        className="w-full pb-4"
+        className="w-full"
         style={{ minHeight }}
         tabIndex={0}
         role="region"

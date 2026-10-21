@@ -5,4 +5,6 @@ export const ROUTES = {
   forgotPassword: "/forgot-password",
   overview: "/overview",
   calendar: "/calendar",
+  disciplines: "/disciplines",
+  discipline: "/disciplines/$disciplineId",
 } as const;

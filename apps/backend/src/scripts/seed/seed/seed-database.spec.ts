@@ -8,6 +8,7 @@ import { createUser } from "./create-user";
 import { seedDatabase } from "./seed-database";
 
 vi.mock("./create-user", () => ({ createUser: vi.fn() }));
+vi.mock("./seed-disciplines", () => ({ seedDisciplines: vi.fn() }));
 
 describe("seedDatabase dog ownership", () => {
   const config = mockDeep<Config>();

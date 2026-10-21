@@ -13,6 +13,8 @@ export const messageSelectors = {
     $.validation.password.confirmationRequired,
   passwordMismatch: ($) => $.validation.password.mismatch,
   nameRequired: ($) => $.validation.name.required,
+  titleRequired: ($) => $.validation.title.required,
+  textTooLong: ($) => $.validation.title.tooLong,
   dogPhotoInvalid: ($) => $.dogs.photoInvalid,
   signInFailed: ($) => $.auth.errors.signIn,
   signUpFailed: ($) => $.auth.errors.signUp,

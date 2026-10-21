@@ -49,6 +49,10 @@
     },
     "name": {
       "required": "Zadejte jméno"
+    },
+    "title": {
+      "required": "Vyplňte název",
+      "tooLong": "Text je příliš dlouhý"
     }
   },
   "navigation": {
@@ -199,5 +203,98 @@
     },
     "closingHeading": "Vyzkoušejte TrainLoop",
     "closingLead": "Registrace je zdarma. Po přihlášení si můžete hned přidat psa a založit první plán."
+  },
+  "disciplines": {
+    "intro": "Knihovna disciplín, cílů a cvičení. Psům z ní přiřadíte jen to, co opravdu trénují.",
+    "newDiscipline": "Nová disciplína",
+    "loading": "Načítám disciplíny…",
+    "loadError": "Disciplíny se nepodařilo načíst.",
+    "retry": "Zkusit znovu",
+    "emptyTitle": "Zatím nemáte žádnou disciplínu",
+    "emptyDescription": "Disciplína sdružuje cíle a cvičení, které pak přiřadíte svým psům.",
+    "emptyDiscipline": "Disciplína je prázdná",
+    "goalCount": {
+      "one": "{{count}} cíl",
+      "few": "{{count}} cíle",
+      "other": "{{count}} cílů"
+    },
+    "exerciseCount": {
+      "one": "{{count}} cvičení",
+      "few": "{{count}} cvičení",
+      "other": "{{count}} cvičení"
+    },
+    "detailLoading": "Načítám disciplínu…",
+    "detailLoadError": "Disciplínu se nepodařilo načíst.",
+    "notFound": "Disciplína neexistuje nebo byla smazána.",
+    "breadcrumbs": "Drobečková navigace",
+    "addGoal": "Přidat cíl",
+    "assignToDog": "Přiřadit psovi",
+    "actions": "Další akce s disciplínou",
+    "edit": "Upravit",
+    "delete": "Smazat",
+    "goals": "Cíle",
+    "goalsSummary": "{{goals}} · {{exercises}}",
+    "goalsEmptyTitle": "Disciplína zatím nemá žádné cíle",
+    "goalsEmptyDescription": "Cíl popisuje, čeho chcete se psem dosáhnout, třeba „Slalom 12 tyček bez chyby“. Ke každému cíli pak přidáte cvičení.",
+    "goalNoExercisesTitle": "Cíl nemá žádná cvičení.",
+    "goalNoExercisesDescription": "Přidejte je, abyste cvičení mohli plánovat v kalendáři.",
+    "addExercise": "Přidat cvičení",
+    "goalActions": "Další akce s cílem {{name}}",
+    "exerciseActions": "Další akce se cvičením {{name}}",
+    "dogs": "Psi s touto disciplínou",
+    "dogsEmpty": "Disciplína zatím není přiřazená žádnému psovi",
+    "dogProgress": "{{goals}} · splněno {{completed}}",
+    "cancel": "Zrušit",
+    "save": "Uložit",
+    "saveError": "Uložení se nepodařilo. Zkuste to znovu.",
+    "disciplineForm": {
+      "createTitle": "Nová disciplína",
+      "editTitle": "Upravit disciplínu",
+      "description": "Pojmenujte disciplínu. Cíle a cvičení přidáte na jejím detailu.",
+      "name": "Název",
+      "namePlaceholder": "Agility",
+      "text": "Popis",
+      "textPlaceholder": "Překážky, slalom a vedení na dálku.",
+      "submit": "Vytvořit disciplínu"
+    },
+    "goalForm": {
+      "createTitle": "Nový cíl",
+      "editTitle": "Upravit cíl",
+      "context": "Disciplína:",
+      "name": "Název cíle",
+      "namePlaceholder": "Slalom 12 tyček bez chyby",
+      "text": "Kdy je cíl splněný?",
+      "textPlaceholder": "3 průchody bez chyby za sebou na dvou různých trénincích.",
+      "submit": "Přidat cíl"
+    },
+    "exerciseForm": {
+      "createTitle": "Nové cvičení",
+      "editTitle": "Upravit cvičení",
+      "context": "Cíl:",
+      "name": "Název cvičení",
+      "namePlaceholder": "Přivolání od hračky",
+      "text": "Postup",
+      "textPlaceholder": "Pes si hraje s hračkou, přivolat ve chvíli nejvyšší hry. Odměna přetahovaná.",
+      "submit": "Přidat cvičení",
+      "noticeTitle": "Psům se nepřidá automaticky",
+      "noticeDescriptionOne": "{{dogs}} má cíl {{goal}}. Nové cvičení u něj najdete mezi nepřiřazenými.",
+      "noticeDescription": "{{dogs}} mají cíl {{goal}}. Nové cvičení u nich najdete mezi nepřiřazenými."
+    },
+    "deleteDialog": {
+      "disciplineTitle": "Smazat disciplínu {{name}}?",
+      "goalTitle": "Smazat cíl {{name}}?",
+      "exerciseTitle": "Smazat cvičení {{name}}?",
+      "disciplineBody": "Smažou se i všechny její cíle a cvičení.",
+      "goalBody": "Smažou se i všechna cvičení tohoto cíle.",
+      "exerciseBody": "Cvičení zmizí z knihovny disciplíny.",
+      "affectedDogs": {
+        "one": "Přijde o ně {{count}} pes.",
+        "few": "Přijdou o ně {{count}} psi.",
+        "other": "Přijde o ně {{count}} psů."
+      },
+      "irreversible": "Akci nelze vrátit.",
+      "confirm": "Smazat",
+      "error": "Smazání se nepodařilo. Zkuste to znovu."
+    }
   }
 }
