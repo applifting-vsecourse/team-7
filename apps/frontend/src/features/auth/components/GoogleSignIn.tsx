@@ -39,13 +39,8 @@ export function GoogleSignIn({ redirectTo, onError }: GoogleSignInProps) {
 
   return (
     <>
-      <div className="flex items-center gap-4 text-sm text-muted">
-        <Separator className="flex-1" />
-        {t(($) => $.auth.or)}
-        <Separator className="flex-1" />
-      </div>
       <Button
-        variant="outline"
+        variant="tertiary"
         size="lg"
         fullWidth
         isPending={isPending}
@@ -55,6 +50,11 @@ export function GoogleSignIn({ redirectTo, onError }: GoogleSignInProps) {
         <GoogleIcon />
         {t(($) => $.auth.continueWithGoogle)}
       </Button>
+      <div className="flex items-center gap-4 text-sm text-muted">
+        <Separator className="flex-1" />
+        {t(($) => $.auth.or)}
+        <Separator className="flex-1" />
+      </div>
     </>
   );
 }
