@@ -1,8 +1,8 @@
-import { useState } from "react";
 import type { Exercise, Goal } from "../api/disciplinesQueryOptions";
 import { Circle } from "@gravity-ui/icons";
 import { useTranslation } from "react-i18next";
 
+import { useDialogState } from "../hooks/useDialogState";
 import { useDeleteExercise } from "../hooks/useLibraryMutations";
 import { DeleteDialog } from "./DeleteDialog";
 import { ItemMenu } from "./ItemMenu";
@@ -16,11 +16,10 @@ export function ExerciseRow({
   exercise: Exercise;
 }) {
   const { t } = useTranslation();
-  const [dialog, setDialog] = useState<"edit" | "delete" | null>(null);
+  const { dialog, open, close, onOpenChange } = useDialogState<
+    "edit" | "delete"
+  >();
   const remove = useDeleteExercise();
-  const close = (open: boolean) => {
-    if (!open) setDialog(null);
-  };
 
   return (
     <li className="flex items-start gap-3">
@@ -39,21 +38,21 @@ export function ExerciseRow({
         label={t(($) => $.disciplines.exerciseActions, {
           name: exercise.name,
         })}
-        onEdit={() => setDialog("edit")}
+        onEdit={() => open("edit")}
         onDelete={() => {
           remove.reset();
-          setDialog("delete");
+          open("delete");
         }}
       />
       <ExerciseDialog
         isOpen={dialog === "edit"}
-        onOpenChange={close}
+        onOpenChange={onOpenChange}
         goal={goal}
         exercise={exercise}
       />
       <DeleteDialog
         isOpen={dialog === "delete"}
-        onOpenChange={close}
+        onOpenChange={onOpenChange}
         title={t(($) => $.disciplines.deleteDialog.exerciseTitle, {
           name: exercise.name,
         })}
@@ -61,9 +60,7 @@ export function ExerciseRow({
         affectedDogCount={exercise.dogCount}
         isPending={remove.isPending}
         isError={remove.isError}
-        onConfirm={() =>
-          remove.mutate(exercise.id, { onSuccess: () => setDialog(null) })
-        }
+        onConfirm={() => remove.mutate(exercise.id, { onSuccess: close })}
       />
     </li>
   );

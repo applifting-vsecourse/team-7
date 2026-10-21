@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { DisciplineDetail } from "../api/disciplinesQueryOptions";
 import { CircleDashed, FileArrowUp, Plus } from "@gravity-ui/icons";
 import { Breadcrumbs, Button, Separator, toast } from "@heroui/react";
@@ -10,6 +9,7 @@ import { pluralForm } from "@/lib/plural";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 
+import { useDialogState } from "../hooks/useDialogState";
 import { useDiscipline } from "../hooks/useDiscipline";
 import { useDeleteDiscipline } from "../hooks/useLibraryMutations";
 import { DeleteDialog } from "./DeleteDialog";
@@ -67,13 +67,10 @@ export function DisciplineDetailView({
 function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [dialog, setDialog] = useState<"edit" | "delete" | "addGoal" | null>(
-    null,
-  );
+  const { dialog, open, onOpenChange } = useDialogState<
+    "edit" | "delete" | "addGoal"
+  >();
   const remove = useDeleteDiscipline();
-  const close = (open: boolean) => {
-    if (!open) setDialog(null);
-  };
   const exerciseCount = discipline.goals.reduce(
     (sum, goal) => sum + goal.exercises.length,
     0,
@@ -102,10 +99,7 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
           ) : null}
         </div>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <Button
-            className="w-full lg:w-auto"
-            onPress={() => setDialog("addGoal")}
-          >
+          <Button className="w-full lg:w-auto" onPress={() => open("addGoal")}>
             <Plus className="size-4" aria-hidden="true" />
             {t(($) => $.disciplines.addGoal)}
           </Button>
@@ -118,10 +112,10 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
             <ItemMenu
               size="md"
               label={t(($) => $.disciplines.actions)}
-              onEdit={() => setDialog("edit")}
+              onEdit={() => open("edit")}
               onDelete={() => {
                 remove.reset();
-                setDialog("delete");
+                open("delete");
               }}
             />
           </div>
@@ -183,17 +177,17 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
       </div>
       <GoalDialog
         isOpen={dialog === "addGoal"}
-        onOpenChange={close}
+        onOpenChange={onOpenChange}
         discipline={discipline}
       />
       <DisciplineDialog
         isOpen={dialog === "edit"}
-        onOpenChange={close}
+        onOpenChange={onOpenChange}
         discipline={discipline}
       />
       <DeleteDialog
         isOpen={dialog === "delete"}
-        onOpenChange={close}
+        onOpenChange={onOpenChange}
         title={t(($) => $.disciplines.deleteDialog.disciplineTitle, {
           name: discipline.name,
         })}

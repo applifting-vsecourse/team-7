@@ -1,9 +1,9 @@
-import { useState } from "react";
 import type { Goal } from "../api/disciplinesQueryOptions";
 import { Flag, Plus } from "@gravity-ui/icons";
 import { Alert, Button, Separator } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
+import { useDialogState } from "../hooks/useDialogState";
 import { useDeleteGoal } from "../hooks/useLibraryMutations";
 import { DeleteDialog } from "./DeleteDialog";
 import { ExerciseRow } from "./ExerciseRow";
@@ -18,13 +18,10 @@ export function GoalCard({
   goal: Goal;
 }) {
   const { t } = useTranslation();
-  const [dialog, setDialog] = useState<
-    "edit" | "delete" | "addExercise" | null
-  >(null);
+  const { dialog, open, close, onOpenChange } = useDialogState<
+    "edit" | "delete" | "addExercise"
+  >();
   const remove = useDeleteGoal();
-  const close = (open: boolean) => {
-    if (!open) setDialog(null);
-  };
 
   return (
     <article
@@ -48,10 +45,10 @@ export function GoalCard({
         </div>
         <ItemMenu
           label={t(($) => $.disciplines.goalActions, { name: goal.name })}
-          onEdit={() => setDialog("edit")}
+          onEdit={() => open("edit")}
           onDelete={() => {
             remove.reset();
-            setDialog("delete");
+            open("delete");
           }}
         />
       </div>
@@ -78,25 +75,25 @@ export function GoalCard({
       <Button
         variant="outline"
         className="self-start"
-        onPress={() => setDialog("addExercise")}
+        onPress={() => open("addExercise")}
       >
         <Plus className="size-4" aria-hidden="true" />
         {t(($) => $.disciplines.addExercise)}
       </Button>
       <GoalDialog
         isOpen={dialog === "edit"}
-        onOpenChange={close}
+        onOpenChange={onOpenChange}
         discipline={discipline}
         goal={goal}
       />
       <ExerciseDialog
         isOpen={dialog === "addExercise"}
-        onOpenChange={close}
+        onOpenChange={onOpenChange}
         goal={goal}
       />
       <DeleteDialog
         isOpen={dialog === "delete"}
-        onOpenChange={close}
+        onOpenChange={onOpenChange}
         title={t(($) => $.disciplines.deleteDialog.goalTitle, {
           name: goal.name,
         })}
@@ -104,9 +101,7 @@ export function GoalCard({
         affectedDogCount={goal.dogs.length}
         isPending={remove.isPending}
         isError={remove.isError}
-        onConfirm={() =>
-          remove.mutate(goal.id, { onSuccess: () => setDialog(null) })
-        }
+        onConfirm={() => remove.mutate(goal.id, { onSuccess: close })}
       />
     </article>
   );
