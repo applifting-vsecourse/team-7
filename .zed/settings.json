@@ -1,0 +1,114 @@
+// Requires the Oxc extension (zed: extensions → Oxc).
+{
+  "languages": {
+    "JavaScript": {
+      "language_servers": ["oxlint", "oxfmt", "!biome", "!eslint", "..."],
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
+        }
+      },
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      }
+    },
+
+    "TypeScript": {
+      "language_servers": ["oxlint", "oxfmt", "!biome", "!eslint", "..."],
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
+        }
+      },
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      }
+    },
+    "TSX": {
+      "language_servers": ["oxlint", "oxfmt", "!biome", "!eslint", "..."],
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
+        }
+      },
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      }
+    },
+    "CSS": {
+      "language_servers": ["oxfmt", "!biome", "!eslint", "..."],
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
+        }
+      },
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      }
+    },
+    "HTML": {
+      "language_servers": ["oxfmt", "!biome", "!eslint", "..."],
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
+        }
+      },
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      }
+    },
+    "JSON": {
+      "language_servers": ["oxfmt", "!biome", "!eslint", "..."],
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
+        }
+      },
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      }
+    },
+    "JSONC": {
+      "language_servers": ["oxfmt", "!biome", "!eslint", "..."],
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
+        }
+      },
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      }
+    },
+    "Markdown": {
+      "language_servers": ["oxfmt", "!biome", "!eslint", "..."],
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
+        }
+      },
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      }
+    },
+    "YAML": {
+      "language_servers": ["oxfmt", "!biome", "!eslint", "..."],
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
+        }
+      },
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      }
+    }
+  }
+}

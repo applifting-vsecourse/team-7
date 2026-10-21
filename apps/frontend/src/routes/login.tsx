@@ -73,12 +73,12 @@ function LoginPage() {
         </>
       }
     >
+      <GoogleSignIn redirectTo={redirectTo} onError={setErrorMessage} />
       <SignInForm
         isLoading={signIn.isPending}
         errorMessage={errorMessage}
         onSubmit={handleSubmit}
       />
-      <GoogleSignIn redirectTo={redirectTo} onError={setErrorMessage} />
     </AuthLayout>
   );
 }
