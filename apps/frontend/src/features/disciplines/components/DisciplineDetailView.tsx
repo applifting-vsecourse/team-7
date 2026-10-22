@@ -1,5 +1,5 @@
 import type { DisciplineDetail } from "../api/disciplinesQueryOptions";
-import { CircleDashed, FileArrowUp, Plus } from "@gravity-ui/icons";
+import { FileArrowUp, Flag, Plus } from "@gravity-ui/icons";
 import { Breadcrumbs, Button, Separator, toast } from "@heroui/react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -156,7 +156,7 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
           </div>
           {discipline.goals.length === 0 ? (
             <EmptyState
-              icon={CircleDashed}
+              icon={Flag}
               title={t(($) => $.disciplines.goalsEmptyTitle)}
               description={t(($) => $.disciplines.goalsEmptyDescription)}
             />

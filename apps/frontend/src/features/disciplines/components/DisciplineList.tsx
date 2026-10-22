@@ -1,4 +1,4 @@
-import { CircleDashed } from "@gravity-ui/icons";
+import { ChartLine } from "@gravity-ui/icons";
 import { Button } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
@@ -37,7 +37,7 @@ export function DisciplineList() {
   if (data.length === 0) {
     return (
       <EmptyState
-        icon={CircleDashed}
+        icon={ChartLine}
         title={t(($) => $.disciplines.emptyTitle)}
         description={t(($) => $.disciplines.emptyDescription)}
       />
