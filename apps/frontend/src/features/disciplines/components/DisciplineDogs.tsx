@@ -1,6 +1,6 @@
 import { useId } from "react";
 import type { DisciplineDog } from "../api/disciplinesQueryOptions";
-import { CircleDashed } from "@gravity-ui/icons";
+import { Dog } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { pluralForm } from "@/lib/plural";
@@ -29,7 +29,7 @@ export function DisciplineDogs({ dogs }: { dogs: DisciplineDog[] }) {
       </h2>
       {dogs.length === 0 ? (
         <p className="flex items-start gap-1 text-sm leading-6 text-muted">
-          <CircleDashed className="mt-1 size-4 shrink-0" aria-hidden="true" />
+          <Dog className="mt-1 size-4 shrink-0" aria-hidden="true" />
           {t(($) => $.disciplines.dogsEmpty)}
         </p>
       ) : (

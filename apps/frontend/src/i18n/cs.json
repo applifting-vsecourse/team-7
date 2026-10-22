@@ -120,7 +120,7 @@
     "streak": "Streak",
     "trainingTime": "Čas tréninků",
     "duration": "{{hours}} h {{minutes}} min",
-    "satisfaction": "Spokojenost",
+    "satisfaction": "~ Spokojenost",
     "rating": "{{value}} / 5",
     "weeklySatisfaction": "Spokojenost po týdnech",
     "emptyHistory": "Zde se zobrazí spokojenost z předchozích týdnů.",

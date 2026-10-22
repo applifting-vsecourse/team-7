@@ -120,7 +120,7 @@
     "streak": "Streak",
     "trainingTime": "Training time",
     "duration": "{{hours}} h {{minutes}} min",
-    "satisfaction": "Satisfaction",
+    "satisfaction": "~ Satisfaction",
     "rating": "{{value}} / 5",
     "weeklySatisfaction": "Weekly satisfaction",
     "emptyHistory": "Satisfaction from previous weeks will appear here.",
