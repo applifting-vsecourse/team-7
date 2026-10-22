@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { Circle, CircleCheck, Clock } from "@gravity-ui/icons";
+import { CircleCheck, CircleExclamation, Clock } from "@gravity-ui/icons";
 import { Separator } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
@@ -20,9 +20,15 @@ export type EventProps = {
 };
 
 const backgrounds = {
-  upcoming: "bg-event-tile-default",
+  upcoming: "bg-background",
   completed: "bg-event-tile-success",
   unfinished: "bg-event-tile-warning",
+};
+
+const accents = {
+  upcoming: "bg-surface-tertiary",
+  completed: "bg-success",
+  unfinished: "bg-warning",
 };
 
 export function Event({
@@ -40,22 +46,26 @@ export function Event({
   const titleId = useId();
   const isUpcoming = state === "upcoming";
   const isCompleted = state === "completed";
-  const StatusIcon = isCompleted ? CircleCheck : Circle;
+  const StatusIcon = isCompleted ? CircleCheck : CircleExclamation;
 
   return (
     <article
       aria-labelledby={titleId}
       className={cn(
         // Same hover lift as the discipline cards; not interactive yet.
-        "flex w-full max-w-full min-w-0 cursor-pointer flex-col rounded-2xl px-3 py-2 text-foreground shadow-card transition duration-150 ease-out hover:shadow-card-hover motion-safe:hover:-translate-y-0.5 md:w-calendar-cell md:self-stretch",
+        "relative flex w-full max-w-full min-w-0 cursor-pointer flex-col overflow-clip rounded-2xl py-2 pr-3 pl-4 text-foreground shadow-card transition duration-150 ease-out hover:shadow-card-hover motion-safe:hover:-translate-y-0.5 md:w-calendar-cell md:self-stretch",
         backgrounds[state],
         className,
       )}
     >
+      <span
+        className={cn("absolute inset-y-0 left-0 w-1", accents[state])}
+        aria-hidden="true"
+      />
       <p
         className={cn(
           "flex items-center gap-1 text-xs leading-5",
-          isUpcoming ? "text-accent" : "text-muted",
+          isUpcoming ? "text-accent-soft-foreground" : "text-muted",
         )}
       >
         <Clock className="size-3 shrink-0" aria-hidden="true" />
@@ -110,7 +120,10 @@ export function Event({
       </p>
       <Heading
         id={titleId}
-        className="text-sm leading-6 font-medium tracking-tight wrap-break-word"
+        className={cn(
+          "text-sm leading-6 font-medium tracking-tight wrap-break-word",
+          isCompleted && "text-muted",
+        )}
       >
         {exercise}
       </Heading>

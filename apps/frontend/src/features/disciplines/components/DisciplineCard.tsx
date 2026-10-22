@@ -2,6 +2,7 @@ import type { DisciplineSummary } from "../api/disciplinesQueryOptions";
 import { ChevronRight, Flag, ListUl } from "@gravity-ui/icons";
 import { Alert, Separator } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
+import { Dog } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
@@ -43,8 +44,9 @@ export function DisciplineCard({
         />
       </div>
       {discipline.dogs.length > 0 ? (
-        <p className="text-xs leading-5 wrap-break-word text-muted">
-          {dogNames}
+        <p className="flex items-center gap-1 text-xs leading-5 text-muted">
+          <Dog className="size-4 shrink-0 text-accent" aria-hidden="true" />
+          <span className="min-w-0 flex-1 wrap-break-word">{dogNames}</span>
         </p>
       ) : null}
       <Separator />

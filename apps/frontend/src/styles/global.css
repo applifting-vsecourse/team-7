@@ -24,7 +24,6 @@
 .light,
 [data-theme="light"] {
   /* Theme Collection */
-  --event-tile-default: #f1f9ff;
   --event-tile-success: #f2fff2;
   --event-tile-warning: #fff7f0;
   --card-shadow: var(--surface-shadow);
@@ -34,7 +33,6 @@
 .dark,
 [data-theme="dark"] {
   /* Theme Collection */
-  --event-tile-default: #010313;
   --event-tile-success: #021301;
   --event-tile-warning: #130c01;
   /* The kit's dark overlay shadow is an inset rim; hovered cards get a drop
@@ -47,7 +45,6 @@
 }
 
 @theme inline {
-  --color-event-tile-default: var(--event-tile-default);
   --color-event-tile-success: var(--event-tile-success);
   --color-event-tile-warning: var(--event-tile-warning);
   --shadow-card: var(--card-shadow);
