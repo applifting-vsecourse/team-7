@@ -287,7 +287,7 @@
       "context": "Goal:",
       "name": "Exercise name",
       "namePlaceholder": "Recall away from a toy",
-      "text": "Procedure",
+      "text": "Description",
       "textPlaceholder": "The dog plays with a toy; recall at the peak of play. Reward with tug.",
       "submit": "Add exercise",
       "noticeTitle": "Dogs don't get it automatically",
