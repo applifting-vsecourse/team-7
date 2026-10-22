@@ -23,7 +23,7 @@ export function DisciplineCard({
     <Link
       to={ROUTES.discipline}
       params={{ disciplineId: discipline.id }}
-      className="flex min-w-0 flex-1 cursor-pointer flex-col gap-3 rounded-2xl bg-background p-4 text-foreground shadow-surface transition duration-100 ease-out outline-none hover:shadow-overlay focus-visible:focus-ring motion-safe:hover:-translate-y-0.5"
+      className="flex min-w-0 flex-1 cursor-pointer flex-col gap-3 rounded-2xl bg-background p-4 text-foreground shadow-card transition duration-150 ease-out outline-none hover:shadow-card-hover focus-visible:focus-ring motion-safe:hover:-translate-y-0.5"
     >
       {/* Grows so the footer lines up across cards in a row. */}
       <div className="flex flex-1 items-start gap-3">

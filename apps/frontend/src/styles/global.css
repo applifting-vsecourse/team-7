@@ -27,6 +27,8 @@
   --event-tile-default: #f1f9ff;
   --event-tile-success: #f2fff2;
   --event-tile-warning: #fff7f0;
+  --card-shadow: var(--surface-shadow);
+  --card-hover-shadow: var(--overlay-shadow);
 }
 
 .dark,
@@ -35,12 +37,21 @@
   --event-tile-default: #010313;
   --event-tile-success: #021301;
   --event-tile-warning: #130c01;
+  /* The kit's dark overlay shadow is an inset rim; hovered cards get a drop
+     shadow instead, dense enough to read against the dark surface. The
+     resting shadow is an outer one too: inset and outer shadows can't be
+     interpolated, so the hover wouldn't animate. */
+  --card-shadow: 0 0 #0000;
+  --card-hover-shadow:
+    0 2px 8px 0 rgb(0 0 0 / 0.25), 0 6px 16px 0 rgb(0 0 0 / 0.2);
 }
 
 @theme inline {
   --color-event-tile-default: var(--event-tile-default);
   --color-event-tile-success: var(--event-tile-success);
   --color-event-tile-warning: var(--event-tile-warning);
+  --shadow-card: var(--card-shadow);
+  --shadow-card-hover: var(--card-hover-shadow);
 }
 
 @layer base {
