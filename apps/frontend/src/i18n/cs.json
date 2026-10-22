@@ -277,7 +277,7 @@
       "context": "Disciplína:",
       "name": "Název cíle",
       "namePlaceholder": "Slalom 12 tyček bez chyby",
-      "text": "Kdy je cíl splněný?",
+      "text": "Popis cíle",
       "textPlaceholder": "3 průchody bez chyby za sebou na dvou různých trénincích.",
       "submit": "Přidat cíl"
     },

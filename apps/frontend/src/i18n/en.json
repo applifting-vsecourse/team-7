@@ -277,7 +277,7 @@
       "context": "Discipline:",
       "name": "Goal name",
       "namePlaceholder": "12-pole slalom without a fault",
-      "text": "When is the goal achieved?",
+      "text": "Description",
       "textPlaceholder": "3 clean runs in a row at two different training sessions.",
       "submit": "Add goal"
     },
