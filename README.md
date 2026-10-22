@@ -91,6 +91,8 @@ Two things worth knowing:
 - **The frontend bakes its API URL in at build time** (`VITE_*` are build args, not runtime env), so changing `BACKEND_URL` needs a rebuild, not just a restart.
 - **Production migrates but does not seed** — the container runs `prisma migrate deploy` then starts. A fresh deployment has an empty database, so the first account is created through the sign-up form.
 
+### https://team-7.vsepractical.applifting.dev
+
 ## When something goes wrong
 
 | Symptom                                                  | Cause / fix                                                                                                                                                                          |
