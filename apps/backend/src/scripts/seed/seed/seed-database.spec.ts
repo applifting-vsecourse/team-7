@@ -8,6 +8,7 @@ import { createUser } from "./create-user";
 import { seedDatabase } from "./seed-database";
 
 vi.mock("./create-user", () => ({ createUser: vi.fn() }));
+vi.mock("./seed-disciplines", () => ({ seedDisciplines: vi.fn() }));
 
 describe("seedDatabase dog ownership", () => {
   const config = mockDeep<Config>();
@@ -35,8 +36,8 @@ describe("seedDatabase dog ownership", () => {
     expect(createUser).toHaveBeenCalledTimes(6);
     expect(prisma.dog.createMany).toHaveBeenCalledWith({
       data: [
-        { userId: "admin", text: "Admin's dog" },
-        { userId: "example-user", text: "Example User's dog" },
+        { userId: "admin", name: "Admin's dog" },
+        { userId: "example-user", name: "Example User's dog" },
       ],
     });
   });
@@ -55,7 +56,7 @@ describe("seedDatabase dog ownership", () => {
       select: { id: true, name: true },
     });
     expect(prisma.dog.createMany).toHaveBeenCalledWith({
-      data: [{ userId: "owner-without-dog", text: "Owner's dog" }],
+      data: [{ userId: "owner-without-dog", name: "Owner's dog" }],
     });
     expect(createUser).not.toHaveBeenCalled();
     expect(prisma.$executeRawUnsafe).not.toHaveBeenCalled();

@@ -44,10 +44,22 @@ Use the Tailwind scale; no arbitrary values like `p-[13px]` unless a size token 
 ## Forms
 
 - Every input has a visible label. Placeholders are examples, never labels.
+- Placeholders are the bare example value, without a "Např." / "e.g." prefix: `Bára`, not `Např. Bára`.
 - Validation runs client-side _and_ server-side. The client message appears under the field.
 - Compose HeroUI `Form`, `TextField`, `Label` and `FieldError` with React Hook Form and Zod (`validationBehavior="aria"`). Keep the input ref for invalid-field focus and let HeroUI associate labels and errors.
 - The submit button shows a pending state and is disabled while submitting.
 - Never disable a submit button just because the form is untouched — let the user try and show them what's wrong.
+- Never clip the containers that wrap inputs (no `overflow-hidden` on field groups, columns or dialog bodies). It cuts off the field shadow and the focus ring.
+
+## Dialogs
+
+- **Every dialog surface is `bg-background`**, including delete confirmations. The kit's default dialog surface matches the input colour, so fields would disappear into it.
+- **Dialog titles use the Heading 3 style** (`text-2xl font-semibold tracking-tight`). Delete confirmations are the exception and keep the kit's default title.
+
+## Toasts
+
+- Toasts appear at the top centre of the viewport, on desktop and mobile.
+- Toasts hug their content up to a maximum width of 460px (on mobile, the screen width minus 16px on each side); longer text wraps.
 
 ## Every list has three states
 

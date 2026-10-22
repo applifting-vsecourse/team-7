@@ -49,6 +49,10 @@
     },
     "name": {
       "required": "Name is required"
+    },
+    "title": {
+      "required": "Enter a name",
+      "tooLong": "The text is too long"
     }
   },
   "navigation": {
@@ -70,13 +74,24 @@
     "filterLabel": "Filter by dog",
     "filterEmpty": "Your dogs will appear here for filtering once you add them.",
     "retry": "Try again",
-    "name": "Dog’s name",
+    "name": "Name",
+    "namePlaceholder": "Bára",
+    "nameRequired": "Enter the dog's name.",
+    "breed": "Breed",
+    "breedPlaceholder": "Border Collie",
+    "birthDate": "Date of birth",
+    "birthDateInvalid": "Enter a valid date of birth.",
+    "birthDateFuture": "The date of birth can't be in the future.",
     "cancel": "Cancel",
     "addError": "Unable to add your dog. Please try again.",
+    "addedToast": "{{name}} was added",
     "loading": "Loading dogs…",
     "loadError": "Unable to load your dogs.",
     "empty": "No dogs yet.",
-    "photo": "Dog photo (optional)",
+    "photo": "Photo",
+    "choosePhoto": "Choose from device",
+    "dropPhoto": "or drag a file here",
+    "changePhoto": "Choose another",
     "photoHint": "JPEG, PNG or WebP, up to 5 MB. The square preview is what will be saved.",
     "photoInvalid": "Choose a valid JPEG, PNG or WebP photo up to 5 MB.",
     "photoPreview": "Dog avatar preview",
@@ -86,7 +101,10 @@
     "savePhoto": "Save photo",
     "photoSaveError": "Unable to save the photo. Please choose a valid photo and try again.",
     "photoMoveHint": "Drag the photo to frame your dog. You can also use the arrow keys.",
-    "photoZoom": "Zoom"
+    "photoZoom": "Zoom",
+    "pageLoading": "Loading dog…",
+    "notFound": "The dog doesn't exist or was deleted.",
+    "pagePlaceholder": "The dog's profile is on its way. For now, click the avatar to change the photo."
   },
   "events": {
     "timeAndDuration": "{{time}} ({{duration}} min)",
@@ -139,8 +157,7 @@
     "thisWeek": "This week",
     "previousWeek": "Previous week",
     "nextWeek": "Next week",
-    "weekRange": "{{start}} – {{end}}",
-    "currentWeekRange": "{{range}} (This week)"
+    "weekRange": "{{start}} – {{end}}"
   },
   "calendarMocks": {
     "dog": "Dog {{number}}",
@@ -200,5 +217,100 @@
     },
     "closingHeading": "Try TrainLoop",
     "closingLead": "Signing up is free. Once you're in, you can add your dog and set up a first plan right away."
+  },
+  "disciplines": {
+    "intro": "A library of disciplines, goals and exercises. Assign your dogs only what they actually train.",
+    "newDiscipline": "New discipline",
+    "loading": "Loading disciplines…",
+    "loadError": "Disciplines could not be loaded.",
+    "retry": "Try again",
+    "emptyTitle": "You don't have any disciplines yet",
+    "emptyDescription": "A discipline groups goals and exercises that you then assign to your dogs.",
+    "emptyDiscipline": "The discipline is empty",
+    "goalCount": {
+      "one": "{{count}} goal",
+      "few": "{{count}} goals",
+      "other": "{{count}} goals"
+    },
+    "exerciseCount": {
+      "one": "{{count}} exercise",
+      "few": "{{count}} exercises",
+      "other": "{{count}} exercises"
+    },
+    "detailLoading": "Loading discipline…",
+    "detailLoadError": "The discipline could not be loaded.",
+    "notFound": "The discipline doesn't exist or was deleted.",
+    "breadcrumbs": "Breadcrumbs",
+    "addGoal": "Add goal",
+    "assignToDog": "Assign to dog",
+    "actions": "More discipline actions",
+    "edit": "Edit",
+    "delete": "Delete",
+    "goals": "Goals",
+    "goalsSummary": "{{goals}} · {{exercises}}",
+    "goalsEmptyTitle": "This discipline has no goals yet",
+    "goalsEmptyDescription": "A goal describes what you want to achieve with your dog, such as “12-pole slalom without a fault”. You then add exercises to each goal.",
+    "goalNoExercisesTitle": "This goal has no exercises.",
+    "goalNoExercisesDescription": "Add some so you can plan them in the calendar.",
+    "addExercise": "Add exercise",
+    "goalActions": "More actions for goal {{name}}",
+    "exerciseActions": "More actions for exercise {{name}}",
+    "dogs": "Dogs with this discipline",
+    "dogsEmpty": "No dog has this discipline yet",
+    "dogProgress": "{{goals}} · {{completed}} done",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saveError": "Saving failed. Please try again.",
+    "disciplineForm": {
+      "createTitle": "New discipline",
+      "editTitle": "Edit discipline",
+      "description": "Name the discipline. You'll add goals and exercises on its detail page.",
+      "name": "Name",
+      "namePlaceholder": "Agility",
+      "text": "Description",
+      "textPlaceholder": "Obstacles, slalom and distance handling.",
+      "submit": "Create discipline"
+    },
+    "goalForm": {
+      "createTitle": "New goal",
+      "editTitle": "Edit goal",
+      "context": "Discipline:",
+      "name": "Goal name",
+      "namePlaceholder": "12-pole slalom without a fault",
+      "text": "When is the goal achieved?",
+      "textPlaceholder": "3 clean runs in a row at two different training sessions.",
+      "submit": "Add goal"
+    },
+    "exerciseForm": {
+      "createTitle": "New exercise",
+      "editTitle": "Edit exercise",
+      "context": "Goal:",
+      "name": "Exercise name",
+      "namePlaceholder": "Recall away from a toy",
+      "text": "Procedure",
+      "textPlaceholder": "The dog plays with a toy; recall at the peak of play. Reward with tug.",
+      "submit": "Add exercise",
+      "noticeTitle": "Dogs don't get it automatically",
+      "noticeDescriptionOne": "{{dogs}} has the goal {{goal}}. You'll find the new exercise among its unassigned ones.",
+      "noticeDescription": "{{dogs}} have the goal {{goal}}. You'll find the new exercise among their unassigned ones."
+    },
+    "deleteDialog": {
+      "disciplineTitle": "Delete discipline {{name}}?",
+      "goalTitle": "Delete goal {{name}}?",
+      "exerciseTitle": "Delete exercise {{name}}?",
+      "disciplineBody": "All of its goals and exercises are deleted too.",
+      "goalBody": "All exercises of this goal are deleted too.",
+      "exerciseBody": "The exercise is removed from the discipline's library.",
+      "affectedDogs": {
+        "one": "{{count}} dog loses it.",
+        "few": "{{count}} dogs lose it.",
+        "other": "{{count}} dogs lose it."
+      },
+      "irreversible": "This can't be undone.",
+      "confirm": "Delete",
+      "error": "Deleting failed. Please try again."
+    },
+    "createdToast": "Discipline {{name}} was created",
+    "deletedToast": "Discipline {{name}} was deleted"
   }
 }

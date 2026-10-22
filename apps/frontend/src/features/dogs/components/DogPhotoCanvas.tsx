@@ -89,7 +89,7 @@ export function DogPhotoCanvas({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="mt-1 flex flex-col gap-2">
       {/* The crop editor needs application interaction so arrow keys reach the canvas. */}
       {/* oxlint-disable jsx-a11y/no-interactive-element-to-noninteractive-role */}
       <canvas
@@ -102,7 +102,7 @@ export function DogPhotoCanvas({
         aria-disabled={isDisabled}
         aria-busy={!image}
         tabIndex={isDisabled ? -1 : 0}
-        className="aspect-square h-auto w-64 max-w-full cursor-grab touch-none self-center rounded-lg bg-surface-secondary outline-offset-4 active:cursor-grabbing aria-disabled:cursor-default"
+        className="aspect-square h-auto w-full cursor-grab touch-none rounded-2xl bg-surface-secondary outline-offset-4 active:cursor-grabbing aria-disabled:cursor-default"
         onPointerDown={(event) => {
           if (isDisabled || !image || event.button !== 0 || drag.current) {
             return;
@@ -176,14 +176,12 @@ export function DogPhotoCanvas({
         }}
       />
       {/* oxlint-enable jsx-a11y/no-interactive-element-to-noninteractive-role */}
-      <p id={hintId} className="text-sm text-muted">
-        {t(($) => $.dogs.photoMoveHint)}
-      </p>
       <Slider
         minValue={1}
         maxValue={3}
         step={0.05}
         value={photo.zoom}
+        formatOptions={{ style: "percent" }}
         isDisabled={isDisabled || !image}
         onChange={(value) => {
           if (!image) return;
@@ -207,11 +205,15 @@ export function DogPhotoCanvas({
         }}
       >
         <Label>{t(($) => $.dogs.photoZoom)}</Label>
+        <Slider.Output />
         <Slider.Track>
           <Slider.Fill />
           <Slider.Thumb />
         </Slider.Track>
       </Slider>
+      <p id={hintId} className="text-xs leading-5 text-muted">
+        {t(($) => $.dogs.photoMoveHint)}
+      </p>
     </div>
   );
 }

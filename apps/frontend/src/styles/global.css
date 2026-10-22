@@ -24,9 +24,9 @@
 .light,
 [data-theme="light"] {
   /* Theme Collection */
-  --event-tile-default: #ebf7ff;
+  --event-tile-default: #f1f9ff;
   --event-tile-success: #f2fff2;
-  --event-tile-warning: #fff4eb;
+  --event-tile-warning: #fff7f0;
 }
 
 .dark,
@@ -54,6 +54,11 @@
   main {
     @apply bg-surface px-2 pb-2 sm:px-4 sm:pb-4;
   }
+  /* Every overflow container gets the theme's thin scrollbar, like the kit's
+     own ScrollShadow; the page scrollbar on <html> stays native. */
+  body * {
+    @apply scrollbar;
+  }
 }
 
 @keyframes sidebar-slide-in {
@@ -75,6 +80,39 @@
 }
 
 @layer components {
+  /* Dialogs sit on --background rather than --overlay so fields stand out
+     against them; popovers and dropdowns keep the overlay surface. */
+  .modal__dialog,
+  .alert-dialog__dialog,
+  .drawer__dialog {
+    @apply bg-background;
+  }
+
+  /* Figma "Heading 3" for modal titles; alert dialogs keep the kit size. */
+  .modal__heading {
+    @apply text-2xl leading-8 font-semibold tracking-tight;
+  }
+
+  /* The kit only reveals the toast close button on hover, so touch screens
+     never see it. Keep it visible; exiting toasts still hide it. */
+  .toast[data-frontmost="true"]:not([data-exiting="true"]) .toast__close-button,
+  .toast[data-expanded="true"]:not([data-exiting="true"]) .toast__close-button {
+    @apply pointer-events-auto opacity-100;
+  }
+
+  /* 20px between title and content. Forms wrap body + footer, which hides
+     the body from the kit's own `.modal__header + .modal__body` rule. */
+  .modal__header + .modal__body,
+  .modal__header + form > .modal__body {
+    @apply mt-5;
+  }
+
+  /* A form around body + footer must shrink with the height-capped dialog,
+     or the body can't scroll and the footer is clipped off-screen. */
+  .modal__dialog > form {
+    @apply flex min-h-0 flex-1 flex-col;
+  }
+
   .mobile-sidebar[data-entering="true"] {
     animation: sidebar-slide-in 250ms ease-out;
   }

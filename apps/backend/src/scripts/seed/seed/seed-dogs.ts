@@ -13,7 +13,7 @@ export async function seedDogs(prisma: PrismaService): Promise<void> {
   await prisma.dog.createMany({
     data: usersWithoutDogs.map((user) => ({
       userId: user.id,
-      text: `${user.name}'s dog`,
+      name: `${user.name}'s dog`,
     })),
   });
 

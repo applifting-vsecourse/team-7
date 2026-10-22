@@ -42,7 +42,11 @@ export function DogFilter() {
     return <p className="text-sm text-muted">{t(($) => $.dogs.filterEmpty)}</p>;
   }
 
-  const allSelected = dogs.every((dog) => selectedDogIds.includes(dog.id));
+  const selected = selectedDogIds ?? dogs.map((dog) => dog.id);
+  const allSelected = dogs.every((dog) => selected.includes(dog.id));
+  // Back to "all" once every dog is checked, so dogs added later are included.
+  const select = (ids: string[]) =>
+    setSelectedDogIds(dogs.every((dog) => ids.includes(dog.id)) ? null : ids);
 
   return (
     <div
@@ -53,11 +57,9 @@ export function DogFilter() {
       <FilterOption
         isSelected={allSelected}
         isIndeterminate={
-          !allSelected && dogs.some((dog) => selectedDogIds.includes(dog.id))
+          !allSelected && dogs.some((dog) => selected.includes(dog.id))
         }
-        onChange={(selected) =>
-          setSelectedDogIds(selected ? dogs.map((dog) => dog.id) : [])
-        }
+        onChange={(checked) => setSelectedDogIds(checked ? null : [])}
       >
         {t(($) => $.dogs.all)}
       </FilterOption>
@@ -65,17 +67,17 @@ export function DogFilter() {
       {dogs.map((dog) => (
         <FilterOption
           key={dog.id}
-          isSelected={selectedDogIds.includes(dog.id)}
-          onChange={(selected) =>
-            setSelectedDogIds((ids) =>
-              selected
-                ? [...ids.filter((id) => id !== dog.id), dog.id]
-                : ids.filter((id) => id !== dog.id),
+          isSelected={selected.includes(dog.id)}
+          onChange={(checked) =>
+            select(
+              checked
+                ? [...selected.filter((id) => id !== dog.id), dog.id]
+                : selected.filter((id) => id !== dog.id),
             )
           }
         >
           <DogAvatar dog={dog} />
-          <span className="min-w-0 wrap-break-word">{dog.text}</span>
+          <span className="min-w-0 wrap-break-word">{dog.name}</span>
         </FilterOption>
       ))}
     </div>
@@ -100,7 +102,8 @@ function FilterOption({
       onChange={onChange}
       className="max-w-full"
     >
-      <Checkbox.Content className="min-h-12 max-w-full gap-3 rounded-3xl bg-surface-secondary px-3 py-1 text-sm leading-6 font-medium data-[indeterminate=true]:bg-accent-soft data-[selected=true]:bg-accent-soft">
+      {/* Same hover lift as the discipline cards and calendar items. */}
+      <Checkbox.Content className="min-h-12 max-w-full cursor-pointer gap-3 rounded-3xl bg-surface-secondary px-3 py-1 text-sm leading-6 font-medium transition duration-100 ease-out hover:shadow-overlay data-[indeterminate=true]:bg-accent-soft data-[selected=true]:bg-accent-soft motion-safe:hover:-translate-y-0.5">
         {children}
         <Checkbox.Control>
           <Checkbox.Indicator />

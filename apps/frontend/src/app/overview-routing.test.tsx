@@ -1,10 +1,17 @@
+import { toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   createMemoryHistory,
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createStore, Provider } from "jotai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -21,13 +28,13 @@ const state = vi.hoisted(() => ({
   getDogs:
     vi.fn<
       () => Promise<
-        { id: string; text: string; avatarVersion?: string | null }[]
+        { id: string; name: string; avatarVersion?: string | null }[]
       >
     >(),
   drawPhoto: vi.fn(),
   savePhoto: vi.fn(),
   removePhoto: vi.fn(),
-  addDog: vi.fn<() => Promise<{ id: string; text: string }>>(),
+  addDog: vi.fn<() => Promise<{ id: string; name: string }>>(),
 }));
 
 vi.mock("@/lib/api-client", () => ({
@@ -88,6 +95,7 @@ describe("overview routing", () => {
   afterEach(() => vi.restoreAllMocks());
 
   beforeEach(() => {
+    toast.clear();
     state.signedIn = false;
     state.isMobile = false;
     vi.clearAllMocks();
@@ -130,7 +138,7 @@ describe("overview routing", () => {
       removeListener: vi.fn(),
       dispatchEvent: vi.fn(),
     }));
-    state.getDogs.mockResolvedValue([{ id: "dog-1", text: "Test User's dog" }]);
+    state.getDogs.mockResolvedValue([{ id: "dog-1", name: "Test User's dog" }]);
   });
 
   it("sends visitors to login and preserves the overview destination", async () => {
@@ -234,11 +242,11 @@ describe("overview routing", () => {
     expect(calendar.getAllByRole("article")).toHaveLength(22);
   });
 
-  it("updates the shared atom from individual and all-dog selections", async () => {
+  it("selects all dogs by default and updates the shared atom from selections", async () => {
     state.signedIn = true;
     state.getDogs.mockResolvedValue([
-      { id: "dog-1", text: "Buddy" },
-      { id: "dog-2", text: "Luna" },
+      { id: "dog-1", name: "Buddy" },
+      { id: "dog-2", name: "Luna" },
     ]);
     const store = createStore();
     const user = userEvent.setup();
@@ -250,17 +258,26 @@ describe("overview routing", () => {
     const luna = filter.getByRole("checkbox", { name: "Luna" });
     const all = filter.getByRole("checkbox", { name: "All" });
 
-    await user.click(buddy);
-    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-1"]);
-    expect(buddy).toBeChecked();
-    expect(all).toBePartiallyChecked();
-    await user.click(luna);
-    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-1", "dog-2"]);
+    // Everything is selected by default.
+    expect(store.get(selectedDogIdsAtom)).toBeNull();
     expect(all).toBeChecked();
+    expect(buddy).toBeChecked();
+    expect(luna).toBeChecked();
+
     await user.click(buddy);
     expect(store.get(selectedDogIdsAtom)).toEqual(["dog-2"]);
+    expect(buddy).not.toBeChecked();
+    expect(all).toBePartiallyChecked();
+    await user.click(buddy);
+    expect(store.get(selectedDogIdsAtom)).toBeNull();
+    expect(all).toBeChecked();
     await user.click(all);
-    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-1", "dog-2"]);
+    expect(store.get(selectedDogIdsAtom)).toEqual([]);
+    expect(buddy).not.toBeChecked();
+    await user.click(luna);
+    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-2"]);
+    await user.click(all);
+    expect(store.get(selectedDogIdsAtom)).toBeNull();
     await user.keyboard(" ");
     expect(store.get(selectedDogIdsAtom)).toEqual([]);
     expect(buddy).not.toBeChecked();
@@ -273,7 +290,7 @@ describe("overview routing", () => {
     const user = userEvent.setup();
     renderRoute("/overview");
     const retry = await screen.findByRole("button", { name: "Try again" });
-    state.getDogs.mockResolvedValue([{ id: "dog-1", text: "Buddy" }]);
+    state.getDogs.mockResolvedValue([{ id: "dog-1", name: "Buddy" }]);
     await user.click(retry);
     expect(
       await screen.findByRole("checkbox", { name: "Buddy" }),
@@ -330,50 +347,93 @@ describe("overview routing", () => {
     renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Open menu" }));
     await user.click(screen.getByRole("button", { name: "Add dog" }));
-    await user.type(
-      screen.getByRole("textbox", { name: "Dog’s name" }),
-      "Buddy",
-    );
-    expect(screen.getByRole("textbox", { name: "Dog’s name" })).toHaveValue(
-      "Buddy",
-    );
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Buddy");
+    expect(screen.getByRole("textbox", { name: "Name" })).toHaveValue("Buddy");
     await user.click(screen.getByRole("button", { name: "Cancel" }));
     expect(
       await screen.findByRole("dialog", { name: "Main navigation" }),
     ).toBeInTheDocument();
   });
 
-  it("adds a named dog from the sidebar dialog and refreshes the list", async () => {
+  it("adds a named dog from the sidebar dialog and opens its page", async () => {
     state.signedIn = true;
-    state.addDog.mockResolvedValue({ id: "dog-2", text: "Buddy" });
+    state.addDog.mockResolvedValue({ id: "dog-2", name: "Buddy" });
     const user = userEvent.setup();
-    renderRoute("/overview");
+    const router = renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
 
     expect(screen.getByRole("dialog", { name: "Add dog" })).toBeInTheDocument();
-    const name = screen.getByRole("textbox", { name: "Dog’s name" });
+    const name = screen.getByRole("textbox", { name: "Name" });
     expect(name).toHaveFocus();
     const submit = screen.getAllByRole("button", { name: "Add dog" }).at(-1)!;
     expect(submit).toBeEnabled();
     await user.click(submit);
-    expect(await screen.findByText("Name is required")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Enter the dog's name."),
+    ).toBeInTheDocument();
     expect(name).toHaveFocus();
     expect(api.post).not.toHaveBeenCalled();
     await user.type(name, "   ");
     await user.click(submit);
-    expect(name).toHaveAccessibleDescription("Name is required");
+    expect(name).toHaveAccessibleDescription("Enter the dog's name.");
     expect(api.post).not.toHaveBeenCalled();
     await user.type(name, "Buddy  ");
-    state.getDogs.mockResolvedValue([{ id: "dog-2", text: "Buddy" }]);
+    state.getDogs.mockResolvedValue([{ id: "dog-2", name: "Buddy" }]);
     await user.click(submit);
 
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
-    expect(api.post).toHaveBeenCalledWith("dogs", { json: { text: "Buddy" } });
+    expect(api.post).toHaveBeenCalledWith("dogs", { json: { name: "Buddy" } });
+    expect(await screen.findByText("Buddy was added")).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/dogs/dog-2");
     expect(
-      await screen.findByRole("checkbox", { name: "Buddy" }),
+      await screen.findByRole("heading", { name: "Buddy" }),
     ).toBeInTheDocument();
+  });
+
+  it("sends the optional breed and birth date with a new dog", async () => {
+    state.signedIn = true;
+    state.addDog.mockResolvedValue({ id: "dog-2", name: "Bára" });
+    const user = userEvent.setup();
+    renderRoute("/overview?lng=en");
+    await user.click(await screen.findByRole("button", { name: "Add dog" }));
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Bára");
+    await user.type(
+      screen.getByRole("textbox", { name: "Breed" }),
+      "Border kolie",
+    );
+    fireEvent.change(screen.getByLabelText("Date of birth"), {
+      target: { value: "2022-05-03" },
+    });
+    await user.click(
+      screen.getAllByRole("button", { name: "Add dog" }).at(-1)!,
+    );
+
+    await waitFor(() =>
+      expect(api.post).toHaveBeenCalledWith("dogs", {
+        json: { name: "Bára", breed: "Border kolie", birthDate: "2022-05-03" },
+      }),
+    );
+  });
+
+  it("rejects a birth date in the future", async () => {
+    state.signedIn = true;
+    const user = userEvent.setup();
+    renderRoute("/overview?lng=en");
+    await user.click(await screen.findByRole("button", { name: "Add dog" }));
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Bára");
+    fireEvent.change(screen.getByLabelText("Date of birth"), {
+      target: { value: "2999-01-01" },
+    });
+    await user.click(
+      screen.getAllByRole("button", { name: "Add dog" }).at(-1)!,
+    );
+
+    expect(
+      await screen.findByText("The date of birth can't be in the future."),
+    ).toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
   });
 
   it("allows cancelling the dialog and keeps the name after a failed save", async () => {
@@ -382,37 +442,29 @@ describe("overview routing", () => {
     const user = userEvent.setup();
     renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
-    await user.type(
-      screen.getByRole("textbox", { name: "Dog’s name" }),
-      "Buddy",
-    );
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Buddy");
     await user.click(screen.getByRole("button", { name: "Add dog" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Unable to add your dog",
     );
-    expect(screen.getByRole("textbox", { name: "Dog’s name" })).toHaveValue(
-      "Buddy",
-    );
+    expect(screen.getByRole("textbox", { name: "Name" })).toHaveValue("Buddy");
     await user.click(screen.getByRole("button", { name: "Cancel" }));
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
     await user.click(screen.getByRole("button", { name: "Add dog" }));
-    expect(screen.getByRole("textbox", { name: "Dog’s name" })).toHaveValue("");
+    expect(screen.getByRole("textbox", { name: "Name" })).toHaveValue("");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("validates the optional photo and allows clearing an invalid selection", async () => {
     state.signedIn = true;
-    state.addDog.mockResolvedValue({ id: "dog-2", text: "Buddy" });
+    state.addDog.mockResolvedValue({ id: "dog-2", name: "Buddy" });
     const user = userEvent.setup();
     renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
-    await user.type(
-      screen.getByRole("textbox", { name: "Dog’s name" }),
-      "Buddy",
-    );
-    const photo = screen.getByLabelText("Dog photo (optional)");
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Buddy");
+    const photo = screen.getByLabelText("Photo");
     await user.upload(
       photo,
       new File([new Uint8Array(5 * 1024 * 1024 + 1)], "large.png", {
@@ -431,12 +483,12 @@ describe("overview routing", () => {
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
-    expect(api.post).toHaveBeenCalledWith("dogs", { json: { text: "Buddy" } });
+    expect(api.post).toHaveBeenCalledWith("dogs", { json: { name: "Buddy" } });
   });
 
   it("keeps the form open and disables controls while saving", async () => {
     state.signedIn = true;
-    let finish!: (dog: { id: string; text: string }) => void;
+    let finish!: (dog: { id: string; name: string }) => void;
     state.addDog.mockReturnValue(
       new Promise((resolve) => {
         finish = resolve;
@@ -445,18 +497,15 @@ describe("overview routing", () => {
     const user = userEvent.setup();
     renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
-    await user.type(
-      screen.getByRole("textbox", { name: "Dog’s name" }),
-      "Buddy",
-    );
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Buddy");
     const submit = screen.getByRole("button", { name: "Add dog" });
     await user.click(submit);
     expect(submit).toBeDisabled();
     expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
-    expect(screen.getByRole("textbox", { name: "Dog’s name" })).toBeDisabled();
+    expect(screen.getByRole("textbox", { name: "Name" })).toBeDisabled();
     await user.keyboard("{Escape}");
     expect(screen.getByRole("dialog", { name: "Add dog" })).toBeInTheDocument();
-    finish({ id: "dog-2", text: "Buddy" });
+    finish({ id: "dog-2", name: "Buddy" });
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
@@ -465,16 +514,13 @@ describe("overview routing", () => {
 
   it("adds a dog with a positioned photo in one request", async () => {
     state.signedIn = true;
-    state.addDog.mockResolvedValue({ id: "dog-2", text: "Buddy" });
+    state.addDog.mockResolvedValue({ id: "dog-2", name: "Buddy" });
     const user = userEvent.setup();
     renderRoute("/overview");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
-    await user.type(
-      screen.getByRole("textbox", { name: "Dog’s name" }),
-      "Buddy",
-    );
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Buddy");
     const file = new File(["photo"], "buddy.png", { type: "image/png" });
-    await user.upload(screen.getByLabelText("Dog photo (optional)"), file);
+    await user.upload(screen.getByLabelText("Photo"), file);
     expect(
       screen.getByRole("application", { name: "Dog avatar preview" }).tagName,
     ).toBe("CANVAS");
@@ -487,32 +533,32 @@ describe("overview routing", () => {
     expect((body.get("file") as File).name).toBe("avatar.webp");
     expect((body.get("file") as File).type).toBe("image/webp");
     expect(body.has("position")).toBe(false);
-    expect(body.get("text")).toBe("Buddy");
+    expect(body.get("name")).toBe("Buddy");
     expect(vi.mocked(URL).revokeObjectURL).toHaveBeenCalledWith(
       "blob:dog-photo",
     );
   });
 
-  it("replaces and removes an existing dog's photo from the sidebar", async () => {
+  it("replaces and removes an existing dog's photo on its page", async () => {
     state.signedIn = true;
     state.savePhoto.mockResolvedValue({
       id: "dog-1",
-      text: "Buddy",
+      name: "Buddy",
       avatarVersion: "new",
     });
     state.removePhoto.mockResolvedValue({
       id: "dog-1",
-      text: "Buddy",
+      name: "Buddy",
       avatarVersion: null,
     });
-    state.getDogs.mockResolvedValue([{ id: "dog-1", text: "Buddy" }]);
+    state.getDogs.mockResolvedValue([{ id: "dog-1", name: "Buddy" }]);
     const user = userEvent.setup();
-    renderRoute("/overview");
+    renderRoute("/dogs/dog-1");
     await user.click(
       await screen.findByRole("button", { name: "Change photo for Buddy" }),
     );
     const file = new File(["photo"], "buddy.webp", { type: "image/webp" });
-    await user.upload(screen.getByLabelText("Dog photo (optional)"), file);
+    await user.upload(screen.getByLabelText("Photo"), file);
     await waitFor(() =>
       expect(screen.getByRole("slider", { name: "Zoom" })).toBeEnabled(),
     );
@@ -533,7 +579,7 @@ describe("overview routing", () => {
       512,
     );
     state.getDogs.mockResolvedValue([
-      { id: "dog-1", text: "Buddy", avatarVersion: "new" },
+      { id: "dog-1", name: "Buddy", avatarVersion: "new" },
     ]);
     await user.click(screen.getByRole("button", { name: "Save photo" }));
     await waitFor(() =>
@@ -546,7 +592,7 @@ describe("overview routing", () => {
     await user.click(
       screen.getByRole("button", { name: "Change photo for Buddy" }),
     );
-    state.getDogs.mockResolvedValue([{ id: "dog-1", text: "Buddy" }]);
+    state.getDogs.mockResolvedValue([{ id: "dog-1", name: "Buddy" }]);
     await user.click(screen.getByRole("button", { name: "Remove photo" }));
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
@@ -557,14 +603,14 @@ describe("overview routing", () => {
   it("rejects oversized photos and allows choosing another photo", async () => {
     state.signedIn = true;
     const user = userEvent.setup();
-    renderRoute("/overview");
+    renderRoute("/dogs/dog-1");
     await user.click(
       await screen.findByRole("button", {
         name: "Change photo for Test User's dog",
       }),
     );
     await user.upload(
-      screen.getByLabelText("Dog photo (optional)"),
+      screen.getByLabelText("Photo"),
       new File([new Uint8Array(5 * 1024 * 1024 + 1)], "large.png", {
         type: "image/png",
       }),
@@ -572,7 +618,7 @@ describe("overview routing", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Choose a valid JPEG");
     expect(screen.getByRole("button", { name: "Save photo" })).toBeDisabled();
     await user.upload(
-      screen.getByLabelText("Dog photo (optional)"),
+      screen.getByLabelText("Photo"),
       new File(["small"], "small.png", { type: "image/png" }),
     );
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -583,14 +629,14 @@ describe("overview routing", () => {
     state.signedIn = true;
     state.savePhoto.mockRejectedValue(new Error("Failed"));
     const user = userEvent.setup();
-    renderRoute("/overview");
+    renderRoute("/dogs/dog-1");
     await user.click(
       await screen.findByRole("button", {
         name: "Change photo for Test User's dog",
       }),
     );
     await user.upload(
-      screen.getByLabelText("Dog photo (optional)"),
+      screen.getByLabelText("Photo"),
       new File(["photo"], "dog.png", { type: "image/png" }),
     );
     await user.click(screen.getByRole("button", { name: "Save photo" }));
@@ -601,6 +647,29 @@ describe("overview routing", () => {
       screen.getByRole("application", { name: "Dog avatar preview" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save photo" })).toBeEnabled();
+  });
+
+  it("opens a dog's page from the sidebar and marks it active", async () => {
+    state.signedIn = true;
+    const user = userEvent.setup();
+    const router = renderRoute("/overview?lng=en");
+
+    const link = await screen.findByRole("link", { name: "Test User's dog" });
+    expect(link).toHaveAttribute("href", "/dogs/dog-1?lng=en");
+    await user.click(link);
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/dogs/dog-1"),
+    );
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Test User's dog" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Test User's dog" }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(
+      screen.getByRole("button", { name: "Change photo for Test User's dog" }),
+    ).toBeInTheDocument();
   });
 
   it("shows an error when the dogs cannot be loaded", async () => {

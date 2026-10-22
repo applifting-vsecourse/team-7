@@ -23,17 +23,98 @@ enum UserRole {
 }
 
 model Dog {
-  id        String   @id @default(cuid())
-  text      String   @db.Text
-  avatar    Bytes?
+  id            String    @id @default(cuid())
+  name          String    @db.Text
+  breed         String?
+  birthDate     DateTime? @db.Date
+  avatar        Bytes?
   avatarVersion String?
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  goals         DogGoal[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
 
   @@index([userId])
   @@map("dog")
+}
+
+// The handler's library: discipline → goal → exercise. Dogs pick goals and
+// exercises from it individually (DogGoal, DogExercise).
+model Discipline {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  goals       Goal[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  @@index([userId])
+  @@map("discipline")
+}
+
+model Goal {
+  id           String     @id @default(cuid())
+  name         String
+  // When the goal counts as achieved, e.g. "3 clean runs in a row".
+  criterion    String?    @db.Text
+  discipline   Discipline @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+  disciplineId String
+  exercises    Exercise[]
+  dogs         DogGoal[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
+
+  @@index([disciplineId])
+  @@map("goal")
+}
+
+model Exercise {
+  id        String        @id @default(cuid())
+  name      String
+  procedure String?       @db.Text
+  goal      Goal          @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  goalId    String
+  dogs      DogExercise[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now()) @updatedAt
+
+  // Target for DogExercise's composite foreign key.
+  @@unique([id, goalId])
+  @@index([goalId])
+  @@map("exercise")
+}
+
+model DogGoal {
+  dog         Dog           @relation(fields: [dogId], references: [id], onDelete: Cascade)
+  dogId       String
+  goal        Goal          @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  goalId      String
+  // Set when the handler marks the goal achieved for this dog.
+  completedAt DateTime?
+  exercises   DogExercise[]
+  createdAt   DateTime      @default(now())
+
+  @@id([dogId, goalId])
+  @@index([goalId])
+  @@map("dog_goal")
+}
+
+// A dog can only train an exercise of a goal it has: the composite keys tie
+// the row to the dog's DogGoal and to an exercise of that same goal.
+model DogExercise {
+  dogGoal    DogGoal  @relation(fields: [dogId, goalId], references: [dogId, goalId], onDelete: Cascade)
+  dogId      String
+  goalId     String
+  exercise   Exercise @relation(fields: [exerciseId, goalId], references: [id, goalId], onDelete: Cascade)
+  exerciseId String
+  createdAt  DateTime @default(now())
+
+  @@id([dogId, exerciseId])
+  @@index([exerciseId, goalId])
+  @@map("dog_exercise")
 }
 
 model Session {
@@ -85,17 +166,18 @@ model Verification {
 }
 
 model User {
-  id              String    @id
-  name            String
-  email           String
-  emailVerified   Boolean
-  image           String?   @db.Text
-  createdAt       DateTime
-  updatedAt       DateTime
-  sessions        Session[]
-  accounts        Account[]
-  dogs            Dog[]
-  role            UserRole  @default(user)
+  id            String       @id
+  name          String
+  email         String
+  emailVerified Boolean
+  image         String?      @db.Text
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+  dogs          Dog[]
+  disciplines   Discipline[]
+  role          UserRole     @default(user)
 
   @@unique([email])
   @@map("user")

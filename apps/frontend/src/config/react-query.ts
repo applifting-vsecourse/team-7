@@ -1,4 +1,14 @@
 import { type DefaultOptions, QueryClient } from "@tanstack/react-query";
+import type { HTTPError } from "ky";
+
+// Every request goes through the ky client, so query and mutation errors are
+// typed as its HTTPError. Network failures still reject without a response.
+declare module "@tanstack/react-query" {
+  // oxlint-disable-next-line typescript/consistent-type-definitions -- TanStack Query registration requires declaration merging.
+  interface Register {
+    defaultError: HTTPError;
+  }
+}
 
 const defaultQueryConfig = {
   queries: {

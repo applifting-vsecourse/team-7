@@ -1,3 +1,4 @@
+import type { AddDogValues } from "../components/AddDogForm";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/lib/api-client";
@@ -7,24 +8,22 @@ import {
   type Dog,
 } from "@/features/dogs/api/dogsQueryOptions";
 
-import { photoFormData, type DogPhoto } from "../api/dogPhotos";
+import { photoFormData } from "../api/dogPhotos";
 
 export function useAddDog(userId: string | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      name,
-      photo,
-    }: {
-      name: string;
-      photo: DogPhoto | null;
-    }) => {
-      if (!photo) {
-        return api.post("dogs", { json: { text: name.trim() } }).json<Dog>();
-      }
+    mutationFn: async ({ name, breed, birthDate, photo }: AddDogValues) => {
+      // Empty optional fields are left out rather than sent blank.
+      const fields = {
+        name: name.trim(),
+        ...(breed.trim() && { breed: breed.trim() }),
+        ...(birthDate && { birthDate }),
+      };
+      if (!photo) return api.post("dogs", { json: fields }).json<Dog>();
       const body = await photoFormData(photo);
-      body.set("text", name.trim());
+      for (const [key, value] of Object.entries(fields)) body.set(key, value);
       return api.post("dogs", { body }).json<Dog>();
     },
     onSuccess: () =>

@@ -2,6 +2,7 @@ import { PrismaService } from "@/core/prisma/prisma.service";
 import { BetterAuth } from "@/shared/auth/providers/better-auth.provider";
 import { Config } from "@/shared/config/config.service";
 import { createUser } from "./create-user";
+import { seedDisciplines } from "./seed-disciplines";
 import { seedDogs } from "./seed-dogs";
 
 export const seedDatabase = async (
@@ -20,6 +21,7 @@ export const seedDatabase = async (
         "Run `pnpm backend db:reset` to wipe and start over.",
     );
     await seedDogs(prisma);
+    await seedDisciplines(prisma);
     return;
   }
 
@@ -75,4 +77,5 @@ export const seedDatabase = async (
   });
 
   await seedDogs(prisma);
+  await seedDisciplines(prisma);
 };
