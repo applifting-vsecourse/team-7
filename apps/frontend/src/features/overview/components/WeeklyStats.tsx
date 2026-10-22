@@ -156,11 +156,14 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
                 size="sm"
                 variant="soft"
               >
-                {new Intl.NumberFormat(locale, {
-                  minimumFractionDigits: 1,
-                  maximumFractionDigits: 1,
-                  signDisplay: "exceptZero",
-                }).format(trend)}
+                <Star width={12} aria-hidden="true" />
+                <Chip.Label>
+                  {new Intl.NumberFormat(locale, {
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 1,
+                    signDisplay: "exceptZero",
+                  }).format(trend)}
+                </Chip.Label>
               </Chip>
             )}
           </div>
