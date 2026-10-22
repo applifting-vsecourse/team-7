@@ -2,6 +2,7 @@ import { keyFromSelector } from "i18next";
 import { z } from "zod";
 
 import { messageSelectors } from "@/i18n/messages";
+import { capitalizeFirst } from "@/lib/utils";
 
 // Mirrors the backend DTO limits in library-input.dto.ts.
 export const NAME_MAX_LENGTH = 100;
@@ -12,6 +13,7 @@ export const libraryItemSchema = z.object({
   name: z
     .string()
     .trim()
+    .overwrite(capitalizeFirst)
     .min(1, keyFromSelector(messageSelectors.titleRequired))
     .max(NAME_MAX_LENGTH, keyFromSelector(messageSelectors.textTooLong)),
   text: z

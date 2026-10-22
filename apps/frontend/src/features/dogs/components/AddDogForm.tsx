@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
 import { messageSelectors, translateMessage } from "@/i18n/messages";
+import { capitalizeFirst } from "@/lib/utils";
 
 import { dogPhotoSchema } from "../schemas/dogPhotoSchema";
 import { DogPhotoPicker } from "./DogPhotoPicker";
@@ -29,6 +30,7 @@ const schema = z.object({
   name: z
     .string()
     .trim()
+    .overwrite(capitalizeFirst)
     .min(1, keyFromSelector(messageSelectors.dogNameRequired))
     .max(NAME_MAX_LENGTH, tooLong),
   breed: z.string().trim().max(NAME_MAX_LENGTH, tooLong),
