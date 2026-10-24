@@ -104,7 +104,17 @@
     "photoZoom": "Zoom",
     "pageLoading": "Loading dog…",
     "notFound": "The dog doesn't exist or was deleted.",
-    "pagePlaceholder": "The dog's profile is on its way. For now, click the avatar to change the photo."
+    "pagePlaceholder": "The dog's profile is on its way. For now, click the avatar to change the photo.",
+    "ageYears": {
+      "one": "{{count}} year",
+      "few": "{{count}} years",
+      "other": "{{count}} years"
+    },
+    "ageMonths": {
+      "one": "{{count}} month",
+      "few": "{{count}} months",
+      "other": "{{count}} months"
+    }
   },
   "events": {
     "timeAndDuration": "{{time}} ({{duration}} min)",
@@ -257,7 +267,7 @@
     "exerciseActions": "More actions for exercise {{name}}",
     "dogs": "Dogs with this discipline",
     "dogsEmpty": "No dog has this discipline yet",
-    "dogProgress": "{{goals}} · {{completed}} done",
+    "dogProgress": "{{goals}} · {{exercises}}",
     "cancel": "Cancel",
     "save": "Save",
     "saveError": "Saving failed. Please try again.",
@@ -311,6 +321,53 @@
       "error": "Deleting failed. Please try again."
     },
     "createdToast": "Discipline {{name}} was created",
-    "deletedToast": "Discipline {{name}} was deleted"
+    "deletedToast": "Discipline {{name}} was deleted",
+    "dogGoalsOf": {
+      "one": "{{count}} of {{total}} goal",
+      "few": "{{count}} of {{total}} goals",
+      "other": "{{count}} of {{total}} goals"
+    },
+    "dogExercisesOf": {
+      "one": "{{count}} of {{total}} exercise",
+      "few": "{{count}} of {{total}} exercises",
+      "other": "{{count}} of {{total}} exercises"
+    },
+    "assignDialog": {
+      "title": "Assign to dog",
+      "stepDog": "Step 1 of 2 · Dog",
+      "stepGoals": "Step 2 of 2 · Goals and exercises",
+      "pickDog": "Choose the dog that will train {{discipline}}.",
+      "dogLabel": "Dog",
+      "hiddenDogs": "If you can't see a dog here, it already trains this discipline.",
+      "noDogs": "You don't have any dogs yet. Add one with Add dog.",
+      "allDogsAssigned": "All your dogs already train this discipline.",
+      "dogRequired": "Choose a dog.",
+      "continue": "Continue",
+      "back": "Back to previous step",
+      "pickGoals": "Choose the goals and exercises {{dog}} will train.",
+      "selectAll": "Select all",
+      "deselectAll": "Clear selection",
+      "exercisesSelected": {
+        "one": "{{count}} of {{total}} exercise selected",
+        "few": "{{count}} of {{total}} exercises selected",
+        "other": "{{count}} of {{total}} exercises selected"
+      },
+      "goalsRequired": "Choose at least one goal.",
+      "submit": "Assign {{goals}} · {{exercises}}",
+      "submitEmpty": "Assign",
+      "error": "Assigning failed. Please try again.",
+      "toastTitle": "Discipline {{discipline}} assigned to {{dog}}",
+      "toastDescription": {
+        "one": "Added {{goals}} and {{exercises}}.",
+        "few": "Added {{goals}} and {{exercises}}.",
+        "other": "Added {{goals}} and {{exercises}}."
+      },
+      "toastDescriptionGoalsOnly": {
+        "one": "Added {{goals}}.",
+        "few": "Added {{goals}}.",
+        "other": "Added {{goals}}."
+      },
+      "goToDog": "Go to dog"
+    }
   }
 }

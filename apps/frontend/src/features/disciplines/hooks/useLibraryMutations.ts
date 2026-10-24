@@ -91,6 +91,26 @@ export function useSaveExercise() {
   );
 }
 
+export type AssignedGoal = { goalId: string; exerciseIds: string[] };
+
+/** Gives a dog the picked goals and exercises of a discipline. */
+export function useAssignDiscipline() {
+  return useLibraryMutation(
+    ({
+      disciplineId,
+      dogId,
+      goals,
+    }: {
+      disciplineId: string;
+      dogId: string;
+      goals: AssignedGoal[];
+    }) =>
+      api.post(path("disciplines", disciplineId, "dogs"), {
+        json: { dogId, goals },
+      }),
+  );
+}
+
 export function useDeleteExercise() {
   return useLibraryMutation((id: string) => api.delete(path("exercises", id)));
 }

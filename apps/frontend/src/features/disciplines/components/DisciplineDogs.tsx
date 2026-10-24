@@ -3,14 +3,22 @@ import type { DisciplineDog } from "../api/disciplinesQueryOptions";
 import { Dog } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { pluralForm } from "@/lib/plural";
+import { czechFrom, pluralForm } from "@/lib/plural";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 import { useDogs } from "@/features/dogs/hooks/useDogs";
 
-/** Dogs that picked at least one goal of the discipline, with their progress. */
-export function DisciplineDogs({ dogs }: { dogs: DisciplineDog[] }) {
+/** Dogs that picked at least one goal of the discipline, with how much of it. */
+export function DisciplineDogs({
+  dogs,
+  goalTotal,
+  exerciseTotal,
+}: {
+  dogs: DisciplineDog[];
+  goalTotal: number;
+  exerciseTotal: number;
+}) {
   const { t } = useTranslation();
   const headingId = useId();
   const { user } = useSession();
@@ -44,10 +52,22 @@ export function DisciplineDogs({ dogs }: { dogs: DisciplineDog[] }) {
                 <span className="text-xs leading-5 text-muted">
                   {t(($) => $.disciplines.dogProgress, {
                     goals: t(
-                      ($) => $.disciplines.goalCount[pluralForm(dog.goalCount)],
-                      { count: dog.goalCount },
+                      ($) => $.disciplines.dogGoalsOf[pluralForm(goalTotal)],
+                      {
+                        count: dog.goalCount,
+                        total: goalTotal,
+                        from: czechFrom(goalTotal),
+                      },
                     ),
-                    completed: dog.completedGoalCount,
+                    exercises: t(
+                      ($) =>
+                        $.disciplines.dogExercisesOf[pluralForm(exerciseTotal)],
+                      {
+                        count: dog.exerciseCount,
+                        total: exerciseTotal,
+                        from: czechFrom(exerciseTotal),
+                      },
+                    ),
                   })}
                 </span>
               </div>

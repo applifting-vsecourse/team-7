@@ -12,6 +12,7 @@ import { useSession } from "@/features/auth/hooks/useSession";
 import { useDialogState } from "../hooks/useDialogState";
 import { useDiscipline } from "../hooks/useDiscipline";
 import { useDeleteDiscipline } from "../hooks/useLibraryMutations";
+import { AssignDogDialog } from "./AssignDogDialog";
 import { DeleteDialog } from "./DeleteDialog";
 import { DisciplineDogs } from "./DisciplineDogs";
 import { EmptyState } from "./EmptyState";
@@ -68,7 +69,7 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { dialog, open, onOpenChange } = useDialogState<
-    "edit" | "delete" | "addGoal"
+    "edit" | "delete" | "addGoal" | "assign"
   >();
   const remove = useDeleteDiscipline();
   const exerciseCount = discipline.goals.reduce(
@@ -104,8 +105,13 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
             {t(($) => $.disciplines.addGoal)}
           </Button>
           <div className="flex items-center gap-3">
-            {/* Dogs pick goals in a later flow; the action stays visible. */}
-            <Button variant="secondary" isDisabled className="flex-1">
+            {/* A dog trains goals, so there is nothing to assign without them. */}
+            <Button
+              variant="secondary"
+              isDisabled={discipline.goals.length === 0}
+              className="flex-1"
+              onPress={() => open("assign")}
+            >
               <FileArrowUp className="size-4" aria-hidden="true" />
               {t(($) => $.disciplines.assignToDog)}
             </Button>
@@ -172,9 +178,18 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
         </section>
         <Separator orientation="vertical" className="hidden lg:block" />
         <div className="lg:w-64 lg:shrink-0 xl:w-80">
-          <DisciplineDogs dogs={discipline.dogs} />
+          <DisciplineDogs
+            dogs={discipline.dogs}
+            goalTotal={discipline.goals.length}
+            exerciseTotal={exerciseCount}
+          />
         </div>
       </div>
+      <AssignDogDialog
+        isOpen={dialog === "assign"}
+        onOpenChange={onOpenChange}
+        discipline={discipline}
+      />
       <GoalDialog
         isOpen={dialog === "addGoal"}
         onOpenChange={onOpenChange}

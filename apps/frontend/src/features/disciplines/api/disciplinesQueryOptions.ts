@@ -31,6 +31,7 @@ export type Goal = {
 export type DisciplineDog = DogRef & {
   goalCount: number;
   completedGoalCount: number;
+  exerciseCount: number;
 };
 
 export type DisciplineDetail = {

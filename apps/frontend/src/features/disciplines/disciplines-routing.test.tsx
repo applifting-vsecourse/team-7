@@ -109,7 +109,13 @@ const poslusnostDetail: DisciplineDetail = {
     },
   ],
   dogs: [
-    { id: "dog-1", name: "Terminátor", goalCount: 1, completedGoalCount: 1 },
+    {
+      id: "dog-1",
+      name: "Terminátor",
+      goalCount: 1,
+      completedGoalCount: 1,
+      exerciseCount: 1,
+    },
   ],
 };
 
@@ -276,10 +282,129 @@ describe("disciplines", () => {
     expect(
       within(emptyGoal).getByText("This goal has no exercises."),
     ).toBeInTheDocument();
-    expect(screen.getByText("1 goal · 1 done")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Assign to dog" }),
+      screen.getByText("1 of 2 goals · 1 of 1 exercise"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Assign to dog" })).toBeEnabled();
+  });
+
+  it("shows dog progress with Czech prepositions", async () => {
+    await i18n.changeLanguage("cs");
+    try {
+      renderRoute("/disciplines/d1?lng=cs");
+
+      expect(
+        await screen.findByText("1 ze 2 cílů · 1 z 1 cvičení"),
+      ).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
+
+  it("can't assign a discipline without goals", async () => {
+    state.responses.set("disciplines/d1", () => ({
+      ...poslusnostDetail,
+      goals: [],
+      dogs: [],
+    }));
+    renderRoute("/disciplines/d1?lng=en");
+
+    expect(
+      await screen.findByRole("button", { name: "Assign to dog" }),
     ).toBeDisabled();
+  });
+
+  it("assigns picked goals and exercises to a dog", async () => {
+    const user = userEvent.setup();
+    state.responses.set("dogs", () => [
+      { id: "dog-1", name: "Terminátor" },
+      { id: "dog-3", name: "Degustátor", breed: "Border kolie" },
+    ]);
+    state.post.mockResolvedValue(undefined);
+    const router = renderRoute("/disciplines/d1?lng=en");
+
+    await user.click(
+      await screen.findByRole("button", { name: "Assign to dog" }),
+    );
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Step 1 of 2 · Dog")).toBeInTheDocument();
+    // Terminátor already trains the discipline, so only Degustátor is offered.
+    expect(
+      within(dialog).queryByRole("radio", { name: /Terminátor/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("radio", { name: /Degustátor/ }),
+    ).toBeChecked();
+    expect(within(dialog).getByText("Border kolie")).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(
+        "If you can't see a dog here, it already trains this discipline.",
+      ),
+    ).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+
+    expect(
+      within(dialog).getByText("Step 2 of 2 · Goals and exercises"),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText("1 of 1 exercise selected"),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("checkbox", { name: "Přivolání z 5 metrů" }),
+    ).toBeChecked();
+    await user.click(
+      within(dialog).getByRole("checkbox", { name: "Chůze u nohy" }),
+    );
+    await user.click(
+      within(dialog).getByRole("button", {
+        name: "Assign 1 goal · 1 exercise",
+      }),
+    );
+
+    await waitFor(() =>
+      expect(state.post).toHaveBeenCalledWith("disciplines/d1/dogs", {
+        json: {
+          dogId: "dog-3",
+          goals: [{ goalId: "g1", exerciseIds: ["e1"] }],
+        },
+      }),
+    );
+    expect(
+      await screen.findByText("Discipline Poslušnost assigned to Degustátor"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Added 1 goal and 1 exercise."),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Go to dog" }));
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/dogs/dog-3"),
+    );
+  });
+
+  it("asks for at least one goal before assigning", async () => {
+    const user = userEvent.setup();
+    state.responses.set("dogs", () => [{ id: "dog-3", name: "Degustátor" }]);
+    renderRoute("/disciplines/d1?lng=en");
+
+    await user.click(
+      await screen.findByRole("button", { name: "Assign to dog" }),
+    );
+    const dialog = await screen.findByRole("dialog");
+    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Clear selection" }),
+    );
+    await user.click(within(dialog).getByRole("button", { name: "Assign" }));
+
+    expect(
+      within(dialog).getByText("Choose at least one goal."),
+    ).toBeInTheDocument();
+    expect(state.post).not.toHaveBeenCalled();
   });
 
   it("names the dogs that have the goal when adding an exercise", async () => {
