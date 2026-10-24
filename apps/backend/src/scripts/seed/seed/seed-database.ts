@@ -4,6 +4,7 @@ import { Config } from "@/shared/config/config.service";
 import { createUser } from "./create-user";
 import { seedDisciplines } from "./seed-disciplines";
 import { seedDogs } from "./seed-dogs";
+import { seedEvents } from "./seed-events";
 
 export const seedDatabase = async (
   prisma: PrismaService,
@@ -22,6 +23,7 @@ export const seedDatabase = async (
     );
     await seedDogs(prisma);
     await seedDisciplines(prisma);
+    await seedEvents(prisma);
     return;
   }
 
@@ -78,4 +80,5 @@ export const seedDatabase = async (
 
   await seedDogs(prisma);
   await seedDisciplines(prisma);
+  await seedEvents(prisma);
 };

@@ -50,10 +50,23 @@ vi.mock("@/lib/api-client", () => ({
               dogId: dogs[0]!.id,
               startsAt: new Date().toISOString(),
               durationMinutes: 10,
-              dog: { name: dogs[0]!.name },
+              rating: null,
+              note: null,
+              completedAt: null,
+              dog: {
+                id: dogs[0]!.id,
+                name: dogs[0]!.name,
+                avatarVersion: null,
+              },
               exercise: {
+                id: "e1",
                 name: "Recall",
-                goal: { discipline: { name: "Obedience" } },
+                procedure: null,
+                goal: {
+                  id: "g1",
+                  name: "Reliable recall",
+                  discipline: { id: "d1", name: "Obedience" },
+                },
               },
             },
           ];

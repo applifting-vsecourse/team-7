@@ -1,11 +1,15 @@
-import { useId } from "react";
+import { useId, useState } from "react";
+import type { ScheduledEvent } from "../api/eventsQueryOptions";
 import { CircleCheck, CircleExclamation, Clock } from "@gravity-ui/icons";
-import { Separator } from "@heroui/react";
+import { Button, Separator } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
+import { ScheduledExerciseDialog } from "./ScheduledExerciseDialog";
+
 export type EventProps = {
+  scheduledEvent?: ScheduledEvent;
   dogName: string;
   discipline: string;
   exercise: string;
@@ -32,6 +36,7 @@ const accents = {
 };
 
 export function Event({
+  scheduledEvent,
   dogName,
   discipline,
   exercise,
@@ -44,89 +49,108 @@ export function Event({
 }: EventProps) {
   const { t, i18n } = useTranslation();
   const titleId = useId();
+  const [isOpen, setIsOpen] = useState(false);
   const isUpcoming = state === "upcoming";
   const isCompleted = state === "completed";
   const StatusIcon = isCompleted ? CircleCheck : CircleExclamation;
 
   return (
-    <article
-      aria-labelledby={titleId}
-      className={cn(
-        // Same hover lift as the discipline cards; not interactive yet.
-        "relative flex w-full max-w-full min-w-0 cursor-pointer flex-col overflow-clip rounded-2xl py-2 pr-3 pl-4 text-foreground shadow-card transition duration-150 ease-out hover:shadow-card-hover motion-safe:hover:-translate-y-0.5 md:self-stretch",
-        backgrounds[state],
-        className,
-      )}
-    >
-      <span
-        className={cn("absolute inset-y-0 left-0 w-1", accents[state])}
-        aria-hidden="true"
-      />
-      <p
+    <>
+      <article
+        aria-labelledby={titleId}
         className={cn(
-          "flex items-center gap-1 text-xs leading-5",
-          isUpcoming ? "text-accent-soft-foreground" : "text-muted",
+          "relative flex w-full max-w-full min-w-0 cursor-pointer flex-col overflow-clip rounded-2xl py-2 pr-3 pl-4 text-foreground shadow-card transition duration-150 ease-out hover:shadow-card-hover motion-safe:hover:-translate-y-0.5 md:self-stretch",
+          backgrounds[state],
+          className,
         )}
       >
-        <Clock className="size-3 shrink-0" aria-hidden="true" />
-        <span className="min-w-0 wrap-break-word">
-          {t(($) => $.events.timeAndDuration, {
-            time: date
-              ? t(($) => $.events.dateAndTime, {
-                  date: new Intl.DateTimeFormat(i18n.resolvedLanguage ?? "cs", {
-                    day: "numeric",
-                    month: "numeric",
-                  }).format(new Date(`${date}T12:00:00`)),
-                  time,
-                })
-              : time,
-            duration: new Intl.NumberFormat(
-              i18n.resolvedLanguage ?? "cs",
-            ).format(durationMinutes),
-          })}
-        </span>
-      </p>
-      {isUpcoming ? (
-        <span className="sr-only">{t(($) => $.events.upcoming)}</span>
-      ) : (
+        {scheduledEvent && (
+          <Button
+            variant="ghost"
+            className="absolute inset-0 z-10 h-full w-full"
+            aria-label={t(($) => $.training.open, { name: exercise })}
+            onPress={() => setIsOpen(true)}
+          />
+        )}
+        <span
+          className={cn("absolute inset-y-0 left-0 w-1", accents[state])}
+          aria-hidden="true"
+        />
         <p
           className={cn(
             "flex items-center gap-1 text-xs leading-5",
-            isCompleted
-              ? "text-success-soft-foreground"
-              : "text-warning-soft-foreground",
+            isUpcoming ? "text-accent-soft-foreground" : "text-muted",
           )}
         >
-          <StatusIcon
-            className={cn(
-              "size-3 shrink-0",
-              isCompleted ? "text-success" : "text-warning",
-            )}
-            aria-hidden="true"
-          />
-          {isCompleted
-            ? t(($) => $.events.completed)
-            : t(($) => $.events.unfinished)}
+          <Clock className="size-3 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 wrap-break-word">
+            {t(($) => $.events.timeAndDuration, {
+              time: date
+                ? t(($) => $.events.dateAndTime, {
+                    date: new Intl.DateTimeFormat(
+                      i18n.resolvedLanguage ?? "cs",
+                      {
+                        day: "numeric",
+                        month: "numeric",
+                      },
+                    ).format(new Date(`${date}T12:00:00`)),
+                    time,
+                  })
+                : time,
+              duration: new Intl.NumberFormat(
+                i18n.resolvedLanguage ?? "cs",
+              ).format(durationMinutes),
+            })}
+          </span>
         </p>
-      )}
-      <div className="flex h-3 items-center">
-        <Separator variant="secondary" />
-      </div>
-      <p className="text-xs leading-5 font-medium wrap-break-word text-muted">
-        {dogName}
-      </p>
-      <p className="text-xs leading-5 wrap-break-word text-muted">
-        {discipline}
-      </p>
-      <Heading
-        id={titleId}
-        className={cn(
-          "text-sm leading-6 font-medium tracking-tight wrap-break-word",
-          isCompleted && "text-muted",
+        {isUpcoming ? (
+          <span className="sr-only">{t(($) => $.events.upcoming)}</span>
+        ) : (
+          <p
+            className={cn(
+              "flex items-center gap-1 text-xs leading-5",
+              isCompleted
+                ? "text-success-soft-foreground"
+                : "text-warning-soft-foreground",
+            )}
+          >
+            <StatusIcon
+              className={cn(
+                "size-3 shrink-0",
+                isCompleted ? "text-success" : "text-warning",
+              )}
+              aria-hidden="true"
+            />
+            {isCompleted
+              ? t(($) => $.events.completed)
+              : t(($) => $.events.unfinished)}
+          </p>
         )}
-      >
-        {exercise}
-      </Heading>
-    </article>
+        <div className="flex h-3 items-center">
+          <Separator variant="secondary" />
+        </div>
+        <p className="text-xs leading-5 font-medium wrap-break-word text-muted">
+          {dogName}
+        </p>
+        <p className="text-xs leading-5 wrap-break-word text-muted">
+          {discipline}
+        </p>
+        <Heading
+          id={titleId}
+          className={cn(
+            "text-sm leading-6 font-medium tracking-tight wrap-break-word",
+            isCompleted && "text-muted",
+          )}
+        >
+          {exercise}
+        </Heading>
+      </article>
+      {scheduledEvent && isOpen && (
+        <ScheduledExerciseDialog
+          event={scheduledEvent}
+          onClose={() => setIsOpen(false)}
+        />
+      )}
+    </>
   );
 }

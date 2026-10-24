@@ -209,6 +209,12 @@ model ScheduledExercise {
   exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
   startsAt DateTime
   durationMinutes Int
+  rating Int?
+  note String? @db.Text
+  completedAt DateTime?
+  deletedAt DateTime?
+  undoToken String?
+  undoState Json?
   createdAt DateTime @default(now())
 
   @@index([dogId, startsAt])

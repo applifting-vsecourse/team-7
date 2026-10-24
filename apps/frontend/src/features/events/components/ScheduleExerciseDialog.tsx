@@ -3,25 +3,18 @@ import {
   Button,
   Checkbox,
   Disclosure,
-  FieldError,
   Form,
-  Input,
-  Label,
-  ListBox,
   Modal,
   Radio,
   RadioGroup,
-  Select,
-  TextField,
   toast,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-import { translateMessage } from "@/i18n/messages";
 import { api } from "@/lib/api-client";
 import { pluralForm } from "@/lib/plural";
 import { cn } from "@/lib/utils";
@@ -38,6 +31,7 @@ import {
   type PlanningExercise,
 } from "../api/eventsQueryOptions";
 import { scheduleSchema, type ScheduleValues } from "../schemas/scheduleSchema";
+import { ScheduleFields } from "./ScheduleFields";
 
 export function ScheduleExerciseDialog({
   date,
@@ -342,94 +336,11 @@ export function ScheduleExerciseDialog({
                               {item.disciplineName} · {item.goalName}
                             </p>
                           </div>
-                          <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 min-[360px]:grid-cols-3">
-                            {(["date", "time"] as const).map((kind) => (
-                              <Controller
-                                key={kind}
-                                control={form.control}
-                                name={`exercises.${index}.${kind}`}
-                                render={({ field, fieldState }) => (
-                                  <TextField
-                                    isDisabled={save.isPending}
-                                    isInvalid={fieldState.invalid}
-                                    name={field.name}
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    onBlur={field.onBlur}
-                                    type={kind}
-                                    className="min-w-0"
-                                  >
-                                    <Label>
-                                      {kind === "date"
-                                        ? t(($) => $.planning.date)
-                                        : t(($) => $.planning.time)}
-                                    </Label>
-                                    <Input
-                                      ref={field.ref}
-                                      className="min-w-0"
-                                    />
-                                    <FieldError>
-                                      {fieldState.error &&
-                                        translateMessage(
-                                          t,
-                                          fieldState.error.message!,
-                                        )}
-                                    </FieldError>
-                                  </TextField>
-                                )}
-                              />
-                            ))}
-                            <Controller
-                              control={form.control}
-                              name={`exercises.${index}.durationMinutes`}
-                              render={({ field, fieldState }) => (
-                                <Select
-                                  isDisabled={save.isPending}
-                                  isInvalid={fieldState.invalid}
-                                  name={field.name}
-                                  value={String(field.value)}
-                                  onChange={(value) =>
-                                    field.onChange(Number(value))
-                                  }
-                                  onBlur={field.onBlur}
-                                >
-                                  <Label>{t(($) => $.planning.duration)}</Label>
-                                  <Select.Trigger ref={field.ref}>
-                                    <Select.Value />
-                                    <Select.Indicator />
-                                  </Select.Trigger>
-                                  <Select.Popover>
-                                    <ListBox>
-                                      {[5, 10, 15, 20, 30, 45, 60, 90, 120].map(
-                                        (minutes) => (
-                                          <ListBox.Item
-                                            key={minutes}
-                                            id={String(minutes)}
-                                            textValue={t(
-                                              ($) => $.planning.minutes,
-                                              { count: minutes },
-                                            )}
-                                          >
-                                            {t(($) => $.planning.minutes, {
-                                              count: minutes,
-                                            })}
-                                            <ListBox.ItemIndicator />
-                                          </ListBox.Item>
-                                        ),
-                                      )}
-                                    </ListBox>
-                                  </Select.Popover>
-                                  <FieldError>
-                                    {fieldState.error &&
-                                      translateMessage(
-                                        t,
-                                        fieldState.error.message!,
-                                      )}
-                                  </FieldError>
-                                </Select>
-                              )}
-                            />
-                          </div>
+                          <ScheduleFields
+                            control={form.control}
+                            index={index}
+                            isDisabled={save.isPending}
+                          />
                         </div>
                       ))}
                     </div>
