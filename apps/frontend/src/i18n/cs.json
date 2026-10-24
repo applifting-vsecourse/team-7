@@ -106,7 +106,17 @@
     "photoZoom": "Přiblížení",
     "pageLoading": "Načítám psa…",
     "notFound": "Pes neexistuje nebo byl smazán.",
-    "pagePlaceholder": "Profil psa připravujeme. Zatím tu můžete změnit jeho fotku kliknutím na avatar."
+    "pagePlaceholder": "Profil psa připravujeme. Zatím tu můžete změnit jeho fotku kliknutím na avatar.",
+    "ageYears": {
+      "one": "{{count}} rok",
+      "few": "{{count}} roky",
+      "other": "{{count}} let"
+    },
+    "ageMonths": {
+      "one": "{{count}} měsíc",
+      "few": "{{count}} měsíce",
+      "other": "{{count}} měsíců"
+    }
   },
   "events": {
     "timeAndDuration": "{{time}} ({{duration}} min)",
@@ -278,7 +288,7 @@
     "exerciseActions": "Další akce se cvičením {{name}}",
     "dogs": "Psi s touto disciplínou",
     "dogsEmpty": "Disciplína zatím není přiřazená žádnému psovi",
-    "dogProgress": "{{goals}} · splněno {{completed}}",
+    "dogProgress": "{{goals}} · {{exercises}}",
     "cancel": "Zrušit",
     "save": "Uložit",
     "saveError": "Uložení se nepodařilo. Zkuste to znovu.",
@@ -332,6 +342,53 @@
       "error": "Smazání se nepodařilo. Zkuste to znovu."
     },
     "createdToast": "Disciplína {{name}} byla vytvořena",
-    "deletedToast": "Disciplína {{name}} byla smazána"
+    "deletedToast": "Disciplína {{name}} byla smazána",
+    "dogGoalsOf": {
+      "one": "{{count}} {{from}} {{total}} cíle",
+      "few": "{{count}} {{from}} {{total}} cílů",
+      "other": "{{count}} {{from}} {{total}} cílů"
+    },
+    "dogExercisesOf": {
+      "one": "{{count}} {{from}} {{total}} cvičení",
+      "few": "{{count}} {{from}} {{total}} cvičení",
+      "other": "{{count}} {{from}} {{total}} cvičení"
+    },
+    "assignDialog": {
+      "title": "Přiřadit psovi",
+      "stepDog": "Krok 1 ze 2 · Pes",
+      "stepGoals": "Krok 2 ze 2 · Cíle a cvičení",
+      "pickDog": "Vyberte psa, který bude trénovat disciplínu {{discipline}}.",
+      "dogLabel": "Pes",
+      "hiddenDogs": "Jestli zde nějakého psa nevidíte, už tuto disciplínu trénuje.",
+      "noDogs": "Zatím nemáte žádného psa. Přidejte ho tlačítkem Přidat psa.",
+      "allDogsAssigned": "Tuto disciplínu už trénují všichni vaši psi.",
+      "dogRequired": "Vyberte psa.",
+      "continue": "Pokračovat",
+      "back": "Zpět na předchozí krok",
+      "pickGoals": "Vyberte cíle a cvičení, které bude {{dog}} trénovat.",
+      "selectAll": "Vybrat vše",
+      "deselectAll": "Zrušit výběr",
+      "exercisesSelected": {
+        "one": "{{count}} {{from}} {{total}} cvičení vybráno",
+        "few": "{{count}} {{from}} {{total}} cvičení vybráno",
+        "other": "{{count}} {{from}} {{total}} cvičení vybráno"
+      },
+      "goalsRequired": "Vyberte alespoň jeden cíl.",
+      "submit": "Přiřadit {{goals}} · {{exercises}}",
+      "submitEmpty": "Přiřadit",
+      "error": "Přiřazení se nepodařilo. Zkuste to znovu.",
+      "toastTitle": "Disciplína {{discipline}} přiřazena psovi {{dog}}",
+      "toastDescription": {
+        "one": "Přibyl {{goals}} a {{exercises}}.",
+        "few": "Přibyly {{goals}} a {{exercises}}.",
+        "other": "Přibylo {{goals}} a {{exercises}}."
+      },
+      "toastDescriptionGoalsOnly": {
+        "one": "Přibyl {{goals}}.",
+        "few": "Přibyly {{goals}}.",
+        "other": "Přibylo {{goals}}."
+      },
+      "goToDog": "Přejít na psa"
+    }
   }
 }
