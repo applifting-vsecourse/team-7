@@ -5,13 +5,7 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createStore, Provider } from "jotai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -447,9 +441,12 @@ describe("overview routing", () => {
       screen.getByRole("textbox", { name: "Breed" }),
       "Border kolie",
     );
-    fireEvent.change(screen.getByLabelText("Date of birth"), {
-      target: { value: "2022-05-03" },
-    });
+    await user.click(screen.getByRole("spinbutton", { name: /month/i }));
+    await user.keyboard("05");
+    await user.click(screen.getByRole("spinbutton", { name: /day/i }));
+    await user.keyboard("03");
+    await user.click(screen.getByRole("spinbutton", { name: /year/i }));
+    await user.keyboard("2022");
     await user.click(
       screen.getAllByRole("button", { name: "Add dog" }).at(-1)!,
     );
@@ -467,9 +464,12 @@ describe("overview routing", () => {
     renderRoute("/overview?lng=en");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
     await user.type(screen.getByRole("textbox", { name: "Name" }), "Bára");
-    fireEvent.change(screen.getByLabelText("Date of birth"), {
-      target: { value: "2999-01-01" },
-    });
+    await user.click(screen.getByRole("spinbutton", { name: /month/i }));
+    await user.keyboard("01");
+    await user.click(screen.getByRole("spinbutton", { name: /day/i }));
+    await user.keyboard("01");
+    await user.click(screen.getByRole("spinbutton", { name: /year/i }));
+    await user.keyboard("2999");
     await user.click(
       screen.getAllByRole("button", { name: "Add dog" }).at(-1)!,
     );

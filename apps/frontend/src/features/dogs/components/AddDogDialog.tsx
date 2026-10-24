@@ -50,7 +50,7 @@ export function AddDogDialog() {
       isKeyboardDismissDisabled={addDog.isPending}
     >
       <Modal.Container size="lg">
-        <Modal.Dialog className="md:max-w-200">
+        <Modal.Dialog className="min-w-0 md:max-w-200">
           <Modal.CloseTrigger />
           <Modal.Header>
             <Modal.Heading>{t(($) => $.navigation.addDog)}</Modal.Heading>

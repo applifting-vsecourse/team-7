@@ -1,6 +1,9 @@
 import { useState } from "react";
 import {
   Button,
+  Calendar,
+  DateField,
+  DatePicker,
   FieldError,
   Form,
   Input,
@@ -10,6 +13,7 @@ import {
   TextField,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { parseDate } from "@internationalized/date";
 import { format, isFuture, parseISO } from "date-fns";
 import { keyFromSelector } from "i18next";
 import { Controller, useForm } from "react-hook-form";
@@ -84,6 +88,7 @@ export function AddDogForm({
 
   return (
     <Form
+      className="max-w-full min-w-0"
       validationBehavior="aria"
       onSubmit={form.handleSubmit(async (values) => {
         if (isSubmitting) return;
@@ -96,10 +101,10 @@ export function AddDogForm({
         }
       })}
     >
-      <Modal.Body className="flex flex-col gap-5">
+      <Modal.Body className="flex min-w-0 flex-col gap-5">
         {/* Desktop keeps details and photo side by side so nothing scrolls;
             the mobile sheet stacks the photo under the fields. */}
-        <div className="flex flex-col gap-4 md:flex-row md:gap-6">
+        <div className="flex min-w-0 flex-col gap-4 md:flex-row md:gap-6">
           <div className="flex min-w-0 flex-1 flex-col gap-4">
             <Controller
               control={form.control}
@@ -151,20 +156,79 @@ export function AddDogForm({
             <Controller
               control={form.control}
               name="birthDate"
-              render={({ field: { ref, ...field }, fieldState }) => (
-                <TextField
-                  {...field}
-                  type="date"
+              render={({ field, fieldState }) => (
+                <DatePicker
+                  name={field.name}
+                  value={field.value ? parseDate(field.value) : null}
+                  onChange={(value) => field.onChange(value?.toString() ?? "")}
+                  onBlur={field.onBlur}
+                  maxValue={parseDate(maxBirthDate)}
+                  validationBehavior="aria"
                   isDisabled={isSubmitting}
                   isInvalid={fieldState.invalid}
-                  fullWidth
+                  className="w-full min-w-0"
                 >
                   <Label>{t(($) => $.dogs.birthDate)}</Label>
-                  <Input ref={ref} max={maxBirthDate} />
+                  <DateField.Group
+                    fullWidth
+                    className="min-w-0"
+                    ref={(element) =>
+                      field.ref(
+                        element
+                          ? {
+                              focus: () =>
+                                element
+                                  .querySelector<HTMLElement>(
+                                    '[role="spinbutton"]',
+                                  )
+                                  ?.focus(),
+                            }
+                          : null,
+                      )
+                    }
+                  >
+                    <DateField.Input>
+                      {(segment) => <DateField.Segment segment={segment} />}
+                    </DateField.Input>
+                    <DateField.Suffix>
+                      <DatePicker.Trigger>
+                        <DatePicker.TriggerIndicator />
+                      </DatePicker.Trigger>
+                    </DateField.Suffix>
+                  </DateField.Group>
                   <FieldError>
                     {errorText(fieldState.error?.message)}
                   </FieldError>
-                </TextField>
+                  <DatePicker.Popover>
+                    <Calendar aria-label={t(($) => $.dogs.birthDate)}>
+                      <Calendar.Header>
+                        <Calendar.YearPickerTrigger>
+                          <Calendar.YearPickerTriggerHeading />
+                          <Calendar.YearPickerTriggerIndicator />
+                        </Calendar.YearPickerTrigger>
+                        <Calendar.NavButton slot="previous" />
+                        <Calendar.NavButton slot="next" />
+                      </Calendar.Header>
+                      <Calendar.Grid>
+                        <Calendar.GridHeader>
+                          {(day) => (
+                            <Calendar.HeaderCell>{day}</Calendar.HeaderCell>
+                          )}
+                        </Calendar.GridHeader>
+                        <Calendar.GridBody>
+                          {(date) => <Calendar.Cell date={date} />}
+                        </Calendar.GridBody>
+                      </Calendar.Grid>
+                      <Calendar.YearPickerGrid>
+                        <Calendar.YearPickerGridBody>
+                          {({ year }) => (
+                            <Calendar.YearPickerCell year={year} />
+                          )}
+                        </Calendar.YearPickerGridBody>
+                      </Calendar.YearPickerGrid>
+                    </Calendar>
+                  </DatePicker.Popover>
+                </DatePicker>
               )}
             />
           </div>
@@ -172,7 +236,7 @@ export function AddDogForm({
             <Separator orientation="vertical" className="hidden md:block" />
           )}
           {showPhoto && (
-            <div className="md:w-70 md:shrink-0">
+            <div className="min-w-0 md:w-70 md:shrink-0">
               <Controller
                 control={form.control}
                 name="photo"
