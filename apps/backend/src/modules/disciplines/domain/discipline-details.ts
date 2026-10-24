@@ -30,6 +30,8 @@ export type GoalDetail = {
 export type DisciplineDog = DogRef & {
   goalCount: number;
   completedGoalCount: number;
+  // Exercises the dog trains across its goals of the discipline.
+  exerciseCount: number;
 };
 
 export type DisciplineDetail = {
@@ -62,7 +64,11 @@ export const disciplineDetailInclude = {
       },
       dogs: {
         orderBy: byCreation,
-        select: { completedAt: true, dog: dogRef },
+        select: {
+          completedAt: true,
+          dog: dogRef,
+          _count: { select: { exercises: true } },
+        },
       },
     },
   },
@@ -96,13 +102,15 @@ export function toDisciplineSummary(row: SummaryRow): DisciplineSummary {
 export function toDisciplineDetail(row: DetailRow): DisciplineDetail {
   const dogs = new Map<string, DisciplineDog>();
   for (const goal of row.goals) {
-    for (const { dog, completedAt } of goal.dogs) {
+    for (const { dog, completedAt, _count } of goal.dogs) {
       const entry = dogs.get(dog.id) ?? {
         ...dog,
         goalCount: 0,
         completedGoalCount: 0,
+        exerciseCount: 0,
       };
       entry.goalCount += 1;
+      entry.exerciseCount += _count.exercises;
       if (completedAt) entry.completedGoalCount += 1;
       dogs.set(dog.id, entry);
     }
