@@ -118,6 +118,9 @@ export async function seedDisciplines(prisma: PrismaService): Promise<void> {
           userId: user.id,
           name: discipline.name,
           description: discipline.description,
+          dogs: discipline.goals.some((goal) => goal.dogs)
+            ? { create: user.dogs.map((dog) => ({ dogId: dog.id })) }
+            : undefined,
           goals: {
             create: discipline.goals.map((goal) => ({
               name: goal.name,

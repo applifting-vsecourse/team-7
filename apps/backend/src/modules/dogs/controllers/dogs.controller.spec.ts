@@ -44,6 +44,7 @@ describe("/api/dogs", () => {
     userId: string;
     avatar?: Uint8Array | null;
     avatarVersion?: string | null;
+    archivedAt?: Date | null;
   }> = initialDogs.map((dog) => ({ ...dog }));
   const withoutAvatar = ({ avatar: _avatar, ...dog }: (typeof dogs)[number]) =>
     dog;
@@ -78,10 +79,13 @@ describe("/api/dogs", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     dogs = initialDogs.map((dog) => ({ ...dog }));
-    findMany.mockImplementation(({ where }: { where: { userId: string } }) =>
-      Promise.resolve(
-        dogs.filter((dog) => dog.userId === where.userId).map(withoutAvatar),
-      ),
+    findMany.mockImplementation(
+      ({ where }: { where: { userId: string; archivedAt?: null } }) =>
+        Promise.resolve(
+          dogs
+            .filter((dog) => dog.userId === where.userId && !dog.archivedAt)
+            .map(withoutAvatar),
+        ),
     );
     findFirst.mockImplementation(
       ({ where }: { where: { id: string; userId: string } }) =>
@@ -165,7 +169,7 @@ describe("/api/dogs", () => {
         dogs.filter((dog) => dog.userId === userId),
       );
       expect(findMany).toHaveBeenCalledWith({
-        where: { userId },
+        where: { userId, archivedAt: null },
         omit: { avatar: true },
       });
     },
@@ -325,6 +329,66 @@ describe("/api/dogs", () => {
 
     expect(response.status).toBe(404);
     expect(dogs).toEqual(initialDogs);
+  });
+
+  it("archives only an owned dog and hides it from the list without deleting it", async () => {
+    signIn("user-a");
+    expect((await request("POST", "/dog-b/archive")).status).toBe(404);
+    expect((await request("POST", "/dog-a/archive")).status).toBe(201);
+    expect(dogs[0].archivedAt).toBeInstanceOf(Date);
+    expect(dogs).toHaveLength(2);
+    expect(await (await fetch(url)).json()).toEqual([]);
+    expect(deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("returns owned discipline progress without confusing library goals with selected goals", async () => {
+    signIn("user-a");
+    findFirst.mockResolvedValueOnce({
+      ...initialDogs[0],
+      disciplines: [
+        { discipline: { id: "d1", name: "Obedience", description: null } },
+        { discipline: { id: "d2", name: "New", description: null } },
+      ],
+      goals: [
+        {
+          goal: { disciplineId: "d1" },
+          completedAt: new Date(),
+          exercises: [{ exerciseId: "e1" }],
+        },
+        { goal: { disciplineId: "d1" }, completedAt: null, exercises: [] },
+      ],
+    });
+    const response = await fetch(`${url}/dog-a`);
+    expect(response.status).toBe(200);
+    expect((await response.json()).disciplines).toEqual([
+      {
+        id: "d1",
+        name: "Obedience",
+        description: null,
+        goalCount: 2,
+        completedGoalCount: 1,
+        exerciseCount: 1,
+      },
+      {
+        id: "d2",
+        name: "New",
+        description: null,
+        goalCount: 0,
+        completedGoalCount: 0,
+        exerciseCount: 0,
+      },
+    ]);
+    expect(findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "dog-a", userId: "user-a" },
+        omit: { avatar: true },
+      }),
+    );
+  });
+
+  it("does not expose another owner's profile", async () => {
+    signIn("user-a");
+    expect((await fetch(`${url}/dog-b`)).status).toBe(404);
   });
 
   describe.each(["POST", "PATCH"])("%s body validation", (method) => {

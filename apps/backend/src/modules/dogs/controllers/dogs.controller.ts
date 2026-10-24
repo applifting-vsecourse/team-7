@@ -27,6 +27,7 @@ import {
 } from "@nestjs/swagger";
 import type {} from "multer";
 import { PrismaService } from "@/core/prisma/prisma.service";
+import { DisciplineInputDto } from "@/modules/disciplines/controllers/dto/library-input.dto";
 import { AVATAR_UPLOAD_LIMIT } from "@/modules/dogs/avatars/avatars.constants";
 import { DogAvatarsService } from "@/modules/dogs/avatars/avatars.service";
 import type { DogDetails } from "@/modules/dogs/domain/dog-details";
@@ -71,9 +72,86 @@ export class DogsController {
   @ApiOperation({ summary: "List dogs owned by the signed-in user" })
   getDogs(@User() user: Identity): Promise<DogDetails[]> {
     return this.prisma.dog.findMany({
-      where: { userId: user.id },
+      where: { userId: user.id, archivedAt: null },
       omit: omitAvatar,
     });
+  }
+
+  @Get(":id")
+  @ApiOperation({ summary: "Get an owned dog and its discipline progress" })
+  @ApiNotFoundResponse({ description: "Dog not found" })
+  async getDog(@User() user: Identity, @Param("id") id: string) {
+    const dog = await this.prisma.dog.findFirst({
+      where: { id, userId: user.id },
+      omit: omitAvatar,
+      include: {
+        disciplines: {
+          include: { discipline: true },
+          orderBy: { createdAt: "asc" },
+        },
+        goals: { include: { goal: true, exercises: true } },
+      },
+    });
+    if (!dog) throw new NotFoundException("Dog not found");
+    const { disciplines, goals, ...details } = dog;
+    return {
+      ...details,
+      disciplines: disciplines.map(({ discipline }) => {
+        const selected = goals.filter(
+          (item) => item.goal.disciplineId === discipline.id,
+        );
+        return {
+          id: discipline.id,
+          name: discipline.name,
+          description: discipline.description,
+          goalCount: selected.length,
+          completedGoalCount: selected.filter((item) => item.completedAt)
+            .length,
+          exerciseCount: selected.reduce(
+            (total, item) => total + item.exercises.length,
+            0,
+          ),
+        };
+      }),
+    };
+  }
+
+  @Post(":id/disciplines")
+  @ApiOperation({
+    summary: "Create a library discipline and assign it to an owned dog",
+  })
+  createDiscipline(
+    @User() user: Identity,
+    @Param("id") id: string,
+    @Body() body: DisciplineInputDto,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      const dog = await tx.dog.findFirst({
+        where: { id, userId: user.id },
+        select: { id: true },
+      });
+      if (!dog) throw new NotFoundException("Dog not found");
+      return tx.discipline.create({
+        data: {
+          name: body.name.trim(),
+          description: optionalText(body.description),
+          userId: user.id,
+          dogs: { create: { dogId: dog.id } },
+        },
+      });
+    });
+  }
+
+  @Post(":id/archive")
+  @ApiOperation({ summary: "Archive an owned dog, keeping all its data" })
+  async archiveDog(@User() user: Identity, @Param("id") id: string) {
+    const [dog] = await this.prisma.dog.updateManyAndReturn({
+      where: { id, userId: user.id },
+      data: { archivedAt: new Date() },
+      omit: omitAvatar,
+    });
+    if (!dog) throw new NotFoundException("Dog not found");
+    return dog;
   }
 
   @Post()

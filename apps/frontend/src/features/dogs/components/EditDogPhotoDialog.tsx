@@ -12,6 +12,7 @@ import {
 } from "@/features/dogs/api/dogsQueryOptions";
 
 import { photoFormData, type DogPhoto } from "../api/dogPhotos";
+import { dogProfileKey } from "../api/dogProfileQueryOptions";
 import { DogAvatar } from "./DogAvatar";
 import { DogPhotoPicker } from "./DogPhotoPicker";
 
@@ -39,6 +40,9 @@ export function EditDogPhotoDialog({
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: dogsQueryOptions(user?.id).queryKey,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: dogProfileKey(user?.id),
       });
       setIsOpen(false);
       setPhoto(null);

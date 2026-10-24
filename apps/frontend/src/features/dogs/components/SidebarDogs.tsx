@@ -63,7 +63,7 @@ export function SidebarDogs() {
               {dog.name}
             </span>
             <Circle
-              className="hidden size-4 shrink-0 in-[[data-status=active]]:block"
+              className="hidden size-4 shrink-0 in-data-[status=active]:block"
               aria-hidden="true"
             />
           </Link>

@@ -15,6 +15,7 @@ type DeleteDialogProps = {
   isPending: boolean;
   isError: boolean;
   onConfirm: () => void;
+  isDestructive?: boolean;
 };
 
 export function DeleteDialog({
@@ -27,6 +28,7 @@ export function DeleteDialog({
   isPending,
   isError,
   onConfirm,
+  isDestructive = true,
 }: DeleteDialogProps) {
   const { t } = useTranslation();
 
@@ -43,7 +45,7 @@ export function DeleteDialog({
       <AlertDialog.Container>
         <AlertDialog.Dialog className="sm:max-w-100">
           <AlertDialog.Header>
-            <AlertDialog.Icon status="danger" />
+            <AlertDialog.Icon status={isDestructive ? "danger" : "warning"} />
             <AlertDialog.Heading>{title}</AlertDialog.Heading>
           </AlertDialog.Header>
           <AlertDialog.Body className="flex flex-col gap-2">
@@ -58,7 +60,9 @@ export function DeleteDialog({
                     { count: affectedDogCount },
                   )
                 : null}{" "}
-              {t(($) => $.disciplines.deleteDialog.irreversible)}
+              {isDestructive
+                ? t(($) => $.disciplines.deleteDialog.irreversible)
+                : null}
             </p>
             {isError ? (
               <p role="alert" className="text-sm text-danger">
@@ -76,7 +80,7 @@ export function DeleteDialog({
               {t(($) => $.disciplines.cancel)}
             </Button>
             <Button
-              variant="danger"
+              variant={isDestructive ? "danger" : "primary"}
               isPending={isPending}
               isDisabled={isPending}
               onPress={onConfirm}

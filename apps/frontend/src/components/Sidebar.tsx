@@ -44,7 +44,7 @@ export function Sidebar() {
             <Rectangles4 className="size-4 shrink-0" aria-hidden="true" />
             <span className="flex-1">{t(($) => $.navigation.overview)}</span>
             <Circle
-              className="hidden size-4 shrink-0 in-[[data-status=active]]:block"
+              className="hidden size-4 shrink-0 in-data-[status=active]:block"
               aria-hidden="true"
             />
           </Link>
@@ -60,7 +60,7 @@ export function Sidebar() {
             <Calendar className="size-4 shrink-0" aria-hidden="true" />
             <span className="flex-1">{t(($) => $.navigation.calendar)}</span>
             <Circle
-              className="hidden size-4 shrink-0 in-[[data-status=active]]:block"
+              className="hidden size-4 shrink-0 in-data-[status=active]:block"
               aria-hidden="true"
             />
           </Link>
@@ -76,7 +76,7 @@ export function Sidebar() {
             <ChartLine className="size-4 shrink-0" aria-hidden="true" />
             <span className="flex-1">{t(($) => $.navigation.disciplines)}</span>
             <Circle
-              className="hidden size-4 shrink-0 in-[[data-status=active]]:block"
+              className="hidden size-4 shrink-0 in-data-[status=active]:block"
               aria-hidden="true"
             />
           </Link>
