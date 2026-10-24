@@ -491,6 +491,24 @@
     "error": "Cvičení se nepodařilo naplánovat. Zkuste to znovu.",
     "invalid": "Zadejte platné datum, čas a délku (1–1440 minut)."
   },
+  "exerciseDetail": {
+    "goal": "Cíl {{name}}",
+    "history": "Historie",
+    "averageRating": "Průměrné hodnocení za 30 dní",
+    "ratingValue": "{{rating}} / 5",
+    "lastTraining": "Poslední trénink",
+    "chart": "Hodnocení po trénincích",
+    "chartWaiting": "Graf se zobrazí po dvou a více trénincích",
+    "emptyTitle": "Zatím žádný trénink",
+    "emptyDescription": "Naplánujte cvičení v kalendáři. Po prvním tréninku tu uvidíte jeho historii a hodnocení.",
+    "removeDescription": "Cvičení se {{name}} odebere, hodnocení zůstanou",
+    "removed": "Cvičení odebráno. Historie tréninků zůstala zachována.",
+    "restored": "Cvičení bylo znovu přiřazeno.",
+    "loading": "Načítání cvičení…",
+    "error": "Cvičení se nepodařilo načíst. Zkuste to znovu.",
+    "noNote": "K tréninku nebyla zapsána poznámka.",
+    "chartPoint": "{{date}}: {{rating}} z 5 hvězd"
+  },
   "training": {
     "open": "Otevřít trénink: {{name}}",
     "menu": "Akce tréninku",

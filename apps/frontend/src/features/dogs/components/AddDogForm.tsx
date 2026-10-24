@@ -117,7 +117,6 @@ export function AddDogForm({
                   {/* oxlint-disable jsx-a11y/no-autofocus */}
                   <Input
                     ref={ref}
-                    autoFocus
                     autoComplete="off"
                     placeholder={t(($) => $.dogs.namePlaceholder)}
                   />

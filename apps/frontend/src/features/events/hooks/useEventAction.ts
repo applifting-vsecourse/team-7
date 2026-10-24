@@ -6,6 +6,7 @@ import { z } from "zod";
 import { api } from "@/lib/api-client";
 
 import { useSession } from "@/features/auth/hooks/useSession";
+import { dogProfileKey } from "@/features/dogs/api/dogProfileQueryOptions";
 
 import { eventsKey } from "../api/eventsQueryOptions";
 
@@ -25,7 +26,10 @@ export function useEventAction(id: string, onClose: () => void) {
   const queryClient = useQueryClient();
   const path = `events/${encodeURIComponent(id)}`;
   const refresh = () =>
-    queryClient.invalidateQueries({ queryKey: eventsKey(user?.id) });
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: eventsKey(user?.id) }),
+      queryClient.invalidateQueries({ queryKey: dogProfileKey(user?.id) }),
+    ]);
   const undo = useMutation({
     mutationFn: (token: string) =>
       api.post(`${path}/undo`, { json: { token } }),

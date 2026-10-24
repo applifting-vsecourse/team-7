@@ -491,6 +491,24 @@
     "error": "Could not schedule exercises. Please try again.",
     "invalid": "Enter a valid date, time and duration (1–1440 minutes)."
   },
+  "exerciseDetail": {
+    "goal": "Goal {{name}}",
+    "history": "History",
+    "averageRating": "Average rating over 30 days",
+    "ratingValue": "{{rating}} / 5",
+    "lastTraining": "Last training",
+    "chart": "Ratings by training session",
+    "chartWaiting": "The chart will appear after two or more training sessions",
+    "emptyTitle": "No training yet",
+    "emptyDescription": "Schedule this exercise in the calendar. After the first session, its history and ratings will appear here.",
+    "removeDescription": "Remove this exercise from {{name}}; ratings will be kept",
+    "removed": "Exercise removed. Training history has been kept.",
+    "restored": "Exercise assigned again.",
+    "loading": "Loading exercise…",
+    "error": "Could not load the exercise. Please try again.",
+    "noNote": "No note was recorded.",
+    "chartPoint": "{{date}}: {{rating}} out of 5 stars"
+  },
   "training": {
     "open": "Open training: {{name}}",
     "menu": "Training actions",

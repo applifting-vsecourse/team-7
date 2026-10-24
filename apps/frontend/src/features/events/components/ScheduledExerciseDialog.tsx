@@ -13,6 +13,7 @@ import {
 } from "@gravity-ui/icons";
 import {
   Button,
+  buttonVariants,
   Chip,
   Dropdown,
   FieldError,
@@ -25,6 +26,7 @@ import {
   TextField,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Link } from "@tanstack/react-router";
 import { format, isBefore, parseISO, startOfDay } from "date-fns";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -50,9 +52,7 @@ export function ScheduledExerciseDialog({
 }) {
   const { t, i18n } = useTranslation();
   const [today] = useState(() => new Date());
-  const [mode, setMode] = useState<"result" | "schedule" | "exercise">(
-    "result",
-  );
+  const [mode, setMode] = useState<"result" | "schedule">("result");
   const action = useEventAction(event.id, onClose);
   const completed = Boolean(event.completedAt);
   const overdue = isBefore(parseISO(event.startsAt), startOfDay(today));
@@ -117,14 +117,20 @@ export function ScheduledExerciseDialog({
                     </Chip.Label>
                   </Chip>
                   {completed && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onPress={() => setMode("exercise")}
+                    <Link
+                      to="/dogs/$dogId/exercises/$exerciseId"
+                      params={{
+                        dogId: event.dogId,
+                        exerciseId: event.exercise.id,
+                      }}
+                      className={buttonVariants({
+                        variant: "ghost",
+                        size: "sm",
+                      })}
                     >
                       {t(($) => $.training.detail)}
                       <ChevronRight className="size-4" aria-hidden="true" />
-                    </Button>
+                    </Link>
                   )}
                 </div>
               )}
@@ -230,10 +236,6 @@ export function ScheduledExerciseDialog({
                   minDate={format(today, "yyyy-MM-dd")}
                   stackedDate
                 />
-              ) : mode === "exercise" ? (
-                <p className="text-sm leading-6 whitespace-pre-wrap">
-                  {event.exercise.procedure || t(($) => $.training.noProcedure)}
-                </p>
               ) : (
                 <>
                   <Controller
@@ -338,22 +340,18 @@ export function ScheduledExerciseDialog({
                   ? t(($) => $.training.cancel)
                   : t(($) => $.training.back)}
               </Button>
-              {mode !== "exercise" && (
-                <Button
-                  type="submit"
-                  className="w-full sm:w-auto"
-                  isPending={action.isPending}
-                  isDisabled={
-                    action.isPending || (mode === "result" && !rating)
-                  }
-                >
-                  {mode === "schedule"
-                    ? t(($) => $.training.move)
-                    : completed
-                      ? t(($) => $.training.save)
-                      : t(($) => $.training.complete)}
-                </Button>
-              )}
+              <Button
+                type="submit"
+                className="w-full sm:w-auto"
+                isPending={action.isPending}
+                isDisabled={action.isPending || (mode === "result" && !rating)}
+              >
+                {mode === "schedule"
+                  ? t(($) => $.training.move)
+                  : completed
+                    ? t(($) => $.training.save)
+                    : t(($) => $.training.complete)}
+              </Button>
             </Modal.Footer>
           </Form>
         </Modal.Dialog>
