@@ -383,12 +383,16 @@
         "few": "Added {{goals}} and {{exercises}}.",
         "other": "Added {{goals}} and {{exercises}}."
       },
-      "toastDescriptionGoalsOnly": {
-        "one": "Added {{goals}}.",
-        "few": "Added {{goals}}.",
-        "other": "Added {{goals}}."
-      },
-      "goToDog": "Go to dog"
-    }
+      "goToDog": "Go to dog",
+      "goalNoExercises": "This goal has no exercises yet."
+    },
+    "dogActions": "More actions for dog {{name}}",
+    "removeFromDog": "Remove discipline",
+    "removeDialog": {
+      "title": "Remove {{discipline}} from {{dog}}?",
+      "body": "{{dog}} loses all goals and exercises of this discipline, including completed ones. The discipline stays in your library.",
+      "confirm": "Remove"
+    },
+    "removedToast": "Discipline {{discipline}} removed from {{dog}}"
   }
 }

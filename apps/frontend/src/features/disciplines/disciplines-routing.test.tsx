@@ -305,10 +305,13 @@ describe("disciplines", () => {
     }
   });
 
-  it("can't assign a discipline without goals", async () => {
+  it.each([
+    ["without goals", []],
+    ["whose goals have no exercises", [poslusnostDetail.goals[1]]],
+  ])("can't assign a discipline %s", async (_, goals) => {
     state.responses.set("disciplines/d1", () => ({
       ...poslusnostDetail,
-      goals: [],
+      goals,
       dogs: [],
     }));
     renderRoute("/disciplines/d1?lng=en");
@@ -357,9 +360,15 @@ describe("disciplines", () => {
     expect(
       within(dialog).getByRole("checkbox", { name: "Přivolání z 5 metrů" }),
     ).toBeChecked();
-    await user.click(
-      within(dialog).getByRole("checkbox", { name: "Chůze u nohy" }),
-    );
+    // A goal without exercises can't be trained, so it can't be picked.
+    const emptyGoal = within(dialog).getByRole("checkbox", {
+      name: "Chůze u nohy",
+    });
+    expect(emptyGoal).toBeDisabled();
+    expect(emptyGoal).not.toBeChecked();
+    expect(
+      within(dialog).getByText("This goal has no exercises yet."),
+    ).toBeInTheDocument();
     await user.click(
       within(dialog).getByRole("button", {
         name: "Assign 1 goal · 1 exercise",
@@ -398,15 +407,60 @@ describe("disciplines", () => {
     );
     const dialog = await screen.findByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+    // Unpicking a goal's last exercise unpicks the goal too.
     await user.click(
-      within(dialog).getByRole("button", { name: "Clear selection" }),
+      within(dialog).getByRole("checkbox", { name: "Přivolání z 5 metrů" }),
     );
+    expect(
+      within(dialog).getByRole("checkbox", { name: "Spolehlivé přivolání" }),
+    ).not.toBeChecked();
+    expect(
+      within(dialog).queryByRole("checkbox", { name: "Přivolání z 5 metrů" }),
+    ).not.toBeInTheDocument();
     await user.click(within(dialog).getByRole("button", { name: "Assign" }));
 
     expect(
       within(dialog).getByText("Choose at least one goal."),
     ).toBeInTheDocument();
     expect(state.put).not.toHaveBeenCalled();
+  });
+
+  it("removes the discipline from a dog after confirmation", async () => {
+    const user = userEvent.setup();
+    state.put.mockResolvedValue(undefined);
+    renderRoute("/disciplines/d1?lng=en");
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: "More actions for dog Terminátor",
+      }),
+    );
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Remove discipline" }),
+    );
+    const dialog = await screen.findByRole("alertdialog");
+    expect(
+      within(dialog).getByText("Remove Poslušnost from Terminátor?"),
+    ).toBeInTheDocument();
+    await user.click(within(dialog).getByRole("button", { name: "Remove" }));
+
+    await waitFor(() =>
+      expect(state.put).toHaveBeenCalledWith(
+        "dogs/dog-1/disciplines/d1/selection",
+        { json: { goals: [] } },
+      ),
+    );
+    expect(
+      await screen.findByText("Discipline Poslušnost removed from Terminátor"),
+    ).toBeInTheDocument();
+    // The toast is an alertdialog too, so look for the confirmation by name.
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("alertdialog", {
+          name: "Remove Poslušnost from Terminátor?",
+        }),
+      ).not.toBeInTheDocument(),
+    );
   });
 
   it("names the dogs that have the goal when adding an exercise", async () => {

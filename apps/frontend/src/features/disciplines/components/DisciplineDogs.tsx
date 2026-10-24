@@ -1,23 +1,31 @@
 import { useId } from "react";
 import type { DisciplineDog } from "../api/disciplinesQueryOptions";
-import { Dog } from "lucide-react";
+import { toast } from "@heroui/react";
+import { Dog as DogIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { czechFrom, pluralForm } from "@/lib/plural";
 
 import { useSession } from "@/features/auth/hooks/useSession";
+import type { Dog } from "@/features/dogs/api/dogsQueryOptions";
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 import { useDogs } from "@/features/dogs/hooks/useDogs";
 
+import { useDialogState } from "../hooks/useDialogState";
+import { useRemoveDiscipline } from "../hooks/useLibraryMutations";
+import { DeleteDialog } from "./DeleteDialog";
+import { ItemMenu } from "./ItemMenu";
+
+type Totals = { goalTotal: number; exerciseTotal: number };
+
 /** Dogs that picked at least one goal of the discipline, with how much of it. */
 export function DisciplineDogs({
+  discipline,
   dogs,
-  goalTotal,
-  exerciseTotal,
-}: {
+  ...totals
+}: Totals & {
+  discipline: { id: string; name: string };
   dogs: DisciplineDog[];
-  goalTotal: number;
-  exerciseTotal: number;
 }) {
   const { t } = useTranslation();
   const headingId = useId();
@@ -37,25 +45,19 @@ export function DisciplineDogs({
       </h2>
       {dogs.length === 0 ? (
         <p className="flex items-start gap-1 text-sm leading-6 text-muted">
-          <Dog className="mt-1 size-4 shrink-0" aria-hidden="true" />
+          <DogIcon className="mt-1 size-4 shrink-0" aria-hidden="true" />
           {t(($) => $.disciplines.dogsEmpty)}
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
           {dogs.map((dog) => (
-            <li key={dog.id} className="flex items-center gap-3">
-              <DogAvatar dog={dogsById.get(dog.id) ?? dog} />
-              <div className="flex min-w-0 flex-1 flex-col">
-                <span className="text-sm leading-6 wrap-break-word">
-                  {dog.name}
-                </span>
-                <DogProgress
-                  dog={dog}
-                  goalTotal={goalTotal}
-                  exerciseTotal={exerciseTotal}
-                />
-              </div>
-            </li>
+            <DogRow
+              key={dog.id}
+              discipline={discipline}
+              dog={dog}
+              avatarDog={dogsById.get(dog.id) ?? dog}
+              {...totals}
+            />
           ))}
         </ul>
       )}
@@ -63,15 +65,66 @@ export function DisciplineDogs({
   );
 }
 
+function DogRow({
+  discipline,
+  dog,
+  avatarDog,
+  ...totals
+}: Totals & {
+  discipline: { id: string; name: string };
+  dog: DisciplineDog;
+  avatarDog: Dog;
+}) {
+  const { t } = useTranslation();
+  const { dialog, open, close, onOpenChange } = useDialogState<"remove">();
+  const remove = useRemoveDiscipline();
+  const names = { discipline: discipline.name, dog: dog.name };
+
+  return (
+    <li className="flex items-center gap-3">
+      <DogAvatar dog={avatarDog} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="text-sm leading-6 wrap-break-word">{dog.name}</span>
+        <DogProgress dog={dog} {...totals} />
+      </div>
+      <ItemMenu
+        label={t(($) => $.disciplines.dogActions, { name: dog.name })}
+        deleteLabel={t(($) => $.disciplines.removeFromDog)}
+        onDelete={() => {
+          remove.reset();
+          open("remove");
+        }}
+      />
+      <DeleteDialog
+        isOpen={dialog === "remove"}
+        onOpenChange={onOpenChange}
+        title={t(($) => $.disciplines.removeDialog.title, names)}
+        body={t(($) => $.disciplines.removeDialog.body, names)}
+        affectedDogCount={0}
+        confirmLabel={t(($) => $.disciplines.removeDialog.confirm)}
+        isPending={remove.isPending}
+        isError={remove.isError}
+        onConfirm={() =>
+          remove.mutate(
+            { disciplineId: discipline.id, dogId: dog.id },
+            {
+              onSuccess: () => {
+                close();
+                toast.success(t(($) => $.disciplines.removedToast, names));
+              },
+            },
+          )
+        }
+      />
+    </li>
+  );
+}
+
 function DogProgress({
   dog,
   goalTotal,
   exerciseTotal,
-}: {
-  dog: DisciplineDog;
-  goalTotal: number;
-  exerciseTotal: number;
-}) {
+}: Totals & { dog: DisciplineDog }) {
   const { t } = useTranslation();
 
   return (

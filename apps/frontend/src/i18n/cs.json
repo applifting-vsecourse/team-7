@@ -383,12 +383,16 @@
         "few": "Přibyly {{goals}} a {{exercises}}.",
         "other": "Přibylo {{goals}} a {{exercises}}."
       },
-      "toastDescriptionGoalsOnly": {
-        "one": "Přibyl {{goals}}.",
-        "few": "Přibyly {{goals}}.",
-        "other": "Přibylo {{goals}}."
-      },
-      "goToDog": "Přejít na psa"
-    }
+      "goToDog": "Přejít na psa",
+      "goalNoExercises": "Cíl zatím nemá žádná cvičení."
+    },
+    "dogActions": "Další akce se psem {{name}}",
+    "removeFromDog": "Odebrat disciplínu",
+    "removeDialog": {
+      "title": "Odebrat disciplínu {{discipline}} psovi {{dog}}?",
+      "body": "{{dog}} přijde o všechny cíle a cvičení této disciplíny, i o splněné. Disciplína v knihovně zůstane.",
+      "confirm": "Odebrat"
+    },
+    "removedToast": "Disciplína {{discipline}} odebrána psovi {{dog}}"
   }
 }

@@ -10,6 +10,8 @@ type DeleteDialogProps = {
   body: string;
   // Dogs whose picks disappear with the item; 0 hides the sentence.
   affectedDogCount: number;
+  // Defaults to "Smazat".
+  confirmLabel?: string;
   isPending: boolean;
   isError: boolean;
   onConfirm: () => void;
@@ -21,6 +23,7 @@ export function DeleteDialog({
   title,
   body,
   affectedDogCount,
+  confirmLabel,
   isPending,
   isError,
   onConfirm,
@@ -79,7 +82,7 @@ export function DeleteDialog({
               onPress={onConfirm}
               className="w-full sm:w-auto"
             >
-              {t(($) => $.disciplines.deleteDialog.confirm)}
+              {confirmLabel ?? t(($) => $.disciplines.deleteDialog.confirm)}
             </Button>
           </AlertDialog.Footer>
         </AlertDialog.Dialog>

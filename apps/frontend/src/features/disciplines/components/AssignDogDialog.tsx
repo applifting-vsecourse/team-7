@@ -108,39 +108,29 @@ function AssignSteps({
       {
         onSuccess: () => {
           onClose();
-          const goalsText = t(
-            ($) => $.disciplines.goalCount[pluralForm(goals.length)],
-            { count: goals.length },
-          );
-          const form = pluralForm(goals.length);
           const id = toast.success(
             t(($) => $.disciplines.assignDialog.toastTitle, {
               discipline: discipline.name,
               dog: dog.name,
             }),
             {
-              description:
-                exerciseCount > 0
-                  ? t(
-                      ($) => $.disciplines.assignDialog.toastDescription[form],
-                      {
-                        goals: goalsText,
-                        exercises: t(
-                          ($) =>
-                            $.disciplines.exerciseCount[
-                              pluralForm(exerciseCount)
-                            ],
-                          { count: exerciseCount },
-                        ),
-                      },
-                    )
-                  : t(
-                      ($) =>
-                        $.disciplines.assignDialog.toastDescriptionGoalsOnly[
-                          form
-                        ],
-                      { goals: goalsText },
-                    ),
+              description: t(
+                ($) =>
+                  $.disciplines.assignDialog.toastDescription[
+                    pluralForm(goals.length)
+                  ],
+                {
+                  goals: t(
+                    ($) => $.disciplines.goalCount[pluralForm(goals.length)],
+                    { count: goals.length },
+                  ),
+                  exercises: t(
+                    ($) =>
+                      $.disciplines.exerciseCount[pluralForm(exerciseCount)],
+                    { count: exerciseCount },
+                  ),
+                },
+              ),
               actionProps: {
                 children: t(($) => $.disciplines.assignDialog.goToDog),
                 onPress: () => {
@@ -299,15 +289,17 @@ function DogMeta({ dog }: { dog: Dog }) {
   );
 }
 
-// Picked exercise IDs per goal; a goal without a key isn't picked.
+// Picked exercise IDs per goal; a goal without a key isn't picked. A picked
+// goal always has at least one exercise: a dog can't train a goal without any.
 type Selection = Record<string, string[]>;
+
+const isAssignable = (goal: Goal) => goal.exercises.length > 0;
 
 const selectAll = (goals: Goal[]): Selection =>
   Object.fromEntries(
-    goals.map((goal) => [
-      goal.id,
-      goal.exercises.map((exercise) => exercise.id),
-    ]),
+    goals
+      .filter(isAssignable)
+      .map((goal) => [goal.id, goal.exercises.map((exercise) => exercise.id)]),
   );
 
 function GoalsStep({
@@ -338,9 +330,9 @@ function GoalsStep({
     (sum, goal) => sum + goal.exerciseIds.length,
     0,
   );
-  const isAllSelected = discipline.goals.every(
-    (goal) => selection[goal.id]?.length === goal.exercises.length,
-  );
+  const isAllSelected = discipline.goals
+    .filter(isAssignable)
+    .every((goal) => selection[goal.id]?.length === goal.exercises.length);
   const update = (next: Selection) => {
     setSelection(next);
     setShowRequired(false);
@@ -364,7 +356,11 @@ function GoalsStep({
     const next = goal.exercises
       .map((exercise) => exercise.id)
       .filter((id) => (id === exerciseId ? isSelected : current.includes(id)));
-    update({ ...selection, [goal.id]: next });
+    if (next.length === 0) {
+      toggleGoal(goal, false);
+    } else {
+      update({ ...selection, [goal.id]: next });
+    }
   };
 
   return (
@@ -410,7 +406,7 @@ function GoalsStep({
                   isIndeterminate={
                     exerciseIds !== undefined && exerciseIds.length < total
                   }
-                  isDisabled={isPending}
+                  isDisabled={isPending || total === 0}
                   onChange={(isSelected) => toggleGoal(goal, isSelected)}
                 >
                   <Checkbox.Content className="text-base leading-6 font-semibold wrap-break-word">
@@ -419,7 +415,11 @@ function GoalsStep({
                     </Checkbox.Control>
                     {goal.name}
                   </Checkbox.Content>
-                  {exerciseIds && total > 0 ? (
+                  {total === 0 ? (
+                    <Description className="pl-7">
+                      {t(($) => $.disciplines.assignDialog.goalNoExercises)}
+                    </Description>
+                  ) : exerciseIds ? (
                     <Description className="pl-7">
                       {t(
                         ($) =>

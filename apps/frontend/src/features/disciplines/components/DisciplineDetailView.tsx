@@ -105,10 +105,11 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
             {t(($) => $.disciplines.addGoal)}
           </Button>
           <div className="flex items-center gap-3">
-            {/* A dog trains goals, so there is nothing to assign without them. */}
+            {/* A dog trains goals through their exercises, so there is
+                nothing to assign until a goal has one. */}
             <Button
               variant="secondary"
-              isDisabled={discipline.goals.length === 0}
+              isDisabled={exerciseCount === 0}
               className="flex-1"
               onPress={() => open("assign")}
             >
@@ -179,6 +180,7 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
         <Separator orientation="vertical" className="hidden lg:block" />
         <div className="lg:w-64 lg:shrink-0 xl:w-80">
           <DisciplineDogs
+            discipline={discipline}
             dogs={discipline.dogs}
             goalTotal={discipline.goals.length}
             exerciseTotal={exerciseCount}
