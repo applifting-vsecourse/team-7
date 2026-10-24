@@ -43,6 +43,21 @@ vi.mock("@/lib/api-client", () => ({
       json: async () => {
         const dogs = await state.getDogs();
         if (path === "dogs") return dogs;
+        if (path === "events") {
+          return [
+            {
+              id: "planned-1",
+              dogId: dogs[0]!.id,
+              startsAt: new Date().toISOString(),
+              durationMinutes: 10,
+              dog: { name: dogs[0]!.name },
+              exercise: {
+                name: "Recall",
+                goal: { discipline: { name: "Obedience" } },
+              },
+            },
+          ];
+        }
         const dog = dogs.find((item) => path === `dogs/${item.id}`);
         return dog
           ? {
@@ -229,7 +244,7 @@ describe("overview routing", () => {
     const currentWeek = calendar
       .getAllByRole("time")
       .map((time) => time.getAttribute("datetime"));
-    expect(calendar.getAllByRole("article")).toHaveLength(22);
+    expect(await calendar.findAllByRole("article")).toHaveLength(1);
     await user.click(screen.getByRole("button", { name: "Next week" }));
     const nextWeek = calendar
       .getAllByRole("time")
@@ -255,7 +270,7 @@ describe("overview routing", () => {
         .getAllByRole("time")
         .map((time) => time.getAttribute("datetime")),
     ).toEqual(currentWeek);
-    expect(calendar.getAllByRole("article")).toHaveLength(22);
+    expect(await calendar.findAllByRole("article")).toHaveLength(1);
   });
 
   it("selects all dogs by default and updates the shared atom from selections", async () => {

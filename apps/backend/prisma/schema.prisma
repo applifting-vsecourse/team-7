@@ -32,6 +32,7 @@ model Dog {
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String
   archivedAt    DateTime?
+  scheduledExercises ScheduledExercise[]
   disciplines   DogDiscipline[]
   goals         DogGoal[]
   createdAt     DateTime  @default(now())
@@ -80,6 +81,7 @@ model Exercise {
   procedure String?       @db.Text
   goal      Goal          @relation(fields: [goalId], references: [id], onDelete: Cascade)
   goalId    String
+  scheduledExercises ScheduledExercise[]
   dogs      DogExercise[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @default(now()) @updatedAt
@@ -197,4 +199,19 @@ model DogDiscipline {
   @@id([dogId, disciplineId])
   @@index([disciplineId])
   @@map("dog_discipline")
+}
+
+model ScheduledExercise {
+  id String @id @default(cuid())
+  dogId String
+  dog Dog @relation(fields: [dogId], references: [id], onDelete: Cascade)
+  exerciseId String
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  startsAt DateTime
+  durationMinutes Int
+  createdAt DateTime @default(now())
+
+  @@index([dogId, startsAt])
+  @@index([exerciseId])
+  @@map("scheduled_exercise")
 }
