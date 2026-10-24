@@ -30,7 +30,9 @@
       "reset": "Odkaz pro obnovení se nepodařilo odeslat",
       "signIn": "Přihlášení se nezdařilo",
       "signUp": "Registrace se nezdařila",
-      "google": "Přihlášení přes Google se nezdařilo"
+      "google": "Přihlášení přes Google se nezdařilo",
+      "emailTaken": "Účet s tímto e-mailem už existuje. Použijte jiný e-mail.",
+      "invalidCredentials": "Nesprávný e-mail nebo heslo"
     },
     "signOut": "Odhlásit se",
     "or": "nebo",
@@ -157,7 +159,26 @@
     "thisWeek": "Tento týden",
     "previousWeek": "Předchozí týden",
     "nextWeek": "Následující týden",
-    "weekRange": "{{start}} – {{end}}"
+    "weekRange": "{{start}} – {{end}}",
+    "views": {
+      "label": "Zobrazení kalendáře",
+      "day": "Den",
+      "week": "Týden",
+      "month": "Měsíc"
+    },
+    "dailyOverview": "Denní přehled",
+    "previousDay": "Předchozí den",
+    "nextDay": "Následující den",
+    "monthlyOverview": "Měsíční přehled",
+    "previousMonth": "Předchozí měsíc",
+    "nextMonth": "Následující měsíc",
+    "thisMonth": "Tento měsíc",
+    "exerciseCount": {
+      "one": "{{count}} cvičení",
+      "few": "{{count}} cvičení",
+      "other": "{{count}} cvičení"
+    },
+    "dayLabel": "{{date}}, {{exercises}}"
   },
   "calendarMocks": {
     "dog": "Pes {{number}}",
