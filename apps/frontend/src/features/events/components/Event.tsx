@@ -53,7 +53,7 @@ export function Event({
       aria-labelledby={titleId}
       className={cn(
         // Same hover lift as the discipline cards; not interactive yet.
-        "relative flex w-full max-w-full min-w-0 cursor-pointer flex-col overflow-clip rounded-2xl py-2 pr-3 pl-4 text-foreground shadow-card transition duration-150 ease-out hover:shadow-card-hover motion-safe:hover:-translate-y-0.5 md:w-calendar-cell md:self-stretch",
+        "relative flex w-full max-w-full min-w-0 cursor-pointer flex-col overflow-clip rounded-2xl py-2 pr-3 pl-4 text-foreground shadow-card transition duration-150 ease-out hover:shadow-card-hover motion-safe:hover:-translate-y-0.5 md:self-stretch",
         backgrounds[state],
         className,
       )}

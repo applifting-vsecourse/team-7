@@ -6,6 +6,8 @@ import { MobileSidebar } from "@/components/MobileSidebar";
 import { Seo } from "@/components/Seo";
 import { cn } from "@/lib/utils";
 
+import { AddDogDialog } from "@/features/dogs/components/AddDogDialog";
+
 export type AppLayoutProps = {
   // Document title; omit it when a nested route sets its own.
   title?: string;
@@ -55,6 +57,8 @@ export default function Layout({
         {!isMobile && sidebar}
         {children}
       </main>
+      {/* Outside the sidebar, so switching to the mobile drawer keeps it open. */}
+      {sidebar ? <AddDogDialog /> : null}
     </>
   );
 }

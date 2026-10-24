@@ -23,6 +23,8 @@ export const messageSelectors = {
   signUpFailed: ($) => $.auth.errors.signUp,
   resetFailed: ($) => $.auth.errors.reset,
   googleSignInFailed: ($) => $.auth.errors.google,
+  emailTaken: ($) => $.auth.errors.emailTaken,
+  invalidCredentials: ($) => $.auth.errors.invalidCredentials,
 } satisfies Record<string, TranslationSelector>;
 
 const selectorsByKey = new Map<string, TranslationSelector>(

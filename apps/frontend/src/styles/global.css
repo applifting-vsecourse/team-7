@@ -96,6 +96,15 @@
     @apply bg-background;
   }
 
+  /* Figma marks the selected toggle (e.g. the calendar view switcher) with
+     the solid accent, like a primary button, not the kit's soft accent. */
+  .toggle-button {
+    --toggle-button-bg-selected: var(--accent);
+    --toggle-button-bg-selected-hover: var(--accent-hover);
+    --toggle-button-bg-selected-pressed: var(--accent-hover);
+    --toggle-button-fg-selected: var(--accent-foreground);
+  }
+
   /* Figma "Heading 3" for modal titles; alert dialogs keep the kit size. */
   .modal__heading {
     @apply text-2xl leading-8 font-semibold tracking-tight;

@@ -7,14 +7,21 @@ import { ROUTES } from "@/app/routes";
 import { messageSelectors } from "@/i18n/messages";
 
 import { authClient } from "@/features/auth/lib/auth-client";
+import { authErrorMessage } from "@/features/auth/lib/auth-error";
 import { toAbsoluteUrl } from "@/features/auth/lib/redirect";
 
 type GoogleSignInProps = {
   redirectTo: string;
   onError: (message: string) => void;
+  /** Where the "or" divider sits relative to the button. */
+  separator?: "before" | "after";
 };
 
-export function GoogleSignIn({ redirectTo, onError }: GoogleSignInProps) {
+export function GoogleSignIn({
+  redirectTo,
+  onError,
+  separator = "after",
+}: GoogleSignInProps) {
   const { t } = useTranslation();
   const [isPending, setIsPending] = useState(false);
 
@@ -28,17 +35,24 @@ export function GoogleSignIn({ redirectTo, onError }: GoogleSignInProps) {
         errorCallbackURL: toAbsoluteUrl(ROUTES.login),
       });
       if (!error) return;
-      onError(
-        error.message ?? keyFromSelector(messageSelectors.googleSignInFailed),
-      );
+      onError(authErrorMessage(error, messageSelectors.googleSignInFailed));
     } catch {
       onError(keyFromSelector(messageSelectors.googleSignInFailed));
     }
     setIsPending(false);
   };
 
+  const divider = (
+    <div className="flex items-center gap-4 text-sm text-muted">
+      <Separator className="flex-1" />
+      {t(($) => $.auth.or)}
+      <Separator className="flex-1" />
+    </div>
+  );
+
   return (
     <>
+      {separator === "before" ? divider : null}
       <Button
         variant="tertiary"
         size="lg"
@@ -50,11 +64,7 @@ export function GoogleSignIn({ redirectTo, onError }: GoogleSignInProps) {
         <GoogleIcon />
         {t(($) => $.auth.continueWithGoogle)}
       </Button>
-      <div className="flex items-center gap-4 text-sm text-muted">
-        <Separator className="flex-1" />
-        {t(($) => $.auth.or)}
-        <Separator className="flex-1" />
-      </div>
+      {separator === "after" ? divider : null}
     </>
   );
 }

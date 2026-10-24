@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { keyFromSelector } from "i18next";
 
 import { messageSelectors } from "@/i18n/messages";
 import { authKeys } from "@/lib/auth-keys";
 
 import { authClient } from "@/features/auth/lib/auth-client";
+import { authErrorMessage } from "@/features/auth/lib/auth-error";
 
 export type SignUpInput = {
   name: string;
@@ -24,9 +24,7 @@ export function useSignUp() {
         password: input.password,
       });
       if (error) {
-        throw new Error(
-          error.message ?? keyFromSelector(messageSelectors.signUpFailed),
-        );
+        throw new Error(authErrorMessage(error, messageSelectors.signUpFailed));
       }
     },
     onSuccess: async () => {

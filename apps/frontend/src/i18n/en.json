@@ -30,7 +30,9 @@
       "reset": "Unable to send reset link",
       "signIn": "Sign in failed",
       "signUp": "Sign up failed",
-      "google": "Google sign-in failed"
+      "google": "Google sign-in failed",
+      "emailTaken": "An account with this email already exists. Use another email.",
+      "invalidCredentials": "Invalid email or password"
     },
     "signOut": "Sign out",
     "or": "or",
@@ -157,7 +159,26 @@
     "thisWeek": "This week",
     "previousWeek": "Previous week",
     "nextWeek": "Next week",
-    "weekRange": "{{start}} – {{end}}"
+    "weekRange": "{{start}} – {{end}}",
+    "views": {
+      "label": "Calendar view",
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
+    "dailyOverview": "Daily overview",
+    "previousDay": "Previous day",
+    "nextDay": "Next day",
+    "monthlyOverview": "Monthly overview",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "thisMonth": "This month",
+    "exerciseCount": {
+      "one": "{{count}} exercise",
+      "few": "{{count}} exercises",
+      "other": "{{count}} exercises"
+    },
+    "dayLabel": "{{date}}, {{exercises}}"
   },
   "calendarMocks": {
     "dog": "Dog {{number}}",
