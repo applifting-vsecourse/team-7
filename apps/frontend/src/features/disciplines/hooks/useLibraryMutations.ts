@@ -93,25 +93,32 @@ export function useSaveExercise() {
 
 export type AssignedGoal = { goalId: string; exerciseIds: string[] };
 
+type DogDiscipline = { disciplineId: string; dogId: string };
+
+// Replaces the dog's whole selection in the discipline; no goals clears it.
+const putSelection = (
+  { disciplineId, dogId }: DogDiscipline,
+  goals: AssignedGoal[],
+) =>
+  api.put(path("dogs", dogId, "disciplines", disciplineId, "selection"), {
+    json: { goals },
+  });
+
 /**
- * Gives a dog the picked goals and exercises of a discipline. The endpoint
- * replaces the dog's whole selection, so it's only for dogs that don't train
- * the discipline yet.
+ * Gives a dog the picked goals and exercises of a discipline. The selection is
+ * replaced, so it's only for dogs that don't train the discipline yet.
  */
 export function useAssignDiscipline() {
   return useLibraryMutation(
-    ({
-      disciplineId,
-      dogId,
-      goals,
-    }: {
-      disciplineId: string;
-      dogId: string;
-      goals: AssignedGoal[];
-    }) =>
-      api.put(path("dogs", dogId, "disciplines", disciplineId, "selection"), {
-        json: { goals },
-      }),
+    ({ goals, ...target }: DogDiscipline & { goals: AssignedGoal[] }) =>
+      putSelection(target, goals),
+  );
+}
+
+/** Takes all goals and exercises of a discipline from a dog. */
+export function useRemoveDiscipline() {
+  return useLibraryMutation((target: DogDiscipline) =>
+    putSelection(target, []),
   );
 }
 
