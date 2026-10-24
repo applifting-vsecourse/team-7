@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import { mobileSidebarOpenAtom } from "@/app/atoms/mobileSidebarOpenAtom";
 import { ROUTES } from "@/app/routes";
 
-import { AddDogDialog } from "@/features/dogs/components/AddDogDialog";
+import { AddDogButton } from "@/features/dogs/components/AddDogDialog";
 import { SidebarDogs } from "@/features/dogs/components/SidebarDogs";
 
 export function Sidebar() {
@@ -102,7 +102,7 @@ export function Sidebar() {
           </div>
           <div className="flex flex-col gap-4 md:gap-6">
             <SidebarDogs />
-            <AddDogDialog />
+            <AddDogButton />
           </div>
         </section>
       </div>
