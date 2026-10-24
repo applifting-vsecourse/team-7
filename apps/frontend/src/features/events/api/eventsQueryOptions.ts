@@ -12,17 +12,32 @@ export const planningExerciseSchema = z.object({
   disciplineName: z.string(),
 });
 export type PlanningExercise = z.infer<typeof planningExerciseSchema>;
-const eventSchema = z.object({
+export const eventSchema = z.object({
   id: z.string(),
   dogId: z.string(),
   startsAt: z.string(),
   durationMinutes: z.number(),
-  dog: z.object({ name: z.string() }),
-  exercise: z.object({
+  rating: z.number().nullable(),
+  note: z.string().nullable(),
+  completedAt: z.string().nullable(),
+  dog: z.object({
+    id: z.string(),
     name: z.string(),
-    goal: z.object({ discipline: z.object({ name: z.string() }) }),
+    avatarVersion: z.string().nullable(),
+  }),
+  exercise: z.object({
+    id: z.string(),
+    name: z.string(),
+    procedure: z.string().nullable(),
+    goal: z.object({
+      id: z.string(),
+      name: z.string(),
+      discipline: z.object({ id: z.string(), name: z.string() }),
+    }),
   }),
 });
+export type ScheduledEvent = z.infer<typeof eventSchema>;
+
 export const eventsKey = (userId: string | undefined) =>
   ["events", userId] as const;
 export const eventsQueryOptions = (userId: string | undefined) =>

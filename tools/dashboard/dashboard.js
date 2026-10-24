@@ -811,12 +811,12 @@
       loadedAt &&
       Date.now() - loadedAt.getTime() > CACHE_TTL_MS
     ) {
-      load({ useCache: true });
+      void load({ useCache: true });
     }
   });
   window
     .matchMedia("(prefers-color-scheme: dark)")
     .addEventListener("change", () => model && render());
 
-  load({ useCache: true });
+  void load({ useCache: true });
 })();
