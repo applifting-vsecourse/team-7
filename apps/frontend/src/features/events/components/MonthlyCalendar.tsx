@@ -90,6 +90,7 @@ export function MonthlyCalendar({
           previousLabel={t(($) => $.calendar.previousMonth)}
           nextLabel={t(($) => $.calendar.nextMonth)}
           currentLabel={t(($) => $.calendar.thisMonth)}
+          isCurrent={isSameMonth(date, today)}
           onPrevious={() => onDateChange(addMonths(date, -1))}
           onNext={() => onDateChange(addMonths(date, 1))}
           onCurrent={() => onDateChange(today)}
