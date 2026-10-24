@@ -1,5 +1,16 @@
 import type { EventProps } from "../components/Event";
+import { getISODay, isSameWeek } from "date-fns";
 import type { TFunction } from "i18next";
+
+/** The fixtures of one day; only the current week has any. */
+export function getMockedEventsForDate(
+  t: TFunction,
+  date: Date,
+  today: Date,
+): EventProps[] {
+  if (!isSameWeek(date, today, { weekStartsOn: 1 })) return [];
+  return getMockedWeeklyEvents(t)[getISODay(date) - 1] ?? [];
+}
 
 /** Design fixtures for the current week, until the events API is available. */
 export function getMockedWeeklyEvents(t: TFunction): EventProps[][] {

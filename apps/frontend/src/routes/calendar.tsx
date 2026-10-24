@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Calendar as CalendarIcon, Plus } from "@gravity-ui/icons";
 import { Button } from "@heroui/react";
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { format, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 
 import { ROUTES } from "@/app/routes";
 import Layout from "@/components/Layout";
@@ -10,9 +13,23 @@ import { Sidebar } from "@/components/Sidebar";
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
 import { encodeRedirectUri } from "@/features/auth/lib/redirect";
 import { DogFilter } from "@/features/dogs/components/DogFilter";
+import {
+  CALENDAR_VIEWS,
+  type CalendarView,
+  CalendarViewSwitcher,
+} from "@/features/events/components/CalendarViewSwitcher";
+import { DailyCalendar } from "@/features/events/components/DailyCalendar";
+import { MonthlyCalendar } from "@/features/events/components/MonthlyCalendar";
 import { WeeklyCalendar } from "@/features/events/components/WeeklyCalendar";
 
+// Invalid values fall back to the defaults instead of an error page.
+const calendarSearchSchema = z.object({
+  view: z.enum(CALENDAR_VIEWS).optional().catch(undefined),
+  date: z.iso.date().optional().catch(undefined),
+});
+
 export const Route = createFileRoute("/calendar")({
+  validateSearch: calendarSearchSchema,
   beforeLoad: async ({ context, location }) => {
     const session = await context.queryClient.fetchQuery(
       authSessionQueryOptions(),
@@ -29,6 +46,20 @@ export const Route = createFileRoute("/calendar")({
 
 function CalendarPage() {
   const { t } = useTranslation();
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const [today] = useState(() => new Date());
+  const view = search.view ?? "week";
+  const date = search.date ? parseISO(search.date) : today;
+
+  const changeView = (next: CalendarView) =>
+    void navigate({ search: (prev) => ({ ...prev, view: next }) });
+  // Browsing dates replaces the history entry, so Back leaves the calendar.
+  const changeDate = (next: Date) =>
+    void navigate({
+      search: (prev) => ({ ...prev, date: format(next, "yyyy-MM-dd") }),
+      replace: true,
+    });
 
   return (
     <Layout title={t(($) => $.navigation.calendar)} sidebar={<Sidebar />}>
@@ -36,7 +67,7 @@ function CalendarPage() {
         aria-labelledby="calendar-heading"
         className="flex min-w-0 flex-1 flex-col gap-8 rounded-3xl bg-surface px-5 pt-4 pb-5 md:px-6 md:pt-5 md:pb-6"
       >
-        <div className="flex flex-col items-start gap-4 md:flex-row md:justify-between">
+        <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 items-center gap-3 pr-3">
             <CalendarIcon
               className="size-8 shrink-0 text-accent"
@@ -53,9 +84,31 @@ function CalendarPage() {
             <Plus className="size-4 shrink-0" aria-hidden="true" />
             {t(($) => $.calendar.scheduleExercise)}
           </Button>
+          <CalendarViewSwitcher
+            value={view}
+            onChange={changeView}
+            className="hidden md:flex"
+          />
         </div>
         <DogFilter />
-        <WeeklyCalendar />
+        {/* On phones the switcher sits under the dog filter, as in Figma. */}
+        <CalendarViewSwitcher
+          value={view}
+          onChange={changeView}
+          fullWidth
+          className="md:hidden"
+        />
+        {view === "day" ? (
+          <DailyCalendar date={date} today={today} onDateChange={changeDate} />
+        ) : view === "month" ? (
+          <MonthlyCalendar
+            date={date}
+            today={today}
+            onDateChange={changeDate}
+          />
+        ) : (
+          <WeeklyCalendar />
+        )}
       </section>
     </Layout>
   );
