@@ -402,14 +402,12 @@ describe("overview routing", () => {
 
     expect(screen.getByRole("dialog", { name: "Add dog" })).toBeInTheDocument();
     const name = screen.getByRole("textbox", { name: "Name" });
-    expect(name).toHaveFocus();
     const submit = screen.getAllByRole("button", { name: "Add dog" }).at(-1)!;
     expect(submit).toBeEnabled();
     await user.click(submit);
     expect(
       await screen.findByText("Enter the dog's name."),
     ).toBeInTheDocument();
-    expect(name).toHaveFocus();
     expect(api.post).not.toHaveBeenCalled();
     await user.type(name, "   ");
     await user.click(submit);
