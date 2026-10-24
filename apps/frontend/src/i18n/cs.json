@@ -469,5 +469,26 @@
       "few": "{{count}} disciplíny",
       "other": "{{count}} disciplín"
     }
+  },
+  "planning": {
+    "stepDog": "Krok 1 ze 3 · Pes",
+    "stepExercises": "Krok 2 ze 3 · Cvičení",
+    "stepTimes": "Krok 3 ze 3 · Termíny",
+    "dog": "Pes",
+    "next": "Pokračovat",
+    "back": "Zpět na předchozí krok",
+    "cancel": "Zrušit",
+    "chooseDog": "Vyberte psa pro pokračování.",
+    "chooseExercises": "Vyberte alespoň jedno cvičení pro pokračování.",
+    "noDogs": "Před plánováním cvičení přidejte psa.",
+    "noExercises": "Tento pes nemá žádná cvičení k naplánování. Přiřaďte cvičení k aktivnímu cíli v profilu psa.",
+    "date": "Datum",
+    "time": "Začátek",
+    "duration": "Délka",
+    "minutes": "{{count}} min",
+    "schedule": "Naplánovat {{count}} cvičení",
+    "success": "Cvičení byla naplánována.",
+    "error": "Cvičení se nepodařilo naplánovat. Zkuste to znovu.",
+    "invalid": "Zadejte platné datum, čas a délku (1–1440 minut)."
   }
 }
