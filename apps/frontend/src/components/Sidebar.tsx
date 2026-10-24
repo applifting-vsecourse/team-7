@@ -26,7 +26,7 @@ export function Sidebar() {
     // The aside stays put and draws the edge fades; the inner div scrolls
     // beneath them. Its -ml-1/pl-1 gives focus rings room without shifting
     // the sidebar off the page gutter.
-    <aside className="w-full shrink-0 md:sticky md:top-16 md:h-[calc(100dvh-5rem)] md:w-sidebar md:self-start md:before:pointer-events-none md:before:absolute md:before:top-0 md:before:right-0 md:before:-left-1 md:before:z-10 md:before:h-5 md:before:bg-linear-to-b md:before:from-background md:before:to-transparent md:after:pointer-events-none md:after:absolute md:after:right-0 md:after:bottom-0 md:after:-left-1 md:after:z-10 md:after:h-5 md:after:bg-linear-to-t md:after:from-background md:after:to-transparent">
+    <aside className="w-full shrink-0 md:relative md:h-full md:w-sidebar md:before:pointer-events-none md:before:absolute md:before:top-0 md:before:right-0 md:before:-left-1 md:before:z-10 md:before:h-5 md:before:bg-linear-to-b md:before:from-background md:before:to-transparent md:after:pointer-events-none md:after:absolute md:after:right-0 md:after:bottom-0 md:after:-left-1 md:after:z-10 md:after:h-5 md:after:bg-linear-to-t md:after:from-background md:after:to-transparent">
       <div className="flex flex-col gap-6 md:-ml-1 md:h-full md:overflow-y-auto md:overscroll-contain md:py-5 md:pr-4 md:pl-1">
         <nav
           aria-label={t(($) => $.navigation.main)}

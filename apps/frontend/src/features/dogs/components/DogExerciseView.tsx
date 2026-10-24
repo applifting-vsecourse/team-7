@@ -121,21 +121,38 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
   }
   return (
     <>
-      <Breadcrumbs aria-label={t(($) => $.disciplines.breadcrumbs)}>
-        <Breadcrumbs.Item>
-          <Link to="/dogs/$dogId" params={{ dogId: dog.id }}>
+      <Breadcrumbs
+        aria-label={t(($) => $.disciplines.breadcrumbs)}
+        className="max-w-full min-w-0 [&_.breadcrumbs__link]:min-w-0 [&_.breadcrumbs__separator]:shrink-0"
+      >
+        <Breadcrumbs.Item className="min-w-0 shrink">
+          <Link
+            to="/dogs/$dogId"
+            params={{ dogId: dog.id }}
+            className="block max-w-breadcrumb-item truncate"
+            title={dog.name}
+          >
             {dog.name}
           </Link>
         </Breadcrumbs.Item>
-        <Breadcrumbs.Item>
+        <Breadcrumbs.Item className="min-w-0 shrink">
           <Link
             to="/dogs/$dogId/disciplines/$disciplineId"
             params={{ dogId: dog.id, disciplineId: goal.discipline.id }}
+            className="block max-w-breadcrumb-item truncate"
+            title={goal.discipline.name}
           >
             {goal.discipline.name}
           </Link>
         </Breadcrumbs.Item>
-        <Breadcrumbs.Item>{exercise.name}</Breadcrumbs.Item>
+        <Breadcrumbs.Item className="min-w-0 shrink">
+          <span
+            className="block max-w-breadcrumb-item truncate"
+            title={exercise.name}
+          >
+            {exercise.name}
+          </span>
+        </Breadcrumbs.Item>
       </Breadcrumbs>
       <div className="flex flex-col gap-2">
         <div className="flex items-start gap-4">
@@ -163,7 +180,7 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
                     textValue={t(($) => $.dogProfile.removeExercise)}
                   >
                     <TrashBin className="size-4 shrink-0" aria-hidden="true" />
-                    <div>
+                    <div className="flex flex-col">
                       <Label>{t(($) => $.dogProfile.removeExercise)}</Label>
                       <Description>
                         {t(($) => $.exerciseDetail.removeDescription, {

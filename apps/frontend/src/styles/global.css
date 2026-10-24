@@ -15,6 +15,7 @@
   --container-sidebar: 264px;
   --container-content: 1920px;
   --container-calendar-cell: 200px;
+  --container-breadcrumb-item: 15ch;
   --container-login-form: 400px;
   --container-login-block: 900px;
   --container-weekly-stats-min: 292px;
