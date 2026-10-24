@@ -117,6 +117,12 @@ export function WeeklyCalendar() {
               <ChevronRight className="size-4 text-accent" aria-hidden="true" />
             </Button>
             <Button
+              aria-current={currentWeek ? "true" : undefined}
+              className={
+                currentWeek
+                  ? "bg-accent-soft text-accent-soft-foreground"
+                  : undefined
+              }
               onPress={() =>
                 changeWeek(startOfWeek(new Date(), { weekStartsOn: 1 }))
               }

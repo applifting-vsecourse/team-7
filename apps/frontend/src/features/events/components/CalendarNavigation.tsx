@@ -6,6 +6,7 @@ type CalendarNavigationProps = {
   previousLabel: string;
   nextLabel: string;
   currentLabel: string;
+  isCurrent: boolean;
   onPrevious: () => void;
   onNext: () => void;
   onCurrent: () => void;
@@ -17,6 +18,7 @@ export function CalendarNavigation({
   previousLabel,
   nextLabel,
   currentLabel,
+  isCurrent,
   onPrevious,
   onNext,
   onCurrent,
@@ -30,7 +32,13 @@ export function CalendarNavigation({
         <ButtonGroup.Separator />
         <ChevronRight className="size-4 text-accent" aria-hidden="true" />
       </Button>
-      <Button onPress={onCurrent}>
+      <Button
+        onPress={onCurrent}
+        aria-current={isCurrent ? "true" : undefined}
+        className={
+          isCurrent ? "bg-accent-soft text-accent-soft-foreground" : undefined
+        }
+      >
         <ButtonGroup.Separator />
         {currentLabel}
       </Button>

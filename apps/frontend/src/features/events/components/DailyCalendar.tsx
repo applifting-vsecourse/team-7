@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { addDays, format } from "date-fns";
+import { addDays, format, isSameDay } from "date-fns";
 import { useTranslation } from "react-i18next";
 
 import { pluralForm } from "@/lib/plural";
@@ -62,6 +62,7 @@ export function DailyCalendar({
           previousLabel={t(($) => $.calendar.previousDay)}
           nextLabel={t(($) => $.calendar.nextDay)}
           currentLabel={t(($) => $.calendar.today)}
+          isCurrent={isSameDay(date, today)}
           onPrevious={() => onDateChange(addDays(date, -1))}
           onNext={() => onDateChange(addDays(date, 1))}
           onCurrent={() => onDateChange(today)}
