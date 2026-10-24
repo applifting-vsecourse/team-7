@@ -44,19 +44,30 @@ export default function Layout({
           ) : undefined
         }
       />
-      {/* Wrapper Figma component */}
-      <main
+      {/* Keep the desktop sidebar outside the scrolling page content. */}
+      <div
         className={cn(
-          "flex w-full flex-1",
-          sidebar
-            ? "max-w-content flex-col items-stretch bg-background md:flex-row"
-            : "items-start justify-center",
-          className,
+          "flex min-h-0 w-full flex-1",
+          sidebar && "max-w-content md:h-[calc(100dvh-4rem)] md:flex-none",
         )}
       >
-        {!isMobile && sidebar}
-        {children}
-      </main>
+        {sidebar && !isMobile && (
+          <div className="sticky top-16 bottom-4 z-20 ml-4 hidden w-sidebar md:block">
+            {sidebar}
+          </div>
+        )}
+        <main
+          className={cn(
+            "flex min-w-0 flex-1",
+            sidebar
+              ? "flex-col items-stretch bg-background md:h-full md:flex-row md:items-start md:overflow-y-auto md:[&>section]:min-h-full"
+              : "items-start justify-center",
+            className,
+          )}
+        >
+          {children}
+        </main>
+      </div>
       {/* Outside the sidebar, so switching to the mobile drawer keeps it open. */}
       {sidebar ? <AddDogDialog /> : null}
     </>

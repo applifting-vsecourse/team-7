@@ -14,13 +14,16 @@ import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
-import { getMockedWeeklyEvents } from "../mocks/weeklyEvents";
+import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
+
+import { useCalendarEvents } from "../hooks/useCalendarEvents";
 import { Event } from "./Event";
 
 export function WeeklyCalendar() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const headingId = useId();
+  const { query, eventsOf } = useCalendarEvents();
   const scrollRef = useRef<HTMLDivElement>(null);
   const todayRef = useRef<HTMLElement>(null);
   const [today] = useState(() => new Date());
@@ -46,7 +49,6 @@ export function WeeklyCalendar() {
     start: dateFormatter.format(week),
     end: dateFormatter.format(addDays(week, 6)),
   });
-  const events = getMockedWeeklyEvents(t);
 
   // Center today on the screen; the browser clamps scrollLeft, so when
   // centering isn't possible (wide screens, week edges) it still ends up in view.
@@ -78,6 +80,7 @@ export function WeeklyCalendar() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
+      <QueryFeedback query={query} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2
           id={headingId}
@@ -114,6 +117,12 @@ export function WeeklyCalendar() {
               <ChevronRight className="size-4 text-accent" aria-hidden="true" />
             </Button>
             <Button
+              aria-current={currentWeek ? "true" : undefined}
+              className={
+                currentWeek
+                  ? "bg-accent-soft text-accent-soft-foreground"
+                  : undefined
+              }
               onPress={() =>
                 changeWeek(startOfWeek(new Date(), { weekStartsOn: 1 }))
               }
@@ -137,7 +146,7 @@ export function WeeklyCalendar() {
           {Array.from({ length: 7 }, (_, index) => {
             const date = addDays(week, index);
             const isToday = isSameDay(date, today);
-            const dayEvents = currentWeek ? (events[index] ?? []) : [];
+            const dayEvents = eventsOf(date);
             return (
               <section
                 ref={isToday ? todayRef : undefined}
@@ -174,7 +183,7 @@ export function WeeklyCalendar() {
                 ) : (
                   <ul className="flex flex-col gap-3">
                     {dayEvents.map((event) => (
-                      <li key={event.time}>
+                      <li key={event.id}>
                         <Event {...event} headingLevel="h4" />
                       </li>
                     ))}

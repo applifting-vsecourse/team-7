@@ -1,11 +1,13 @@
 import { useId } from "react";
-import { addDays, format } from "date-fns";
+import { addDays, format, isSameDay } from "date-fns";
 import { useTranslation } from "react-i18next";
 
 import { pluralForm } from "@/lib/plural";
 import { capitalizeFirst } from "@/lib/utils";
 
-import { getMockedEventsForDate } from "../mocks/weeklyEvents";
+import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
+
+import { useCalendarEvents } from "../hooks/useCalendarEvents";
 import { CalendarNavigation } from "./CalendarNavigation";
 import { Event } from "./Event";
 
@@ -22,8 +24,9 @@ export function DailyCalendar({
 }: DailyCalendarProps) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
+  const { query, eventsOf } = useCalendarEvents();
   const locale = i18n.resolvedLanguage ?? "cs";
-  const events = getMockedEventsForDate(t, date, today);
+  const events = eventsOf(date);
   const dateLabel = new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "numeric",
@@ -34,6 +37,7 @@ export function DailyCalendar({
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
+      <QueryFeedback query={query} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div
           aria-live="polite"
@@ -58,6 +62,7 @@ export function DailyCalendar({
           previousLabel={t(($) => $.calendar.previousDay)}
           nextLabel={t(($) => $.calendar.nextDay)}
           currentLabel={t(($) => $.calendar.today)}
+          isCurrent={isSameDay(date, today)}
           onPrevious={() => onDateChange(addDays(date, -1))}
           onNext={() => onDateChange(addDays(date, 1))}
           onCurrent={() => onDateChange(today)}
@@ -68,7 +73,7 @@ export function DailyCalendar({
       ) : (
         <ol aria-labelledby={headingId} className="flex flex-col gap-3">
           {events.map((event) => (
-            <li key={event.time} className="flex items-start gap-3">
+            <li key={event.id} className="flex items-start gap-3">
               {/* The tile repeats the time; the column only aids scanning on wider screens. */}
               <span
                 aria-hidden="true"

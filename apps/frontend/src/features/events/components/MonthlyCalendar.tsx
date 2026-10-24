@@ -23,9 +23,11 @@ import { ROUTES } from "@/app/routes";
 import { pluralForm } from "@/lib/plural";
 import { capitalizeFirst, cn } from "@/lib/utils";
 
-import { getMockedEventsForDate } from "../mocks/weeklyEvents";
+import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
+
+import { useCalendarEvents } from "../hooks/useCalendarEvents";
 import { CalendarNavigation } from "./CalendarNavigation";
-import { Event, type EventProps } from "./Event";
+import { Event } from "./Event";
 
 type MonthlyCalendarProps = {
   /** The selected day; its month is the one shown. */
@@ -46,16 +48,13 @@ export function MonthlyCalendar({
 }: MonthlyCalendarProps) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
+  const { query, eventsOf } = useCalendarEvents();
   const locale = i18n.resolvedLanguage ?? "cs";
   const monthStart = startOfMonth(date);
   const days = eachDayOfInterval({
     start: startOfWeek(monthStart, { weekStartsOn: 1 }),
     end: endOfWeek(endOfMonth(monthStart), { weekStartsOn: 1 }),
   });
-  const eventsByDay = new Map<string, EventProps[]>(
-    days.map((day) => [toIsoDate(day), getMockedEventsForDate(t, day, today)]),
-  );
-  const eventsOf = (day: Date) => eventsByDay.get(toIsoDate(day)) ?? [];
   const selectedEvents = eventsOf(date);
   const exerciseCount = (count: number) =>
     t(($) => $.calendar.exerciseCount[pluralForm(count)], { count });
@@ -77,6 +76,7 @@ export function MonthlyCalendar({
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
+      <QueryFeedback query={query} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2
           id={headingId}
@@ -90,6 +90,7 @@ export function MonthlyCalendar({
           previousLabel={t(($) => $.calendar.previousMonth)}
           nextLabel={t(($) => $.calendar.nextMonth)}
           currentLabel={t(($) => $.calendar.thisMonth)}
+          isCurrent={isSameMonth(date, today)}
           onPrevious={() => onDateChange(addMonths(date, -1))}
           onNext={() => onDateChange(addMonths(date, 1))}
           onCurrent={() => onDateChange(today)}
@@ -202,7 +203,7 @@ export function MonthlyCalendar({
           ) : (
             <ul className="flex flex-col gap-3">
               {selectedEvents.map((event) => (
-                <li key={event.time}>
+                <li key={event.id}>
                   <Event {...event} headingLevel="h4" />
                 </li>
               ))}

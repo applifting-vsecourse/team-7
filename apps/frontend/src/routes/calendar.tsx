@@ -20,6 +20,7 @@ import {
 } from "@/features/events/components/CalendarViewSwitcher";
 import { DailyCalendar } from "@/features/events/components/DailyCalendar";
 import { MonthlyCalendar } from "@/features/events/components/MonthlyCalendar";
+import { ScheduleExerciseDialog } from "@/features/events/components/ScheduleExerciseDialog";
 import { WeeklyCalendar } from "@/features/events/components/WeeklyCalendar";
 
 // Invalid values fall back to the defaults instead of an error page.
@@ -48,6 +49,7 @@ function CalendarPage() {
   const { t } = useTranslation();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
+  const [scheduling, setScheduling] = useState(false);
   const [today] = useState(() => new Date());
   const view = search.view ?? "week";
   const date = search.date ? parseISO(search.date) : today;
@@ -80,7 +82,11 @@ function CalendarPage() {
               {t(($) => $.navigation.calendar)}
             </h1>
           </div>
-          <Button variant="primary" className="w-full shrink-0 md:w-auto">
+          <Button
+            variant="primary"
+            className="w-full shrink-0 md:w-auto"
+            onPress={() => setScheduling(true)}
+          >
             <Plus className="size-4 shrink-0" aria-hidden="true" />
             {t(($) => $.calendar.scheduleExercise)}
           </Button>
@@ -110,6 +116,12 @@ function CalendarPage() {
           <WeeklyCalendar />
         )}
       </section>
+      {scheduling && (
+        <ScheduleExerciseDialog
+          date={date}
+          onClose={() => setScheduling(false)}
+        />
+      )}
     </Layout>
   );
 }

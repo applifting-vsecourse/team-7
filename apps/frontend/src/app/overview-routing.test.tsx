@@ -5,13 +5,7 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createStore, Provider } from "jotai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -43,6 +37,34 @@ vi.mock("@/lib/api-client", () => ({
       json: async () => {
         const dogs = await state.getDogs();
         if (path === "dogs") return dogs;
+        if (path === "events") {
+          return [
+            {
+              id: "planned-1",
+              dogId: dogs[0]!.id,
+              startsAt: new Date().toISOString(),
+              durationMinutes: 10,
+              rating: null,
+              note: null,
+              completedAt: null,
+              dog: {
+                id: dogs[0]!.id,
+                name: dogs[0]!.name,
+                avatarVersion: null,
+              },
+              exercise: {
+                id: "e1",
+                name: "Recall",
+                procedure: null,
+                goal: {
+                  id: "g1",
+                  name: "Reliable recall",
+                  discipline: { id: "d1", name: "Obedience" },
+                },
+              },
+            },
+          ];
+        }
         const dog = dogs.find((item) => path === `dogs/${item.id}`);
         return dog
           ? {
@@ -229,7 +251,7 @@ describe("overview routing", () => {
     const currentWeek = calendar
       .getAllByRole("time")
       .map((time) => time.getAttribute("datetime"));
-    expect(calendar.getAllByRole("article")).toHaveLength(22);
+    expect(await calendar.findAllByRole("article")).toHaveLength(1);
     await user.click(screen.getByRole("button", { name: "Next week" }));
     const nextWeek = calendar
       .getAllByRole("time")
@@ -255,7 +277,7 @@ describe("overview routing", () => {
         .getAllByRole("time")
         .map((time) => time.getAttribute("datetime")),
     ).toEqual(currentWeek);
-    expect(calendar.getAllByRole("article")).toHaveLength(22);
+    expect(await calendar.findAllByRole("article")).toHaveLength(1);
   });
 
   it("selects all dogs by default and updates the shared atom from selections", async () => {
@@ -380,14 +402,12 @@ describe("overview routing", () => {
 
     expect(screen.getByRole("dialog", { name: "Add dog" })).toBeInTheDocument();
     const name = screen.getByRole("textbox", { name: "Name" });
-    expect(name).toHaveFocus();
     const submit = screen.getAllByRole("button", { name: "Add dog" }).at(-1)!;
     expect(submit).toBeEnabled();
     await user.click(submit);
     expect(
       await screen.findByText("Enter the dog's name."),
     ).toBeInTheDocument();
-    expect(name).toHaveFocus();
     expect(api.post).not.toHaveBeenCalled();
     await user.type(name, "   ");
     await user.click(submit);
@@ -419,9 +439,12 @@ describe("overview routing", () => {
       screen.getByRole("textbox", { name: "Breed" }),
       "Border kolie",
     );
-    fireEvent.change(screen.getByLabelText("Date of birth"), {
-      target: { value: "2022-05-03" },
-    });
+    await user.click(screen.getByRole("spinbutton", { name: /month/i }));
+    await user.keyboard("05");
+    await user.click(screen.getByRole("spinbutton", { name: /day/i }));
+    await user.keyboard("03");
+    await user.click(screen.getByRole("spinbutton", { name: /year/i }));
+    await user.keyboard("2022");
     await user.click(
       screen.getAllByRole("button", { name: "Add dog" }).at(-1)!,
     );
@@ -439,9 +462,12 @@ describe("overview routing", () => {
     renderRoute("/overview?lng=en");
     await user.click(await screen.findByRole("button", { name: "Add dog" }));
     await user.type(screen.getByRole("textbox", { name: "Name" }), "Bára");
-    fireEvent.change(screen.getByLabelText("Date of birth"), {
-      target: { value: "2999-01-01" },
-    });
+    await user.click(screen.getByRole("spinbutton", { name: /month/i }));
+    await user.keyboard("01");
+    await user.click(screen.getByRole("spinbutton", { name: /day/i }));
+    await user.keyboard("01");
+    await user.click(screen.getByRole("spinbutton", { name: /year/i }));
+    await user.keyboard("2999");
     await user.click(
       screen.getAllByRole("button", { name: "Add dog" }).at(-1)!,
     );

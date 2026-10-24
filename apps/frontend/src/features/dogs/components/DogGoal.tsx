@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { DogGoalAssignment } from "../api/dogProfileQueryOptions";
 import {
   ChevronRight,
@@ -8,16 +7,21 @@ import {
   Flag,
   Plus,
 } from "@gravity-ui/icons";
-import { Button, Chip, Dropdown, Label, Modal, Separator } from "@heroui/react";
+import {
+  Button,
+  buttonVariants,
+  Chip,
+  Dropdown,
+  Label,
+  Separator,
+} from "@heroui/react";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { pluralForm } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
-import type {
-  Exercise,
-  Goal,
-} from "@/features/disciplines/api/disciplinesQueryOptions";
+import type { Goal } from "@/features/disciplines/api/disciplinesQueryOptions";
 
 export type GoalAction =
   | {
@@ -31,6 +35,7 @@ export type GoalAction =
     };
 
 export function DogGoal({
+  dogId,
   goal,
   assignment,
   isPending,
@@ -38,6 +43,7 @@ export function DogGoal({
   onAddExercise,
   onRemove,
 }: {
+  dogId: string;
   goal: Goal;
   assignment?: DogGoalAssignment;
   isPending: boolean;
@@ -46,7 +52,6 @@ export function DogGoal({
   onRemove: () => void;
 }) {
   const { t } = useTranslation();
-  const [exercise, setExercise] = useState<Exercise | null>(null);
   const completed = Boolean(assignment?.completedAt);
   return (
     <>
@@ -208,7 +213,17 @@ export function DogGoal({
                           !selected && "text-muted",
                         )}
                       >
-                        {item.name}
+                        {selected ? (
+                          <Link
+                            to="/dogs/$dogId/exercises/$exerciseId"
+                            params={{ dogId, exerciseId: item.id }}
+                            className="hover:text-accent"
+                          >
+                            {item.name}
+                          </Link>
+                        ) : (
+                          item.name
+                        )}
                       </p>
                       <p className="text-xs leading-5 text-muted">
                         {selected
@@ -217,20 +232,23 @@ export function DogGoal({
                       </p>
                     </div>
                     {selected ? (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        isIconOnly
+                      <Link
+                        to="/dogs/$dogId/exercises/$exerciseId"
+                        params={{ dogId, exerciseId: item.id }}
+                        className={buttonVariants({
+                          size: "sm",
+                          variant: "ghost",
+                          isIconOnly: true,
+                        })}
                         aria-label={t(($) => $.dogProfile.exerciseDetail, {
                           name: item.name,
                         })}
-                        onPress={() => setExercise(item)}
                       >
                         <ChevronRight
                           className="size-4 text-accent"
                           aria-hidden="true"
                         />
-                      </Button>
+                      </Link>
                     ) : (
                       <Button
                         variant="outline"
@@ -255,52 +273,6 @@ export function DogGoal({
           </>
         )}
       </article>
-      <Modal.Backdrop
-        isOpen={Boolean(exercise)}
-        onOpenChange={(open) => {
-          if (!open) setExercise(null);
-        }}
-      >
-        <Modal.Container>
-          <Modal.Dialog>
-            <Modal.CloseTrigger />
-            <Modal.Header>
-              <Modal.Heading>{exercise?.name}</Modal.Heading>
-            </Modal.Header>
-            <Modal.Body className="flex flex-col gap-4">
-              {exercise?.procedure && (
-                <p className="text-sm leading-6 whitespace-pre-wrap">
-                  {exercise.procedure}
-                </p>
-              )}
-              <p className="text-sm text-muted">
-                {t(($) => $.dogProfile.noTrainingHistory)}
-              </p>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button
-                variant="danger-soft"
-                isDisabled={isPending}
-                onPress={() => {
-                  if (exercise) {
-                    onAction({
-                      type: "removeExercise",
-                      goalId: goal.id,
-                      exerciseId: exercise.id,
-                    });
-                  }
-                  setExercise(null);
-                }}
-              >
-                {t(($) => $.dogProfile.removeExercise)}
-              </Button>
-              <Button variant="secondary" onPress={() => setExercise(null)}>
-                {t(($) => $.dogProfile.close)}
-              </Button>
-            </Modal.Footer>
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal.Backdrop>
     </>
   );
 }
