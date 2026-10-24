@@ -36,16 +36,22 @@ import { ScheduleFields } from "./ScheduleFields";
 export function ScheduleExerciseDialog({
   date,
   onClose,
+  initialDogId,
+  initialExerciseId,
 }: {
   date: Date;
   onClose: () => void;
+  initialDogId?: string;
+  initialExerciseId?: string;
 }) {
   const { t } = useTranslation();
   const { user } = useSession();
   const queryClient = useQueryClient();
-  const [step, setStep] = useState(1);
-  const [dogId, setDogId] = useState("");
-  const [selected, setSelected] = useState<string[]>([]);
+  const [step, setStep] = useState(initialDogId ? 2 : 1);
+  const [dogId, setDogId] = useState(initialDogId ?? "");
+  const [selected, setSelected] = useState<string[]>(
+    initialExerciseId ? [initialExerciseId] : [],
+  );
   const [selectionError, setSelectionError] = useState(false);
   const dogs = useQuery(dogsQueryOptions(user?.id));
   const exercises = useQuery(planningExercisesQueryOptions(user?.id, dogId));

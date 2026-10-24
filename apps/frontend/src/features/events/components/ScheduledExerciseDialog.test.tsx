@@ -13,6 +13,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ScheduledExerciseDialog } from "./ScheduledExerciseDialog";
 
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    params,
+    children,
+    className,
+  }: {
+    params: { dogId: string; exerciseId: string };
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <a
+      href={`/dogs/${params.dogId}/exercises/${params.exerciseId}`}
+      className={className}
+    >
+      {children}
+    </a>
+  ),
+}));
+
 const state = vi.hoisted(() => ({
   patch: vi.fn(async () => ({})),
   post: vi.fn<(path: string, options?: unknown) => Promise<unknown>>(
@@ -142,9 +161,9 @@ describe("scheduled exercise dialog", () => {
     });
     expect(screen.getByLabelText("Note")).toHaveValue("Previous note");
     expect(screen.getByRole("button", { name: "Save changes" })).toBeEnabled();
-    await user.click(screen.getByRole("button", { name: "Exercise details" }));
-    expect(screen.getByText("Call once and reward.")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Back" }));
+    expect(
+      screen.getByRole("link", { name: "Exercise details" }),
+    ).toHaveAttribute("href", "/dogs/dog-a/exercises/e1");
     await user.click(screen.getByRole("button", { name: "Training actions" }));
     expect(
       await screen.findByRole("menuitem", { name: "Return to planned" }),

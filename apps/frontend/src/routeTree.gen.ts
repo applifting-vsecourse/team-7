@@ -19,6 +19,7 @@ import { Route as DisciplinesIndexRouteImport } from './routes/disciplines/index
 import { Route as DisciplinesDisciplineIdRouteImport } from './routes/disciplines/$disciplineId'
 import { Route as DogsDogIdRouteImport } from './routes/dogs/$dogId'
 import { Route as DogsDogIdDisciplinesDisciplineIdRouteImport } from './routes/dogs/$dogId_/disciplines/$disciplineId'
+import { Route as DogsDogIdExercisesExerciseIdRouteImport } from './routes/dogs/$dogId_/exercises/$exerciseId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -71,6 +72,12 @@ const DogsDogIdDisciplinesDisciplineIdRoute =
     path: '/dogs/$dogId/disciplines/$disciplineId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DogsDogIdExercisesExerciseIdRoute =
+  DogsDogIdExercisesExerciseIdRouteImport.update({
+    id: '/dogs/$dogId_/exercises/$exerciseId',
+    path: '/dogs/$dogId/exercises/$exerciseId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/dogs/$dogId': typeof DogsDogIdRoute
   '/disciplines/': typeof DisciplinesIndexRoute
   '/dogs/$dogId/disciplines/$disciplineId': typeof DogsDogIdDisciplinesDisciplineIdRoute
+  '/dogs/$dogId/exercises/$exerciseId': typeof DogsDogIdExercisesExerciseIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -95,6 +103,7 @@ export interface FileRoutesByTo {
   '/dogs/$dogId': typeof DogsDogIdRoute
   '/disciplines': typeof DisciplinesIndexRoute
   '/dogs/$dogId/disciplines/$disciplineId': typeof DogsDogIdDisciplinesDisciplineIdRoute
+  '/dogs/$dogId/exercises/$exerciseId': typeof DogsDogIdExercisesExerciseIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -108,6 +117,7 @@ export interface FileRoutesById {
   '/dogs/$dogId': typeof DogsDogIdRoute
   '/disciplines/': typeof DisciplinesIndexRoute
   '/dogs/$dogId_/disciplines/$disciplineId': typeof DogsDogIdDisciplinesDisciplineIdRoute
+  '/dogs/$dogId_/exercises/$exerciseId': typeof DogsDogIdExercisesExerciseIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/dogs/$dogId'
     | '/disciplines/'
     | '/dogs/$dogId/disciplines/$disciplineId'
+    | '/dogs/$dogId/exercises/$exerciseId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -134,6 +145,7 @@ export interface FileRouteTypes {
     | '/dogs/$dogId'
     | '/disciplines'
     | '/dogs/$dogId/disciplines/$disciplineId'
+    | '/dogs/$dogId/exercises/$exerciseId'
   id:
     | '__root__'
     | '/'
@@ -146,6 +158,7 @@ export interface FileRouteTypes {
     | '/dogs/$dogId'
     | '/disciplines/'
     | '/dogs/$dogId_/disciplines/$disciplineId'
+    | '/dogs/$dogId_/exercises/$exerciseId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -159,6 +172,7 @@ export interface RootRouteChildren {
   DogsDogIdRoute: typeof DogsDogIdRoute
   DisciplinesIndexRoute: typeof DisciplinesIndexRoute
   DogsDogIdDisciplinesDisciplineIdRoute: typeof DogsDogIdDisciplinesDisciplineIdRoute
+  DogsDogIdExercisesExerciseIdRoute: typeof DogsDogIdExercisesExerciseIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -233,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DogsDogIdDisciplinesDisciplineIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dogs/$dogId_/exercises/$exerciseId': {
+      id: '/dogs/$dogId_/exercises/$exerciseId'
+      path: '/dogs/$dogId/exercises/$exerciseId'
+      fullPath: '/dogs/$dogId/exercises/$exerciseId'
+      preLoaderRoute: typeof DogsDogIdExercisesExerciseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -247,6 +268,7 @@ const rootRouteChildren: RootRouteChildren = {
   DogsDogIdRoute: DogsDogIdRoute,
   DisciplinesIndexRoute: DisciplinesIndexRoute,
   DogsDogIdDisciplinesDisciplineIdRoute: DogsDogIdDisciplinesDisciplineIdRoute,
+  DogsDogIdExercisesExerciseIdRoute: DogsDogIdExercisesExerciseIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

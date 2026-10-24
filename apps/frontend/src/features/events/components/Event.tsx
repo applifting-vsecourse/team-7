@@ -1,15 +1,23 @@
 import { useId, useState } from "react";
 import type { ScheduledEvent } from "../api/eventsQueryOptions";
-import { CircleCheck, CircleExclamation, Clock } from "@gravity-ui/icons";
+import {
+  CircleCheck,
+  CircleExclamation,
+  Clock,
+  Comment,
+} from "@gravity-ui/icons";
 import { Button, Separator } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
+import { RatingStars } from "./RatingStars";
 import { ScheduledExerciseDialog } from "./ScheduledExerciseDialog";
+import { TrainingHistoryDialog } from "./TrainingHistoryDialog";
 
 export type EventProps = {
   scheduledEvent?: ScheduledEvent;
+  historyOnly?: boolean;
   dogName: string;
   discipline: string;
   exercise: string;
@@ -37,6 +45,7 @@ const accents = {
 
 export function Event({
   scheduledEvent,
+  historyOnly = false,
   dogName,
   discipline,
   exercise,
@@ -57,7 +66,8 @@ export function Event({
   return (
     <>
       <article
-        aria-labelledby={titleId}
+        aria-labelledby={historyOnly ? undefined : titleId}
+        aria-label={historyOnly ? exercise : undefined}
         className={cn(
           "relative flex w-full max-w-full min-w-0 cursor-pointer flex-col overflow-clip rounded-2xl py-2 pr-3 pl-4 text-foreground shadow-card transition duration-150 ease-out hover:shadow-card-hover motion-safe:hover:-translate-y-0.5 md:self-stretch",
           backgrounds[state],
@@ -67,7 +77,7 @@ export function Event({
         {scheduledEvent && (
           <Button
             variant="ghost"
-            className="absolute inset-0 z-10 h-full w-full"
+            className="absolute inset-0 z-10 h-full w-full bg-transparent"
             aria-label={t(($) => $.training.open, { name: exercise })}
             onPress={() => setIsOpen(true)}
           />
@@ -126,31 +136,54 @@ export function Event({
               : t(($) => $.events.unfinished)}
           </p>
         )}
-        <div className="flex h-3 items-center">
-          <Separator variant="secondary" />
-        </div>
-        <p className="text-xs leading-5 font-medium wrap-break-word text-muted">
-          {dogName}
-        </p>
-        <p className="text-xs leading-5 wrap-break-word text-muted">
-          {discipline}
-        </p>
-        <Heading
-          id={titleId}
-          className={cn(
-            "text-sm leading-6 font-medium tracking-tight wrap-break-word",
-            isCompleted && "text-muted",
-          )}
-        >
-          {exercise}
-        </Heading>
+        {historyOnly ? (
+          <>
+            {scheduledEvent?.rating != null && (
+              <RatingStars rating={scheduledEvent.rating} small />
+            )}
+            {scheduledEvent?.note && (
+              <p className="flex items-center gap-1 text-xs text-muted">
+                <Comment className="size-3" aria-hidden="true" />
+                {t(($) => $.training.note)}
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="flex h-3 items-center">
+              <Separator variant="secondary" />
+            </div>
+            <p className="text-xs leading-5 font-medium wrap-break-word text-muted">
+              {dogName}
+            </p>
+            <p className="text-xs leading-5 wrap-break-word text-muted">
+              {discipline}
+            </p>
+            <Heading
+              id={titleId}
+              className={cn(
+                "text-sm leading-6 font-medium tracking-tight wrap-break-word",
+                isCompleted && "text-muted",
+              )}
+            >
+              {exercise}
+            </Heading>
+          </>
+        )}
       </article>
-      {scheduledEvent && isOpen && (
-        <ScheduledExerciseDialog
-          event={scheduledEvent}
-          onClose={() => setIsOpen(false)}
-        />
-      )}
+      {scheduledEvent &&
+        isOpen &&
+        (historyOnly ? (
+          <TrainingHistoryDialog
+            event={scheduledEvent}
+            onClose={() => setIsOpen(false)}
+          />
+        ) : (
+          <ScheduledExerciseDialog
+            event={scheduledEvent}
+            onClose={() => setIsOpen(false)}
+          />
+        ))}
     </>
   );
 }

@@ -121,6 +121,7 @@ export function DogDisciplineView({
   const goalCard = (goal: (typeof discipline.goals)[number]) => (
     <DogGoal
       key={goal.id}
+      dogId={dog.id}
       goal={goal}
       assignment={assignments.find((item) => item.goalId === goal.id)}
       isPending={mutate.isPending}

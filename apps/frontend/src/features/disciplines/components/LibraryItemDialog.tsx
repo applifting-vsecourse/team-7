@@ -139,7 +139,6 @@ function LibraryItemForm({
               {/* oxlint-disable jsx-a11y/no-autofocus */}
               <Input
                 ref={ref}
-                autoFocus
                 autoComplete="off"
                 placeholder={labels.namePlaceholder}
               />
