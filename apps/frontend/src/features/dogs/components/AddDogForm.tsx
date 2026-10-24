@@ -54,16 +54,29 @@ export function AddDogForm({
   onSubmit,
   onCancel,
   isPending,
+  defaultValues,
+  submitLabel,
+  errorLabel,
+  showPhoto = true,
 }: {
   onSubmit: (values: AddDogValues) => Promise<void>;
   onCancel: () => void;
   isPending: boolean;
+  defaultValues?: AddDogValues;
+  submitLabel?: string;
+  errorLabel?: string;
+  showPhoto?: boolean;
 }) {
   const { t } = useTranslation();
   const [maxBirthDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const form = useForm<AddDogValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", breed: "", birthDate: "", photo: null },
+    defaultValues: defaultValues ?? {
+      name: "",
+      breed: "",
+      birthDate: "",
+      photo: null,
+    },
   });
   const isSubmitting = isPending || form.formState.isSubmitting;
   const errorText = (message: string | undefined) =>
@@ -77,7 +90,9 @@ export function AddDogForm({
         try {
           await onSubmit(values);
         } catch {
-          form.setError("root", { message: t(($) => $.dogs.addError) });
+          form.setError("root", {
+            message: errorLabel ?? t(($) => $.dogs.addError),
+          });
         }
       })}
     >
@@ -154,28 +169,32 @@ export function AddDogForm({
               )}
             />
           </div>
-          <Separator orientation="vertical" className="hidden md:block" />
-          <div className="md:w-70 md:shrink-0">
-            <Controller
-              control={form.control}
-              name="photo"
-              render={({ field, fieldState }) => (
-                <DogPhotoPicker
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  inputRef={field.ref}
-                  name={field.name}
-                  isDisabled={isSubmitting}
-                  errorMessage={errorText(fieldState.error?.message)}
-                />
-              )}
-            />
-          </div>
+          {showPhoto && (
+            <Separator orientation="vertical" className="hidden md:block" />
+          )}
+          {showPhoto && (
+            <div className="md:w-70 md:shrink-0">
+              <Controller
+                control={form.control}
+                name="photo"
+                render={({ field, fieldState }) => (
+                  <DogPhotoPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    inputRef={field.ref}
+                    name={field.name}
+                    isDisabled={isSubmitting}
+                    errorMessage={errorText(fieldState.error?.message)}
+                  />
+                )}
+              />
+            </div>
+          )}
         </div>
         {form.formState.errors.root ? (
           <p role="alert" className="text-sm text-danger">
-            {t(($) => $.dogs.addError)}
+            {errorLabel ?? t(($) => $.dogs.addError)}
           </p>
         ) : null}
       </Modal.Body>
@@ -194,7 +213,7 @@ export function AddDogForm({
           isPending={isSubmitting}
           isDisabled={isSubmitting}
         >
-          {t(($) => $.navigation.addDog)}
+          {submitLabel ?? t(($) => $.navigation.addDog)}
         </Button>
       </Modal.Footer>
     </Form>

@@ -31,6 +31,7 @@ describe("dog discipline selections API", () => {
     dog: { findFirst: vi.fn() },
     discipline: { findFirst: vi.fn() },
     goal: { findMany: vi.fn() },
+    dogDiscipline: { upsert: vi.fn(), deleteMany: vi.fn() },
     dogGoal: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
@@ -90,6 +91,43 @@ describe("dog discipline selections API", () => {
     ]);
     prisma.dogGoal.findFirst.mockResolvedValue(assignment);
     prisma.dogGoal.findMany.mockResolvedValue([assignment]);
+  });
+
+  it("keeps an empty discipline assigned and scopes it to the authenticated owner", async () => {
+    prisma.dogDiscipline.upsert.mockResolvedValue({
+      dogId: "dog-a",
+      disciplineId: "d1",
+    });
+    const response = await request("POST", "");
+    expect(response.status).toBe(201);
+    expect(prisma.dog.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: "dog-a", userId: "user-a" } }),
+    );
+    expect(prisma.discipline.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: "d1", userId: "user-a" } }),
+    );
+    expect(prisma.dogDiscipline.upsert).toHaveBeenCalledWith({
+      where: { dogId_disciplineId: { dogId: "dog-a", disciplineId: "d1" } },
+      create: { dogId: "dog-a", disciplineId: "d1" },
+      update: {},
+    });
+  });
+
+  it("unassigns a discipline and its selections without deleting library content", async () => {
+    const response = await request("DELETE", "");
+    expect(response.status).toBe(204);
+    expect(prisma.dogGoal.deleteMany).toHaveBeenCalledWith({
+      where: { dogId: "dog-a", goal: { disciplineId: "d1" } },
+    });
+    expect(prisma.dogDiscipline.deleteMany).toHaveBeenCalledWith({
+      where: { dogId: "dog-a", disciplineId: "d1" },
+    });
+  });
+
+  it("does not assign a discipline owned by someone else", async () => {
+    prisma.discipline.findFirst.mockResolvedValueOnce(null);
+    expect((await request("POST", "")).status).toBe(404);
+    expect(prisma.dogDiscipline.upsert).not.toHaveBeenCalled();
   });
 
   afterAll(async () => {

@@ -39,7 +39,23 @@ const state = vi.hoisted(() => ({
 
 vi.mock("@/lib/api-client", () => ({
   api: {
-    get: vi.fn(() => ({ json: state.getDogs })),
+    get: vi.fn((path: string) => ({
+      json: async () => {
+        const dogs = await state.getDogs();
+        if (path === "dogs") return dogs;
+        const dog = dogs.find((item) => path === `dogs/${item.id}`);
+        return dog
+          ? {
+              breed: null,
+              birthDate: null,
+              avatarVersion: null,
+              archivedAt: null,
+              disciplines: [],
+              ...dog,
+            }
+          : undefined;
+      },
+    })),
     post: vi.fn(() => ({ json: state.addDog })),
     put: vi.fn(() => ({ json: state.savePhoto })),
     delete: vi.fn(() => ({ json: state.removePhoto })),

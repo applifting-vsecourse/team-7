@@ -23,10 +23,15 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
+import {
+  ExerciseInputDto,
+  GoalInputDto,
+} from "@/modules/disciplines/controllers/dto/library-input.dto";
 import { DogSelectionService } from "@/modules/dogs/services/dog-selection.service";
 import { User } from "@/shared/auth/decorators/user.decorator";
 import { Identity } from "@/shared/auth/domain/identity";
 import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
+import { optionalText } from "@/shared/utils/optional-text";
 import {
   DogDisciplineSelectionDto,
   DogExerciseInputDto,
@@ -63,6 +68,92 @@ type SelectionParams = {
 )
 export class DogSelectionController {
   constructor(private readonly selections: DogSelectionService) {}
+
+  @Post()
+  @ApiOperation({ summary: "Assign a discipline, including one without goals" })
+  assignDiscipline(@User() user: Identity, @Param() params: SelectionParams) {
+    const scope = { ...params, userId: user.id };
+    return this.selections.run(scope, (tx) =>
+      tx.dogDiscipline.upsert({
+        where: {
+          dogId_disciplineId: {
+            dogId: params.dogId,
+            disciplineId: params.disciplineId,
+          },
+        },
+        create: { dogId: params.dogId, disciplineId: params.disciplineId },
+        update: {},
+      }),
+    );
+  }
+
+  @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: "Unassign a discipline and its goals, keeping the library",
+  })
+  removeDiscipline(@User() user: Identity, @Param() params: SelectionParams) {
+    const scope = { ...params, userId: user.id };
+    return this.selections.run(scope, async (tx) => {
+      await tx.dogGoal.deleteMany({
+        where: {
+          dogId: params.dogId,
+          goal: { disciplineId: params.disciplineId },
+        },
+      });
+      await tx.dogDiscipline.deleteMany({
+        where: { dogId: params.dogId, disciplineId: params.disciplineId },
+      });
+    });
+  }
+
+  @Post("library-goals")
+  @ApiOperation({ summary: "Create a library goal and select it for this dog" })
+  createGoal(
+    @User() user: Identity,
+    @Param() params: SelectionParams,
+    @Body() body: GoalInputDto,
+  ) {
+    const scope = { ...params, userId: user.id };
+    return this.selections.run(scope, async (tx) => {
+      const goal = await tx.goal.create({
+        data: {
+          disciplineId: params.disciplineId,
+          name: body.name.trim(),
+          criterion: optionalText(body.criterion),
+        },
+      });
+      await this.selections.replaceGoal(tx, scope, {
+        goalId: goal.id,
+        exerciseIds: [],
+      });
+      return goal;
+    });
+  }
+
+  @Post("goals/:goalId/library-exercises")
+  @ApiOperation({
+    summary: "Create a library exercise and select it for this dog",
+  })
+  createExercise(
+    @User() user: Identity,
+    @Param() params: SelectionParams,
+    @Body() body: ExerciseInputDto,
+  ) {
+    const scope = { ...params, userId: user.id };
+    return this.selections.run(scope, async (tx) => {
+      await this.selections.getGoal(tx, scope, params.goalId);
+      const exercise = await tx.exercise.create({
+        data: {
+          goalId: params.goalId,
+          name: body.name.trim(),
+          procedure: optionalText(body.procedure),
+        },
+      });
+      await this.selections.addExercise(tx, scope, params.goalId, exercise.id);
+      return exercise;
+    });
+  }
 
   @Get("selection")
   @ApiOperation({

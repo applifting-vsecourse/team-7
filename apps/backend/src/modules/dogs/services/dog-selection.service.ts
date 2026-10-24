@@ -127,6 +127,13 @@ export class DogSelectionService {
     await this.validateGoals(tx, scope, [goal]);
     const { dogId } = scope;
     const { goalId, exerciseIds } = goal;
+    await tx.dogDiscipline.upsert({
+      where: {
+        dogId_disciplineId: { dogId, disciplineId: scope.disciplineId },
+      },
+      create: { dogId, disciplineId: scope.disciplineId },
+      update: {},
+    });
     // An unchanged assignment retains its completion state and creation date.
     await tx.dogGoal.upsert({
       where: { dogId_goalId: { dogId, goalId } },

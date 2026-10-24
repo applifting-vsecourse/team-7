@@ -18,6 +18,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as DisciplinesIndexRouteImport } from './routes/disciplines/index'
 import { Route as DisciplinesDisciplineIdRouteImport } from './routes/disciplines/$disciplineId'
 import { Route as DogsDogIdRouteImport } from './routes/dogs/$dogId'
+import { Route as DogsDogIdDisciplinesDisciplineIdRouteImport } from './routes/dogs/$dogId_/disciplines/$disciplineId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,12 @@ const DogsDogIdRoute = DogsDogIdRouteImport.update({
   path: '/dogs/$dogId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DogsDogIdDisciplinesDisciplineIdRoute =
+  DogsDogIdDisciplinesDisciplineIdRouteImport.update({
+    id: '/dogs/$dogId_/disciplines/$disciplineId',
+    path: '/dogs/$dogId/disciplines/$disciplineId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
   '/dogs/$dogId': typeof DogsDogIdRoute
   '/disciplines/': typeof DisciplinesIndexRoute
+  '/dogs/$dogId/disciplines/$disciplineId': typeof DogsDogIdDisciplinesDisciplineIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +94,7 @@ export interface FileRoutesByTo {
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
   '/dogs/$dogId': typeof DogsDogIdRoute
   '/disciplines': typeof DisciplinesIndexRoute
+  '/dogs/$dogId/disciplines/$disciplineId': typeof DogsDogIdDisciplinesDisciplineIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +107,7 @@ export interface FileRoutesById {
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
   '/dogs/$dogId': typeof DogsDogIdRoute
   '/disciplines/': typeof DisciplinesIndexRoute
+  '/dogs/$dogId_/disciplines/$disciplineId': typeof DogsDogIdDisciplinesDisciplineIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/disciplines/$disciplineId'
     | '/dogs/$dogId'
     | '/disciplines/'
+    | '/dogs/$dogId/disciplines/$disciplineId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +133,7 @@ export interface FileRouteTypes {
     | '/disciplines/$disciplineId'
     | '/dogs/$dogId'
     | '/disciplines'
+    | '/dogs/$dogId/disciplines/$disciplineId'
   id:
     | '__root__'
     | '/'
@@ -133,6 +145,7 @@ export interface FileRouteTypes {
     | '/disciplines/$disciplineId'
     | '/dogs/$dogId'
     | '/disciplines/'
+    | '/dogs/$dogId_/disciplines/$disciplineId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +158,7 @@ export interface RootRouteChildren {
   DisciplinesDisciplineIdRoute: typeof DisciplinesDisciplineIdRoute
   DogsDogIdRoute: typeof DogsDogIdRoute
   DisciplinesIndexRoute: typeof DisciplinesIndexRoute
+  DogsDogIdDisciplinesDisciplineIdRoute: typeof DogsDogIdDisciplinesDisciplineIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -212,6 +226,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DogsDogIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dogs/$dogId_/disciplines/$disciplineId': {
+      id: '/dogs/$dogId_/disciplines/$disciplineId'
+      path: '/dogs/$dogId/disciplines/$disciplineId'
+      fullPath: '/dogs/$dogId/disciplines/$disciplineId'
+      preLoaderRoute: typeof DogsDogIdDisciplinesDisciplineIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,6 +246,7 @@ const rootRouteChildren: RootRouteChildren = {
   DisciplinesDisciplineIdRoute: DisciplinesDisciplineIdRoute,
   DogsDogIdRoute: DogsDogIdRoute,
   DisciplinesIndexRoute: DisciplinesIndexRoute,
+  DogsDogIdDisciplinesDisciplineIdRoute: DogsDogIdDisciplinesDisciplineIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

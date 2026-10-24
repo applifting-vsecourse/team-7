@@ -64,5 +64,5 @@ export const disciplineQueryOptions = (
       api
         .get(`disciplines/${encodeURIComponent(disciplineId)}`, { signal })
         .json<DisciplineDetail>(),
-    enabled: Boolean(userId),
+    enabled: Boolean(userId && disciplineId),
   });

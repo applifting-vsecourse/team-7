@@ -1,5 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
 import Layout from "@/components/Layout";
@@ -8,8 +8,9 @@ import { Sidebar } from "@/components/Sidebar";
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
 import { useSession } from "@/features/auth/hooks/useSession";
 import { encodeRedirectUri } from "@/features/auth/lib/redirect";
-import { EditDogPhotoDialog } from "@/features/dogs/components/EditDogPhotoDialog";
-import { useDogs } from "@/features/dogs/hooks/useDogs";
+import { dogProfileQueryOptions } from "@/features/dogs/api/dogProfileQueryOptions";
+import { DogProfileView } from "@/features/dogs/components/DogProfileView";
+import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 
 export const Route = createFileRoute("/dogs/$dogId")({
   beforeLoad: async ({ context, location }) => {
@@ -26,48 +27,18 @@ export const Route = createFileRoute("/dogs/$dogId")({
   component: DogPage,
 });
 
-// Placeholder until the dog profile is designed.
 function DogPage() {
-  const { t } = useTranslation();
   const { dogId } = Route.useParams();
   const { user } = useSession();
-  const { data: dogs, isPending, isError } = useDogs(user?.id);
-  const dog = dogs?.find((item) => item.id === dogId);
-
+  const query = useQuery(dogProfileQueryOptions(user?.id, dogId));
   return (
-    <Layout title={dog?.name} sidebar={<Sidebar />}>
+    <Layout title={query.data?.name} sidebar={<Sidebar />}>
       <section
-        aria-labelledby="dog-heading"
-        className="flex min-w-0 flex-1 flex-col gap-8 rounded-3xl bg-surface px-5 pt-4 pb-5 md:px-6 md:pt-5 md:pb-6"
+        aria-labelledby={query.data ? "dog-heading" : undefined}
+        className="flex min-w-0 flex-1 flex-col gap-12 rounded-3xl bg-surface px-5 pt-4 pb-5 md:px-6 md:pt-5 md:pb-6"
       >
-        {isPending ? (
-          <p role="status" className="text-sm text-muted">
-            {t(($) => $.dogs.pageLoading)}
-          </p>
-        ) : isError ? (
-          <p role="alert" className="text-sm text-danger">
-            {t(($) => $.dogs.loadError)}
-          </p>
-        ) : !dog ? (
-          <p role="alert" className="text-sm text-danger">
-            {t(($) => $.dogs.notFound)}
-          </p>
-        ) : (
-          <>
-            <div className="flex items-center gap-4">
-              <EditDogPhotoDialog dog={dog} avatarClassName="size-16" />
-              <h1
-                id="dog-heading"
-                className="min-w-0 text-3xl leading-9 font-semibold tracking-tight wrap-break-word"
-              >
-                {dog.name}
-              </h1>
-            </div>
-            <p className="text-base leading-7 text-muted">
-              {t(($) => $.dogs.pagePlaceholder)}
-            </p>
-          </>
-        )}
+        <QueryFeedback query={query} />
+        {query.data && <DogProfileView key={dogId} dog={query.data} />}
       </section>
     </Layout>
   );
