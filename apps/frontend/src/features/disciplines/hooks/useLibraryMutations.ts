@@ -93,7 +93,11 @@ export function useSaveExercise() {
 
 export type AssignedGoal = { goalId: string; exerciseIds: string[] };
 
-/** Gives a dog the picked goals and exercises of a discipline. */
+/**
+ * Gives a dog the picked goals and exercises of a discipline. The endpoint
+ * replaces the dog's whole selection, so it's only for dogs that don't train
+ * the discipline yet.
+ */
 export function useAssignDiscipline() {
   return useLibraryMutation(
     ({
@@ -105,8 +109,8 @@ export function useAssignDiscipline() {
       dogId: string;
       goals: AssignedGoal[];
     }) =>
-      api.post(path("disciplines", disciplineId, "dogs"), {
-        json: { dogId, goals },
+      api.put(path("dogs", dogId, "disciplines", disciplineId, "selection"), {
+        json: { goals },
       }),
   );
 }

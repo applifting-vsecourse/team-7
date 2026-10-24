@@ -23,6 +23,7 @@ import { routeTree } from "@/routeTree.gen";
 const state = vi.hoisted(() => ({
   responses: new Map<string, () => unknown>(),
   post: vi.fn<(path: string, options: unknown) => unknown>(),
+  put: vi.fn<(path: string, options: unknown) => unknown>(),
   delete: vi.fn<(path: string) => unknown>(),
 }));
 
@@ -42,6 +43,9 @@ vi.mock("@/lib/api-client", async () => {
       post: vi.fn((path: string, options: unknown) => ({
         json: async () => state.post(path, options),
       })),
+      put: vi.fn(async (path: string, options: unknown) =>
+        state.put(path, options),
+      ),
       patch: vi.fn(() => ({ json: async () => ({}) })),
       delete: vi.fn(async (path: string) => state.delete(path)),
     },
@@ -320,7 +324,7 @@ describe("disciplines", () => {
       { id: "dog-1", name: "Terminátor" },
       { id: "dog-3", name: "Degustátor", breed: "Border kolie" },
     ]);
-    state.post.mockResolvedValue(undefined);
+    state.put.mockResolvedValue(undefined);
     const router = renderRoute("/disciplines/d1?lng=en");
 
     await user.click(
@@ -363,12 +367,10 @@ describe("disciplines", () => {
     );
 
     await waitFor(() =>
-      expect(state.post).toHaveBeenCalledWith("disciplines/d1/dogs", {
-        json: {
-          dogId: "dog-3",
-          goals: [{ goalId: "g1", exerciseIds: ["e1"] }],
-        },
-      }),
+      expect(state.put).toHaveBeenCalledWith(
+        "dogs/dog-3/disciplines/d1/selection",
+        { json: { goals: [{ goalId: "g1", exerciseIds: ["e1"] }] } },
+      ),
     );
     expect(
       await screen.findByText("Discipline Poslušnost assigned to Degustátor"),
@@ -404,7 +406,7 @@ describe("disciplines", () => {
     expect(
       within(dialog).getByText("Choose at least one goal."),
     ).toBeInTheDocument();
-    expect(state.post).not.toHaveBeenCalled();
+    expect(state.put).not.toHaveBeenCalled();
   });
 
   it("names the dogs that have the goal when adding an exercise", async () => {

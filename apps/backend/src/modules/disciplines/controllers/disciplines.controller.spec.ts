@@ -167,14 +167,14 @@ describe("discipline library API", () => {
           exercises: [
             { id: "e1", name: "Z 5 m", procedure: null, _count: { dogs: 1 } },
           ],
-          dogs: [{ dog, completedAt: new Date() }],
+          dogs: [{ dog, completedAt: new Date(), _count: { exercises: 1 } }],
         },
         {
           id: "g2",
           name: "Chůze u nohy",
           criterion: null,
           exercises: [],
-          dogs: [{ dog, completedAt: null }],
+          dogs: [{ dog, completedAt: null, _count: { exercises: 0 } }],
         },
       ],
     });
@@ -183,7 +183,7 @@ describe("discipline library API", () => {
     const detail = await response.json();
 
     expect(detail.dogs).toEqual([
-      { ...dog, goalCount: 2, completedGoalCount: 1 },
+      { ...dog, goalCount: 2, completedGoalCount: 1, exerciseCount: 1 },
     ]);
     expect(detail.goals[0].exercises).toEqual([
       { id: "e1", name: "Z 5 m", procedure: null, dogCount: 1 },

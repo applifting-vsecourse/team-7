@@ -49,32 +49,48 @@ export function DisciplineDogs({
                 <span className="text-sm leading-6 wrap-break-word">
                   {dog.name}
                 </span>
-                <span className="text-xs leading-5 text-muted">
-                  {t(($) => $.disciplines.dogProgress, {
-                    goals: t(
-                      ($) => $.disciplines.dogGoalsOf[pluralForm(goalTotal)],
-                      {
-                        count: dog.goalCount,
-                        total: goalTotal,
-                        from: czechFrom(goalTotal),
-                      },
-                    ),
-                    exercises: t(
-                      ($) =>
-                        $.disciplines.dogExercisesOf[pluralForm(exerciseTotal)],
-                      {
-                        count: dog.exerciseCount,
-                        total: exerciseTotal,
-                        from: czechFrom(exerciseTotal),
-                      },
-                    ),
-                  })}
-                </span>
+                <DogProgress
+                  dog={dog}
+                  goalTotal={goalTotal}
+                  exerciseTotal={exerciseTotal}
+                />
               </div>
             </li>
           ))}
         </ul>
       )}
     </section>
+  );
+}
+
+function DogProgress({
+  dog,
+  goalTotal,
+  exerciseTotal,
+}: {
+  dog: DisciplineDog;
+  goalTotal: number;
+  exerciseTotal: number;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <span className="text-xs leading-5 text-muted">
+      {t(($) => $.disciplines.dogProgress, {
+        goals: t(($) => $.disciplines.dogGoalsOf[pluralForm(goalTotal)], {
+          count: dog.goalCount,
+          total: goalTotal,
+          from: czechFrom(goalTotal),
+        }),
+        exercises: t(
+          ($) => $.disciplines.dogExercisesOf[pluralForm(exerciseTotal)],
+          {
+            count: dog.exerciseCount,
+            total: exerciseTotal,
+            from: czechFrom(exerciseTotal),
+          },
+        ),
+      })}
+    </span>
   );
 }
