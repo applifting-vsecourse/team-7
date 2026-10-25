@@ -142,4 +142,42 @@ describe("overview", () => {
       satisfaction: 4,
     });
   });
+  it("bounds history to 42 local days and retains the first chart week across time zones", async () => {
+    const boundary = record("2026-09-20T22:00:00Z", "2026-09-20T22:00:00Z", 5);
+    const outside = record("2026-09-20T21:59:59Z", "2026-09-20T21:59:59Z", 1);
+    prisma.scheduledExercise.findMany
+      .mockResolvedValueOnce([boundary, outside] as never)
+      .mockResolvedValueOnce([]);
+    const result = await service.get("owner", { timeZone: "Europe/Prague" });
+    expect(result.stats.satisfactionHistory).toEqual([
+      { weekStart: "2026-09-21", rating: 5 },
+    ]);
+    const range = prisma.scheduledExercise.findMany.mock.calls[0]![0]?.where
+      ?.OR as {
+      completedAt: { gte: Date; lte: Date } | null;
+      startsAt?: { gte: Date; lt: Date };
+    }[];
+    expect(range[0]!.completedAt!.gte).toEqual(
+      new Date("2026-09-14T00:00:00Z"),
+    );
+    expect(range[0]!.completedAt!.lte).toEqual(new Date());
+    expect(range[1]!.startsAt).toEqual({
+      gte: new Date("2026-10-25T00:00:00Z"),
+      lt: new Date("2026-11-03T00:00:00Z"),
+    });
+  });
+
+  it("does not load or count streak history beyond the statistics window", async () => {
+    const today = new Date("2026-10-26T12:00:00Z");
+    vi.setSystemTime(today);
+    const records = Array.from({ length: 60 }, (_, index) => {
+      const day = new Date(today.getTime() - index * 86400000).toISOString();
+      return record(day, day, 4);
+    });
+    prisma.scheduledExercise.findMany
+      .mockResolvedValueOnce(records as never)
+      .mockResolvedValueOnce([]);
+    const result = await service.get("owner", { timeZone: "Europe/Prague" });
+    expect(result.stats.streakDays).toBe(42);
+  });
 });

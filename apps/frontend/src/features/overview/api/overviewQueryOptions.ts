@@ -29,6 +29,13 @@ export const overviewSchema = z.object({
   events: z.array(eventSchema),
 });
 
+export function nextOverviewRefresh() {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  return midnight.getTime() - now.getTime() + 1000;
+}
+
 export const overviewQueryOptions = (
   userId: string | undefined,
   dogIds: string[] | null,
@@ -51,6 +58,6 @@ export const overviewQueryOptions = (
           .json(),
       ),
     // Keep the day groups and current week correct when the page stays open overnight.
-    refetchInterval: 60_000,
+    refetchInterval: nextOverviewRefresh,
   });
 };

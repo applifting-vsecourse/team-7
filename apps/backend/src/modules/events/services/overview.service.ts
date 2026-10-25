@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@/core/prisma/prisma.service";
+import { dayMs } from "./overview.const";
 
-const dayMs = 86400000;
 const shiftDay = (day: string, offset: number) =>
   new Date(Date.parse(day) + offset * dayMs).toISOString().slice(0, 10);
 
@@ -26,6 +26,11 @@ export class OverviewService {
     const weekday = new Date(today).getUTCDay();
     const weekStart = shiftDay(today, -((weekday + 6) % 7));
     const weekEnd = shiftDay(weekStart, 6);
+    const streakStart = shiftDay(today, -41);
+    // UTC padding covers local midnight in every time zone; exact days are checked below.
+    const historyFrom = new Date(Date.parse(streakStart) - dayMs);
+    const weekFrom = new Date(Date.parse(weekStart) - dayMs);
+    const weekTo = new Date(Date.parse(shiftDay(weekStart, 7)) + dayMs);
     const where = {
       dog: { userId, archivedAt: null },
       deletedAt: null,
@@ -33,7 +38,13 @@ export class OverviewService {
     };
     const [records, candidates] = await Promise.all([
       this.prisma.scheduledExercise.findMany({
-        where,
+        where: {
+          ...where,
+          OR: [
+            { completedAt: { gte: historyFrom, lte: now } },
+            { completedAt: null, startsAt: { gte: weekFrom, lt: weekTo } },
+          ],
+        },
         select: {
           startsAt: true,
           completedAt: true,
@@ -80,7 +91,11 @@ export class OverviewService {
         orderBy: [{ startsAt: "asc" }, { id: "asc" }],
       }),
     ]);
-    const completed = records.filter((record) => record.completedAt !== null);
+    const completed = records.filter((record) => {
+      if (!record.completedAt) return false;
+      const day = dayOf(record.completedAt);
+      return day >= streakStart && day <= today;
+    });
     const thisWeek = completed.filter((record) => {
       const day = dayOf(record.completedAt!);
       return day >= weekStart && day <= weekEnd;
@@ -89,6 +104,7 @@ export class OverviewService {
       completed.map((record) => dayOf(record.completedAt!)),
     );
     let streakDays = 0;
+    // A fixed 42-day window keeps long streaks bounded without a weekly reset.
     // Yesterday's streak stays active until the handler has a chance to train today.
     let streakDay = trainingDays.has(today) ? today : shiftDay(today, -1);
     while (trainingDays.has(streakDay)) {

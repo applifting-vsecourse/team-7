@@ -92,42 +92,64 @@ export class DogsController {
           orderBy: { createdAt: "asc" },
         },
         goals: { include: { goal: true, exercises: true } },
-        scheduledExercises: {
-          where: {
-            deletedAt: null,
-            completedAt: { not: null, lte: now },
-          },
-          select: {
-            rating: true,
-            completedAt: true,
-            exerciseId: true,
-            exercise: { select: { goal: { select: { disciplineId: true } } } },
-          },
-        },
       },
     });
     if (!dog) throw new NotFoundException("Dog not found");
-    const { disciplines, goals, scheduledExercises, ...details } = dog;
+    const { disciplines, goals, ...details } = dog;
+    const disciplineIds = disciplines.map((item) => item.discipline.id);
+    const trainingWhere = {
+      dogId: id,
+      deletedAt: null,
+      completedAt: { not: null, lte: now },
+      exercise: { goal: { disciplineId: { in: disciplineIds } } },
+    };
+    const [recentRatings, latestTrainings, exercises] = await Promise.all([
+      this.prisma.scheduledExercise.groupBy({
+        by: ["exerciseId"],
+        where: { ...trainingWhere, completedAt: { gte: since, lte: now } },
+        _sum: { rating: true },
+        _count: { rating: true },
+      }),
+      this.prisma.scheduledExercise.groupBy({
+        by: ["exerciseId"],
+        where: trainingWhere,
+        _max: { completedAt: true },
+      }),
+      this.prisma.exercise.findMany({
+        where: { goal: { disciplineId: { in: disciplineIds } } },
+        select: { id: true, goal: { select: { disciplineId: true } } },
+      }),
+    ]);
+    const disciplineByExercise = new Map(
+      exercises.map((exercise) => [exercise.id, exercise.goal.disciplineId]),
+    );
     const ratings = new Map<string, { total: number; count: number }>();
+    for (const exercise of recentRatings) {
+      const disciplineId = disciplineByExercise.get(exercise.exerciseId);
+      if (
+        !disciplineId ||
+        exercise._sum.rating === null ||
+        !exercise._count.rating
+      )
+        continue;
+      const aggregate = ratings.get(disciplineId) ?? { total: 0, count: 0 };
+      aggregate.total += exercise._sum.rating;
+      aggregate.count += exercise._count.rating;
+      ratings.set(disciplineId, aggregate);
+    }
     const lastTraining = new Map<string, Date>();
     const exerciseTraining = new Map<string, Map<string, Date>>();
-    for (const event of scheduledExercises) {
-      if (!event.completedAt) continue;
-      const disciplineId = event.exercise.goal.disciplineId;
+    for (const exercise of latestTrainings) {
+      const disciplineId = disciplineByExercise.get(exercise.exerciseId);
+      const completedAt = exercise._max.completedAt;
+      if (!disciplineId || !completedAt) continue;
       const previous = lastTraining.get(disciplineId);
-      if (!previous || event.completedAt > previous)
-        lastTraining.set(disciplineId, event.completedAt);
-      const exercises =
+      if (!previous || completedAt > previous)
+        lastTraining.set(disciplineId, completedAt);
+      const dates =
         exerciseTraining.get(disciplineId) ?? new Map<string, Date>();
-      const previousExercise = exercises.get(event.exerciseId);
-      if (!previousExercise || event.completedAt > previousExercise)
-        exercises.set(event.exerciseId, event.completedAt);
-      exerciseTraining.set(disciplineId, exercises);
-      if (event.rating === null || event.completedAt < since) continue;
-      const aggregate = ratings.get(disciplineId) ?? { total: 0, count: 0 };
-      aggregate.total += event.rating;
-      aggregate.count++;
-      ratings.set(disciplineId, aggregate);
+      dates.set(exercise.exerciseId, completedAt);
+      exerciseTraining.set(disciplineId, dates);
     }
     return {
       ...details,

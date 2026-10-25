@@ -59,9 +59,9 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-function setup() {
+function setup(selected: string[] | null = ["dog-b"]) {
   const store = createStore();
-  store.set(selectedDogIdsAtom, ["dog-b"]);
+  store.set(selectedDogIdsAtom, selected);
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
@@ -115,8 +115,23 @@ describe("exercise planning dialog", () => {
       },
     });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: eventsKey("user-a") });
-    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-a"]);
+    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-b"]);
   });
+  it.each([null, [], ["dog-a", "dog-b"]])(
+    "preserves the dog filter %j after scheduling",
+    async (selection) => {
+      const { user, close, store } = setup(selection);
+      await user.click(await screen.findByRole("radio", { name: /Mája/ }));
+      await user.click(screen.getByRole("button", { name: "Continue" }));
+      await user.click(await screen.findByRole("checkbox", { name: "Recall" }));
+      await user.click(screen.getByRole("button", { name: "Continue" }));
+      await user.click(
+        screen.getByRole("button", { name: "Schedule 1 exercises" }),
+      );
+      await waitFor(() => expect(close).toHaveBeenCalledOnce());
+      expect(store.get(selectedDogIdsAtom)).toEqual(selection);
+    },
+  );
   it("shows selection validation and clears exercises when the dog changes", async () => {
     const { user } = setup();
     await user.click(screen.getByRole("button", { name: "Continue" }));

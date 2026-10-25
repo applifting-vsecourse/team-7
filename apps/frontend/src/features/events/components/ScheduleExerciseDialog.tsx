@@ -12,7 +12,6 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { useSetAtom } from "jotai";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -23,7 +22,6 @@ import { cn } from "@/lib/utils";
 import { useSession } from "@/features/auth/hooks/useSession";
 import { dogProfileKey } from "@/features/dogs/api/dogProfileQueryOptions";
 import { dogsQueryOptions } from "@/features/dogs/api/dogsQueryOptions";
-import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 import { dogAge } from "@/features/dogs/lib/dogAge";
@@ -53,7 +51,6 @@ export function ScheduleExerciseDialog({
   const { t } = useTranslation();
   const { user } = useSession();
   const queryClient = useQueryClient();
-  const setSelectedDogs = useSetAtom(selectedDogIdsAtom);
   const [today] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const [step, setStep] = useState(initialDogId ? 2 : 1);
   const [dogId, setDogId] = useState(initialDogId ?? "");
@@ -86,7 +83,6 @@ export function ScheduleExerciseDialog({
       });
     },
     onSuccess: async () => {
-      setSelectedDogs([dogId]);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: eventsKey(user?.id) }),
         queryClient.invalidateQueries({ queryKey: dogProfileKey(user?.id) }),
