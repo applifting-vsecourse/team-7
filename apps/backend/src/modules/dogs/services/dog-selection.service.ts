@@ -142,12 +142,11 @@ export class DogSelectionService {
     });
   }
 
-  async replaceGoal(
+  private async writeGoal(
     tx: Prisma.TransactionClient,
     scope: DogSelectionScope,
     goal: DogGoalSelection,
   ) {
-    await this.validateGoals(tx, scope, [goal]);
     const { dogId } = scope;
     const { goalId, exerciseIds } = goal;
     await tx.dogDiscipline.upsert({
@@ -172,8 +171,17 @@ export class DogSelectionService {
         skipDuplicates: true,
       });
     }
+  }
+
+  async replaceGoal(
+    tx: Prisma.TransactionClient,
+    scope: DogSelectionScope,
+    goal: DogGoalSelection,
+  ) {
+    await this.validateGoals(tx, scope, [goal]);
+    await this.writeGoal(tx, scope, goal);
     await this.clearUnassignedSessions(tx, scope);
-    return this.getGoal(tx, scope, goalId);
+    return this.getGoal(tx, scope, goal.goalId);
   }
 
   async replace(
@@ -188,7 +196,7 @@ export class DogSelectionService {
         goalId: { notIn: goals.map((goal) => goal.goalId) },
       },
     });
-    for (const goal of goals) await this.replaceGoal(tx, scope, goal);
+    for (const goal of goals) await this.writeGoal(tx, scope, goal);
     await this.clearUnassignedSessions(tx, scope);
     return { goals: await this.list(tx, scope) };
   }

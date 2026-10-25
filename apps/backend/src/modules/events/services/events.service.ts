@@ -170,7 +170,7 @@ export class EventsService {
         .map((part) => parts.find((item) => item.type === part)!.value)
         .join("-");
     };
-    if (dateKey(startsAt) < dateKey(new Date(Date.now())))
+    if (dateKey(startsAt) < dateKey(new Date()))
       throw new BadRequestException("Choose today or a future date");
   }
 

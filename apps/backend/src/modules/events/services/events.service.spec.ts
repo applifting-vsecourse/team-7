@@ -123,7 +123,10 @@ describe("exercise scheduling", () => {
 });
 
 describe("scheduled exercise actions", () => {
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
   const prisma = mockDeep<PrismaService>();
   const service = new EventsService(prisma);
   const now = new Date("2026-10-24T12:00:00Z");
@@ -143,7 +146,8 @@ describe("scheduled exercise actions", () => {
   };
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.spyOn(Date, "now").mockReturnValue(now.getTime());
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(now);
     prisma.$transaction.mockImplementation(async (callback: unknown) =>
       (callback as (tx: unknown) => Promise<unknown>)(prisma),
     );

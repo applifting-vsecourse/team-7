@@ -27,7 +27,7 @@ export function ScheduleFields({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 sm:grid-cols-3">
+    <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 md:grid-cols-3">
       {(["date", "time"] as const).map((kind) => (
         <Controller
           key={kind}
@@ -44,7 +44,7 @@ export function ScheduleFields({
               type={kind}
               className={cn(
                 "min-w-0",
-                kind === "date" && "col-span-2 sm:col-span-1",
+                kind === "date" && "col-span-2 md:col-span-1",
               )}
             >
               <Label>
