@@ -23,6 +23,8 @@ import { cn } from "@/lib/utils";
 
 import type { Goal } from "@/features/disciplines/api/disciplinesQueryOptions";
 
+import { LastTraining } from "./LastTraining";
+
 export type GoalAction =
   | {
       type: "assignGoal" | "removeGoal" | "complete" | "reopen";
@@ -38,6 +40,7 @@ export function DogGoal({
   dogId,
   goal,
   assignment,
+  lastTrainingByExercise,
   isPending,
   onAction,
   onAddExercise,
@@ -46,6 +49,7 @@ export function DogGoal({
   dogId: string;
   goal: Goal;
   assignment?: DogGoalAssignment;
+  lastTrainingByExercise: ReadonlyMap<string, string>;
   isPending: boolean;
   onAction: (action: GoalAction) => void;
   onAddExercise: () => void;
@@ -226,9 +230,13 @@ export function DogGoal({
                         )}
                       </p>
                       <p className="text-xs leading-5 text-muted">
-                        {selected
-                          ? t(($) => $.dogProfile.noTraining)
-                          : t(($) => $.dogProfile.unassigned)}
+                        {selected ? (
+                          <LastTraining
+                            date={lastTrainingByExercise.get(item.id) ?? null}
+                          />
+                        ) : (
+                          t(($) => $.dogProfile.unassigned)
+                        )}
                       </p>
                     </div>
                     {selected ? (

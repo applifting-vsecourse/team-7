@@ -81,6 +81,8 @@ export class DogsController {
   @ApiOperation({ summary: "Get an owned dog and its discipline progress" })
   @ApiNotFoundResponse({ description: "Dog not found" })
   async getDog(@User() user: Identity, @Param("id") id: string) {
+    const now = new Date();
+    const since = new Date(now.getTime() - 30 * 86400000);
     const dog = await this.prisma.dog.findFirst({
       where: { id, userId: user.id },
       omit: omitAvatar,
@@ -90,20 +92,60 @@ export class DogsController {
           orderBy: { createdAt: "asc" },
         },
         goals: { include: { goal: true, exercises: true } },
+        scheduledExercises: {
+          where: {
+            deletedAt: null,
+            completedAt: { not: null, lte: now },
+          },
+          select: {
+            rating: true,
+            completedAt: true,
+            exerciseId: true,
+            exercise: { select: { goal: { select: { disciplineId: true } } } },
+          },
+        },
       },
     });
     if (!dog) throw new NotFoundException("Dog not found");
-    const { disciplines, goals, ...details } = dog;
+    const { disciplines, goals, scheduledExercises, ...details } = dog;
+    const ratings = new Map<string, { total: number; count: number }>();
+    const lastTraining = new Map<string, Date>();
+    const exerciseTraining = new Map<string, Map<string, Date>>();
+    for (const event of scheduledExercises) {
+      if (!event.completedAt) continue;
+      const disciplineId = event.exercise.goal.disciplineId;
+      const previous = lastTraining.get(disciplineId);
+      if (!previous || event.completedAt > previous)
+        lastTraining.set(disciplineId, event.completedAt);
+      const exercises =
+        exerciseTraining.get(disciplineId) ?? new Map<string, Date>();
+      const previousExercise = exercises.get(event.exerciseId);
+      if (!previousExercise || event.completedAt > previousExercise)
+        exercises.set(event.exerciseId, event.completedAt);
+      exerciseTraining.set(disciplineId, exercises);
+      if (event.rating === null || event.completedAt < since) continue;
+      const aggregate = ratings.get(disciplineId) ?? { total: 0, count: 0 };
+      aggregate.total += event.rating;
+      aggregate.count++;
+      ratings.set(disciplineId, aggregate);
+    }
     return {
       ...details,
       disciplines: disciplines.map(({ discipline }) => {
         const selected = goals.filter(
           (item) => item.goal.disciplineId === discipline.id,
         );
+        const rating = ratings.get(discipline.id);
         return {
           id: discipline.id,
           name: discipline.name,
           description: discipline.description,
+          averageRating: rating ? rating.total / rating.count : null,
+          lastTrainingAt: lastTraining.get(discipline.id) ?? null,
+          exerciseTraining: Array.from(
+            exerciseTraining.get(discipline.id) ?? [],
+            ([exerciseId, lastTrainingAt]) => ({ exerciseId, lastTrainingAt }),
+          ),
           goalCount: selected.length,
           completedGoalCount: selected.filter((item) => item.completedAt)
             .length,

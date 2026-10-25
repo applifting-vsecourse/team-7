@@ -6,7 +6,7 @@ import { seedEvents } from "./seed-events";
 afterEach(() => vi.useRealTimers());
 
 describe("exercise training seed", () => {
-  it("schedules an assigned exercise yesterday without overwriting existing results", async () => {
+  it("seeds overdue, completed and upcoming demo training without resetting results", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(2026, 9, 25, 9));
     const prisma = mockDeep<PrismaService>();
@@ -18,10 +18,10 @@ describe("exercise training seed", () => {
     await seedEvents(prisma);
     await seedEvents(prisma);
 
-    expect(prisma.scheduledExercise.upsert).toHaveBeenCalledTimes(18);
-    expect(prisma.scheduledExercise.upsert).toHaveBeenNthCalledWith(10, {
+    expect(prisma.scheduledExercise.upsert).toHaveBeenCalledTimes(22);
+    expect(prisma.scheduledExercise.upsert).toHaveBeenNthCalledWith(12, {
       where: { id: "seed-overdue-dog-a" },
-      update: {},
+      update: { deletedAt: null },
       create: {
         id: "seed-overdue-dog-a",
         dogId: "dog-a",
@@ -41,9 +41,29 @@ describe("exercise training seed", () => {
       startsAt: new Date(2026, 9, 7, 18),
       completedAt: new Date(2026, 9, 7, 18),
     });
-    expect(calls.slice(0, 9)).toEqual(calls.slice(9));
+    expect(calls.slice(9, 11).map(([input]) => input.create)).toEqual([
+      {
+        id: "seed-today-dog-a",
+        dogId: "dog-a",
+        exerciseId: "e1",
+        startsAt: new Date(2026, 9, 25, 18),
+        durationMinutes: 20,
+      },
+      {
+        id: "seed-tomorrow-dog-a",
+        dogId: "dog-a",
+        exerciseId: "e1",
+        startsAt: new Date(2026, 9, 26, 18),
+        durationMinutes: 20,
+      },
+    ]);
+    expect(calls.slice(0, 11)).toEqual(calls.slice(11));
     expect(
-      calls.every(([input]) => Object.keys(input.update).length === 0),
+      calls.every(
+        ([input]) =>
+          Object.keys(input.update).length === 1 &&
+          input.update.deletedAt === null,
+      ),
     ).toBe(true);
   });
 });

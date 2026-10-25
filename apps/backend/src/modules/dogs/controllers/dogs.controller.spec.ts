@@ -343,11 +343,46 @@ describe("/api/dogs", () => {
 
   it("returns owned discipline progress without confusing library goals with selected goals", async () => {
     signIn("user-a");
+    const recent = new Date(Date.now() - 1000);
+    const ratedAt = new Date(Date.now() - 2 * 86400000);
+    const old = new Date(Date.now() - 40 * 86400000);
     findFirst.mockResolvedValueOnce({
       ...initialDogs[0],
       disciplines: [
         { discipline: { id: "d1", name: "Obedience", description: null } },
         { discipline: { id: "d2", name: "New", description: null } },
+      ],
+      scheduledExercises: [
+        {
+          completedAt: recent,
+          exerciseId: "e2",
+          rating: null,
+          exercise: { goal: { disciplineId: "d1" } },
+        },
+        {
+          completedAt: old,
+          exerciseId: "e3",
+          rating: 5,
+          exercise: { goal: { disciplineId: "d2" } },
+        },
+        {
+          completedAt: ratedAt,
+          exerciseId: "e1",
+          rating: 5,
+          exercise: { goal: { disciplineId: "d1" } },
+        },
+        {
+          completedAt: ratedAt,
+          exerciseId: "e1",
+          rating: 3,
+          exercise: { goal: { disciplineId: "d1" } },
+        },
+        {
+          completedAt: ratedAt,
+          exerciseId: "e1",
+          rating: 3,
+          exercise: { goal: { disciplineId: "d1" } },
+        },
       ],
       goals: [
         {
@@ -360,11 +395,19 @@ describe("/api/dogs", () => {
     });
     const response = await fetch(`${url}/dog-a`);
     expect(response.status).toBe(200);
-    expect((await response.json()).disciplines).toEqual([
+    const profile = await response.json();
+    expect(profile).not.toHaveProperty("scheduledExercises");
+    expect(profile.disciplines).toEqual([
       {
         id: "d1",
         name: "Obedience",
         description: null,
+        averageRating: 11 / 3,
+        lastTrainingAt: recent.toISOString(),
+        exerciseTraining: [
+          { exerciseId: "e2", lastTrainingAt: recent.toISOString() },
+          { exerciseId: "e1", lastTrainingAt: ratedAt.toISOString() },
+        ],
         goalCount: 2,
         completedGoalCount: 1,
         exerciseCount: 1,
@@ -373,6 +416,11 @@ describe("/api/dogs", () => {
         id: "d2",
         name: "New",
         description: null,
+        averageRating: null,
+        lastTrainingAt: old.toISOString(),
+        exerciseTraining: [
+          { exerciseId: "e3", lastTrainingAt: old.toISOString() },
+        ],
         goalCount: 0,
         completedGoalCount: 0,
         exerciseCount: 0,
@@ -382,8 +430,28 @@ describe("/api/dogs", () => {
       expect.objectContaining({
         where: { id: "dog-a", userId: "user-a" },
         omit: { avatar: true },
+        include: expect.objectContaining({
+          scheduledExercises: {
+            where: {
+              deletedAt: null,
+              completedAt: { not: null, lte: expect.any(Date) },
+            },
+            select: {
+              rating: true,
+              completedAt: true,
+              exerciseId: true,
+              exercise: {
+                select: { goal: { select: { disciplineId: true } } },
+              },
+            },
+          },
+        }),
       }),
     );
+    const range =
+      findFirst.mock.calls[0][0].include.scheduledExercises.where.completedAt;
+    expect(range.lte.getTime()).toBeLessThanOrEqual(Date.now());
+    expect(range.lte.getTime()).toBeGreaterThan(Date.now() - 10000);
   });
 
   it("does not expose another owner's profile", async () => {

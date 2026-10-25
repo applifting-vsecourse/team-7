@@ -6,6 +6,10 @@ import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
+import { RatingStars } from "@/features/events/components/RatingStars";
+
+import { LastTraining } from "./LastTraining";
+
 export const isDisciplineDone = (discipline: DogDiscipline) =>
   discipline.goalCount > 0 &&
   discipline.completedGoalCount === discipline.goalCount;
@@ -17,7 +21,7 @@ export function DogDisciplineCard({
   dogId: string;
   discipline: DogDiscipline;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const done = isDisciplineDone(discipline);
   return (
     <Link
@@ -54,7 +58,29 @@ export function DogDisciplineCard({
           <span className="font-medium">
             {t(($) => $.dogProfile.averageRating)}
           </span>
-          <span className="text-muted">{t(($) => $.dogProfile.noRating)}</span>
+          <span className="flex flex-wrap items-center gap-2 text-muted">
+            {discipline.averageRating === null ? (
+              t(($) => $.dogProfile.noRating)
+            ) : (
+              <>
+                <span>
+                  {t(($) => $.exerciseDetail.ratingValue, {
+                    rating: new Intl.NumberFormat(
+                      i18n.resolvedLanguage ?? "cs",
+                      {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
+                      },
+                    ).format(discipline.averageRating),
+                  })}
+                </span>
+                <RatingStars
+                  rating={Math.round(discipline.averageRating * 10) / 10}
+                  small
+                />
+              </>
+            )}
+          </span>
         </div>
         <p className="text-xs leading-5 text-muted">
           {t(($) => $.dogProfile.ratingPeriod)}
@@ -63,7 +89,7 @@ export function DogDisciplineCard({
       <Separator className="my-1" />
       <p className="flex items-center gap-2 text-xs leading-5 text-accent-soft-foreground">
         <Clock className="size-4 shrink-0 text-accent" aria-hidden="true" />
-        {t(($) => $.dogProfile.noTraining)}
+        <LastTraining date={discipline.lastTrainingAt} />
       </p>
     </Link>
   );
