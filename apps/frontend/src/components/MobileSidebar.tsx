@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Bars, Xmark } from "@gravity-ui/icons";
-import { Button, Modal } from "@heroui/react";
+import { Button, Drawer } from "@heroui/react";
 import { useAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 
@@ -12,7 +12,7 @@ export function MobileSidebar({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useAtom(mobileSidebarOpenAtom);
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={setIsOpen}>
+    <Drawer isOpen={isOpen} onOpenChange={setIsOpen}>
       <Button
         isIconOnly
         variant="secondary"
@@ -23,34 +23,31 @@ export function MobileSidebar({ children }: { children: ReactNode }) {
       >
         <Bars className="size-4" aria-hidden="true" />
       </Button>
-      <Modal.Backdrop className="justify-start bg-black/50">
-        <Modal.Container
-          placement="top"
-          className="mobile-sidebar w-full max-w-sidebar flex-none items-stretch p-0 sm:w-full sm:p-0"
-        >
-          <Modal.Dialog
+      <Drawer.Backdrop variant="blur">
+        <Drawer.Content placement="left">
+          <Drawer.Dialog
             id="mobile-sidebar"
             aria-label={t(($) => $.navigation.main)}
-            className="h-full max-w-none gap-6 overflow-hidden rounded-l-none rounded-r-3xl bg-surface p-4 shadow-none"
+            className="w-sidebar gap-6 overflow-hidden p-4 sm:w-sidebar"
           >
-            <div className="flex shrink-0 items-center justify-between">
+            <Drawer.Header className="shrink-0 flex-row items-center justify-between">
               <HeaderLogo iconOnly />
               <Button
                 isIconOnly
                 variant="secondary"
                 className="size-10 min-w-10 rounded-3xl text-accent-soft-foreground"
                 aria-label={t(($) => $.navigation.closeMenu)}
-                onPress={() => setIsOpen(false)}
+                slot="close"
               >
                 <Xmark className="size-4" aria-hidden="true" />
               </Button>
-            </div>
-            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+            </Drawer.Header>
+            <Drawer.Body className="flex flex-col text-foreground">
               {children}
-            </div>
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal.Backdrop>
-    </Modal>
+            </Drawer.Body>
+          </Drawer.Dialog>
+        </Drawer.Content>
+      </Drawer.Backdrop>
+    </Drawer>
   );
 }

@@ -1,3 +1,4 @@
+import babel from "@rolldown/plugin-babel";
 /// <reference types="vitest" />
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
@@ -12,7 +13,12 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       tanstackRouter({ target: "react", autoCodeSplitting: true }),
-      react({ compiler: true }),
+      react({
+        compiler: true,
+      }),
+      babel({
+        presets: ["jotai-babel/preset"],
+      }),
       tailwindcss(),
       svgr(),
       checker({
