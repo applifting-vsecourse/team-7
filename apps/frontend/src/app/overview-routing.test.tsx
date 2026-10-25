@@ -35,6 +35,23 @@ vi.mock("@/lib/api-client", () => ({
   api: {
     get: vi.fn((path: string) => ({
       json: async () => {
+        if (path === "events/overview") {
+          return {
+            today: "2026-10-25",
+            tomorrow: "2026-10-26",
+            events: [],
+            stats: {
+              weekStart: "2026-10-19",
+              weekEnd: "2026-10-25",
+              completedExercises: 0,
+              plannedExercises: 0,
+              streakDays: 0,
+              trainingMinutes: 0,
+              satisfaction: null,
+              satisfactionHistory: [],
+            },
+          };
+        }
         const dogs = await state.getDogs();
         if (path === "dogs") return dogs;
         if (path === "events") {

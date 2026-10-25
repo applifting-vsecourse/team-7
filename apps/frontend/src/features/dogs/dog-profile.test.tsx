@@ -71,6 +71,9 @@ const discipline = {
   ],
 };
 const summary = {
+  averageRating: null,
+  lastTrainingAt: null,
+  exerciseTraining: [],
   id: "d1",
   name: "Obedience",
   description: null,
@@ -127,6 +130,61 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe("dog profile", () => {
+  it("shows the discipline's 30-day average on its card and detail, preserving language", async () => {
+    state.get.set("dogs/dog-1", () => ({
+      ...emptyDog,
+      disciplines: [
+        {
+          ...summary,
+          completedGoalCount: 0,
+          averageRating: 11 / 3,
+          lastTrainingAt: "2026-10-20T12:00:00Z",
+          exerciseTraining: [
+            { exerciseId: "e1", lastTrainingAt: "2026-10-20T12:00:00Z" },
+          ],
+        },
+      ],
+    }));
+    state.get.set("dogs/dog-1/disciplines/d1/selection", () => ({
+      goals: [
+        { goalId: "g1", completedAt: null, exercises: [{ exerciseId: "e1" }] },
+      ],
+    }));
+    const user = userEvent.setup();
+    const router = renderRoute();
+    expect(await screen.findByText("3.7 / 5")).toBeInTheDocument();
+    expect(screen.getByText(/Last training:/)).toHaveAttribute(
+      "datetime",
+      "2026-10-20T12:00:00Z",
+    );
+    expect(screen.queryByText("No ratings yet")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("link", { name: /Obedience/ }));
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Obedience" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("3.7 / 5")).toBeInTheDocument();
+    expect(screen.getByText("Average rating (30 days)")).toBeInTheDocument();
+    expect(screen.getByText(/Last training:/)).toHaveAttribute(
+      "datetime",
+      "2026-10-20T12:00:00Z",
+    );
+    expect(screen.queryByText("No training yet")).not.toBeInTheDocument();
+    expect(router.state.location.search.lng).toBe("en");
+  });
+
+  it("keeps the empty rating states when a discipline has no recent rated training", async () => {
+    state.get.set("dogs/dog-1", () => ({
+      ...emptyDog,
+      disciplines: [{ ...summary, completedGoalCount: 0 }],
+    }));
+    const user = userEvent.setup();
+    renderRoute();
+    expect(await screen.findByText("No ratings yet")).toBeInTheDocument();
+    await user.click(screen.getByRole("link", { name: /Obedience/ }));
+    const label = await screen.findByText("Average rating (30 days)");
+    expect(within(label.parentElement!).getByText("—")).toBeInTheDocument();
+  });
+
   it("counts this dog's weekly sessions instead of showing a placeholder", async () => {
     state.get.set("dogs/dog-1", () => ({
       ...emptyDog,

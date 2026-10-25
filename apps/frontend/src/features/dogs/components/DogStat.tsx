@@ -1,4 +1,4 @@
-import type { ComponentType, SVGProps } from "react";
+import type { ComponentType, ReactNode, SVGProps } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -10,7 +10,7 @@ export function DogStat({
   tone = "accent",
 }: {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
-  value: string | number;
+  value: ReactNode;
   label: string;
   tone?: "accent" | "success" | "warning";
 }) {

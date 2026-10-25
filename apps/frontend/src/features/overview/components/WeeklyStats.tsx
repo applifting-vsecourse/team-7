@@ -1,18 +1,8 @@
 import { useId } from "react";
+import type { WeeklyStatsData } from "../api/overviewQueryOptions";
 import { ChartLine, Clock, Flame, Star } from "@gravity-ui/icons";
 import { Chip, ProgressCircle, Separator } from "@heroui/react";
 import { useTranslation } from "react-i18next";
-
-export type WeeklyStatsData = {
-  weekStart: string;
-  weekEnd: string;
-  completedExercises: number;
-  plannedExercises: number;
-  streakDays: number;
-  trainingMinutes: number;
-  satisfaction: number;
-  satisfactionHistory: { weekStart: string; rating: number }[];
-};
 
 export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
   const { t, i18n } = useTranslation();
@@ -43,9 +33,20 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
       : remaining >= 2 && remaining <= 4
         ? t(($) => $.weeklyStats.remainingFew, { count: remaining })
         : t(($) => $.weeklyStats.remaining, { count: remaining });
-  const previousRating = data.satisfactionHistory.at(-2)?.rating;
+  const currentIndex = data.satisfactionHistory.findIndex(
+    (week) => week.weekStart === data.weekStart,
+  );
+  const previousWeek = data.satisfactionHistory[currentIndex - 1];
+  const previousRating =
+    previousWeek &&
+    Date.parse(data.weekStart) - Date.parse(previousWeek.weekStart) ===
+      7 * 86400000
+      ? previousWeek.rating
+      : undefined;
   const trend =
-    previousRating === undefined ? null : data.satisfaction - previousRating;
+    previousRating === undefined || data.satisfaction === null
+      ? null
+      : data.satisfaction - previousRating;
   const metrics = [
     {
       label: t(($) => $.weeklyStats.streak),
@@ -72,9 +73,12 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
       label: t(($) => $.weeklyStats.satisfaction),
       icon: Star,
       color: "text-warning",
-      value: t(($) => $.weeklyStats.rating, {
-        value: ratingFormat.format(data.satisfaction),
-      }),
+      value:
+        data.satisfaction === null
+          ? t(($) => $.dogProfile.noRating)
+          : t(($) => $.weeklyStats.rating, {
+              value: ratingFormat.format(data.satisfaction),
+            }),
     },
   ];
 
@@ -173,8 +177,8 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
             </p>
           ) : (
             <ol className="flex items-end gap-2">
-              {data.satisfactionHistory.map((week, index) => {
-                const isCurrent = index === data.satisfactionHistory.length - 1;
+              {data.satisfactionHistory.map((week) => {
+                const isCurrent = week.weekStart === data.weekStart;
                 return (
                   <li
                     key={week.weekStart}

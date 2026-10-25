@@ -106,7 +106,6 @@
     "photoZoom": "Přiblížení",
     "pageLoading": "Načítám psa…",
     "notFound": "Pes neexistuje nebo byl smazán.",
-    "pagePlaceholder": "Profil psa připravujeme. Zatím tu můžete změnit jeho fotku kliknutím na avatar.",
     "ageYears": {
       "one": "{{count}} rok",
       "few": "{{count}} roky",
@@ -124,6 +123,10 @@
     "completed": "Hotovo",
     "unfinished": "Nesplněno",
     "dateAndTime": "{{date}} – {{time}}"
+  },
+  "overview": {
+    "loading": "Načítání přehledu…",
+    "loadError": "Přehled se nepodařilo načíst. Zkuste to znovu."
   },
   "weeklyStats": {
     "title": "Tento týden",
@@ -189,36 +192,6 @@
       "other": "{{count}} cvičení"
     },
     "dayLabel": "{{date}}, {{exercises}}"
-  },
-  "calendarMocks": {
-    "dog": "Pes {{number}}",
-    "obedience": "Poslušnost",
-    "agility": "Agility",
-    "relaxation": "Relaxace",
-    "tracking": "Stopování",
-    "socialization": "Socializace",
-    "tricks": "Triky",
-    "stay": "Odložení – 3 série po 30 sekundách",
-    "course": "Sestava: skok, tunel, slalom, kladina, skok, pneumatika",
-    "mat": "Výdrž na podložce s odměnou za klid",
-    "track": "Stopa 500 m – 2 zlomy, předmět uprostřed",
-    "walk": "Procházka kolem hřiště, odměna za pohled na mě",
-    "jumps": "Skoky – 10 přeskoků laťky 40 cm",
-    "slalom": "Slalom – 5 průchodů se 6 tyčkami",
-    "spin": "Zatočit se dokola – 10 opakování",
-    "recall": "Přivolání",
-    "retrieve": "Aport",
-    "heel": "Chůze u nohy – 10 sérií po 20 kroků",
-    "recallSignal": "Přivolání na signál – 8 opakování z 10 m",
-    "passingDog": "Míjení psa na vodítku ve vzdálenosti 5 m",
-    "shortTrack": "Stopa 300 m – 2 předměty na trase",
-    "heelTempo": "Chůze u nohy – změny tempa",
-    "aFrame": "A-stěna – 5 nástupů do kontaktní zóny",
-    "backwards": "Couvání mezi nohama – 8 opakování",
-    "recallPlay": "Přivolání ze hry – 6 opakování",
-    "retrieveHand": "Aport – 10 přinesení do ruky",
-    "groupStay": "Odložení – 3 série po 1 minutě ve skupině",
-    "waterRetrieve": "Aport z vody – 8 přinesení"
   },
   "landing": {
     "title": "Plánovač a tréninkový deník pro psa",
@@ -468,7 +441,8 @@
       "one": "{{count}} disciplína",
       "few": "{{count}} disciplíny",
       "other": "{{count}} disciplín"
-    }
+    },
+    "lastTraining": "Poslední trénink: {{date}}"
   },
   "planning": {
     "stepDog": "Krok 1 ze 3 · Pes",

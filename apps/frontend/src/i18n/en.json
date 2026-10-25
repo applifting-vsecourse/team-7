@@ -106,7 +106,6 @@
     "photoZoom": "Zoom",
     "pageLoading": "Loading dog…",
     "notFound": "The dog doesn't exist or was deleted.",
-    "pagePlaceholder": "The dog's profile is on its way. For now, click the avatar to change the photo.",
     "ageYears": {
       "one": "{{count}} year",
       "few": "{{count}} years",
@@ -124,6 +123,10 @@
     "completed": "Completed",
     "unfinished": "Unfinished",
     "dateAndTime": "{{date}} – {{time}}"
+  },
+  "overview": {
+    "loading": "Loading overview…",
+    "loadError": "Could not load the overview. Please try again."
   },
   "weeklyStats": {
     "title": "This week",
@@ -189,36 +192,6 @@
       "other": "{{count}} exercises"
     },
     "dayLabel": "{{date}}, {{exercises}}"
-  },
-  "calendarMocks": {
-    "dog": "Dog {{number}}",
-    "obedience": "Obedience",
-    "agility": "Agility",
-    "relaxation": "Relaxation",
-    "tracking": "Tracking",
-    "socialization": "Socialization",
-    "tricks": "Tricks",
-    "stay": "Stay – 3 sets of 30 seconds",
-    "course": "Course: jump, tunnel, slalom, dog walk, jump, tire",
-    "mat": "Stay on the mat with rewards for calm behavior",
-    "track": "500 m track – 2 turns, an article in the middle",
-    "walk": "Walk around the playground, reward eye contact",
-    "jumps": "Jumps – 10 jumps over a 40 cm bar",
-    "slalom": "Slalom – 5 runs through 6 poles",
-    "spin": "Spin around – 10 repetitions",
-    "recall": "Recall",
-    "retrieve": "Retrieve",
-    "heel": "Heel – 10 sets of 20 steps",
-    "recallSignal": "Recall on cue – 8 repetitions from 10 m",
-    "passingDog": "Pass a dog on a leash at a distance of 5 m",
-    "shortTrack": "300 m track – 2 articles along the route",
-    "heelTempo": "Heel – changes of pace",
-    "aFrame": "A-frame – 5 approaches to the contact zone",
-    "backwards": "Back up between legs – 8 repetitions",
-    "recallPlay": "Recall from play – 6 repetitions",
-    "retrieveHand": "Retrieve – 10 deliveries to hand",
-    "groupStay": "Group stay – 3 sets of 1 minute",
-    "waterRetrieve": "Water retrieve – 8 repetitions"
   },
   "landing": {
     "title": "Training planner and log for your dog",
@@ -468,7 +441,8 @@
       "one": "{{count}} discipline",
       "few": "{{count}} disciplines",
       "other": "{{count}} disciplines"
-    }
+    },
+    "lastTraining": "Last training: {{date}}"
   },
   "planning": {
     "stepDog": "Step 1 of 3 · Dog",

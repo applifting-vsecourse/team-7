@@ -1,4 +1,4 @@
-# Quacker Backend
+# Trainloop Backend
 
 A simplified version of Applifting's backend template for educational purposes.
 

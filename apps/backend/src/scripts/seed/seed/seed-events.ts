@@ -27,10 +27,11 @@ export async function seedEvents(prisma: PrismaService): Promise<void> {
     const exercise = dog.goals[0]?.exercises[0];
     if (!exercise) continue;
 
-    // Keep a stable ID so rerunning the seed preserves completion or deletion.
+    // Stable IDs avoid duplicates. Development seeding restores demo rows
+    // while preserving any recorded results, notes and rescheduled dates.
     await prisma.scheduledExercise.upsert({
       where: { id: `seed-overdue-${dog.id}` },
-      update: {},
+      update: { deletedAt: null },
       create: {
         id: `seed-overdue-${dog.id}`,
         dogId: dog.id,
@@ -58,7 +59,7 @@ export async function seedEvents(prisma: PrismaService): Promise<void> {
       const id = `seed-history-${dog.id}-${exercise.exerciseId}-${index}`;
       await prisma.scheduledExercise.upsert({
         where: { id },
-        update: {},
+        update: { deletedAt: null },
         create: {
           id,
           dogId: dog.id,
@@ -68,6 +69,24 @@ export async function seedEvents(prisma: PrismaService): Promise<void> {
           durationMinutes: 15,
           rating: session.rating,
           note: index === 6 ? "Poprvé na volno bez vodítka." : null,
+        },
+      });
+    }
+
+    // Upcoming sessions exercise the overview's Today and Tomorrow groups too.
+    for (const [offset, label] of ["today", "tomorrow"].entries()) {
+      const startsAt = new Date();
+      startsAt.setDate(startsAt.getDate() + offset);
+      startsAt.setHours(18, 0, 0, 0);
+      await prisma.scheduledExercise.upsert({
+        where: { id: `seed-${label}-${dog.id}` },
+        update: { deletedAt: null },
+        create: {
+          id: `seed-${label}-${dog.id}`,
+          dogId: dog.id,
+          exerciseId: exercise.exerciseId,
+          startsAt,
+          durationMinutes: 20,
         },
       });
     }

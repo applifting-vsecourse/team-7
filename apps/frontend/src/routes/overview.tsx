@@ -9,11 +9,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
 import { encodeRedirectUri } from "@/features/auth/lib/redirect";
 import { DogFilter } from "@/features/dogs/components/DogFilter";
-import { Calendar } from "@/features/events/components/Calendar";
-import { OverviewEvents } from "@/features/overview/components/OverviewEvents";
-import { WeeklyStats } from "@/features/overview/components/WeeklyStats";
-import { getMockedCalendars } from "@/features/overview/mocks/calendars";
-import { mockedWeeklyStats } from "@/features/overview/mocks/weeklyStats";
+import { OverviewContent } from "@/features/overview/components/OverviewContent";
 
 export const Route = createFileRoute("/overview")({
   beforeLoad: async ({ context, location }) => {
@@ -52,12 +48,7 @@ function OverviewPage() {
           </h1>
         </div>
         <DogFilter />
-        <OverviewEvents>
-          <WeeklyStats data={mockedWeeklyStats} />
-          {getMockedCalendars(t).map((calendar) => (
-            <Calendar key={calendar.variant} {...calendar} />
-          ))}
-        </OverviewEvents>
+        <OverviewContent />
       </section>
     </Layout>
   );

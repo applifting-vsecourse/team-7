@@ -13,6 +13,7 @@ import {
 } from "@nestjs/common";
 import { ApiCookieAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { EventsService } from "@/modules/events/services/events.service";
+import { OverviewService } from "@/modules/events/services/overview.service";
 import { User } from "@/shared/auth/decorators/user.decorator";
 import { Identity } from "@/shared/auth/domain/identity";
 import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
@@ -22,6 +23,7 @@ import {
   UndoEventDto,
 } from "./dto/event-action.dto";
 import { ListEventsDto } from "./dto/list-events.dto";
+import { OverviewQueryDto } from "./dto/overview-query.dto";
 import { ScheduleInputDto } from "./dto/schedule-input.dto";
 
 @ApiTags("events")
@@ -36,7 +38,19 @@ import { ScheduleInputDto } from "./dto/schedule-input.dto";
   }),
 )
 export class EventsController {
-  constructor(private readonly events: EventsService) {}
+  constructor(
+    private readonly events: EventsService,
+    private readonly overview: OverviewService,
+  ) {}
+
+  @Get("overview")
+  @ApiOperation({
+    summary:
+      "Get weekly statistics, today, tomorrow and all overdue exercises for owned active dogs",
+  })
+  getOverview(@User() user: Identity, @Query() query: OverviewQueryDto) {
+    return this.overview.get(user.id, query);
+  }
   @Get()
   @ApiOperation({
     summary: "List scheduled exercises owned by the signed-in user",

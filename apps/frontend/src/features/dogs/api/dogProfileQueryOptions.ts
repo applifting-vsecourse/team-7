@@ -10,6 +10,11 @@ const dogDisciplineSchema = z.object({
   goalCount: z.number(),
   completedGoalCount: z.number(),
   exerciseCount: z.number(),
+  averageRating: z.number().nullable(),
+  lastTrainingAt: z.string().nullable(),
+  exerciseTraining: z.array(
+    z.object({ exerciseId: z.string(), lastTrainingAt: z.string() }),
+  ),
 });
 const dogProfileSchema = z.object({
   id: z.string(),
