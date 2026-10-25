@@ -77,11 +77,6 @@ export function DogDisciplineView({
           json: { exerciseId: action.exerciseId },
         });
       }
-      if (action.type === "removeExercise") {
-        return api.delete(
-          `${goalPath}/exercises/${encodeURIComponent(action.exerciseId)}`,
-        );
-      }
     },
   );
   const create = useDogProfileMutation((values: LibraryItemValues) => {

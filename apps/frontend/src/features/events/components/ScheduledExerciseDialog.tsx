@@ -234,7 +234,6 @@ export function ScheduledExerciseDialog({
                   index={0}
                   isDisabled={action.isPending}
                   minDate={format(today, "yyyy-MM-dd")}
-                  stackedDate
                 />
               ) : (
                 <>

@@ -9,10 +9,11 @@ describe("exercise scheduling", () => {
   const service = new EventsService(prisma);
   const input = {
     dogId: "dog-a",
+    timeZone: "Europe/Prague",
     exercises: [
       {
         exerciseId: "exercise-a",
-        startsAt: "2026-10-25T07:15:00.000Z",
+        startsAt: "2099-10-25T07:15:00.000Z",
         durationMinutes: 10,
       },
     ],
@@ -70,11 +71,52 @@ describe("exercise scheduling", () => {
     );
     expect(prisma.scheduledExercise.createMany).not.toHaveBeenCalled();
   });
+  it("rejects a past date in any row before saving the batch", async () => {
+    await expect(
+      service.schedule("user-a", {
+        ...input,
+        exercises: [
+          ...input.exercises,
+          { ...input.exercises[0]!, startsAt: "2000-01-01T08:00:00Z" },
+        ],
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+  it.each([
+    { from: "2026-11-01T00:00:00Z", to: "2026-10-01T00:00:00Z" },
+    { from: "2026-01-01T00:00:00Z", to: "2026-12-01T00:00:00Z" },
+  ])("rejects invalid or unbounded calendar ranges", (range) => {
+    expect(() => service.list("user-a", range)).toThrow(BadRequestException);
+    expect(prisma.scheduledExercise.findMany).not.toHaveBeenCalled();
+  });
   it("only lists the current handler’s active dogs", async () => {
-    await service.list("user-a");
+    await service.list("user-a", {
+      from: "2026-10-01T00:00:00Z",
+      to: "2026-11-01T00:00:00Z",
+    });
     expect(prisma.scheduledExercise.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { dog: { userId: "user-a", archivedAt: null }, deletedAt: null },
+        where: {
+          dog: { userId: "user-a", archivedAt: null },
+          deletedAt: null,
+          OR: [
+            {
+              completedAt: {
+                gte: new Date("2026-10-01T00:00:00Z"),
+                lt: new Date("2026-11-01T00:00:00Z"),
+              },
+            },
+            {
+              completedAt: null,
+              startsAt: {
+                gte: new Date("2026-10-01T00:00:00Z"),
+                lt: new Date("2026-11-01T00:00:00Z"),
+              },
+            },
+          ],
+        },
+        omit: { undoToken: true, undoState: true, deletedAt: true },
       }),
     );
   });

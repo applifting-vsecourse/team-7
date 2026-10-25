@@ -9,6 +9,7 @@ import { PrismaService } from "@/core/prisma/prisma.service";
 import { Prisma, type ScheduledExercise } from "@/generated/prisma/client";
 export type ScheduleInput = {
   dogId: string;
+  timeZone: string;
   exercises: {
     exerciseId: string;
     startsAt: string;
@@ -49,9 +50,22 @@ export class EventsService {
     );
   }
 
-  list(userId: string) {
+  list(userId: string, range: { from: string; to: string }) {
+    const from = new Date(range.from);
+    const to = new Date(range.to);
+    const duration = to.getTime() - from.getTime();
+    if (!Number.isFinite(duration) || duration <= 0 || duration > 62 * 86400000)
+      throw new BadRequestException("Choose a range of at most 62 days");
     return this.prisma.scheduledExercise.findMany({
-      where: { dog: { userId, archivedAt: null }, deletedAt: null },
+      where: {
+        dog: { userId, archivedAt: null },
+        deletedAt: null,
+        OR: [
+          { completedAt: { gte: from, lt: to } },
+          { completedAt: null, startsAt: { gte: from, lt: to } },
+        ],
+      },
+      omit: { undoToken: true, undoState: true, deletedAt: true },
       include: {
         dog: { select: { id: true, name: true, avatarVersion: true } },
         exercise: {
@@ -73,7 +87,9 @@ export class EventsService {
     });
   }
 
-  schedule(userId: string, input: ScheduleInput) {
+  async schedule(userId: string, input: ScheduleInput) {
+    for (const exercise of input.exercises)
+      this.validateDate(exercise.startsAt, input.timeZone);
     return this.prisma.$transaction(async (tx) => {
       const dog = await tx.dog.findFirst({
         where: { id: input.dogId, userId, archivedAt: null },
@@ -141,15 +157,11 @@ export class EventsService {
     });
   }
 
-  async move(
-    userId: string,
-    id: string,
-    input: { startsAt: string; durationMinutes: number; timeZone: string },
-  ) {
-    const startsAt = new Date(input.startsAt);
+  private validateDate(value: string, timeZone: string) {
+    const startsAt = new Date(value);
     const dateKey = (date: Date) => {
       const parts = new Intl.DateTimeFormat("en", {
-        timeZone: input.timeZone,
+        timeZone,
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
@@ -158,8 +170,17 @@ export class EventsService {
         .map((part) => parts.find((item) => item.type === part)!.value)
         .join("-");
     };
-    if (dateKey(startsAt) < dateKey(new Date()))
+    if (dateKey(startsAt) < dateKey(new Date(Date.now())))
       throw new BadRequestException("Choose today or a future date");
+  }
+
+  async move(
+    userId: string,
+    id: string,
+    input: { startsAt: string; durationMinutes: number; timeZone: string },
+  ) {
+    this.validateDate(input.startsAt, input.timeZone);
+    const startsAt = new Date(input.startsAt);
     return this.prisma.$transaction(async (tx) => {
       const event = await this.owned(tx, userId, id);
       if (event.completedAt)

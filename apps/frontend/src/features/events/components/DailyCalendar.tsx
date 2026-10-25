@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { addDays, format, isSameDay } from "date-fns";
+import { addDays, startOfDay, format, isSameDay } from "date-fns";
 import { useTranslation } from "react-i18next";
 
 import { pluralForm } from "@/lib/plural";
@@ -24,7 +24,10 @@ export function DailyCalendar({
 }: DailyCalendarProps) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
-  const { query, eventsOf } = useCalendarEvents();
+  const { query, eventsOf } = useCalendarEvents(
+    startOfDay(date),
+    addDays(startOfDay(date), 1),
+  );
   const locale = i18n.resolvedLanguage ?? "cs";
   const events = eventsOf(date);
   const dateLabel = new Intl.DateTimeFormat(locale, {

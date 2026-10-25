@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "@/core/prisma/prisma.service";
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import type { DogGoalSelection } from "@/modules/dogs/domain/dog-selection";
 
 export type DogSelectionScope = {
@@ -119,6 +119,29 @@ export class DogSelectionService {
     return goal;
   }
 
+  async clearUnassignedSessions(
+    tx: Prisma.TransactionClient,
+    scope: DogSelectionScope,
+  ) {
+    await tx.scheduledExercise.updateMany({
+      where: {
+        dogId: scope.dogId,
+        completedAt: null,
+        deletedAt: null,
+        startsAt: { gte: new Date() },
+        exercise: {
+          goal: { disciplineId: scope.disciplineId },
+          dogs: { none: { dogId: scope.dogId } },
+        },
+      },
+      data: {
+        deletedAt: new Date(),
+        undoToken: null,
+        undoState: Prisma.DbNull,
+      },
+    });
+  }
+
   async replaceGoal(
     tx: Prisma.TransactionClient,
     scope: DogSelectionScope,
@@ -149,6 +172,7 @@ export class DogSelectionService {
         skipDuplicates: true,
       });
     }
+    await this.clearUnassignedSessions(tx, scope);
     return this.getGoal(tx, scope, goalId);
   }
 
@@ -165,6 +189,7 @@ export class DogSelectionService {
       },
     });
     for (const goal of goals) await this.replaceGoal(tx, scope, goal);
+    await this.clearUnassignedSessions(tx, scope);
     return { goals: await this.list(tx, scope) };
   }
 
@@ -207,6 +232,7 @@ export class DogSelectionService {
     await tx.dogGoal.delete({
       where: { dogId_goalId: { dogId: scope.dogId, goalId } },
     });
+    await this.clearUnassignedSessions(tx, scope);
   }
 
   async addExercise(
@@ -251,5 +277,6 @@ export class DogSelectionService {
     await tx.dogExercise.delete({
       where: { dogId_exerciseId: { dogId: scope.dogId, exerciseId } },
     });
+    await this.clearUnassignedSessions(tx, scope);
   }
 }

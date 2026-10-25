@@ -29,7 +29,11 @@ import { api } from "@/lib/api-client";
 import { useSession } from "@/features/auth/hooks/useSession";
 import { disciplinesKey } from "@/features/disciplines/api/disciplinesQueryOptions";
 import { EmptyState } from "@/features/disciplines/components/EmptyState";
-import type { ScheduledEvent } from "@/features/events/api/eventsQueryOptions";
+import {
+  eventsKey,
+  planningExercisesKey,
+  type ScheduledEvent,
+} from "@/features/events/api/eventsQueryOptions";
 import { Event } from "@/features/events/components/Event";
 import { ScheduleExerciseDialog } from "@/features/events/components/ScheduleExerciseDialog";
 
@@ -60,9 +64,10 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
   const refresh = () =>
     Promise.all([
       client.invalidateQueries({ queryKey: dogProfileKey(user?.id) }),
+      client.invalidateQueries({ queryKey: eventsKey(user?.id) }),
       client.invalidateQueries({ queryKey: disciplinesKey(user?.id) }),
       client.invalidateQueries({
-        queryKey: ["planningExercises", user?.id, dog.id],
+        queryKey: planningExercisesKey(user?.id, dog.id),
       }),
     ]);
   const path = `${dogDisciplinePath(dog.id, goal.discipline.id)}/goals/${encodeURIComponent(goal.id)}/exercises`;

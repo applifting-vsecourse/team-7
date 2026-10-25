@@ -104,6 +104,7 @@ function renderRoute(path = "/dogs/dog-1?lng=en") {
 beforeEach(() => {
   vi.clearAllMocks();
   state.get = new Map<string, () => unknown>([
+    ["events", () => []],
     ["dogs", () => [emptyDog]],
     ["dogs/dog-1", () => emptyDog],
     ["disciplines", () => [summary]],
@@ -126,6 +127,41 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe("dog profile", () => {
+  it("counts this dog's weekly sessions instead of showing a placeholder", async () => {
+    state.get.set("dogs/dog-1", () => ({
+      ...emptyDog,
+      disciplines: [{ ...summary, completedGoalCount: 0 }],
+    }));
+    const session = {
+      id: "session-a",
+      dogId: "dog-1",
+      startsAt: "2026-10-25T08:00:00Z",
+      durationMinutes: 10,
+      rating: null,
+      note: null,
+      completedAt: null,
+      dog: { id: "dog-1", name: "Mája", avatarVersion: null },
+      exercise: {
+        id: "e1",
+        name: "Recall",
+        procedure: null,
+        goal: {
+          id: "g1",
+          name: "Recall",
+          discipline: { id: "d1", name: "Obedience" },
+        },
+      },
+    };
+    state.get.set("events", () => [
+      session,
+      { ...session, id: "other", dogId: "dog-2" },
+    ]);
+    renderRoute();
+    const label = await screen.findByText("Training sessions this week");
+    await waitFor(() =>
+      expect(within(label.parentElement!).getByText("1")).toBeInTheDocument(),
+    );
+  });
   it("shows the real dog's metadata and empty state", async () => {
     renderRoute();
     expect(

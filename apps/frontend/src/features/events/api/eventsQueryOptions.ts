@@ -40,19 +40,31 @@ export type ScheduledEvent = z.infer<typeof eventSchema>;
 
 export const eventsKey = (userId: string | undefined) =>
   ["events", userId] as const;
-export const eventsQueryOptions = (userId: string | undefined) =>
+export const eventsQueryOptions = (
+  userId: string | undefined,
+  range: { from: string; to: string },
+) =>
   queryOptions({
-    queryKey: eventsKey(userId),
+    queryKey: [...eventsKey(userId), range],
     enabled: Boolean(userId),
     queryFn: async ({ signal }) =>
-      z.array(eventSchema).parse(await api.get("events", { signal }).json()),
+      z
+        .array(eventSchema)
+        .parse(await api.get("events", { signal, searchParams: range }).json()),
   });
+export const planningExercisesKey = (
+  userId: string | undefined,
+  dogId?: string,
+) =>
+  dogId
+    ? (["planningExercises", userId, dogId] as const)
+    : (["planningExercises", userId] as const);
 export const planningExercisesQueryOptions = (
   userId: string | undefined,
   dogId: string,
 ) =>
   queryOptions({
-    queryKey: ["planningExercises", userId, dogId],
+    queryKey: planningExercisesKey(userId, dogId),
     enabled: Boolean(userId && dogId),
     queryFn: async ({ signal }) =>
       z.array(planningExerciseSchema).parse(

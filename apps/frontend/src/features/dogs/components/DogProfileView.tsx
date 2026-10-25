@@ -1,9 +1,14 @@
 import { useState } from "react";
 import type { DogProfile } from "../api/dogProfileQueryOptions";
 import { Calendar, ChartLine, CircleCheck } from "@gravity-ui/icons";
+import { useQuery } from "@tanstack/react-query";
+import { addWeeks, startOfWeek } from "date-fns";
 import { useTranslation } from "react-i18next";
 
 import { pluralForm } from "@/lib/plural";
+
+import { useSession } from "@/features/auth/hooks/useSession";
+import { eventsQueryOptions } from "@/features/events/api/eventsQueryOptions";
 
 import { AssignDisciplineButton } from "./AssignDisciplineButton";
 import { AssignDisciplineDialog } from "./AssignDisciplineDialog";
@@ -15,6 +20,14 @@ import { NewDogDisciplineDialog } from "./NewDogDisciplineDialog";
 
 export function DogProfileView({ dog }: { dog: DogProfile }) {
   const { t } = useTranslation();
+  const { user } = useSession();
+  const [week] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const events = useQuery(
+    eventsQueryOptions(user?.id, {
+      from: week.toISOString(),
+      to: addWeeks(week, 1).toISOString(),
+    }),
+  );
   const [dialog, setDialog] = useState<"library" | "create" | null>(null);
   const active = dog.disciplines.filter((item) => !isDisciplineDone(item));
   const done = dog.disciplines.filter(isDisciplineDone);
@@ -52,7 +65,11 @@ export function DogProfileView({ dog }: { dog: DogProfile }) {
             />
             <DogStat
               icon={Calendar}
-              value={t(($) => $.dogProfile.noData)}
+              value={
+                events.data
+                  ? events.data.filter((event) => event.dogId === dog.id).length
+                  : t(($) => $.dogProfile.noData)
+              }
               label={t(($) => $.dogProfile.weeklyTrainings)}
               tone="warning"
             />

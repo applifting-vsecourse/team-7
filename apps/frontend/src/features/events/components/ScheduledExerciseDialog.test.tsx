@@ -195,6 +195,26 @@ describe("scheduled exercise dialog", () => {
       expect(success).toHaveBeenCalledWith("Training restored."),
     );
   });
+  it("shows a terminal error without another Undo action when undo fails", async () => {
+    const success = vi.spyOn(toast, "success");
+    const danger = vi.spyOn(toast, "danger");
+    state.post.mockRejectedValueOnce(new Error("409 stale token"));
+    const { user, close } = setup();
+    await user.click(screen.getByRole("button", { name: "Training actions" }));
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Delete training" }),
+    );
+    await waitFor(() => expect(close).toHaveBeenCalledOnce());
+    const undoAction = success.mock.calls.find(
+      ([message]) => message === "Training deleted.",
+    )?.[1]?.actionProps?.onPress;
+    expect(undoAction).toBeTypeOf("function");
+    undoAction?.({} as never);
+    await waitFor(() => expect(danger).toHaveBeenCalledOnce());
+    expect(danger.mock.calls[0]).toHaveLength(1);
+    expect(success).toHaveBeenCalledTimes(1);
+    expect(state.post).toHaveBeenCalledTimes(1);
+  });
   it("retains values and allows retry after a failed save", async () => {
     state.patch.mockRejectedValueOnce(new Error("offline"));
     const { user, close } = setup();

@@ -29,7 +29,7 @@ export type GoalAction =
       goalId: string;
     }
   | {
-      type: "assignExercise" | "removeExercise";
+      type: "assignExercise";
       goalId: string;
       exerciseId: string;
     };

@@ -7,7 +7,10 @@ import {
   waitFor,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { createStore, Provider } from "jotai";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
 
 import { eventsKey } from "../api/eventsQueryOptions";
 import { ScheduleExerciseDialog } from "./ScheduleExerciseDialog";
@@ -57,22 +60,26 @@ afterEach(() => {
 });
 
 function setup() {
+  const store = createStore();
+  store.set(selectedDogIdsAtom, ["dog-b"]);
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   const close = vi.fn();
   const invalidate = vi.spyOn(client, "invalidateQueries");
   render(
-    <QueryClientProvider client={client}>
-      <ScheduleExerciseDialog date={new Date(2026, 9, 25)} onClose={close} />
-    </QueryClientProvider>,
+    <Provider store={store}>
+      <QueryClientProvider client={client}>
+        <ScheduleExerciseDialog date={new Date(2099, 9, 25)} onClose={close} />
+      </QueryClientProvider>
+    </Provider>,
   );
-  return { user: userEvent.setup(), close, invalidate };
+  return { user: userEvent.setup(), close, invalidate, store };
 }
 
 describe("exercise planning dialog", () => {
   it("selects a dog, exercises and times, retains edits when going back, and saves", async () => {
-    const { user, close, invalidate } = setup();
+    const { user, close, invalidate, store } = setup();
     await user.click(await screen.findByRole("radio", { name: /Mája/ }));
     await user.click(screen.getByRole("button", { name: "Continue" }));
     await user.click(
@@ -97,16 +104,18 @@ describe("exercise planning dialog", () => {
     expect(state.post).toHaveBeenCalledWith("events", {
       json: {
         dogId: "dog-a",
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         exercises: [
           {
             exerciseId: "e1",
-            startsAt: new Date("2026-10-25T18:30").toISOString(),
+            startsAt: new Date("2099-10-25T18:30").toISOString(),
             durationMinutes: 10,
           },
         ],
       },
     });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: eventsKey("user-a") });
+    expect(store.get(selectedDogIdsAtom)).toEqual(["dog-a"]);
   });
   it("shows selection validation and clears exercises when the dog changes", async () => {
     const { user } = setup();

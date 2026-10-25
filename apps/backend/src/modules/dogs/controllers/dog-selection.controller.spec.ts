@@ -40,6 +40,7 @@ describe("dog discipline selections API", () => {
       delete: vi.fn(),
       update: vi.fn(),
     },
+    scheduledExercise: { updateMany: vi.fn() },
     dogExercise: {
       createMany: vi.fn(),
       deleteMany: vi.fn(),
@@ -122,6 +123,24 @@ describe("dog discipline selections API", () => {
     expect(prisma.dogDiscipline.deleteMany).toHaveBeenCalledWith({
       where: { dogId: "dog-a", disciplineId: "d1" },
     });
+    expect(prisma.scheduledExercise.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          dogId: "dog-a",
+          completedAt: null,
+          deletedAt: null,
+          startsAt: { gte: expect.any(Date) },
+          exercise: {
+            goal: { disciplineId: "d1" },
+            dogs: { none: { dogId: "dog-a" } },
+          },
+        },
+        data: expect.objectContaining({
+          deletedAt: expect.any(Date),
+          undoToken: null,
+        }),
+      }),
+    );
   });
 
   it("does not assign a discipline owned by someone else", async () => {
