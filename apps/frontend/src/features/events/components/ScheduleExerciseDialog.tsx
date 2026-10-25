@@ -12,6 +12,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useSetAtom } from "jotai";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -20,7 +21,9 @@ import { pluralForm } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
 import { useSession } from "@/features/auth/hooks/useSession";
+import { dogProfileKey } from "@/features/dogs/api/dogProfileQueryOptions";
 import { dogsQueryOptions } from "@/features/dogs/api/dogsQueryOptions";
+import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 import { dogAge } from "@/features/dogs/lib/dogAge";
@@ -30,7 +33,8 @@ import {
   planningExercisesQueryOptions,
   type PlanningExercise,
 } from "../api/eventsQueryOptions";
-import { scheduleSchema, type ScheduleValues } from "../schemas/scheduleSchema";
+import { moveEventSchema } from "../schemas/eventResultSchema";
+import { type ScheduleValues } from "../schemas/scheduleSchema";
 import { ScheduleFields } from "./ScheduleFields";
 
 export function ScheduleExerciseDialog({
@@ -47,6 +51,8 @@ export function ScheduleExerciseDialog({
   const { t } = useTranslation();
   const { user } = useSession();
   const queryClient = useQueryClient();
+  const setSelectedDogs = useSetAtom(selectedDogIdsAtom);
+  const [today] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const [step, setStep] = useState(initialDogId ? 2 : 1);
   const [dogId, setDogId] = useState(initialDogId ?? "");
   const [selected, setSelected] = useState<string[]>(
@@ -60,7 +66,7 @@ export function ScheduleExerciseDialog({
     selected.includes(item.id),
   );
   const form = useForm<ScheduleValues>({
-    resolver: zodResolver(scheduleSchema),
+    resolver: zodResolver(moveEventSchema),
     defaultValues: { exercises: [] },
   });
   const save = useMutation({
@@ -68,6 +74,7 @@ export function ScheduleExerciseDialog({
       await api.post("events", {
         json: {
           dogId,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           exercises: values.exercises.map((item) => ({
             exerciseId: item.exerciseId,
             startsAt: new Date(`${item.date}T${item.time}`).toISOString(),
@@ -77,7 +84,11 @@ export function ScheduleExerciseDialog({
       });
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: eventsKey(user?.id) });
+      setSelectedDogs([dogId]);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: eventsKey(user?.id) }),
+        queryClient.invalidateQueries({ queryKey: dogProfileKey(user?.id) }),
+      ]);
       toast.success(t(($) => $.planning.success));
       onClose();
     },
@@ -98,7 +109,10 @@ export function ScheduleExerciseDialog({
           (item) =>
             previous.find((row) => row.exerciseId === item.id) ?? {
               exerciseId: item.id,
-              date: format(date, "yyyy-MM-dd"),
+              date:
+                format(date, "yyyy-MM-dd") < today
+                  ? today
+                  : format(date, "yyyy-MM-dd"),
               time: "07:15",
               durationMinutes: 10,
             },
@@ -202,6 +216,7 @@ export function ScheduleExerciseDialog({
                       setSelectionError(false);
                     }}
                     className="gap-2"
+                    variant="secondary"
                   >
                     {dogs.data?.map((item) => {
                       const age = dogAge(item.birthDate);
@@ -215,12 +230,8 @@ export function ScheduleExerciseDialog({
                           )
                         : null;
                       return (
-                        <Radio
-                          key={item.id}
-                          value={item.id}
-                          className="w-full rounded-3xl bg-surface p-4 shadow-card"
-                        >
-                          <Radio.Content className="w-full gap-3">
+                        <Radio key={item.id} value={item.id} className="w-full">
+                          <Radio.Content className="w-full cursor-pointer gap-3 rounded-3xl bg-surface p-4 shadow-card data-[selected=true]:bg-default">
                             <Radio.Control>
                               <Radio.Indicator />
                             </Radio.Control>
@@ -277,6 +288,7 @@ export function ScheduleExerciseDialog({
                                     className="flex flex-col gap-2 rounded-3xl bg-surface p-4 shadow-card"
                                   >
                                     <Checkbox
+                                      variant="secondary"
                                       isSelected={count === items.length}
                                       isIndeterminate={
                                         count > 0 && count < items.length
@@ -300,6 +312,7 @@ export function ScheduleExerciseDialog({
                                     <div className="flex flex-col gap-2 pl-8">
                                       {items.map((item) => (
                                         <Checkbox
+                                          variant="secondary"
                                           key={item.id}
                                           isSelected={selected.includes(
                                             item.id,
@@ -346,6 +359,7 @@ export function ScheduleExerciseDialog({
                             control={form.control}
                             index={index}
                             isDisabled={save.isPending}
+                            minDate={today}
                           />
                         </div>
                       ))}

@@ -23,13 +23,13 @@ export function WeeklyCalendar() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const headingId = useId();
-  const { query, eventsOf } = useCalendarEvents();
   const scrollRef = useRef<HTMLDivElement>(null);
   const todayRef = useRef<HTMLElement>(null);
   const [today] = useState(() => new Date());
   const [week, setWeek] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
+  const { query, eventsOf } = useCalendarEvents(week, addDays(week, 7));
   // The strip never shrinks while browsing weeks, so a shorter (e.g. empty)
   // week doesn't collapse the page and jump the window scroll.
   const [minHeight, setMinHeight] = useState<number>();

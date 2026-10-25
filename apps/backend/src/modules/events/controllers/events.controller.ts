@@ -1,5 +1,6 @@
 import {
   Body,
+  Query,
   Patch,
   Delete,
   Controller,
@@ -20,6 +21,7 @@ import {
   MoveEventDto,
   UndoEventDto,
 } from "./dto/event-action.dto";
+import { ListEventsDto } from "./dto/list-events.dto";
 import { ScheduleInputDto } from "./dto/schedule-input.dto";
 
 @ApiTags("events")
@@ -39,8 +41,8 @@ export class EventsController {
   @ApiOperation({
     summary: "List scheduled exercises owned by the signed-in user",
   })
-  list(@User() user: Identity) {
-    return this.events.list(user.id);
+  list(@User() user: Identity, @Query() range: ListEventsDto) {
+    return this.events.list(user.id, range);
   }
 
   @Get("dogs/:dogId/exercises")

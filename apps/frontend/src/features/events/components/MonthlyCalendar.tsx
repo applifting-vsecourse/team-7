@@ -8,6 +8,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import {
   addMonths,
+  addDays,
   eachDayOfInterval,
   endOfMonth,
   endOfWeek,
@@ -48,13 +49,16 @@ export function MonthlyCalendar({
 }: MonthlyCalendarProps) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
-  const { query, eventsOf } = useCalendarEvents();
   const locale = i18n.resolvedLanguage ?? "cs";
   const monthStart = startOfMonth(date);
   const days = eachDayOfInterval({
     start: startOfWeek(monthStart, { weekStartsOn: 1 }),
     end: endOfWeek(endOfMonth(monthStart), { weekStartsOn: 1 }),
   });
+  const { query, eventsOf } = useCalendarEvents(
+    days[0]!,
+    addDays(days[days.length - 1]!, 1),
+  );
   const selectedEvents = eventsOf(date);
   const exerciseCount = (count: number) =>
     t(($) => $.calendar.exerciseCount[pluralForm(count)], { count });

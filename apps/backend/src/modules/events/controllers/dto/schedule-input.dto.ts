@@ -8,6 +8,7 @@ import {
   IsInt,
   IsNotEmpty,
   IsString,
+  IsTimeZone,
   Max,
   Min,
   ValidateNested,
@@ -30,6 +31,10 @@ export class ScheduledExerciseInputDto {
   durationMinutes!: number;
 }
 export class ScheduleInputDto {
+  @ApiProperty({ example: "Europe/Prague" })
+  @IsTimeZone()
+  timeZone!: string;
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

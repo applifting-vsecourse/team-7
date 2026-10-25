@@ -104,6 +104,7 @@ export class DogSelectionController {
       await tx.dogDiscipline.deleteMany({
         where: { dogId: params.dogId, disciplineId: params.disciplineId },
       });
+      await this.selections.clearUnassignedSessions(tx, scope);
     });
   }
 

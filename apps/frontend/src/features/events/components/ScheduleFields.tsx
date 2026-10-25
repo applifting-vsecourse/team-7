@@ -19,24 +19,15 @@ export function ScheduleFields({
   index,
   isDisabled,
   minDate,
-  stackedDate = false,
 }: {
   control: Control<ScheduleValues>;
   index: number;
   isDisabled: boolean;
   minDate?: string;
-  stackedDate?: boolean;
 }) {
   const { t } = useTranslation();
   return (
-    <div
-      className={cn(
-        "grid min-w-0 flex-1 gap-2",
-        stackedDate
-          ? "grid-cols-2 sm:grid-cols-3"
-          : "grid-cols-1 min-[360px]:grid-cols-3",
-      )}
-    >
+    <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 sm:grid-cols-3">
       {(["date", "time"] as const).map((kind) => (
         <Controller
           key={kind}
@@ -53,7 +44,7 @@ export function ScheduleFields({
               type={kind}
               className={cn(
                 "min-w-0",
-                stackedDate && kind === "date" && "col-span-2 sm:col-span-1",
+                kind === "date" && "col-span-2 sm:col-span-1",
               )}
             >
               <Label>
@@ -64,7 +55,7 @@ export function ScheduleFields({
               <Input
                 ref={field.ref}
                 min={kind === "date" ? minDate : undefined}
-                className="min-w-0"
+                className="w-full min-w-0"
               />
               <FieldError>
                 {fieldState.error &&

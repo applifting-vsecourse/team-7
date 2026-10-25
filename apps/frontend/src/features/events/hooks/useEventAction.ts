@@ -61,10 +61,7 @@ export function useEventAction(id: string, onClose: () => void) {
             })
             .catch(() => {
               toast.close(toastId);
-              showUndo(
-                t(($) => $.training.undoError),
-                token,
-              );
+              toast.danger(t(($) => $.training.undoError));
             });
         },
       },

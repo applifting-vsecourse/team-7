@@ -4,6 +4,10 @@ import { api } from "@/lib/api-client";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { disciplinesKey } from "@/features/disciplines/api/disciplinesQueryOptions";
+import {
+  eventsKey,
+  planningExercisesKey,
+} from "@/features/events/api/eventsQueryOptions";
 
 import { dogProfileKey } from "../api/dogProfileQueryOptions";
 import { dogsQueryOptions } from "../api/dogsQueryOptions";
@@ -19,6 +23,8 @@ export function useDogProfileMutation<T = void, TResult = unknown>(
     onSuccess: async () => {
       await Promise.all([
         client.invalidateQueries({ queryKey: dogProfileKey(user?.id) }),
+        client.invalidateQueries({ queryKey: eventsKey(user?.id) }),
+        client.invalidateQueries({ queryKey: planningExercisesKey(user?.id) }),
         client.invalidateQueries({
           queryKey: dogsQueryOptions(user?.id).queryKey,
         }),
