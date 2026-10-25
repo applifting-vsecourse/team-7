@@ -31,6 +31,8 @@ describe("/api/dogs", () => {
   const getSession = vi.mocked(getSessionFromRequest);
   const findMany = vi.fn();
   const findFirst = vi.fn();
+  const groupBy = vi.fn();
+  const findExercises = vi.fn();
   const create = vi.fn();
   const updateManyAndReturn = vi.fn();
   const deleteMany = vi.fn();
@@ -57,6 +59,8 @@ describe("/api/dogs", () => {
         {
           provide: PrismaService,
           useValue: {
+            scheduledExercise: { groupBy },
+            exercise: { findMany: findExercises },
             dog: {
               findMany,
               findFirst,
@@ -78,6 +82,8 @@ describe("/api/dogs", () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
+    groupBy.mockResolvedValue([]);
+    findExercises.mockResolvedValue([]);
     dogs = initialDogs.map((dog) => ({ ...dog }));
     findMany.mockImplementation(
       ({ where }: { where: { userId: string; archivedAt?: null } }) =>
@@ -352,38 +358,6 @@ describe("/api/dogs", () => {
         { discipline: { id: "d1", name: "Obedience", description: null } },
         { discipline: { id: "d2", name: "New", description: null } },
       ],
-      scheduledExercises: [
-        {
-          completedAt: recent,
-          exerciseId: "e2",
-          rating: null,
-          exercise: { goal: { disciplineId: "d1" } },
-        },
-        {
-          completedAt: old,
-          exerciseId: "e3",
-          rating: 5,
-          exercise: { goal: { disciplineId: "d2" } },
-        },
-        {
-          completedAt: ratedAt,
-          exerciseId: "e1",
-          rating: 5,
-          exercise: { goal: { disciplineId: "d1" } },
-        },
-        {
-          completedAt: ratedAt,
-          exerciseId: "e1",
-          rating: 3,
-          exercise: { goal: { disciplineId: "d1" } },
-        },
-        {
-          completedAt: ratedAt,
-          exerciseId: "e1",
-          rating: 3,
-          exercise: { goal: { disciplineId: "d1" } },
-        },
-      ],
       goals: [
         {
           goal: { disciplineId: "d1" },
@@ -393,6 +367,21 @@ describe("/api/dogs", () => {
         { goal: { disciplineId: "d1" }, completedAt: null, exercises: [] },
       ],
     });
+    groupBy
+      .mockResolvedValueOnce([
+        { exerciseId: "e1", _sum: { rating: 8 }, _count: { rating: 2 } },
+        { exerciseId: "e2", _sum: { rating: 3 }, _count: { rating: 1 } },
+      ])
+      .mockResolvedValueOnce([
+        { exerciseId: "e2", _max: { completedAt: recent } },
+        { exerciseId: "e1", _max: { completedAt: ratedAt } },
+        { exerciseId: "e3", _max: { completedAt: old } },
+      ]);
+    findExercises.mockResolvedValue([
+      { id: "e1", goal: { disciplineId: "d1" } },
+      { id: "e2", goal: { disciplineId: "d1" } },
+      { id: "e3", goal: { disciplineId: "d2" } },
+    ]);
     const response = await fetch(`${url}/dog-a`);
     expect(response.status).toBe(200);
     const profile = await response.json();
@@ -427,36 +416,41 @@ describe("/api/dogs", () => {
       },
     ]);
     expect(findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: "dog-a", userId: "user-a" },
-        omit: { avatar: true },
-        include: expect.objectContaining({
-          scheduledExercises: {
-            where: {
-              deletedAt: null,
-              completedAt: { not: null, lte: expect.any(Date) },
-            },
-            select: {
-              rating: true,
-              completedAt: true,
-              exerciseId: true,
-              exercise: {
-                select: { goal: { select: { disciplineId: true } } },
-              },
-            },
-          },
-        }),
-      }),
+      expect.objectContaining({ where: { id: "dog-a", userId: "user-a" } }),
     );
-    const range =
-      findFirst.mock.calls[0][0].include.scheduledExercises.where.completedAt;
-    expect(range.lte.getTime()).toBeLessThanOrEqual(Date.now());
-    expect(range.lte.getTime()).toBeGreaterThan(Date.now() - 10000);
+    expect(findFirst.mock.calls[0][0].include).not.toHaveProperty(
+      "scheduledExercises",
+    );
+    const range = groupBy.mock.calls[0][0].where.completedAt;
+    expect(range.lte.getTime() - range.gte.getTime()).toBe(30 * 86400000);
+    expect(groupBy).toHaveBeenNthCalledWith(1, {
+      by: ["exerciseId"],
+      where: {
+        dogId: "dog-a",
+        deletedAt: null,
+        completedAt: { gte: range.gte, lte: range.lte },
+        exercise: { goal: { disciplineId: { in: ["d1", "d2"] } } },
+      },
+      _sum: { rating: true },
+      _count: { rating: true },
+    });
+    expect(groupBy).toHaveBeenNthCalledWith(2, {
+      by: ["exerciseId"],
+      where: {
+        dogId: "dog-a",
+        deletedAt: null,
+        completedAt: { not: null, lte: range.lte },
+        exercise: { goal: { disciplineId: { in: ["d1", "d2"] } } },
+      },
+      _max: { completedAt: true },
+    });
   });
 
   it("does not expose another owner's profile", async () => {
     signIn("user-a");
     expect((await fetch(`${url}/dog-b`)).status).toBe(404);
+    expect(groupBy).not.toHaveBeenCalled();
+    expect(findExercises).not.toHaveBeenCalled();
   });
 
   describe.each(["POST", "PATCH"])("%s body validation", (method) => {
