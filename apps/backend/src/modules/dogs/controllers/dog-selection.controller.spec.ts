@@ -228,6 +228,26 @@ describe("dog discipline selections API", () => {
     expect(prisma.dogGoal.upsert).not.toHaveBeenCalled();
   });
 
+  it("clears unassigned sessions once after all goals in a batch are saved", async () => {
+    prisma.goal.findMany.mockResolvedValue([
+      { id: "g1", exercises: [{ id: "e1" }] },
+      { id: "g2", exercises: [{ id: "e2" }] },
+    ]);
+    const response = await request("PUT", "/selection", {
+      goals: [
+        { goalId: "g1", exerciseIds: ["e1"] },
+        { goalId: "g2", exerciseIds: ["e2"] },
+      ],
+    });
+    expect(response.status).toBe(200);
+    expect(prisma.scheduledExercise.updateMany).toHaveBeenCalledTimes(1);
+    expect(
+      prisma.scheduledExercise.updateMany.mock.invocationCallOrder[0],
+    ).toBeGreaterThan(
+      prisma.dogExercise.createMany.mock.invocationCallOrder[1],
+    );
+  });
+
   it("replaces a discipline selection atomically while preserving retained completion", async () => {
     const body = { goals: [{ goalId: "g1", exerciseIds: ["e1"] }] };
     for (let i = 0; i < 2; i++) {

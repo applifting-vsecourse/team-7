@@ -38,9 +38,9 @@ import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 import { useEventAction } from "../hooks/useEventAction";
 import {
   eventResultSchema,
-  moveEventSchema,
   type EventResultValues,
 } from "../schemas/eventResultSchema";
+import { futureScheduleSchema } from "../schemas/scheduleSchema";
 import { ScheduleFields } from "./ScheduleFields";
 
 export function ScheduledExerciseDialog({
@@ -61,7 +61,7 @@ export function ScheduledExerciseDialog({
     defaultValues: { rating: event.rating ?? 0, note: event.note ?? "" },
   });
   const schedule = useForm<ScheduleValues>({
-    resolver: zodResolver(moveEventSchema),
+    resolver: zodResolver(futureScheduleSchema),
     defaultValues: {
       exercises: [
         {

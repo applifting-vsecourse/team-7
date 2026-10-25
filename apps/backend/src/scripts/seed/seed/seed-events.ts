@@ -27,11 +27,10 @@ export async function seedEvents(prisma: PrismaService): Promise<void> {
     const exercise = dog.goals[0]?.exercises[0];
     if (!exercise) continue;
 
-    // Stable IDs avoid duplicates. Development seeding restores demo rows
-    // while preserving any recorded results, notes and rescheduled dates.
+    // Stable IDs avoid duplicates and preserve edits, completion and deletion.
     await prisma.scheduledExercise.upsert({
       where: { id: `seed-overdue-${dog.id}` },
-      update: { deletedAt: null },
+      update: {},
       create: {
         id: `seed-overdue-${dog.id}`,
         dogId: dog.id,
@@ -59,7 +58,7 @@ export async function seedEvents(prisma: PrismaService): Promise<void> {
       const id = `seed-history-${dog.id}-${exercise.exerciseId}-${index}`;
       await prisma.scheduledExercise.upsert({
         where: { id },
-        update: { deletedAt: null },
+        update: {},
         create: {
           id,
           dogId: dog.id,
@@ -74,15 +73,22 @@ export async function seedEvents(prisma: PrismaService): Promise<void> {
     }
 
     // Upcoming sessions exercise the overview's Today and Tomorrow groups too.
-    for (const [offset, label] of ["today", "tomorrow"].entries()) {
+    for (const offset of [0, 1]) {
       const startsAt = new Date();
       startsAt.setDate(startsAt.getDate() + offset);
       startsAt.setHours(18, 0, 0, 0);
+      // The same calendar day has one identity, whether seeded as today or tomorrow.
+      const day = [
+        startsAt.getFullYear(),
+        String(startsAt.getMonth() + 1).padStart(2, "0"),
+        String(startsAt.getDate()).padStart(2, "0"),
+      ].join("-");
+      const id = `seed-planned-${dog.id}-${day}`;
       await prisma.scheduledExercise.upsert({
-        where: { id: `seed-${label}-${dog.id}` },
-        update: { deletedAt: null },
+        where: { id },
+        update: {},
         create: {
-          id: `seed-${label}-${dog.id}`,
+          id,
           dogId: dog.id,
           exerciseId: exercise.exerciseId,
           startsAt,

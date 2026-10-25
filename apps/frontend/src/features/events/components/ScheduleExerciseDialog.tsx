@@ -33,8 +33,10 @@ import {
   planningExercisesQueryOptions,
   type PlanningExercise,
 } from "../api/eventsQueryOptions";
-import { moveEventSchema } from "../schemas/eventResultSchema";
-import { type ScheduleValues } from "../schemas/scheduleSchema";
+import {
+  futureScheduleSchema,
+  type ScheduleValues,
+} from "../schemas/scheduleSchema";
 import { ScheduleFields } from "./ScheduleFields";
 
 export function ScheduleExerciseDialog({
@@ -66,7 +68,7 @@ export function ScheduleExerciseDialog({
     selected.includes(item.id),
   );
   const form = useForm<ScheduleValues>({
-    resolver: zodResolver(moveEventSchema),
+    resolver: zodResolver(futureScheduleSchema),
     defaultValues: { exercises: [] },
   });
   const save = useMutation({

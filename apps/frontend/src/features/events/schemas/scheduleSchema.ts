@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { keyFromSelector } from "i18next";
 import { z } from "zod";
 
@@ -30,3 +31,17 @@ export const scheduleSchema = z.object({
     .max(100, invalid),
 });
 export type ScheduleValues = z.infer<typeof scheduleSchema>;
+
+export const futureScheduleSchema = scheduleSchema.superRefine(
+  (values, context) => {
+    values.exercises.forEach((item, index) => {
+      if (item.date < format(new Date(), "yyyy-MM-dd")) {
+        context.addIssue({
+          code: "custom",
+          path: ["exercises", index, "date"],
+          message: keyFromSelector(messageSelectors.trainingFutureDate),
+        });
+      }
+    });
+  },
+);

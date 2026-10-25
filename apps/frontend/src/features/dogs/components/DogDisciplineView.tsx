@@ -18,7 +18,6 @@ import { disciplineQueryOptions } from "@/features/disciplines/api/disciplinesQu
 import { DeleteDialog } from "@/features/disciplines/components/DeleteDialog";
 import { LibraryItemDialog } from "@/features/disciplines/components/LibraryItemDialog";
 import type { LibraryItemValues } from "@/features/disciplines/schemas/libraryItemSchema";
-import { RatingStars } from "@/features/events/components/RatingStars";
 
 import {
   dogDisciplinePath,
@@ -26,6 +25,7 @@ import {
   type DogProfile,
 } from "../api/dogProfileQueryOptions";
 import { useDogProfileMutation } from "../hooks/useDogProfileMutation";
+import { AverageRating } from "./AverageRating";
 import { DogGoal, type GoalAction } from "./DogGoal";
 import { DogStat } from "./DogStat";
 import { DoneSection } from "./DoneSection";
@@ -38,7 +38,7 @@ export function DogDisciplineView({
   dog: DogProfile;
   disciplineId: string;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user } = useSession();
   const navigate = useNavigate();
   const library = useQuery(disciplineQueryOptions(user?.id, disciplineId));
@@ -203,27 +203,10 @@ export function DogDisciplineView({
         <DogStat
           icon={Star}
           value={
-            averageRating === null ? (
-              t(($) => $.dogProfile.noData)
-            ) : (
-              <span className="inline-flex flex-wrap items-center gap-2">
-                <span>
-                  {t(($) => $.exerciseDetail.ratingValue, {
-                    rating: new Intl.NumberFormat(
-                      i18n.resolvedLanguage ?? "cs",
-                      {
-                        minimumFractionDigits: 1,
-                        maximumFractionDigits: 1,
-                      },
-                    ).format(averageRating),
-                  })}
-                </span>
-                <RatingStars
-                  rating={Math.round(averageRating * 10) / 10}
-                  small
-                />
-              </span>
-            )
+            <AverageRating
+              rating={averageRating}
+              emptyLabel={t(($) => $.dogProfile.noData)}
+            />
           }
           label={t(($) => $.dogProfile.averageRatingPeriod)}
           tone="warning"
