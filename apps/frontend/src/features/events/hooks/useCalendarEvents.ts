@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { EventProps } from "../components/Event";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, isBefore, startOfDay, parseISO } from "date-fns";
 import { useAtomValue } from "jotai";
 
@@ -9,8 +9,30 @@ import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
 
 import { eventsQueryOptions } from "../api/eventsQueryOptions";
 
-export function useCalendarEvents(from: Date, to: Date) {
+/**
+ * Events from `from` to `to` (exclusive), filtered by the selected dogs.
+ * `neighbours` (previous / next period) are prefetched, so paging slides in
+ * loaded content instead of an empty period that fills in afterwards.
+ */
+export function useCalendarEvents(
+  from: Date,
+  to: Date,
+  neighbours: [Date, Date][] = [],
+) {
   const { user } = useSession();
+  const queryClient = useQueryClient();
+  const neighbourRanges = neighbours
+    .map(([start, end]) => `${start.toISOString()}/${end.toISOString()}`)
+    .join(",");
+  useEffect(() => {
+    if (!user) return;
+    for (const range of neighbourRanges.split(",").filter(Boolean)) {
+      const [start, end] = range.split("/") as [string, string];
+      void queryClient.prefetchQuery(
+        eventsQueryOptions(user.id, { from: start, to: end }),
+      );
+    }
+  }, [queryClient, user, neighbourRanges]);
   const [today] = useState(() => startOfDay(new Date()));
   const selected = useAtomValue(selectedDogIdsAtom);
   const query = useQuery(

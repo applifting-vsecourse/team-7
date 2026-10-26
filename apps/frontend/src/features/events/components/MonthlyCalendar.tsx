@@ -11,7 +11,6 @@ import {
   addDays,
   eachDayOfInterval,
   endOfMonth,
-  endOfWeek,
   format,
   isSameDay,
   isSameMonth,
@@ -41,6 +40,12 @@ type MonthlyCalendarProps = {
 
 const toIsoDate = (date: Date) => format(date, "yyyy-MM-dd");
 const toCalendarDate = (date: Date) => parseDate(toIsoDate(date));
+// Whole weeks covering the month: Monday before the 1st to the Monday after
+// the last day (exclusive).
+const gridRange = (month: Date): [Date, Date] => [
+  startOfWeek(month, { weekStartsOn: 1 }),
+  addDays(startOfWeek(endOfMonth(month), { weekStartsOn: 1 }), 7),
+];
 const fromCalendarDate = (date: CalendarDate) =>
   date.toDate(getLocalTimeZone());
 
@@ -53,14 +58,15 @@ export function MonthlyCalendar({
   const headingId = useId();
   const locale = i18n.resolvedLanguage ?? "cs";
   const monthStart = startOfMonth(date);
+  const [gridStart, gridEnd] = gridRange(monthStart);
   const days = eachDayOfInterval({
-    start: startOfWeek(monthStart, { weekStartsOn: 1 }),
-    end: endOfWeek(endOfMonth(monthStart), { weekStartsOn: 1 }),
+    start: gridStart,
+    end: addDays(gridEnd, -1),
   });
-  const { query, eventsOf } = useCalendarEvents(
-    days[0]!,
-    addDays(days[days.length - 1]!, 1),
-  );
+  const { query, eventsOf } = useCalendarEvents(gridStart, gridEnd, [
+    gridRange(addMonths(monthStart, -1)),
+    gridRange(addMonths(monthStart, 1)),
+  ]);
   const selectedEvents = eventsOf(date);
   const exerciseCount = (count: number) =>
     t(($) => $.calendar.exerciseCount[pluralForm(count)], { count });
@@ -215,7 +221,10 @@ export function MonthlyCalendar({
           {selectedEvents.length === 0 ? (
             <p className="text-sm text-muted">{t(($) => $.calendar.empty)}</p>
           ) : (
-            <PresenceList key={toIsoDate(date)} className="flex flex-col gap-3">
+            <PresenceList
+              key={toIsoDate(date)}
+              className="flex stagger flex-col gap-3"
+            >
               {selectedEvents.map((event) => (
                 <PresenceItem key={event.id}>
                   <Event {...event} headingLevel="h4" />

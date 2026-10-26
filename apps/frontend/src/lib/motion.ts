@@ -31,10 +31,15 @@ export function enterTransition() {
  * inside it, so the browser can morph elements that share a transition name.
  * Where unsupported, the update just runs.
  */
-export function withViewTransition(update: () => void) {
+export function withViewTransition(update: () => void, types?: string[]) {
   if (!document.startViewTransition) {
     update();
     return Promise.resolve();
   }
-  return document.startViewTransition(() => flushSync(update)).finished;
+  const run = () => flushSync(update);
+  // Types (e.g. forward / back) pick a directional animation where supported.
+  const withTypes =
+    types && CSS.supports("selector(:active-view-transition-type(a))");
+  return document.startViewTransition(withTypes ? { update: run, types } : run)
+    .finished;
 }

@@ -13,6 +13,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { PresenceItem, PresenceList } from "@/components/PresenceList";
+import { withViewTransition } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
@@ -30,7 +31,10 @@ export function WeeklyCalendar() {
   const [week, setWeek] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
-  const { query, eventsOf } = useCalendarEvents(week, addDays(week, 7));
+  const { query, eventsOf } = useCalendarEvents(week, addDays(week, 7), [
+    [addDays(week, -7), week],
+    [addDays(week, 7), addDays(week, 14)],
+  ]);
   // The strip never shrinks while browsing weeks, so a shorter (e.g. empty)
   // week doesn't collapse the page and jump the window scroll.
   const [minHeight, setMinHeight] = useState<number>();
@@ -73,10 +77,17 @@ export function WeeklyCalendar() {
     return unsubscribe;
   }, [currentWeek, router]);
 
+  // Browsing weeks is local state, not navigation, so it starts its own
+  // view transition to slide the strip like the day and month views.
   const changeWeek = (next: Date) => {
     const height = scrollRef.current?.offsetHeight ?? 0;
-    setMinHeight((value) => Math.max(value ?? 0, height));
-    setWeek(next);
+    void withViewTransition(
+      () => {
+        setMinHeight((value) => Math.max(value ?? 0, height));
+        setWeek(next);
+      },
+      isSameDay(next, week) ? undefined : [next < week ? "back" : "forward"],
+    );
   };
 
   return (
@@ -137,13 +148,14 @@ export function WeeklyCalendar() {
       <ScrollShadow
         ref={scrollRef}
         orientation="horizontal"
-        className="w-full"
+        // The scroller (not the wider strip) slides, so it stays clipped.
+        className="w-full period-transition"
         style={{ minHeight }}
         tabIndex={0}
         role="region"
         aria-labelledby={headingId}
       >
-        <div className="flex w-max items-start">
+        <div className="flex w-max stagger items-start">
           {Array.from({ length: 7 }, (_, index) => {
             const date = addDays(week, index);
             const isToday = isSameDay(date, today);

@@ -26,10 +26,11 @@ export function DailyCalendar({
 }: DailyCalendarProps) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
-  const { query, eventsOf } = useCalendarEvents(
-    startOfDay(date),
-    addDays(startOfDay(date), 1),
-  );
+  const day = startOfDay(date);
+  const { query, eventsOf } = useCalendarEvents(day, addDays(day, 1), [
+    [addDays(day, -1), day],
+    [addDays(day, 1), addDays(day, 2)],
+  ]);
   const locale = i18n.resolvedLanguage ?? "cs";
   const events = eventsOf(date);
   const dateLabel = new Intl.DateTimeFormat(locale, {
@@ -88,7 +89,7 @@ export function DailyCalendar({
             as="ol"
             key={format(date, "yyyy-MM-dd")}
             aria-labelledby={headingId}
-            className="flex flex-col gap-3 period-transition"
+            className="flex stagger flex-col gap-3 period-transition"
           >
             {events.map((event) => (
               <PresenceItem key={event.id} className="flex items-start gap-3">
