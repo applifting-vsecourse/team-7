@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { api } from "@/lib/api-client";
@@ -59,5 +59,9 @@ export const overviewQueryOptions = (
       ),
     // Keep the day groups and current week correct when the page stays open overnight.
     refetchInterval: nextOverviewRefresh,
+    // Changing the dog filter keeps the current overview on screen while the
+    // new one loads, so tiles, counters and bars animate to the new data
+    // instead of the page dropping back to its loading state.
+    placeholderData: keepPreviousData,
   });
 };

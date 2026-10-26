@@ -1,8 +1,20 @@
 import { type PropsWithChildren } from "react";
 
-export const OverviewEvents = ({ children }: PropsWithChildren) => {
+import { cn } from "@/lib/utils";
+
+export const OverviewEvents = ({
+  isUpdating = false,
+  children,
+}: PropsWithChildren<{ isUpdating?: boolean }>) => {
   return (
-    <div className="flex flex-col items-start gap-8 self-stretch md:flex-row md:flex-wrap md:content-start">
+    <div
+      aria-busy={isUpdating}
+      className={cn(
+        "flex flex-col items-start gap-8 self-stretch transition-opacity duration-(--motion-base) md:flex-row md:flex-wrap md:content-start",
+        // Dimmed while the previous dog selection is shown and the new one loads.
+        isUpdating && "opacity-60",
+      )}
+    >
       {children}
     </div>
   );
