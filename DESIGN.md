@@ -70,7 +70,7 @@ Motion is quiet: it explains a change, it never decorates. Every value lives in 
 - **Animate only `transform`, `translate` and `opacity`** (plus colour or shadow on state change). Never width, height, top or left.
 - **One or two moving things per view.** A page whose every element moves is noise.
 - **Reduced motion is automatic** as long as you use the tokens: the system setting and `data-reduce-motion` zero every duration.
-- **CSS and the View Transitions API first.** Motion (`motion/react`) is only for what CSS can't do — items leaving a list — and only through `PresenceList` / `PresenceItem` from `src/components/PresenceList.tsx`, which read the same tokens. Never import `motion.*` directly.
+- **CSS and the View Transitions API first.** Motion (`motion/react`) is only for what CSS can't do — items entering / leaving a list (`PresenceList` / `PresenceItem` from `src/components/PresenceList.tsx`, which read the same tokens; key the list by period when paging replaces its content) and touch gestures (`SwipePager` in the events feature for swiping calendar periods). Never import `motion.*` directly.
 - **List item opens a detail:** give the item's title and the detail heading the same `transitionName("discipline", id)` (from `@/lib/utils`) on an `inline-block` span, and the title morphs across the navigation. A name must be unique on the page.
 
 ## Every list has three states

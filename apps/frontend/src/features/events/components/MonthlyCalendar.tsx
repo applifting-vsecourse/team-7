@@ -30,6 +30,7 @@ import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 import { useCalendarEvents } from "../hooks/useCalendarEvents";
 import { CalendarNavigation } from "./CalendarNavigation";
 import { Event } from "./Event";
+import { SwipePager } from "./SwipePager";
 
 type MonthlyCalendarProps = {
   /** The selected day; its month is the one shown. */
@@ -166,7 +167,11 @@ export function MonthlyCalendar({
       {/* Narrow screens: a compact month picker marks days with exercises and
           lists the selected day below it. */}
       {/* Hidden on wide screens, so its period name never clashes with the grid's. */}
-      <div className="flex flex-col gap-6 period-transition lg:hidden">
+      <SwipePager
+        onPrevious={() => onDateChange(addMonths(date, -1))}
+        onNext={() => onDateChange(addMonths(date, 1))}
+        className="flex flex-col gap-6 period-transition lg:hidden"
+      >
         <Calendar
           aria-labelledby={headingId}
           firstDayOfWeek="mon"
@@ -219,7 +224,7 @@ export function MonthlyCalendar({
             </PresenceList>
           )}
         </section>
-      </div>
+      </SwipePager>
     </div>
   );
 }

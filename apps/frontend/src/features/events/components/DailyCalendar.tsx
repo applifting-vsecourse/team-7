@@ -11,6 +11,7 @@ import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 import { useCalendarEvents } from "../hooks/useCalendarEvents";
 import { CalendarNavigation } from "./CalendarNavigation";
 import { Event } from "./Event";
+import { SwipePager } from "./SwipePager";
 
 type DailyCalendarProps = {
   date: Date;
@@ -72,31 +73,38 @@ export function DailyCalendar({
           onCurrent={() => onDateChange(today)}
         />
       </div>
-      {events.length === 0 ? (
-        <p className="text-sm text-muted period-transition">
-          {t(($) => $.calendar.empty)}
-        </p>
-      ) : (
-        <PresenceList
-          as="ol"
-          key={format(date, "yyyy-MM-dd")}
-          aria-labelledby={headingId}
-          className="flex flex-col gap-3 period-transition"
-        >
-          {events.map((event) => (
-            <PresenceItem key={event.id} className="flex items-start gap-3">
-              {/* The tile repeats the time; the column only aids scanning on wider screens. */}
-              <span
-                aria-hidden="true"
-                className="hidden w-18 shrink-0 pt-2 text-sm leading-6 font-medium text-muted sm:block"
-              >
-                {event.time}
-              </span>
-              <Event {...event} className="flex-1" />
-            </PresenceItem>
-          ))}
-        </PresenceList>
-      )}
+      {/* min-h keeps an empty day swipeable on touch screens. */}
+      <SwipePager
+        onPrevious={() => onDateChange(addDays(date, -1))}
+        onNext={() => onDateChange(addDays(date, 1))}
+        className="min-h-40 md:min-h-0"
+      >
+        {events.length === 0 ? (
+          <p className="text-sm text-muted period-transition">
+            {t(($) => $.calendar.empty)}
+          </p>
+        ) : (
+          <PresenceList
+            as="ol"
+            key={format(date, "yyyy-MM-dd")}
+            aria-labelledby={headingId}
+            className="flex flex-col gap-3 period-transition"
+          >
+            {events.map((event) => (
+              <PresenceItem key={event.id} className="flex items-start gap-3">
+                {/* The tile repeats the time; the column only aids scanning on wider screens. */}
+                <span
+                  aria-hidden="true"
+                  className="hidden w-18 shrink-0 pt-2 text-sm leading-6 font-medium text-muted sm:block"
+                >
+                  {event.time}
+                </span>
+                <Event {...event} className="flex-1" />
+              </PresenceItem>
+            ))}
+          </PresenceList>
+        )}
+      </SwipePager>
     </div>
   );
 }
