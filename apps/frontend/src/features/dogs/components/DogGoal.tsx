@@ -103,82 +103,86 @@ export function DogGoal({
               )}
             </p>
           </div>
-          {!assignment ? (
-            <Button
-              variant="outline"
-              size="sm"
-              isDisabled={isPending}
-              onPress={() => onAction({ type: "assignGoal", goalId: goal.id })}
-            >
-              <Plus className="size-4" aria-hidden="true" />
-              {t(($) => $.dogProfile.assignGoal)}
-            </Button>
-          ) : (
-            <>
-              {completed ? (
-                <Chip color="success" size="sm">
-                  <CircleCheck className="size-3" aria-hidden="true" />
-                  <Chip.Label>{t(($) => $.dogProfile.done)}</Chip.Label>
-                </Chip>
-              ) : (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  isDisabled={isPending}
-                  onPress={() =>
-                    onAction({ type: "complete", goalId: goal.id })
-                  }
-                >
-                  <CircleCheck className="size-4" aria-hidden="true" />
-                  {t(($) => $.dogProfile.markComplete)}
-                </Button>
-              )}
-              <Dropdown>
-                <Button
-                  isIconOnly
-                  variant="ghost"
-                  size="sm"
-                  aria-label={t(($) => $.disciplines.goalActions, {
-                    name: goal.name,
-                  })}
-                  isDisabled={isPending}
-                >
-                  <EllipsisVertical className="size-4" aria-hidden="true" />
-                </Button>
-                <Dropdown.Popover placement="bottom end">
-                  <Dropdown.Menu
-                    onAction={(key) => {
-                      if (key === "remove") onRemove();
-                      else if (key === "add") onAddExercise();
-                      else onAction({ type: "reopen", goalId: goal.id });
-                    }}
+          <div className="flex w-full items-center gap-3 sm:w-auto">
+            {!assignment ? (
+              <Button
+                variant="outline"
+                size="sm"
+                isDisabled={isPending}
+                onPress={() =>
+                  onAction({ type: "assignGoal", goalId: goal.id })
+                }
+              >
+                <Plus className="size-4" aria-hidden="true" />
+                {t(($) => $.dogProfile.assignGoal)}
+              </Button>
+            ) : (
+              <>
+                {completed ? (
+                  <Chip color="success" size="sm">
+                    <CircleCheck className="size-3" aria-hidden="true" />
+                    <Chip.Label>{t(($) => $.dogProfile.done)}</Chip.Label>
+                  </Chip>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    isDisabled={isPending}
+                    onPress={() =>
+                      onAction({ type: "complete", goalId: goal.id })
+                    }
                   >
-                    {completed && (
+                    <CircleCheck className="size-4" aria-hidden="true" />
+                    {t(($) => $.dogProfile.markComplete)}
+                  </Button>
+                )}
+                <Dropdown>
+                  <Button
+                    isIconOnly
+                    variant="ghost"
+                    size="sm"
+                    aria-label={t(($) => $.disciplines.goalActions, {
+                      name: goal.name,
+                    })}
+                    isDisabled={isPending}
+                  >
+                    <EllipsisVertical className="size-4" aria-hidden="true" />
+                  </Button>
+                  <Dropdown.Popover placement="bottom end">
+                    <Dropdown.Menu
+                      onAction={(key) => {
+                        if (key === "remove") onRemove();
+                        else if (key === "add") onAddExercise();
+                        else onAction({ type: "reopen", goalId: goal.id });
+                      }}
+                    >
+                      {completed && (
+                        <Dropdown.Item
+                          id="reopen"
+                          textValue={t(($) => $.dogProfile.reopen)}
+                        >
+                          <Label>{t(($) => $.dogProfile.reopen)}</Label>
+                        </Dropdown.Item>
+                      )}
                       <Dropdown.Item
-                        id="reopen"
-                        textValue={t(($) => $.dogProfile.reopen)}
+                        id="add"
+                        textValue={t(($) => $.disciplines.addExercise)}
                       >
-                        <Label>{t(($) => $.dogProfile.reopen)}</Label>
+                        <Label>{t(($) => $.disciplines.addExercise)}</Label>
                       </Dropdown.Item>
-                    )}
-                    <Dropdown.Item
-                      id="add"
-                      textValue={t(($) => $.disciplines.addExercise)}
-                    >
-                      <Label>{t(($) => $.disciplines.addExercise)}</Label>
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      id="remove"
-                      variant="danger"
-                      textValue={t(($) => $.dogProfile.removeGoal)}
-                    >
-                      <Label>{t(($) => $.dogProfile.removeGoal)}</Label>
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown.Popover>
-              </Dropdown>
-            </>
-          )}
+                      <Dropdown.Item
+                        id="remove"
+                        variant="danger"
+                        textValue={t(($) => $.dogProfile.removeGoal)}
+                      >
+                        <Label>{t(($) => $.dogProfile.removeGoal)}</Label>
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown.Popover>
+                </Dropdown>
+              </>
+            )}
+          </div>
         </div>
         {assignment && (
           <>
