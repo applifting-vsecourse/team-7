@@ -57,13 +57,6 @@ export class Config {
   @IsNotEmpty()
   readonly frontendUrl!: string;
 
-  @Env("FRONTEND_RESET_PASSWORD_ROUTE", {
-    defaultValue: "reset-password",
-    expose: true,
-  })
-  @IsNotEmpty()
-  readonly frontendResetPasswordUrl!: string;
-
   @Env("PORT", { expose: true, defaultValue: 4050 })
   readonly port!: number;
 
