@@ -32,7 +32,9 @@
       "signUp": "Registrace se nezdařila",
       "google": "Přihlášení přes Google se nezdařilo",
       "emailTaken": "Účet s tímto e-mailem už existuje. Použijte jiný e-mail.",
-      "invalidCredentials": "Nesprávný e-mail nebo heslo"
+      "invalidCredentials": "Nesprávný e-mail nebo heslo",
+      "newPassword": "Heslo se nepodařilo změnit",
+      "resetLinkInvalid": "Odkaz pro obnovení hesla je neplatný nebo vypršel."
     },
     "signOut": "Odhlásit se",
     "or": "nebo",
@@ -43,6 +45,13 @@
       "resend": "Odeslat znovu",
       "sent": "Ověřovací e-mail jsme odeslali",
       "failed": "Ověřovací e-mail se nepodařilo odeslat"
+    },
+    "newPassword": {
+      "title": "Nové heslo",
+      "description": "Zvolte si nové heslo k účtu.",
+      "submit": "Nastavit heslo",
+      "success": "Heslo bylo změněno. Přihlaste se novým heslem.",
+      "requestNew": "Vyžádat nový odkaz"
     }
   },
   "validation": {

@@ -15,9 +15,11 @@ import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
+import { ROUTES } from "@/app/routes";
 import { messageSelectors, translateMessage } from "@/i18n/messages";
 
 import { authClient } from "@/features/auth/lib/auth-client";
+import { toAbsoluteUrl } from "@/features/auth/lib/redirect";
 
 const schema = z.object({
   email: z
@@ -46,7 +48,10 @@ export function ForgotPasswordForm() {
         setErrorMessage(null);
         setSent(false);
         try {
-          const { error } = await authClient.requestPasswordReset({ email });
+          const { error } = await authClient.requestPasswordReset({
+            email,
+            redirectTo: toAbsoluteUrl(ROUTES.resetPassword),
+          });
           if (error) {
             throw new Error(
               error.message ?? keyFromSelector(messageSelectors.resetFailed),

@@ -30,6 +30,7 @@ describe("forgot password form", () => {
     await userEvent.click(screen.getByRole("button", { name: "Send link" }));
     expect(authClient.requestPasswordReset).toHaveBeenCalledExactlyOnceWith({
       email: "duck@example.com",
+      redirectTo: `${window.location.origin}/reset-password`,
     });
     expect(await screen.findByRole("status")).toHaveTextContent(
       "If an account exists",

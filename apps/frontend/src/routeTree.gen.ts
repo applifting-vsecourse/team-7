@@ -14,6 +14,7 @@ import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OverviewRouteImport } from './routes/overview'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as DisciplinesIndexRouteImport } from './routes/disciplines/index'
 import { Route as DisciplinesDisciplineIdRouteImport } from './routes/disciplines/$disciplineId'
@@ -44,6 +45,11 @@ const LoginRoute = LoginRouteImport.update({
 const OverviewRoute = OverviewRouteImport.update({
   id: '/overview',
   path: '/overview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/overview': typeof OverviewRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
   '/dogs/$dogId': typeof DogsDogIdRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/overview': typeof OverviewRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
   '/dogs/$dogId': typeof DogsDogIdRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/overview': typeof OverviewRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
   '/dogs/$dogId': typeof DogsDogIdRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/overview'
+    | '/reset-password'
     | '/signup'
     | '/disciplines/$disciplineId'
     | '/dogs/$dogId'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/overview'
+    | '/reset-password'
     | '/signup'
     | '/disciplines/$disciplineId'
     | '/dogs/$dogId'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/overview'
+    | '/reset-password'
     | '/signup'
     | '/disciplines/$disciplineId'
     | '/dogs/$dogId'
@@ -167,6 +179,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   OverviewRoute: typeof OverviewRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   DisciplinesDisciplineIdRoute: typeof DisciplinesDisciplineIdRoute
   DogsDogIdRoute: typeof DogsDogIdRoute
@@ -210,6 +223,13 @@ declare module '@tanstack/react-router' {
       path: '/overview'
       fullPath: '/overview'
       preLoaderRoute: typeof OverviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -263,6 +283,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   OverviewRoute: OverviewRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
   DisciplinesDisciplineIdRoute: DisciplinesDisciplineIdRoute,
   DogsDogIdRoute: DogsDogIdRoute,
