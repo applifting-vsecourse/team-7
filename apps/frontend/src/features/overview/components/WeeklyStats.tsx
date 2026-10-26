@@ -1,10 +1,11 @@
-import { useId } from "react";
+import { type CSSProperties, useId } from "react";
 import type { WeeklyStatsData } from "../api/overviewQueryOptions";
 import { ChartLine, Clock, Flame, Star } from "@gravity-ui/icons";
 import { Chip, ProgressCircle, Separator } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
 import { useCountUp } from "@/hooks/useCountUp";
+import { cn } from "@/lib/utils";
 
 export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
   const { t, i18n } = useTranslation();
@@ -162,6 +163,7 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
             </figcaption>
             {trend !== null && (
               <Chip
+                className="animate-enter"
                 color={trend > 0 ? "success" : "default"}
                 size="sm"
                 variant="soft"
@@ -178,31 +180,40 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
             )}
           </div>
           {data.satisfactionHistory.length === 0 ? (
-            <p className="text-xs text-muted">
+            <p className="animate-enter text-xs text-muted">
               {t(($) => $.weeklyStats.emptyHistory)}
             </p>
           ) : (
-            <ol className="flex items-end gap-2">
-              {data.satisfactionHistory.map((week) => {
+            // Bars grow in one after another and ease to new values when the
+            // dog filter changes; --bar-height matches the bars' h-14.
+            <ol className="flex items-end gap-2 [--bar-height:3.5rem]">
+              {data.satisfactionHistory.map((week, index) => {
                 const isCurrent = week.weekStart === data.weekStart;
                 return (
                   <li
                     key={week.weekStart}
                     className="flex min-w-0 flex-1 flex-col items-center gap-1 text-xs leading-5 text-muted"
+                    style={
+                      {
+                        "--ratio": Math.min(5, Math.max(0, week.rating)) / 5,
+                        "--i": index,
+                      } as CSSProperties
+                    }
                   >
                     <span
-                      className={
-                        isCurrent ? "font-medium text-accent" : undefined
-                      }
+                      className={cn(
+                        "bar-label",
+                        isCurrent && "font-medium text-accent",
+                      )}
                     >
                       {ratingFormat.format(week.rating)}
                     </span>
                     <div
                       aria-hidden="true"
-                      className={`w-6 max-w-full rounded-md ${isCurrent ? "bg-accent" : "bg-accent-soft"}`}
-                      style={{
-                        height: `${(Math.min(5, Math.max(0, week.rating)) / 5) * 3.5}rem`,
-                      }}
+                      className={cn(
+                        "h-14 w-6 max-w-full rounded-md bar-fill",
+                        isCurrent ? "bg-accent" : "bg-accent-soft",
+                      )}
                     />
                     <time
                       dateTime={week.weekStart}

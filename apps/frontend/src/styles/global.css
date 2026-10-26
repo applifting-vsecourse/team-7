@@ -170,6 +170,30 @@
   animation-delay: calc(var(--motion-stagger) * var(--i, 0));
 }
 
+/* A chart bar filled from the bottom to `--ratio` (0–1): grows in on first
+   render (@starting-style) and eases to new values, in sequence by `--i`.
+   Clipping instead of resizing keeps the radius and avoids layout. */
+@utility bar-fill {
+  clip-path: inset(
+    calc((1 - var(--ratio, 0)) * 100%) 0 0 0 round var(--radius-md)
+  );
+  transition: clip-path var(--motion-slow) var(--ease-enter)
+    calc(var(--motion-stagger) * var(--i, 0));
+  @starting-style {
+    clip-path: inset(100% 0 0 0 round var(--radius-md));
+  }
+}
+/* The value label above a bar-fill bar (of height --bar-height) rides its
+   top edge. */
+@utility bar-label {
+  translate: 0 calc((1 - var(--ratio, 0)) * var(--bar-height));
+  transition: translate var(--motion-slow) var(--ease-enter)
+    calc(var(--motion-stagger) * var(--i, 0));
+  @starting-style {
+    translate: 0 var(--bar-height);
+  }
+}
+
 /* An SVG line draws itself; the element needs pathLength="1". */
 @utility draw-in {
   stroke-dasharray: 1;
