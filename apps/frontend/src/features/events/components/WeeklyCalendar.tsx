@@ -12,6 +12,7 @@ import {
 } from "date-fns";
 import { useTranslation } from "react-i18next";
 
+import { PresenceItem, PresenceList } from "@/components/PresenceList";
 import { cn } from "@/lib/utils";
 
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
@@ -181,13 +182,13 @@ export function WeeklyCalendar() {
                     {t(($) => $.calendar.empty)}
                   </p>
                 ) : (
-                  <ul className="flex flex-col gap-3">
+                  <PresenceList className="flex flex-col gap-3">
                     {dayEvents.map((event) => (
-                      <li key={event.id}>
+                      <PresenceItem key={event.id}>
                         <Event {...event} headingLevel="h4" />
-                      </li>
+                      </PresenceItem>
                     ))}
-                  </ul>
+                  </PresenceList>
                 )}
               </section>
             );

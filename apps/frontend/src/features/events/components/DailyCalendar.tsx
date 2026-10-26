@@ -2,6 +2,7 @@ import { useId } from "react";
 import { addDays, startOfDay, format, isSameDay } from "date-fns";
 import { useTranslation } from "react-i18next";
 
+import { PresenceItem, PresenceList } from "@/components/PresenceList";
 import { pluralForm } from "@/lib/plural";
 import { capitalizeFirst } from "@/lib/utils";
 
@@ -76,12 +77,14 @@ export function DailyCalendar({
           {t(($) => $.calendar.empty)}
         </p>
       ) : (
-        <ol
+        <PresenceList
+          as="ol"
+          key={format(date, "yyyy-MM-dd")}
           aria-labelledby={headingId}
           className="flex flex-col gap-3 period-transition"
         >
           {events.map((event) => (
-            <li key={event.id} className="flex items-start gap-3">
+            <PresenceItem key={event.id} className="flex items-start gap-3">
               {/* The tile repeats the time; the column only aids scanning on wider screens. */}
               <span
                 aria-hidden="true"
@@ -90,9 +93,9 @@ export function DailyCalendar({
                 {event.time}
               </span>
               <Event {...event} className="flex-1" />
-            </li>
+            </PresenceItem>
           ))}
-        </ol>
+        </PresenceList>
       )}
     </div>
   );

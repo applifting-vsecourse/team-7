@@ -1,22 +1,27 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps, ComponentPropsWithoutRef } from "react";
 import { AnimatePresence, m } from "motion/react";
 
 import { motionEase, motionSeconds } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
-/** List whose removed items fade out while the rest slide into the gap. */
+/**
+ * List whose removed items fade out while the rest slide into the gap. Give
+ * it a `key` per period (day, month) when its content is replaced wholesale,
+ * so paging remounts it instead of animating every item out and in.
+ */
 export function PresenceList({
+  as: List = "ul",
   className,
   children,
   ...props
-}: ComponentProps<"ul">) {
+}: ComponentPropsWithoutRef<"ul"> & { as?: "ul" | "ol" }) {
   return (
     // popLayout takes exiting items out of the flow, positioned against the list.
-    <ul className={cn("relative", className)} {...props}>
+    <List className={cn("relative", className)} {...props}>
       <AnimatePresence initial={false} mode="popLayout">
         {children}
       </AnimatePresence>
-    </ul>
+    </List>
   );
 }
 

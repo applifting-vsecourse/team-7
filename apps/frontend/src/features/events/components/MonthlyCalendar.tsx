@@ -21,6 +21,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
+import { PresenceItem, PresenceList } from "@/components/PresenceList";
 import { pluralForm } from "@/lib/plural";
 import { capitalizeFirst, cn } from "@/lib/utils";
 
@@ -209,13 +210,13 @@ export function MonthlyCalendar({
           {selectedEvents.length === 0 ? (
             <p className="text-sm text-muted">{t(($) => $.calendar.empty)}</p>
           ) : (
-            <ul className="flex flex-col gap-3">
+            <PresenceList key={toIsoDate(date)} className="flex flex-col gap-3">
               {selectedEvents.map((event) => (
-                <li key={event.id}>
+                <PresenceItem key={event.id}>
                   <Event {...event} headingLevel="h4" />
-                </li>
+                </PresenceItem>
               ))}
-            </ul>
+            </PresenceList>
           )}
         </section>
       </div>

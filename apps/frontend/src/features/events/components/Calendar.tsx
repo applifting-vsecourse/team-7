@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
 
+import { PresenceItem, PresenceList } from "@/components/PresenceList";
 import { cn } from "@/lib/utils";
 
 import { Event, type EventProps } from "./Event";
@@ -42,13 +43,13 @@ export function Calendar({ variant, events }: CalendarProps) {
       {events.length === 0 ? (
         <p className="text-sm text-muted">{t(($) => $.calendar.empty)}</p>
       ) : (
-        <ul className="flex stagger flex-col gap-3">
+        <PresenceList className="flex stagger flex-col gap-3">
           {events.map(({ id, ...event }) => (
-            <li key={id}>
+            <PresenceItem key={id}>
               <Event {...event} />
-            </li>
+            </PresenceItem>
           ))}
-        </ul>
+        </PresenceList>
       )}
     </section>
   );
