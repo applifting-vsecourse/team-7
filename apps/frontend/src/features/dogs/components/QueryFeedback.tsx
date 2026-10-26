@@ -24,7 +24,7 @@ export function QueryFeedback({
   const missing =
     query.error instanceof HTTPError && query.error.response.status === 404;
   return (
-    <div className="flex flex-col items-start gap-3">
+    <div className="flex animate-enter flex-col items-start gap-3">
       <p role="alert" className="text-sm text-danger">
         {missing ? t(($) => $.dogs.notFound) : t(($) => $.dogProfile.loadError)}
       </p>

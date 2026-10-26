@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type CSSProperties, useState } from "react";
 import type { ScheduledEvent } from "../api/eventsQueryOptions";
 import type { ScheduleValues } from "../schemas/scheduleSchema";
 import {
@@ -74,6 +74,13 @@ export function ScheduledExerciseDialog({
     },
   });
   const rating = useWatch({ control: result.control, name: "rating" });
+  // Newly filled stars pop one after another, counted from the previous rating.
+  const [shownRating, setShownRating] = useState(rating);
+  const [fillFrom, setFillFrom] = useState(0);
+  if (rating !== shownRating) {
+    setFillFrom(shownRating);
+    setShownRating(rating);
+  }
   const displayDate = parseISO(event.completedAt ?? event.startsAt);
   const when = t(($) => $.training.when, {
     date: new Intl.DateTimeFormat(i18n.resolvedLanguage ?? "cs", {
@@ -268,11 +275,21 @@ export function ScheduledExerciseDialog({
                                   <Radio.Control className="sr-only">
                                     <Radio.Indicator />
                                   </Radio.Control>
+                                  {/* Switching Star → StarFill remounts the
+                                      icon, so only newly filled stars pop. */}
                                   <Icon
                                     className={
                                       value <= field.value
-                                        ? "size-6 text-warning"
+                                        ? "size-6 animate-pop text-warning stagger-delay"
                                         : "size-6 text-muted"
+                                    }
+                                    style={
+                                      {
+                                        "--i": Math.max(
+                                          0,
+                                          value - fillFrom - 1,
+                                        ),
+                                      } as CSSProperties
                                     }
                                     aria-hidden="true"
                                   />

@@ -1,7 +1,12 @@
+import type { CSSProperties } from "react";
 import { parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
 
 import type { ScheduledEvent } from "@/features/events/api/eventsQueryOptions";
+
+// Each point pops in as the drawn line reaches it.
+const progress = (index: number, count: number) =>
+  ({ "--progress": index / Math.max(1, count - 1) }) as CSSProperties;
 
 export function ExerciseRatingChart({ events }: { events: ScheduledEvent[] }) {
   const { t, i18n } = useTranslation();
@@ -45,21 +50,23 @@ export function ExerciseRatingChart({ events }: { events: ScheduledEvent[] }) {
         ))}
         <polygon
           points={`72,160 ${line} 776,160`}
-          className="fill-accent-soft"
+          className="animate-fade fill-accent-soft"
         />
         <polyline
           points={line}
           fill="none"
-          className="stroke-accent"
+          pathLength={1}
+          className="draw-in stroke-accent"
           strokeWidth={2}
         />
-        {points.map(({ event, x, y }) => (
+        {points.map(({ event, x, y }, index) => (
           <g key={event.id}>
             <circle
               cx={x}
               cy={y}
               r={5}
-              className="fill-accent stroke-background"
+              className="origin-center animate-pop fill-accent stroke-background draw-delay transform-fill"
+              style={progress(index, points.length)}
               strokeWidth={2}
             >
               <title>
@@ -108,7 +115,7 @@ export function ExerciseRatingChart({ events }: { events: ScheduledEvent[] }) {
         ))}
         <polygon
           points={`60,160 ${points.map(({ y }, index) => `${60 + (index * 244) / (points.length - 1)},${y}`).join(" ")} 304,160`}
-          className="fill-accent-soft"
+          className="animate-fade fill-accent-soft"
         />
         <polyline
           points={points
@@ -118,7 +125,8 @@ export function ExerciseRatingChart({ events }: { events: ScheduledEvent[] }) {
             )
             .join(" ")}
           fill="none"
-          className="stroke-accent"
+          pathLength={1}
+          className="draw-in stroke-accent"
           strokeWidth={2}
         />
         {points.map(({ event, y }, index) => (
@@ -127,7 +135,8 @@ export function ExerciseRatingChart({ events }: { events: ScheduledEvent[] }) {
               cx={60 + (index * 244) / (points.length - 1)}
               cy={y}
               r={4}
-              className="fill-accent stroke-background"
+              className="origin-center animate-pop fill-accent stroke-background draw-delay transform-fill"
+              style={progress(index, points.length)}
               strokeWidth={2}
             >
               <title>

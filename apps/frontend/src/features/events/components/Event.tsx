@@ -62,6 +62,13 @@ export function Event({
   const isUpcoming = state === "upcoming";
   const isCompleted = state === "completed";
   const StatusIcon = isCompleted ? CircleCheck : CircleExclamation;
+  // Celebrates only a change seen on screen, not tiles that load completed.
+  const [shownState, setShownState] = useState(state);
+  const [justCompleted, setJustCompleted] = useState(false);
+  if (state !== shownState) {
+    setShownState(state);
+    setJustCompleted(state === "completed");
+  }
 
   return (
     <>
@@ -69,8 +76,9 @@ export function Event({
         aria-labelledby={historyOnly ? undefined : titleId}
         aria-label={historyOnly ? exercise : undefined}
         className={cn(
-          "relative flex w-full max-w-full min-w-0 cursor-pointer flex-col overflow-clip rounded-2xl py-2 pr-3 pl-4 text-foreground shadow-card transition duration-150 ease-out hover:shadow-card-hover motion-safe:hover:-translate-y-0.5 md:self-stretch",
+          "relative flex w-full max-w-full min-w-0 interactive-lift cursor-pointer flex-col overflow-clip rounded-2xl py-2 pr-3 pl-4 text-foreground shadow-card md:self-stretch",
           backgrounds[state],
+          justCompleted && "animate-celebrate",
           className,
         )}
       >
@@ -83,7 +91,10 @@ export function Event({
           />
         )}
         <span
-          className={cn("absolute inset-y-0 left-0 w-1", accents[state])}
+          className={cn(
+            "absolute inset-y-0 left-0 w-1 transition-colors duration-(--motion-slow)",
+            accents[state],
+          )}
           aria-hidden="true"
         />
         <p
@@ -128,6 +139,7 @@ export function Event({
               className={cn(
                 "size-3 shrink-0",
                 isCompleted ? "text-success" : "text-warning",
+                justCompleted && "animate-pop",
               )}
               aria-hidden="true"
             />

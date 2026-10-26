@@ -4,6 +4,7 @@ import { toast } from "@heroui/react";
 import { Dog as DogIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { PresenceItem, PresenceList } from "@/components/PresenceList";
 import { czechFrom, pluralForm } from "@/lib/plural";
 
 import { useSession } from "@/features/auth/hooks/useSession";
@@ -49,7 +50,7 @@ export function DisciplineDogs({
           {t(($) => $.disciplines.dogsEmpty)}
         </p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <PresenceList className="flex flex-col gap-2">
           {dogs.map((dog) => (
             <DogRow
               key={dog.id}
@@ -59,7 +60,7 @@ export function DisciplineDogs({
               {...totals}
             />
           ))}
-        </ul>
+        </PresenceList>
       )}
     </section>
   );
@@ -81,7 +82,7 @@ function DogRow({
   const names = { discipline: discipline.name, dog: dog.name };
 
   return (
-    <li className="flex items-center gap-3">
+    <PresenceItem className="flex items-center gap-3">
       <DogAvatar dog={avatarDog} />
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="text-sm leading-6 wrap-break-word">{dog.name}</span>
@@ -116,7 +117,7 @@ function DogRow({
           )
         }
       />
-    </li>
+    </PresenceItem>
   );
 }
 

@@ -2,7 +2,7 @@ import { ToggleButton, ToggleButtonGroup } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
 import { type TranslationSelector } from "@/i18n/messages";
-import { cn } from "@/lib/utils";
+import { cn, transitionName } from "@/lib/utils";
 
 export const CALENDAR_VIEWS = ["day", "week", "month"] as const;
 export type CalendarView = (typeof CALENDAR_VIEWS)[number];
@@ -48,6 +48,9 @@ export function CalendarViewSwitcher({
           key={view}
           id={view}
           className={cn(fullWidth && "flex-1")}
+          // Slides the selection to the new view across the navigation's view
+          // transition; the switcher hidden at this breakpoint isn't captured.
+          style={view === value ? transitionName("calendar-view") : undefined}
         >
           {t(labels[view])}
         </ToggleButton>

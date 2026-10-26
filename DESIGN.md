@@ -61,6 +61,18 @@ Use the Tailwind scale; no arbitrary values like `p-[13px]` unless a size token 
 - Toasts appear at the top centre of the viewport, on desktop and mobile.
 - Toasts hug their content up to a maximum width of 460px (on mobile, the screen width minus 16px on each side); longer text wraps.
 
+## Motion
+
+Motion is quiet: it explains a change, it never decorates. Every value lives in `global.css`; components only name a class.
+
+- **Use the shared vocabulary.** `interactive-lift` for clickable cards and card-like options, `animate-enter` for content that appears after loading (empty and error states), `stagger` on a list's parent so its items enter in turn, `period-transition` on content that pages through days or months (one element per view; the navigation passes a `forward`/`back` view transition type). Route changes crossfade on their own. Moments of achievement: `animate-celebrate` on the tile and `animate-pop` on its icon, only when the change happens on screen (not for items that load completed); `stagger-delay` with `--i` sequences pops that aren't siblings. Charts: `draw-in` (with `pathLength="1"`) draws a line, `draw-delay` with `--progress` makes points follow it, `animate-fade` for the area. Inside an `interactive-lift` card, the arrow gets `hover-nudge`. A coloured "done" badge gets `shine` (one sweep on appearance). Headline numbers that summarise a period can count up with `useCountUp` (`src/hooks`) — never numbers inside list items. A selected item that moves on navigation (active nav link, selected view) gets `transitionName(...)` so the highlight slides. No hand-written `duration-*`, `ease-*` or `@keyframes` in components; if a new kind of motion is needed, add a token or utility to `global.css`.
+- **The kit animates itself.** Buttons, dialogs, drawers, popovers, toasts and accordions come with their own motion. Don't override it.
+- **Animate only `transform`, `translate` and `opacity`** (plus colour or shadow on state change). Never width, height, top or left.
+- **One or two moving things per view.** A page whose every element moves is noise.
+- **Reduced motion is automatic** as long as you use the tokens: the system setting and `data-reduce-motion` zero every duration.
+- **CSS and the View Transitions API first.** Motion (`motion/react`) is only for what CSS can't do — items leaving a list — and only through `PresenceList` / `PresenceItem` from `src/components/PresenceList.tsx`, which read the same tokens. Never import `motion.*` directly.
+- **List item opens a detail:** give the item's title and the detail heading the same `transitionName("discipline", id)` (from `@/lib/utils`) on an `inline-block` span, and the title morphs across the navigation. A name must be unique on the page.
+
 ## Every list has three states
 
 Loading, empty, and error — all three, always. An empty list renders an empty state with one sentence saying what would appear here, not a blank area. An error renders the message and a way to retry.

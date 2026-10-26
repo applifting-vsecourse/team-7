@@ -12,6 +12,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/lib/api-client";
+import { transitionName } from "@/lib/utils";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { disciplineQueryOptions } from "@/features/disciplines/api/disciplinesQueryOptions";
@@ -162,7 +163,12 @@ export function DogDisciplineView({
             id="dog-discipline-heading"
             className="min-w-0 flex-1 text-3xl leading-9 font-semibold tracking-tight wrap-break-word"
           >
-            {discipline.name}
+            <span
+              className="inline-block"
+              style={transitionName("discipline", discipline.id)}
+            >
+              {discipline.name}
+            </span>
           </h1>
           <Dropdown>
             <Button

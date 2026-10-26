@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
 import { pluralForm } from "@/lib/plural";
+import { transitionName } from "@/lib/utils";
 
 /** Library list item; the whole card links to the discipline detail. */
 export function DisciplineCard({
@@ -24,13 +25,19 @@ export function DisciplineCard({
     <Link
       to={ROUTES.discipline}
       params={{ disciplineId: discipline.id }}
-      className="flex min-w-0 flex-1 cursor-pointer flex-col gap-3 rounded-2xl bg-background p-4 text-foreground shadow-card transition duration-150 ease-out outline-none hover:shadow-card-hover focus-visible:focus-ring motion-safe:hover:-translate-y-0.5"
+      className="flex min-w-0 flex-1 interactive-lift cursor-pointer flex-col gap-3 rounded-2xl bg-background p-4 text-foreground shadow-card outline-none focus-visible:focus-ring"
     >
       {/* Grows so the footer lines up across cards in a row. */}
       <div className="flex flex-1 items-start gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h2 className="text-xl leading-7 font-semibold tracking-tight wrap-break-word">
-            {discipline.name}
+            {/* Morphs into the detail heading; inline-block keeps the box to the text. */}
+            <span
+              className="inline-block"
+              style={transitionName("discipline", discipline.id)}
+            >
+              {discipline.name}
+            </span>
           </h2>
           {discipline.description ? (
             <p className="text-sm leading-6 wrap-break-word">
@@ -39,7 +46,7 @@ export function DisciplineCard({
           ) : null}
         </div>
         <ChevronRight
-          className="size-4 shrink-0 text-accent"
+          className="size-4 shrink-0 hover-nudge text-accent"
           aria-hidden="true"
         />
       </div>

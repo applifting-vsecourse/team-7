@@ -22,6 +22,7 @@ import { DailyCalendar } from "@/features/events/components/DailyCalendar";
 import { MonthlyCalendar } from "@/features/events/components/MonthlyCalendar";
 import { ScheduleExerciseDialog } from "@/features/events/components/ScheduleExerciseDialog";
 import { WeeklyCalendar } from "@/features/events/components/WeeklyCalendar";
+import { periodTransition } from "@/features/events/lib/periodTransition";
 
 // Invalid values fall back to the defaults instead of an error page.
 const calendarSearchSchema = z.object({
@@ -61,6 +62,7 @@ function CalendarPage() {
     void navigate({
       search: (prev) => ({ ...prev, date: format(next, "yyyy-MM-dd") }),
       replace: true,
+      viewTransition: periodTransition(view, date, next),
     });
 
   return (

@@ -42,7 +42,7 @@ export function Calendar({ variant, events }: CalendarProps) {
       {events.length === 0 ? (
         <p className="text-sm text-muted">{t(($) => $.calendar.empty)}</p>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex stagger flex-col gap-3">
           {events.map(({ id, ...event }) => (
             <li key={id}>
               <Event {...event} />

@@ -118,7 +118,7 @@ export function DogProfileView({ dog }: { dog: DogProfile }) {
               {assignButton("w-full md:w-auto")}
             </div>
             {active.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6 xl:grid-cols-3">
+              <div className="grid stagger grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6 xl:grid-cols-3">
                 {active.map((discipline) => (
                   <DogDisciplineCard
                     key={discipline.id}

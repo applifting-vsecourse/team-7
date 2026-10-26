@@ -72,9 +72,14 @@ export function DailyCalendar({
         />
       </div>
       {events.length === 0 ? (
-        <p className="text-sm text-muted">{t(($) => $.calendar.empty)}</p>
+        <p className="text-sm text-muted period-transition">
+          {t(($) => $.calendar.empty)}
+        </p>
       ) : (
-        <ol aria-labelledby={headingId} className="flex flex-col gap-3">
+        <ol
+          aria-labelledby={headingId}
+          className="flex flex-col gap-3 period-transition"
+        >
           {events.map((event) => (
             <li key={event.id} className="flex items-start gap-3">
               {/* The tile repeats the time; the column only aids scanning on wider screens. */}

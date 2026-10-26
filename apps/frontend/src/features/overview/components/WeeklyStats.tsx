@@ -4,11 +4,17 @@ import { ChartLine, Clock, Flame, Star } from "@gravity-ui/icons";
 import { Chip, ProgressCircle, Separator } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
+import { useCountUp } from "@/hooks/useCountUp";
+
 export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
   const trendId = useId();
   const locale = i18n.resolvedLanguage ?? "cs";
+  // The headline numbers count up when the overview opens.
+  const streakDays = Math.round(useCountUp(data.streakDays));
+  const trainingMinutes = Math.round(useCountUp(data.trainingMinutes));
+  const satisfaction = useCountUp(data.satisfaction ?? 0);
   const dateFormat = new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "numeric",
@@ -57,7 +63,7 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
           style: "unit",
           unit: "day",
           unitDisplay: "long",
-        }).format(data.streakDays),
+        }).format(streakDays),
       }),
     },
     {
@@ -65,8 +71,8 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
       icon: Clock,
       color: "text-accent",
       value: t(($) => $.weeklyStats.duration, {
-        hours: Math.floor(data.trainingMinutes / 60),
-        minutes: data.trainingMinutes % 60,
+        hours: Math.floor(trainingMinutes / 60),
+        minutes: trainingMinutes % 60,
       }),
     },
     {
@@ -77,7 +83,7 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
         data.satisfaction === null
           ? t(($) => $.dogProfile.noRating)
           : t(($) => $.weeklyStats.rating, {
-              value: ratingFormat.format(data.satisfaction),
+              value: ratingFormat.format(satisfaction),
             }),
     },
   ];

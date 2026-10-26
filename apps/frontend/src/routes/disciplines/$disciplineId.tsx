@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/Sidebar";
 
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
 import { encodeRedirectUri } from "@/features/auth/lib/redirect";
+import { disciplineQueryOptions } from "@/features/disciplines/api/disciplinesQueryOptions";
 import { DisciplineDetailView } from "@/features/disciplines/components/DisciplineDetailView";
 
 export const Route = createFileRoute("/disciplines/$disciplineId")({
@@ -20,7 +21,14 @@ export const Route = createFileRoute("/disciplines/$disciplineId")({
         search: { from: encodeRedirectUri(location) },
       });
     }
+    return { userId: session.user.id };
   },
+  // The view transition captures the page once the loader is done, so the
+  // card title can morph into the heading only if the detail is loaded.
+  loader: ({ context: { queryClient, userId }, params }) =>
+    queryClient.prefetchQuery(
+      disciplineQueryOptions(userId, params.disciplineId),
+    ),
   component: DisciplinePage,
 });
 

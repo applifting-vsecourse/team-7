@@ -19,6 +19,205 @@
   --container-login-form: 400px;
   --container-login-block: 900px;
   --container-weekly-stats-min: 292px;
+
+  /* Motion — decelerate when arriving, accelerate when leaving */
+  --ease-enter: cubic-bezier(0.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  /* Overshoots slightly before settling; only for small celebratory pops. */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* `backwards` hides staggered items during their delay without holding the
+     end state, so hover transforms still apply once the entrance is over. */
+  --animate-enter: enter var(--motion-base) var(--ease-enter) backwards;
+  /* A small element (icon, star, chart point) springs in. */
+  --animate-pop: pop var(--motion-slow) var(--ease-spring) backwards;
+  /* A tile acknowledges an achievement, e.g. a training marked completed. */
+  --animate-celebrate: celebrate var(--motion-slow) var(--ease-enter);
+  --animate-fade: fade var(--motion-draw) var(--ease-enter) backwards;
+
+  @keyframes enter {
+    from {
+      opacity: 0;
+      translate: 0 0.75rem;
+    }
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+      scale: 0.3;
+    }
+  }
+  @keyframes celebrate {
+    40% {
+      scale: 1.04;
+    }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+  }
+}
+
+/* Motion durations: exits and hovers are short, entrances slightly longer. */
+:root {
+  --motion-fast: 150ms;
+  --motion-base: 300ms;
+  --motion-slow: 400ms;
+  --motion-stagger: 60ms;
+  --motion-draw: 800ms; /* a chart line drawing itself */
+  --period-shift: 3rem;
+}
+
+/* Reduced motion zeroes every duration at once, matching the kit's own
+   motion-reduce variant (system setting or data-reduce-motion). */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+    --motion-slow: 0ms;
+    --motion-stagger: 0ms;
+    --motion-draw: 0ms;
+  }
+}
+[data-reduce-motion="true"] {
+  --motion-fast: 0ms;
+  --motion-base: 0ms;
+  --motion-slow: 0ms;
+  --motion-stagger: 0ms;
+  --motion-draw: 0ms;
+}
+
+/* Hover lift for clickable cards and card-like options. */
+@utility interactive-lift {
+  @apply transition duration-(--motion-fast) ease-enter hover:shadow-card-hover motion-safe:hover:-translate-y-0.5;
+}
+
+/* An arrow inside an interactive-lift card nudges toward where it leads. */
+@utility hover-nudge {
+  transition: translate var(--motion-fast) var(--ease-enter);
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    :where(.interactive-lift):hover & {
+      translate: 0.25rem 0;
+    }
+  }
+}
+
+/* A light sweeps once across a coloured badge marking an achievement
+   ("Done"). The sheen is the kit's white (--snow) in both themes. */
+@utility shine {
+  position: relative;
+  overflow: hidden;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* Bright core with a soft halo; two sweeps so it reads on a small badge. */
+    background: linear-gradient(
+      110deg,
+      transparent 15%,
+      color-mix(in oklab, var(--snow) 35%, transparent) 35%,
+      color-mix(in oklab, var(--snow) 95%, transparent) 50%,
+      color-mix(in oklab, var(--snow) 35%, transparent) 65%,
+      transparent 85%
+    );
+    animation: shine calc(var(--motion-draw) * 1.25) var(--ease-enter)
+      var(--motion-slow) 2 both;
+  }
+}
+@keyframes shine {
+  from {
+    translate: -100% 0;
+  }
+  to {
+    translate: 100% 0;
+  }
+}
+
+/* Children enter one after another; items past the sixth share its delay. */
+@utility stagger {
+  & > * {
+    @apply animate-enter;
+  }
+  & > :nth-child(2) {
+    animation-delay: var(--motion-stagger);
+  }
+  & > :nth-child(3) {
+    animation-delay: calc(var(--motion-stagger) * 2);
+  }
+  & > :nth-child(4) {
+    animation-delay: calc(var(--motion-stagger) * 3);
+  }
+  & > :nth-child(5) {
+    animation-delay: calc(var(--motion-stagger) * 4);
+  }
+  & > :nth-child(n + 6) {
+    animation-delay: calc(var(--motion-stagger) * 5);
+  }
+}
+
+/* Delays an animation by its position in a sequence, set as `--i` (0, 1, …)
+   where the elements aren't siblings, e.g. stars inside radio buttons. */
+@utility stagger-delay {
+  animation-delay: calc(var(--motion-stagger) * var(--i, 0));
+}
+
+/* An SVG line draws itself; the element needs pathLength="1". */
+@utility draw-in {
+  stroke-dasharray: 1;
+  animation: draw var(--motion-draw) var(--ease-enter) backwards;
+}
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+/* Waits until the line drawn by draw-in reaches the element, at `--progress`
+   (0–1) of its length. */
+@utility draw-delay {
+  animation-delay: calc(var(--motion-draw) * var(--progress, 0));
+}
+
+/* Route changes crossfade (the router's defaultViewTransition). */
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-duration: var(--motion-base);
+  animation-timing-function: var(--ease-enter);
+}
+
+/* Content that pages through periods (calendar day / month) slides in the
+   direction set by the navigation's view transition type; the controls
+   around it stay put. */
+@utility period-transition {
+  /* Named only while paging, so switching day ↔ month doesn't morph the
+     list into the grid. */
+  :root:active-view-transition-type(forward, back) & {
+    view-transition-name: period;
+  }
+}
+:root:active-view-transition-type(back) {
+  --period-shift: -3rem;
+}
+:root:active-view-transition-type(forward, back) {
+  &::view-transition-old(period) {
+    animation: period-out var(--motion-fast) var(--ease-exit) both;
+  }
+  &::view-transition-new(period) {
+    animation: period-in var(--motion-slow) var(--ease-enter) both;
+  }
+}
+@keyframes period-out {
+  to {
+    opacity: 0;
+    translate: calc(var(--period-shift) * -1) 0;
+  }
+}
+@keyframes period-in {
+  from {
+    opacity: 0;
+    translate: var(--period-shift) 0;
+  }
 }
 
 :root,

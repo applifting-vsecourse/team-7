@@ -114,7 +114,10 @@ export function MonthlyCalendar({
             </span>
           ))}
         </div>
-        <ol aria-labelledby={headingId} className="grid grid-cols-7 gap-3">
+        <ol
+          aria-labelledby={headingId}
+          className="grid grid-cols-7 gap-3 period-transition"
+        >
           {days.map((day) => {
             const dayEvents = eventsOf(day);
             const isToday = isSameDay(day, today);
@@ -161,7 +164,8 @@ export function MonthlyCalendar({
 
       {/* Narrow screens: a compact month picker marks days with exercises and
           lists the selected day below it. */}
-      <div className="flex flex-col gap-6 lg:hidden">
+      {/* Hidden on wide screens, so its period name never clashes with the grid's. */}
+      <div className="flex flex-col gap-6 period-transition lg:hidden">
         <Calendar
           aria-labelledby={headingId}
           firstDayOfWeek="mon"

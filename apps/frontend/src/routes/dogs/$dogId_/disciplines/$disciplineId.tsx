@@ -8,7 +8,11 @@ import { Sidebar } from "@/components/Sidebar";
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
 import { useSession } from "@/features/auth/hooks/useSession";
 import { encodeRedirectUri } from "@/features/auth/lib/redirect";
-import { dogProfileQueryOptions } from "@/features/dogs/api/dogProfileQueryOptions";
+import { disciplineQueryOptions } from "@/features/disciplines/api/disciplinesQueryOptions";
+import {
+  dogProfileQueryOptions,
+  dogSelectionQueryOptions,
+} from "@/features/dogs/api/dogProfileQueryOptions";
 import { DogDisciplineView } from "@/features/dogs/components/DogDisciplineView";
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 
@@ -24,7 +28,20 @@ export const Route = createFileRoute("/dogs/$dogId_/disciplines/$disciplineId")(
           search: { from: encodeRedirectUri(location) },
         });
       }
+      return { userId: session.user.id };
     },
+    // Loaded before the view transition captures the page, so the card title
+    // can morph into the heading (same as the library detail).
+    loader: ({ context: { queryClient, userId }, params }) =>
+      Promise.all([
+        queryClient.prefetchQuery(dogProfileQueryOptions(userId, params.dogId)),
+        queryClient.prefetchQuery(
+          disciplineQueryOptions(userId, params.disciplineId),
+        ),
+        queryClient.prefetchQuery(
+          dogSelectionQueryOptions(userId, params.dogId, params.disciplineId),
+        ),
+      ]),
     component: DogDisciplinePage,
   },
 );

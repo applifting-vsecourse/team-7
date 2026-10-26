@@ -3,6 +3,8 @@ import { Flag, Plus } from "@gravity-ui/icons";
 import { Alert, Button, Separator } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
+import { PresenceList } from "@/components/PresenceList";
+
 import { useDialogState } from "../hooks/useDialogState";
 import { useDeleteGoal } from "../hooks/useLibraryMutations";
 import { DeleteDialog } from "./DeleteDialog";
@@ -66,11 +68,11 @@ export function GoalCard({
           </Alert.Content>
         </Alert>
       ) : (
-        <ul className="flex flex-col gap-4">
+        <PresenceList className="flex flex-col gap-4">
           {goal.exercises.map((exercise) => (
             <ExerciseRow key={exercise.id} goal={goal} exercise={exercise} />
           ))}
-        </ul>
+        </PresenceList>
       )}
       <Button
         variant="outline"

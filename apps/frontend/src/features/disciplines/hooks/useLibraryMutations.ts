@@ -9,16 +9,27 @@ import { disciplinesKey } from "../api/disciplinesQueryOptions";
 
 type Saved = { id: string };
 
+/**
+ * `inPlace` is for edits of a list on the current page: the refetch isn't
+ * awaited, so the dialog closes first and the list's enter / exit animation
+ * (PresenceList) plays in view rather than under the backdrop. Flows that
+ * navigate afterwards keep waiting for fresh data.
+ */
 function useLibraryMutation<TVariables, TResult = unknown>(
   mutationFn: (variables: TVariables) => Promise<TResult>,
+  { inPlace = false } = {},
 ) {
   const { user } = useSession();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: disciplinesKey(user?.id) }),
+    onSuccess: async () => {
+      const refetch = queryClient.invalidateQueries({
+        queryKey: disciplinesKey(user?.id),
+      });
+      if (!inPlace) await refetch;
+    },
   });
 }
 
@@ -63,11 +74,14 @@ export function useSaveGoal() {
           : api.post(path("disciplines", disciplineId, "goals"), { json })
       ).json<Saved>();
     },
+    { inPlace: true },
   );
 }
 
 export function useDeleteGoal() {
-  return useLibraryMutation((id: string) => api.delete(path("goals", id)));
+  return useLibraryMutation((id: string) => api.delete(path("goals", id)), {
+    inPlace: true,
+  });
 }
 
 export function useSaveExercise() {
@@ -88,6 +102,7 @@ export function useSaveExercise() {
           : api.post(path("goals", goalId, "exercises"), { json })
       ).json<Saved>();
     },
+    { inPlace: true },
   );
 }
 
@@ -117,11 +132,14 @@ export function useAssignDiscipline() {
 
 /** Takes all goals and exercises of a discipline from a dog. */
 export function useRemoveDiscipline() {
-  return useLibraryMutation((target: DogDiscipline) =>
-    putSelection(target, []),
+  return useLibraryMutation(
+    (target: DogDiscipline) => putSelection(target, []),
+    { inPlace: true },
   );
 }
 
 export function useDeleteExercise() {
-  return useLibraryMutation((id: string) => api.delete(path("exercises", id)));
+  return useLibraryMutation((id: string) => api.delete(path("exercises", id)), {
+    inPlace: true,
+  });
 }

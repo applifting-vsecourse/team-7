@@ -4,7 +4,7 @@ import { Chip, Separator } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { cn } from "@/lib/utils";
+import { cn, transitionName } from "@/lib/utils";
 
 import { AverageRating } from "./AverageRating";
 import { LastTraining } from "./LastTraining";
@@ -27,22 +27,27 @@ export function DogDisciplineCard({
       to="/dogs/$dogId/disciplines/$disciplineId"
       params={{ dogId, disciplineId: discipline.id }}
       className={cn(
-        "flex min-w-0 flex-col gap-3 rounded-2xl p-4 text-foreground shadow-card transition duration-150 outline-none hover:shadow-card-hover focus-visible:focus-ring motion-safe:hover:-translate-y-0.5",
+        "flex min-w-0 interactive-lift flex-col gap-3 rounded-2xl p-4 text-foreground shadow-card outline-none focus-visible:focus-ring",
         done ? "bg-event-tile-success" : "bg-background",
       )}
     >
       <div className="flex items-center gap-3">
         <h3 className="min-w-0 flex-1 text-xl leading-7 font-semibold tracking-tight wrap-break-word">
-          {discipline.name}
+          <span
+            className="inline-block"
+            style={transitionName("discipline", discipline.id)}
+          >
+            {discipline.name}
+          </span>
         </h3>
         {done && (
-          <Chip size="sm" className="bg-success">
+          <Chip size="sm" className="shine bg-success">
             <CircleCheck className="size-3" aria-hidden="true" />
             <Chip.Label>{t(($) => $.dogProfile.done)}</Chip.Label>
           </Chip>
         )}
         <ChevronRight
-          className="size-4 shrink-0 text-accent"
+          className="size-4 shrink-0 hover-nudge text-accent"
           aria-hidden="true"
         />
       </div>
