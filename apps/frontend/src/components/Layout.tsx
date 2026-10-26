@@ -6,6 +6,7 @@ import { MobileSidebar } from "@/components/MobileSidebar";
 import { Seo } from "@/components/Seo";
 import { cn } from "@/lib/utils";
 
+import { VerifyEmailBanner } from "@/features/auth/components/VerifyEmailBanner";
 import { AddDogDialog } from "@/features/dogs/components/AddDogDialog";
 
 export type AppLayoutProps = {
@@ -44,6 +45,7 @@ export default function Layout({
           ) : undefined
         }
       />
+      <VerifyEmailBanner />
       {/* Keep the desktop sidebar outside the scrolling page content. */}
       <div
         className={cn(

@@ -36,7 +36,14 @@
     },
     "signOut": "Sign out",
     "or": "or",
-    "continueWithGoogle": "Continue with Google"
+    "continueWithGoogle": "Continue with Google",
+    "verifyEmail": {
+      "title": "Verify your email",
+      "description": "We sent a verification link to {{email}}.",
+      "resend": "Resend",
+      "sent": "Verification email sent",
+      "failed": "Couldn't send the verification email"
+    }
   },
   "validation": {
     "email": {
