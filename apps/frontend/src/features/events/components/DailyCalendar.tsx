@@ -78,33 +78,32 @@ export function DailyCalendar({
       <SwipePager
         onPrevious={() => onDateChange(addDays(date, -1))}
         onNext={() => onDateChange(addDays(date, 1))}
-        className="min-h-40 md:min-h-0"
+        className="min-h-40 period-transition md:min-h-0"
       >
-        {events.length === 0 ? (
-          <p className="text-sm text-muted period-transition">
-            {t(($) => $.calendar.empty)}
-          </p>
-        ) : (
-          <PresenceList
-            as="ol"
-            key={format(date, "yyyy-MM-dd")}
-            aria-labelledby={headingId}
-            className="flex stagger flex-col gap-3 period-transition"
-          >
-            {events.map((event) => (
-              <PresenceItem key={event.id} className="flex items-start gap-3">
-                {/* The tile repeats the time; the column only aids scanning on wider screens. */}
-                <span
-                  aria-hidden="true"
-                  className="hidden w-18 shrink-0 pt-2 text-sm leading-6 font-medium text-muted sm:block"
-                >
-                  {event.time}
-                </span>
-                <Event {...event} className="flex-1" />
-              </PresenceItem>
-            ))}
-          </PresenceList>
-        )}
+        <PresenceList
+          empty={
+            <p className="animate-enter text-sm text-muted">
+              {t(($) => $.calendar.empty)}
+            </p>
+          }
+          as="ol"
+          key={format(date, "yyyy-MM-dd")}
+          aria-labelledby={headingId}
+          className="flex stagger flex-col gap-3"
+        >
+          {events.map((event) => (
+            <PresenceItem key={event.id} className="flex items-start gap-3">
+              {/* The tile repeats the time; the column only aids scanning on wider screens. */}
+              <span
+                aria-hidden="true"
+                className="hidden w-18 shrink-0 pt-2 text-sm leading-6 font-medium text-muted sm:block"
+              >
+                {event.time}
+              </span>
+              <Event {...event} className="flex-1" />
+            </PresenceItem>
+          ))}
+        </PresenceList>
       </SwipePager>
     </div>
   );

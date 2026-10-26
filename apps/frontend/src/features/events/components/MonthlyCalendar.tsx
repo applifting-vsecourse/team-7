@@ -218,20 +218,21 @@ export function MonthlyCalendar({
             {shortDateFormatter.format(date)} ·{" "}
             {exerciseCount(selectedEvents.length)}
           </h3>
-          {selectedEvents.length === 0 ? (
-            <p className="text-sm text-muted">{t(($) => $.calendar.empty)}</p>
-          ) : (
-            <PresenceList
-              key={toIsoDate(date)}
-              className="flex stagger flex-col gap-3"
-            >
-              {selectedEvents.map((event) => (
-                <PresenceItem key={event.id}>
-                  <Event {...event} headingLevel="h4" />
-                </PresenceItem>
-              ))}
-            </PresenceList>
-          )}
+          <PresenceList
+            empty={
+              <p className="animate-enter text-sm text-muted">
+                {t(($) => $.calendar.empty)}
+              </p>
+            }
+            key={toIsoDate(date)}
+            className="flex stagger flex-col gap-3"
+          >
+            {selectedEvents.map((event) => (
+              <PresenceItem key={event.id}>
+                <Event {...event} headingLevel="h4" />
+              </PresenceItem>
+            ))}
+          </PresenceList>
         </section>
       </SwipePager>
     </div>

@@ -46,17 +46,20 @@ export function Calendar({ variant, events }: CalendarProps) {
           />
         )}
       </h2>
-      {events.length === 0 ? (
-        <p className="text-sm text-muted">{t(($) => $.calendar.empty)}</p>
-      ) : (
-        <PresenceList className="flex stagger flex-col gap-3">
-          {events.map(({ id, ...event }) => (
-            <PresenceItem key={id}>
-              <Event {...event} />
-            </PresenceItem>
-          ))}
-        </PresenceList>
-      )}
+      <PresenceList
+        empty={
+          <p className="animate-enter text-sm text-muted">
+            {t(($) => $.calendar.empty)}
+          </p>
+        }
+        className="flex stagger flex-col gap-3"
+      >
+        {events.map(({ id, ...event }) => (
+          <PresenceItem key={id}>
+            <Event {...event} />
+          </PresenceItem>
+        ))}
+      </PresenceList>
     </m.section>
   );
 }

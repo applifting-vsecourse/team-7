@@ -189,19 +189,25 @@ export function WeeklyCalendar() {
                     {dateFormatter.format(date)}
                   </time>
                 </h3>
-                {dayEvents.length === 0 ? (
-                  <p className={cn("px-2 text-sm", !isToday && "text-muted")}>
-                    {t(($) => $.calendar.empty)}
-                  </p>
-                ) : (
-                  <PresenceList className="flex flex-col gap-3">
-                    {dayEvents.map((event) => (
-                      <PresenceItem key={event.id}>
-                        <Event {...event} headingLevel="h4" />
-                      </PresenceItem>
-                    ))}
-                  </PresenceList>
-                )}
+                <PresenceList
+                  empty={
+                    <p
+                      className={cn(
+                        "animate-enter px-2 text-sm",
+                        !isToday && "text-muted",
+                      )}
+                    >
+                      {t(($) => $.calendar.empty)}
+                    </p>
+                  }
+                  className="flex flex-col gap-3"
+                >
+                  {dayEvents.map((event) => (
+                    <PresenceItem key={event.id}>
+                      <Event {...event} headingLevel="h4" />
+                    </PresenceItem>
+                  ))}
+                </PresenceList>
               </section>
             );
           })}
