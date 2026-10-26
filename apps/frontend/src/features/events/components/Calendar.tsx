@@ -29,7 +29,7 @@ export function Calendar({ variant, events }: CalendarProps) {
       layout="position"
       transition={enterTransition()}
       aria-labelledby={headingId}
-      className="flex w-full max-w-full min-w-0 flex-col gap-4 md:w-calendar-cell"
+      className="flex w-full max-w-full min-w-0 flex-col gap-4 md:w-calendar-cell md:flex-none"
     >
       <h2
         id={headingId}
