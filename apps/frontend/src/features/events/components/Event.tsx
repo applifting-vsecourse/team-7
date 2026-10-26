@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import type { ScheduledEvent } from "../api/eventsQueryOptions";
 import {
   CircleCheck,
@@ -9,7 +9,8 @@ import {
 import { Button, Separator } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
-import { cn } from "@/lib/utils";
+import { withViewTransition } from "@/lib/motion";
+import { cn, transitionName } from "@/lib/utils";
 
 import { RatingStars } from "./RatingStars";
 import { ScheduledExerciseDialog } from "./ScheduledExerciseDialog";
@@ -59,6 +60,30 @@ export function Event({
   const { t, i18n } = useTranslation();
   const titleId = useId();
   const [isOpen, setIsOpen] = useState(false);
+  // The tile grows into its dialog and shrinks back (view transition). It
+  // carries the shared name only during the morph; a permanent name would
+  // make it fly on every route change and break the calendar's period slide.
+  const tileRef = useRef<HTMLElement>(null);
+  const setTileName = (name: string) => {
+    if (tileRef.current) tileRef.current.style.viewTransitionName = name;
+  };
+  const morphName = transitionName(
+    "event",
+    scheduledEvent?.id ?? "",
+  ).viewTransitionName;
+  const open = () => {
+    setTileName(morphName);
+    void withViewTransition(() => {
+      setTileName("");
+      setIsOpen(true);
+    });
+  };
+  const close = () => {
+    void withViewTransition(() => {
+      setIsOpen(false);
+      setTileName(morphName);
+    }).finally(() => setTileName(""));
+  };
   const isUpcoming = state === "upcoming";
   const isCompleted = state === "completed";
   const StatusIcon = isCompleted ? CircleCheck : CircleExclamation;
@@ -73,6 +98,7 @@ export function Event({
   return (
     <>
       <article
+        ref={tileRef}
         aria-labelledby={historyOnly ? undefined : titleId}
         aria-label={historyOnly ? exercise : undefined}
         className={cn(
@@ -87,7 +113,7 @@ export function Event({
             variant="ghost"
             className="absolute inset-0 z-10 h-full w-full bg-transparent"
             aria-label={t(($) => $.training.open, { name: exercise })}
-            onPress={() => setIsOpen(true)}
+            onPress={open}
           />
         )}
         <span
@@ -186,15 +212,9 @@ export function Event({
       {scheduledEvent &&
         isOpen &&
         (historyOnly ? (
-          <TrainingHistoryDialog
-            event={scheduledEvent}
-            onClose={() => setIsOpen(false)}
-          />
+          <TrainingHistoryDialog event={scheduledEvent} onClose={close} />
         ) : (
-          <ScheduledExerciseDialog
-            event={scheduledEvent}
-            onClose={() => setIsOpen(false)}
-          />
+          <ScheduledExerciseDialog event={scheduledEvent} onClose={close} />
         ))}
     </>
   );

@@ -32,6 +32,7 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { translateMessage } from "@/i18n/messages";
+import { transitionName } from "@/lib/utils";
 
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 
@@ -100,8 +101,12 @@ export function ScheduledExerciseDialog({
         if (!open && !action.isPending) onClose();
       }}
     >
-      <Modal.Container size="lg" scroll="outside">
-        <Modal.Dialog className="bg-background sm:max-w-160">
+      <Modal.Container size="lg" scroll="outside" className="grow-from-trigger">
+        {/* Shares the tile's name, so the tile grows into this dialog. */}
+        <Modal.Dialog
+          className="bg-background sm:max-w-160"
+          style={transitionName("event", event.id)}
+        >
           <Modal.CloseTrigger
             isDisabled={action.isPending}
             aria-label={t(($) => $.training.cancel)}

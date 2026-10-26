@@ -306,6 +306,12 @@
     @apply mt-5;
   }
 
+  /* A dialog that grows out of the tile that opened it (view transition):
+     the morph replaces the kit's zoom-in of the container. */
+  .modal__container.grow-from-trigger[data-entering="true"] {
+    animation: none;
+  }
+
   /* A form around body + footer must shrink with the height-capped dialog,
      or the body can't scroll and the footer is clipped off-screen. */
   .modal__dialog > form {
