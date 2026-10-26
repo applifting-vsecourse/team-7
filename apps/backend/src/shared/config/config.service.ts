@@ -86,6 +86,12 @@ export class Config {
   @IsNotEmpty()
   readonly emailFrom!: string;
 
+  // Development only: delivers every email to this address instead, e.g. the
+  // Resend account owner while the test sender cannot reach anyone else.
+  @Env("EMAIL_REDIRECT_TO", { expose: true })
+  @IsOptional()
+  readonly emailRedirectTo?: string;
+
   @Env("SMTP_HOST", { expose: true })
   @IsOptional()
   readonly smtpHost?: string;

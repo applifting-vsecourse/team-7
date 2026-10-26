@@ -8,6 +8,7 @@ export type SessionUser = {
   id: string;
   email: string;
   name: string;
+  emailVerified: boolean;
   role?: string;
 };
 
@@ -32,6 +33,7 @@ export const authSessionQueryOptions = () =>
           id: user.id,
           email: user.email,
           name: user.name,
+          emailVerified: user.emailVerified,
           role: user.role ?? undefined,
         },
       };

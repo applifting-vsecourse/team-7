@@ -36,7 +36,14 @@
     },
     "signOut": "Odhlásit se",
     "or": "nebo",
-    "continueWithGoogle": "Pokračovat přes Google"
+    "continueWithGoogle": "Pokračovat přes Google",
+    "verifyEmail": {
+      "title": "Ověřte svůj e-mail",
+      "description": "Na adresu {{email}} jsme poslali odkaz pro ověření.",
+      "resend": "Odeslat znovu",
+      "sent": "Ověřovací e-mail jsme odeslali",
+      "failed": "Ověřovací e-mail se nepodařilo odeslat"
+    }
   },
   "validation": {
     "email": {

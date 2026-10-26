@@ -1,10 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { ROUTES } from "@/app/routes";
 import { messageSelectors } from "@/i18n/messages";
 import { authKeys } from "@/lib/auth-keys";
 
 import { authClient } from "@/features/auth/lib/auth-client";
 import { authErrorMessage } from "@/features/auth/lib/auth-error";
+import { toAbsoluteUrl } from "@/features/auth/lib/redirect";
 
 export type SignUpInput = {
   name: string;
@@ -22,6 +24,7 @@ export function useSignUp() {
         name: input.name,
         email: input.email,
         password: input.password,
+        callbackURL: toAbsoluteUrl(ROUTES.overview),
       });
       if (error) {
         throw new Error(authErrorMessage(error, messageSelectors.signUpFailed));
