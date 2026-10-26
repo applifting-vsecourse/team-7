@@ -1,7 +1,9 @@
 import { useId } from "react";
+import { m } from "motion/react";
 import { useTranslation } from "react-i18next";
 
 import { PresenceItem, PresenceList } from "@/components/PresenceList";
+import { enterTransition } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 import { Event, type EventProps } from "./Event";
@@ -21,7 +23,11 @@ export function Calendar({ variant, events }: CalendarProps) {
   }[variant];
 
   return (
-    <section
+    // Slides to its new place when content above it (the weekly stats)
+    // changes height, instead of jumping.
+    <m.section
+      layout="position"
+      transition={enterTransition()}
       aria-labelledby={headingId}
       className="flex w-full max-w-full min-w-0 flex-col gap-4 md:w-calendar-cell"
     >
@@ -51,6 +57,6 @@ export function Calendar({ variant, events }: CalendarProps) {
           ))}
         </PresenceList>
       )}
-    </section>
+    </m.section>
   );
 }

@@ -1,7 +1,7 @@
 import type { ComponentProps, ComponentPropsWithoutRef } from "react";
 import { AnimatePresence, m } from "motion/react";
 
-import { motionEase, motionSeconds } from "@/lib/motion";
+import { enterTransition, motionEase, motionSeconds } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 /**
@@ -40,10 +40,7 @@ export function PresenceItem(props: ComponentProps<typeof m.li>) {
           ease: motionEase("--ease-exit"),
         },
       }}
-      transition={{
-        duration: motionSeconds("--motion-base"),
-        ease: motionEase("--ease-enter"),
-      }}
+      transition={enterTransition()}
       {...props}
     />
   );

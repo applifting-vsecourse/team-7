@@ -18,6 +18,14 @@ export function motionEase(name: string) {
     ?.map(Number) as [number, number, number, number] | undefined;
 }
 
+/** Motion transition for entrances and layout moves (--motion-base, --ease-enter). */
+export function enterTransition() {
+  return {
+    duration: motionSeconds("--motion-base"),
+    ease: motionEase("--ease-enter"),
+  };
+}
+
 /**
  * Runs a state update as a view transition: the DOM is updated synchronously
  * inside it, so the browser can morph elements that share a transition name.
