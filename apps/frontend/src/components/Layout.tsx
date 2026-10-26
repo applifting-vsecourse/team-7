@@ -45,7 +45,6 @@ export default function Layout({
           ) : undefined
         }
       />
-      <VerifyEmailBanner />
       {/* Keep the desktop sidebar outside the scrolling page content. */}
       <div
         className={cn(
@@ -58,17 +57,21 @@ export default function Layout({
             {sidebar}
           </div>
         )}
-        <main
-          className={cn(
-            "flex min-w-0 flex-1",
-            sidebar
-              ? "flex-col items-stretch bg-background md:h-full md:flex-row md:items-start md:overflow-y-auto md:[&>section]:min-h-full"
-              : "items-start justify-center",
-            className,
-          )}
-        >
-          {children}
-        </main>
+        {/* The Figma "Content" column: notices sit above the page, aligned with it. */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <VerifyEmailBanner />
+          <main
+            className={cn(
+              "flex min-w-0 flex-1",
+              sidebar
+                ? "flex-col items-stretch bg-background md:min-h-0 md:flex-row md:items-start md:overflow-y-auto md:[&>section]:min-h-full"
+                : "items-start justify-center",
+              className,
+            )}
+          >
+            {children}
+          </main>
+        </div>
       </div>
       {/* Outside the sidebar, so switching to the mobile drawer keeps it open. */}
       {sidebar ? <AddDogDialog /> : null}
