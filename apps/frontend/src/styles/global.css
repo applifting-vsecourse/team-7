@@ -286,9 +286,11 @@
 @layer base {
   /* Reserve the scrollbar's space on the page and the scrolling <main>, so
      content growing past the window (e.g. picking dogs) doesn't narrow the
-     layout the moment a scrollbar appears. */
+     layout the moment a scrollbar appears. `body main` outranks the
+     `body *` scrollbar utility below, which resets the gutter to auto;
+     setting --scrollbar-gutter instead would leak into nested scrollers. */
   html,
-  main {
+  body main {
     scrollbar-gutter: stable;
   }
   body {
