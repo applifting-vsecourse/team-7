@@ -30,6 +30,8 @@
   --animate-enter: enter var(--motion-base) var(--ease-enter) backwards;
   /* A small element (icon, star, chart point) springs in. */
   --animate-pop: pop var(--motion-slow) var(--ease-spring) backwards;
+  /* The reverse: a just-emptied element (star) holds its highlight, then deflates. */
+  --animate-unpop: unpop var(--motion-base) var(--ease-enter) backwards;
   /* A tile acknowledges an achievement, e.g. a training marked completed. */
   --animate-celebrate: celebrate var(--motion-slow) var(--ease-enter);
   --animate-fade: fade var(--motion-draw) var(--ease-enter) backwards;
@@ -44,6 +46,12 @@
     from {
       opacity: 0;
       scale: 0.3;
+    }
+  }
+  @keyframes unpop {
+    from {
+      scale: 1.2;
+      color: var(--warning);
     }
   }
   @keyframes celebrate {

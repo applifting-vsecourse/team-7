@@ -75,7 +75,7 @@ export function ScheduledExerciseDialog({
     },
   });
   const rating = useWatch({ control: result.control, name: "rating" });
-  // Newly filled stars pop one after another, counted from the previous rating.
+  // Stars that change animate one after another, counted from the previous rating.
   const [shownRating, setShownRating] = useState(rating);
   const [fillFrom, setFillFrom] = useState(0);
   if (rating !== shownRating) {
@@ -280,20 +280,24 @@ export function ScheduledExerciseDialog({
                                   <Radio.Control className="sr-only">
                                     <Radio.Indicator />
                                   </Radio.Control>
-                                  {/* Switching Star → StarFill remounts the
-                                      icon, so only newly filled stars pop. */}
+                                  {/* Switching Star ↔ StarFill remounts the
+                                      icon, so only stars that just changed
+                                      animate: filled ones pop left to right,
+                                      emptied ones deflate right to left. */}
                                   <Icon
                                     className={
                                       value <= field.value
                                         ? "size-6 animate-pop text-warning stagger-delay"
-                                        : "size-6 text-muted"
+                                        : value <= fillFrom
+                                          ? "size-6 animate-unpop text-muted stagger-delay"
+                                          : "size-6 text-muted"
                                     }
                                     style={
                                       {
-                                        "--i": Math.max(
-                                          0,
-                                          value - fillFrom - 1,
-                                        ),
+                                        "--i":
+                                          value <= field.value
+                                            ? Math.max(0, value - fillFrom - 1)
+                                            : fillFrom - value,
                                       } as CSSProperties
                                     }
                                     aria-hidden="true"
