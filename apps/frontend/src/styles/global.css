@@ -284,6 +284,13 @@
 }
 
 @layer base {
+  /* Reserve the scrollbar's space on the page and the scrolling <main>, so
+     content growing past the window (e.g. picking dogs) doesn't narrow the
+     layout the moment a scrollbar appears. */
+  html,
+  main {
+    scrollbar-gutter: stable;
+  }
   body {
     @apply flex min-h-svh flex-col bg-background font-sans text-foreground antialiased;
   }
