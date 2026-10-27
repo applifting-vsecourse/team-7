@@ -16,6 +16,5 @@
 
 ## Checklist
 
-- [ ] I read my own Files changed, top to bottom
-- [ ] I ran an agent review and answered its comments
+- [ ] I ran an agent review and checked for myself
 - [ ] I can explain every change
