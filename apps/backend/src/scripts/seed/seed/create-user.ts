@@ -34,15 +34,12 @@ export async function createUser(
     throw new Error(`Failed to create user with email: ${email}`);
   }
 
-  if (!role) {
-    return user;
-  }
-
-  // assign a role to the user directly
+  // seeded accounts skip email verification; assign the role directly
   return prisma.user.update({
     where: { id: user.id },
     data: {
-      role: role as UserRole,
+      emailVerified: true,
+      ...(role && { role: role as UserRole }),
     },
   });
 }
