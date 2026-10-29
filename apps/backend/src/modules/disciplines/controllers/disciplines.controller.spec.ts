@@ -70,7 +70,7 @@ describe("discipline library API", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     getSession.mockResolvedValue({
-      user: { id: "user-a", role: "user" },
+      user: { id: "user-a", role: "user", emailVerified: true },
     } as NonNullable<Awaited<ReturnType<typeof getSessionFromRequest>>>);
   });
 

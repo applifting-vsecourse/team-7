@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
@@ -22,6 +23,10 @@ export class AuthenticatedUserGuard implements CanActivate {
     if (!session) {
       // 401: the caller is not signed in (403 would mean "signed in but not allowed")
       throw new UnauthorizedException();
+    }
+    // Signed in, but the app stays locked until the email is verified.
+    if (!session.user.emailVerified) {
+      throw new ForbiddenException("Email not verified");
     }
 
     request.session = session;

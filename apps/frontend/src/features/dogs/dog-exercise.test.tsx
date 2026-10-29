@@ -62,7 +62,12 @@ vi.mock("@/features/auth/lib/auth-client", () => ({
   authClient: {
     getSession: vi.fn(async () => ({
       data: {
-        user: { id: "user-a", name: "Handler", email: "handler@example.com" },
+        user: {
+          id: "user-a",
+          name: "Handler",
+          email: "handler@example.com",
+          emailVerified: true,
+        },
       },
       error: null,
     })),

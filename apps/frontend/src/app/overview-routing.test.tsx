@@ -110,6 +110,7 @@ vi.mock("@/features/auth/lib/auth-client", () => ({
               id: "user-1",
               name: "Test User",
               email: "test@example.com",
+              emailVerified: true,
             },
           }
         : null,

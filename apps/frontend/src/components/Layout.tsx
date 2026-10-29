@@ -6,7 +6,6 @@ import { MobileSidebar } from "@/components/MobileSidebar";
 import { Seo } from "@/components/Seo";
 import { cn } from "@/lib/utils";
 
-import { VerifyEmailBanner } from "@/features/auth/components/VerifyEmailBanner";
 import { AddDogDialog } from "@/features/dogs/components/AddDogDialog";
 
 export type AppLayoutProps = {
@@ -57,21 +56,17 @@ export default function Layout({
             {sidebar}
           </div>
         )}
-        {/* The Figma "Content" column: notices sit above the page, aligned with it. */}
-        <div className="flex min-w-0 flex-1 flex-col">
-          <VerifyEmailBanner />
-          <main
-            className={cn(
-              "flex min-w-0 flex-1",
-              sidebar
-                ? "flex-col items-stretch bg-background md:min-h-0 md:flex-row md:items-start md:overflow-y-auto md:[&>section]:min-h-full"
-                : "items-start justify-center",
-              className,
-            )}
-          >
-            {children}
-          </main>
-        </div>
+        <main
+          className={cn(
+            "flex min-w-0 flex-1",
+            sidebar
+              ? "flex-col items-stretch bg-background md:h-full md:flex-row md:items-start md:overflow-y-auto md:[&>section]:min-h-full"
+              : "items-start justify-center",
+            className,
+          )}
+        >
+          {children}
+        </main>
       </div>
       {/* Outside the sidebar, so switching to the mobile drawer keeps it open. */}
       {sidebar ? <AddDogDialog /> : null}

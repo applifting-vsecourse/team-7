@@ -82,7 +82,7 @@ describe("dog discipline selections API", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     getSession.mockResolvedValue({
-      user: { id: "user-a", role: "user" },
+      user: { id: "user-a", role: "user", emailVerified: true },
     } as NonNullable<Awaited<ReturnType<typeof getSessionFromRequest>>>);
     prisma.$transaction.mockImplementation(async (action) => action(prisma));
     prisma.dog.findFirst.mockResolvedValue({ id: "dog-a" });

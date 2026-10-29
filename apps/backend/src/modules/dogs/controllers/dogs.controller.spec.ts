@@ -142,7 +142,7 @@ describe("/api/dogs", () => {
 
   function signIn(userId: string) {
     getSession.mockResolvedValue({
-      user: { id: userId, role: "user" },
+      user: { id: userId, role: "user", emailVerified: true },
     } as NonNullable<Awaited<ReturnType<typeof getSessionFromRequest>>>);
   }
 

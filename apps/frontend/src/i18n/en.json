@@ -41,7 +41,7 @@
     "continueWithGoogle": "Continue with Google",
     "verifyEmail": {
       "title": "Verify your email",
-      "description": "We sent a verification link to {{email}}.",
+      "description": "We sent a verification link to {{email}}. The app unlocks once you click it.",
       "resend": "Resend",
       "sent": "Verification email sent",
       "failed": "Couldn't send the verification email"

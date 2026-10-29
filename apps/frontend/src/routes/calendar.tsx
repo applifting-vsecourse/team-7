@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { Calendar as CalendarIcon, Plus } from "@gravity-ui/icons";
 import { Button } from "@heroui/react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { format, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
-import { ROUTES } from "@/app/routes";
 import Layout from "@/components/Layout";
 import { Sidebar } from "@/components/Sidebar";
 
-import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
-import { encodeRedirectUri } from "@/features/auth/lib/redirect";
+import { requireVerifiedSession } from "@/features/auth/lib/require-session";
 import { DogFilter } from "@/features/dogs/components/DogFilter";
 import {
   CALENDAR_VIEWS,
@@ -31,17 +29,7 @@ const calendarSearchSchema = z.object({
 
 export const Route = createFileRoute("/calendar")({
   validateSearch: calendarSearchSchema,
-  beforeLoad: async ({ context, location }) => {
-    const session = await context.queryClient.fetchQuery(
-      authSessionQueryOptions(),
-    );
-    if (!session) {
-      throw redirect({
-        to: ROUTES.login,
-        search: { from: encodeRedirectUri(location) },
-      });
-    }
-  },
+  beforeLoad: requireVerifiedSession,
   component: CalendarPage,
 });
 
