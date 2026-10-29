@@ -5,7 +5,7 @@ catalogs:
   default:
     "@types/node": ^20.19.43
     react-hook-form: ^7.85.0
-    typescript: ^5.9.3
+    typescript: ^6
     zod: ^4.4.3
   react19:
     "@types/react": ^19.2.18

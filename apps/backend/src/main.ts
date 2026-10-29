@@ -1,7 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { toNodeHandler } from "better-auth/node";
-import * as cookieParser from "cookie-parser";
+import cookieParser from "cookie-parser";
 import * as express from "express";
 import { AppModule } from "./app.module";
 import { BetterAuth } from "./shared/auth/providers/better-auth.provider";
