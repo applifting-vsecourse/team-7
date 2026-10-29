@@ -1,12 +1,16 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "resolvePackageJsonExports": true,
+    "target": "ES2023",
+    // @Env installs prototype getters that native class fields would shadow.
+    "useDefineForClassFields": false,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "es2017",
     "jsx": "react-jsx",
     "sourceMap": true,
     "outDir": "./dist",
@@ -44,5 +48,10 @@
     ],
     "types": ["node", "express"]
   },
-  "include": ["src/**/*", "test/**/*"]
+  "include": ["src/**/*", "test/**/*"],
+  "ts-node": {
+    // Prisma emits .js imports for compiled output; resolve them to the .ts
+    // sources when running scripts directly through ts-node.
+    "experimentalResolver": true
+  }
 }
