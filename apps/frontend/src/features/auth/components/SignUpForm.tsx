@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { ArrowRotateRight } from "@gravity-ui/icons";
 import {
   Alert,
   Button,
@@ -11,7 +12,6 @@ import {
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { keyFromSelector } from "i18next";
-import { Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -177,7 +177,9 @@ export function SignUpForm({
         isPending={isPending}
         isDisabled={isPending}
       >
-        {isPending ? <Loader2 className="size-4 animate-spin" /> : null}
+        {isPending ? (
+          <ArrowRotateRight className="size-4 animate-spin" />
+        ) : null}
         {t(($) => $.auth.createAccount)}
       </Button>
     </Form>

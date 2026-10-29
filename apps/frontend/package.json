@@ -33,7 +33,6 @@
     "jotai": "3.0.1",
     "jotai-devtools": "0.15.1",
     "ky": "2.2.0",
-    "lucide-react": "1.33.0",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "react-hook-form": "catalog:",

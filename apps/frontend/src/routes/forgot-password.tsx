@@ -1,6 +1,6 @@
+import { ArrowLeft } from "@gravity-ui/icons";
 import { buttonVariants } from "@heroui/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
