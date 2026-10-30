@@ -14,7 +14,9 @@ import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OverviewRouteImport } from './routes/overview'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as DisciplinesIndexRouteImport } from './routes/disciplines/index'
 import { Route as DisciplinesDisciplineIdRouteImport } from './routes/disciplines/$disciplineId'
 import { Route as DogsDogIdRouteImport } from './routes/dogs/$dogId'
@@ -46,9 +48,19 @@ const OverviewRoute = OverviewRouteImport.update({
   path: '/overview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DisciplinesIndexRoute = DisciplinesIndexRouteImport.update({
@@ -85,7 +97,9 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/overview': typeof OverviewRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
   '/dogs/$dogId': typeof DogsDogIdRoute
   '/disciplines/': typeof DisciplinesIndexRoute
@@ -98,7 +112,9 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/overview': typeof OverviewRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
   '/dogs/$dogId': typeof DogsDogIdRoute
   '/disciplines': typeof DisciplinesIndexRoute
@@ -112,7 +128,9 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/overview': typeof OverviewRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
   '/dogs/$dogId': typeof DogsDogIdRoute
   '/disciplines/': typeof DisciplinesIndexRoute
@@ -127,7 +145,9 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/overview'
+    | '/reset-password'
     | '/signup'
+    | '/verify-email'
     | '/disciplines/$disciplineId'
     | '/dogs/$dogId'
     | '/disciplines/'
@@ -140,7 +160,9 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/overview'
+    | '/reset-password'
     | '/signup'
+    | '/verify-email'
     | '/disciplines/$disciplineId'
     | '/dogs/$dogId'
     | '/disciplines'
@@ -153,7 +175,9 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/overview'
+    | '/reset-password'
     | '/signup'
+    | '/verify-email'
     | '/disciplines/$disciplineId'
     | '/dogs/$dogId'
     | '/disciplines/'
@@ -167,7 +191,9 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   OverviewRoute: typeof OverviewRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
   DisciplinesDisciplineIdRoute: typeof DisciplinesDisciplineIdRoute
   DogsDogIdRoute: typeof DogsDogIdRoute
   DisciplinesIndexRoute: typeof DisciplinesIndexRoute
@@ -212,11 +238,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OverviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/disciplines/': {
@@ -263,7 +303,9 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   OverviewRoute: OverviewRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
   DisciplinesDisciplineIdRoute: DisciplinesDisciplineIdRoute,
   DogsDogIdRoute: DogsDogIdRoute,
   DisciplinesIndexRoute: DisciplinesIndexRoute,

@@ -57,13 +57,6 @@ export class Config {
   @IsNotEmpty()
   readonly frontendUrl!: string;
 
-  @Env("FRONTEND_RESET_PASSWORD_ROUTE", {
-    defaultValue: "reset-password",
-    expose: true,
-  })
-  @IsNotEmpty()
-  readonly frontendResetPasswordUrl!: string;
-
   @Env("PORT", { expose: true, defaultValue: 4050 })
   readonly port!: number;
 
@@ -85,6 +78,12 @@ export class Config {
   })
   @IsNotEmpty()
   readonly emailFrom!: string;
+
+  // Development only: delivers every email to this address instead, e.g. the
+  // Resend account owner while the test sender cannot reach anyone else.
+  @Env("EMAIL_REDIRECT_TO", { expose: true })
+  @IsOptional()
+  readonly emailRedirectTo?: string;
 
   @Env("SMTP_HOST", { expose: true })
   @IsOptional()

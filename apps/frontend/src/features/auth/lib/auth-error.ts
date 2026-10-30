@@ -7,6 +7,7 @@ const messagesByCode: Record<string, TranslationSelector> = {
   USER_ALREADY_EXISTS: messageSelectors.emailTaken,
   USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: messageSelectors.emailTaken,
   INVALID_EMAIL_OR_PASSWORD: messageSelectors.invalidCredentials,
+  INVALID_TOKEN: messageSelectors.resetLinkInvalid,
 };
 
 /** Returns a message key for a BetterAuth error, falling back for unknown codes. */

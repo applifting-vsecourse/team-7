@@ -1,29 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { ROUTES } from "@/app/routes";
 import Layout from "@/components/Layout";
 import { Sidebar } from "@/components/Sidebar";
 
-import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
 import { useSession } from "@/features/auth/hooks/useSession";
-import { encodeRedirectUri } from "@/features/auth/lib/redirect";
+import { requireVerifiedSession } from "@/features/auth/lib/require-session";
 import { dogProfileQueryOptions } from "@/features/dogs/api/dogProfileQueryOptions";
 import { DogProfileView } from "@/features/dogs/components/DogProfileView";
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 
 export const Route = createFileRoute("/dogs/$dogId")({
-  beforeLoad: async ({ context, location }) => {
-    const session = await context.queryClient.fetchQuery(
-      authSessionQueryOptions(),
-    );
-    if (!session) {
-      throw redirect({
-        to: ROUTES.login,
-        search: { from: encodeRedirectUri(location) },
-      });
-    }
-  },
+  beforeLoad: requireVerifiedSession,
   component: DogPage,
 });
 

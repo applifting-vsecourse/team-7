@@ -32,11 +32,27 @@
       "signUp": "Sign up failed",
       "google": "Google sign-in failed",
       "emailTaken": "An account with this email already exists. Use another email.",
-      "invalidCredentials": "Invalid email or password"
+      "invalidCredentials": "Invalid email or password",
+      "newPassword": "Unable to change the password",
+      "resetLinkInvalid": "The password reset link is invalid or has expired."
     },
     "signOut": "Sign out",
     "or": "or",
-    "continueWithGoogle": "Continue with Google"
+    "continueWithGoogle": "Continue with Google",
+    "verifyEmail": {
+      "title": "Verify your email",
+      "description": "We sent a verification link to {{email}}. The app unlocks once you click it.",
+      "resend": "Resend",
+      "sent": "Verification email sent",
+      "failed": "Couldn't send the verification email"
+    },
+    "newPassword": {
+      "title": "New password",
+      "description": "Choose a new password for your account.",
+      "submit": "Set password",
+      "success": "Password changed. Sign in with your new password.",
+      "requestNew": "Request a new link"
+    }
   },
   "validation": {
     "email": {

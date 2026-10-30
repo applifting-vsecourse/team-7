@@ -25,12 +25,11 @@ const createAuth = (
     }),
     emailAndPassword: {
       enabled: true,
-      sendResetPassword: async ({ user, token }) => {
-        const passwordResetUrl = `${config.frontendUrl}/${config.frontendResetPasswordUrl}?token=${token}`;
-        const html = await renderEmail(ResetPassword, {
-          name: user.name,
-          url: passwordResetUrl,
-        });
+      revokeSessionsOnPasswordReset: true,
+      // The link goes through BetterAuth, which checks the token and redirects
+      // to the frontend's `redirectTo` with `?token=` or `?error=INVALID_TOKEN`.
+      sendResetPassword: async ({ user, url }) => {
+        const html = await renderEmail(ResetPassword, { name: user.name, url });
         await emailProvider.sendEmail(user.email, "Password reset", html);
       },
     },
