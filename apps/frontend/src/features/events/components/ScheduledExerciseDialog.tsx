@@ -36,6 +36,7 @@ import { translateMessage } from "@/i18n/messages";
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 
 import { useEventAction } from "../hooks/useEventAction";
+import { isDuplicateDayError } from "../hooks/useMoveEvent";
 import {
   eventResultSchema,
   type EventResultValues,
@@ -317,7 +318,9 @@ export function ScheduledExerciseDialog({
               )}
               {action.isError && (
                 <p role="alert" className="text-sm text-danger">
-                  {t(($) => $.training.error)}
+                  {mode === "schedule" && isDuplicateDayError(action.error)
+                    ? t(($) => $.training.duplicateDay)
+                    : t(($) => $.training.error)}
                 </p>
               )}
             </Modal.Body>
