@@ -1,9 +1,9 @@
 import { useId } from "react";
 import type { DisciplineDog } from "../api/disciplinesQueryOptions";
-import { Heart } from "@gravity-ui/icons";
 import { toast } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
+import { DogIcon } from "@/components/DogIcon";
 import { czechFrom, pluralForm } from "@/lib/plural";
 
 import { useSession } from "@/features/auth/hooks/useSession";
@@ -45,7 +45,7 @@ export function DisciplineDogs({
       </h2>
       {dogs.length === 0 ? (
         <p className="flex items-start gap-1 text-sm leading-6 text-muted">
-          <Heart className="mt-1 size-4 shrink-0" aria-hidden="true" />
+          <DogIcon className="mt-1 size-4 shrink-0" aria-hidden="true" />
           {t(($) => $.disciplines.dogsEmpty)}
         </p>
       ) : (

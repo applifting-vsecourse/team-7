@@ -1,5 +1,6 @@
-import { Heart } from "@gravity-ui/icons";
 import { Avatar } from "@heroui/react";
+
+import { DogIcon } from "@/components/DogIcon";
 
 import { dogAvatarUrl } from "@/features/dogs/api/dogAvatarUrl";
 import type { Dog } from "@/features/dogs/api/dogsQueryOptions";
@@ -20,7 +21,7 @@ export function DogAvatar({
         className="object-cover"
       />
       <Avatar.Fallback>
-        <Heart className="size-5 text-accent" />
+        <DogIcon className="size-5 text-accent" />
       </Avatar.Fallback>
     </Avatar>
   );
