@@ -2,9 +2,27 @@
 
 Training planner and log for dog handlers, built by team 7 for [4IT580](https://4it580.vse.cz). Handlers replace notebooks with a plan per dog → discipline → goal → exercise, a weekly calendar and structured results with a progress history. Czech first, English supported.
 
+**Live:** https://team-7.vsepractical.applifting.dev
+
 **Stack:** React 19 + Vite + TanStack Router/Query + Jotai + Tailwind 4/HeroUI v3 (frontend) · NestJS + Prisma + PostgreSQL + BetterAuth (backend) · pnpm workspaces.
 
 Product background (lean canvas, interview notes, costs) lives in `Docs/` on the `docs` branch.
+
+## Team
+
+| Name          | GitHub                                           |
+| ------------- | ------------------------------------------------ |
+| Jiří Kouba    | [@Friendlykid](https://github.com/Friendlykid)   |
+| Mikuláš Bílek | [@Mikulas-code](https://github.com/Mikulas-code) |
+| Vojtěch Keder | [@noxieee](https://github.com/noxieee)           |
+| Marek Sirakov | [@SirMar11](https://github.com/SirMar11)         |
+
+## How we work
+
+- **Nobody pushes to `main`.** It is protected: every change lands through a pull request.
+- **One branch per story**, named `feature/…`, `bugfix/…` or `chore/…` (other names are rejected by a ruleset). Keep PRs small — one story slice each.
+- **Every PR needs a teammate's approval** before merging; new commits dismiss earlier approvals. Fill in the [PR template](.github/pull_request_template.md), read your own Files changed and run an agent review before requesting a teammate.
+- **Reviews use [Conventional Comments](https://conventionalcomments.org/)** (`blocking:`, `question:`, `suggestion:`, `nit:`, `praise:`). The author answers every comment; the reviewer resolves the thread.
 
 ## Prerequisites
 
@@ -91,7 +109,7 @@ Two things worth knowing:
 - **The frontend bakes its API URL in at build time** (`VITE_*` are build args, not runtime env), so changing `BACKEND_URL` needs a rebuild, not just a restart.
 - **Production migrates but does not seed** — the container runs `prisma migrate deploy` then starts. A fresh deployment has an empty database, so the first account is created through the sign-up form.
 
-### https://team-7.vsepractical.applifting.dev
+The production deployment runs at https://team-7.vsepractical.applifting.dev.
 
 ## When something goes wrong
 
