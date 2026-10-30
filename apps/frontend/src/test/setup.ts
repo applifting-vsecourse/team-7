@@ -1,7 +1,9 @@
-import "@testing-library/jest-dom/vitest";
-import { beforeEach, vi } from "vitest";
+import * as matchers from "@testing-library/jest-dom/matchers";
+import { beforeEach, expect, vi } from "vitest";
 
 import i18n from "@/i18n";
+
+expect.extend(matchers);
 
 beforeEach(async () => {
   await i18n.changeLanguage("en");
