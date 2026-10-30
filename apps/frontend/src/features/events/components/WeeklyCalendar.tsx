@@ -1,4 +1,6 @@
+import type { ComponentProps, Ref } from "react";
 import { useId, useLayoutEffect, useRef, useState } from "react";
+import type { MoveEvent } from "../hooks/useMoveEvent";
 import { ChevronLeft, ChevronRight } from "@gravity-ui/icons";
 import { Button, ButtonGroup, ScrollShadow } from "@heroui/react";
 import { useRouter } from "@tanstack/react-router";
@@ -6,10 +8,14 @@ import {
   addDays,
   addWeeks,
   format,
+  isBefore,
   isSameDay,
   isSameWeek,
+  startOfDay,
   startOfWeek,
 } from "date-fns";
+import type { DropItem } from "react-aria";
+import { isTextDropItem, mergeRefs, useDrop } from "react-aria";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
@@ -17,6 +23,12 @@ import { cn } from "@/lib/utils";
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 
 import { useCalendarEvents } from "../hooks/useCalendarEvents";
+import { useMoveEvent } from "../hooks/useMoveEvent";
+import {
+  draggedEventSchema,
+  moveToDay,
+  scheduledEventDragType,
+} from "../lib/calendarDrag";
 import { Event } from "./Event";
 
 export function WeeklyCalendar() {
@@ -30,6 +42,7 @@ export function WeeklyCalendar() {
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
   const { query, eventsOf } = useCalendarEvents(week, addDays(week, 7));
+  const move = useMoveEvent();
   // The strip never shrinks while browsing weeks, so a shorter (e.g. empty)
   // week doesn't collapse the page and jump the window scroll.
   const [minHeight, setMinHeight] = useState<number>();
@@ -148,14 +161,14 @@ export function WeeklyCalendar() {
             const isToday = isSameDay(date, today);
             const dayEvents = eventsOf(date);
             return (
-              <section
+              <CalendarDay
                 ref={isToday ? todayRef : undefined}
                 key={format(date, "yyyy-MM-dd")}
+                date={date}
+                isToday={isToday}
+                isPast={isBefore(date, startOfDay(today))}
+                onMove={move.mutate}
                 aria-label={fullDateFormatter.format(date)}
-                className={cn(
-                  "box-content flex w-calendar-cell shrink-0 flex-col gap-3 rounded-2xl px-3 pt-2 pb-3",
-                  isToday && "bg-accent text-accent-foreground",
-                )}
               >
                 <h3 className="flex items-baseline gap-2 px-2 font-medium">
                   <span
@@ -184,16 +197,81 @@ export function WeeklyCalendar() {
                   <ul className="flex flex-col gap-3">
                     {dayEvents.map((event) => (
                       <li key={event.id}>
-                        <Event {...event} headingLevel="h4" />
+                        <Event {...event} headingLevel="h4" isDraggable />
                       </li>
                     ))}
                   </ul>
                 )}
-              </section>
+              </CalendarDay>
             );
           })}
         </div>
       </ScrollShadow>
     </div>
+  );
+}
+
+type CalendarDayProps = ComponentProps<"section"> & {
+  ref?: Ref<HTMLElement>;
+  date: Date;
+  isToday: boolean;
+  isPast: boolean;
+  onMove: (event: MoveEvent) => void;
+};
+
+/** A day column that accepts trainings dragged from other days. */
+function CalendarDay({
+  ref,
+  date,
+  isToday,
+  isPast,
+  onMove,
+  className,
+  children,
+  ...props
+}: CalendarDayProps) {
+  const dropRef = useRef<HTMLElement>(null);
+  const drop = async (items: DropItem[]) => {
+    const item = items
+      .filter(isTextDropItem)
+      .find((dropItem) => dropItem.types.has(scheduledEventDragType));
+    if (!item) return;
+    const dragged = draggedEventSchema.parse(
+      JSON.parse(await item.getText(scheduledEventDragType)),
+    );
+    const startsAt = moveToDay(dragged.startsAt, date);
+    if (!startsAt) return;
+    onMove({
+      id: dragged.id,
+      startsAt,
+      durationMinutes: dragged.durationMinutes,
+    });
+  };
+  const { dropProps, isDropTarget } = useDrop({
+    ref: dropRef,
+    // Trainings can only be moved to today or later, as in the move dialog.
+    isDisabled: isPast,
+    getDropOperation: (types) =>
+      types.has(scheduledEventDragType) ? "move" : "cancel",
+    onDrop: ({ items }) => void drop(items),
+  });
+
+  return (
+    <section
+      {...props}
+      {...dropProps}
+      ref={mergeRefs(ref, dropRef)}
+      className={cn(
+        "box-content flex w-calendar-cell shrink-0 flex-col gap-3 rounded-2xl px-3 pt-2 pb-3",
+        isToday && "bg-accent text-accent-foreground",
+        isDropTarget &&
+          (isToday
+            ? "ring-2 ring-accent-foreground ring-inset"
+            : "bg-accent-soft"),
+        className,
+      )}
+    >
+      {children}
+    </section>
   );
 }

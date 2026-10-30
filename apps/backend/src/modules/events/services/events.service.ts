@@ -157,20 +157,23 @@ export class EventsService {
     });
   }
 
+  private dateKey(date: Date, timeZone: string) {
+    const parts = new Intl.DateTimeFormat("en", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(date);
+    return ["year", "month", "day"]
+      .map((part) => parts.find((item) => item.type === part)!.value)
+      .join("-");
+  }
+
   private validateDate(value: string, timeZone: string) {
-    const startsAt = new Date(value);
-    const dateKey = (date: Date) => {
-      const parts = new Intl.DateTimeFormat("en", {
-        timeZone,
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      }).formatToParts(date);
-      return ["year", "month", "day"]
-        .map((part) => parts.find((item) => item.type === part)!.value)
-        .join("-");
-    };
-    if (dateKey(startsAt) < dateKey(new Date()))
+    if (
+      this.dateKey(new Date(value), timeZone) <
+      this.dateKey(new Date(), timeZone)
+    )
       throw new BadRequestException("Choose today or a future date");
   }
 
@@ -185,6 +188,31 @@ export class EventsService {
       const event = await this.owned(tx, userId, id);
       if (event.completedAt)
         throw new ConflictException("Completed exercises cannot be moved");
+      // A move must not give the dog the same exercise twice on one day in the
+      // handler's timezone. 26 hours either side covers DST days.
+      const day = this.dateKey(startsAt, input.timeZone);
+      const window = 26 * 3600000;
+      const sameExercise = await tx.scheduledExercise.findMany({
+        where: {
+          id: { not: id },
+          dogId: event.dogId,
+          exerciseId: event.exerciseId,
+          deletedAt: null,
+          startsAt: {
+            gt: new Date(startsAt.getTime() - window),
+            lt: new Date(startsAt.getTime() + window),
+          },
+        },
+        select: { startsAt: true },
+      });
+      if (
+        sameExercise.some(
+          (other) => this.dateKey(other.startsAt, input.timeZone) === day,
+        )
+      )
+        throw new ConflictException(
+          "This dog already has this exercise scheduled on that day",
+        );
       return tx.scheduledExercise.update({
         where: { id },
         data: {
