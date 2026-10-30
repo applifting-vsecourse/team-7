@@ -9,6 +9,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { HTTPError } from "ky";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ScheduledExerciseDialog } from "./ScheduledExerciseDialog";
@@ -151,6 +152,28 @@ describe("scheduled exercise dialog", () => {
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       },
     });
+  });
+  it("explains a move onto a day that already has the same exercise", async () => {
+    state.patch.mockRejectedValueOnce(
+      new HTTPError(
+        new Response(null, { status: 409 }),
+        new Request("http://localhost/api/events/event-a/schedule"),
+        {} as never,
+      ),
+    );
+    const { user, close } = setup();
+    await user.click(screen.getByRole("button", { name: "Training actions" }));
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Reschedule" }),
+    );
+    fireEvent.change(screen.getByLabelText("Date"), {
+      target: { value: "2099-02-03" },
+    });
+    await user.click(screen.getByRole("button", { name: "Reschedule" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "This dog already has this exercise planned for that day.",
+    );
+    expect(close).not.toHaveBeenCalled();
   });
   it("edits completed results and offers reopening instead of rescheduling", async () => {
     const { user } = setup({

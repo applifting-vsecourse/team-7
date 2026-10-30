@@ -512,6 +512,7 @@
     "ratingRequired": "Choose a rating from 1 to 5 stars.",
     "noteTooLong": "The note can contain up to 1000 characters.",
     "futureDate": "Choose today or a future date.",
+    "duplicateDay": "This dog already has this exercise planned for that day.",
     "when": "{{date}} · {{time}} · {{duration}} min",
     "noProcedure": "No instructions have been added to this exercise."
   }

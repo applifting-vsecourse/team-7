@@ -152,6 +152,7 @@ describe("scheduled exercise actions", () => {
       (callback as (tx: unknown) => Promise<unknown>)(prisma),
     );
     prisma.scheduledExercise.findFirst.mockResolvedValue(event);
+    prisma.scheduledExercise.findMany.mockResolvedValue([]);
     prisma.scheduledExercise.updateMany.mockResolvedValue({ count: 1 });
   });
   it("attributes early completion to today and overdue completion to its scheduled date", async () => {
@@ -291,6 +292,34 @@ describe("scheduled exercise actions", () => {
         timeZone: "Europe/Prague",
       }),
     ).rejects.toThrow("cannot be moved");
+  });
+  it("rejects moving onto a day where the dog already has the same exercise", async () => {
+    const move = (startsAt: string) =>
+      service.move("user-a", event.id, {
+        startsAt,
+        durationMinutes: 10,
+        timeZone: "Europe/Prague",
+      });
+    // 23:30 UTC on 26 Oct is already 27 Oct in Prague.
+    prisma.scheduledExercise.findMany.mockResolvedValue([
+      { startsAt: new Date("2026-10-26T23:30:00Z") },
+    ] as never);
+    await expect(move("2026-10-27T16:00:00Z")).rejects.toThrow(
+      "already has this exercise",
+    );
+    expect(prisma.scheduledExercise.update).not.toHaveBeenCalled();
+    expect(prisma.scheduledExercise.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: { not: event.id },
+          dogId: event.dogId,
+          exerciseId: event.exerciseId,
+          deletedAt: null,
+        }),
+      }),
+    );
+    await move("2026-10-28T16:00:00Z");
+    expect(prisma.scheduledExercise.update).toHaveBeenCalledOnce();
   });
   it.each(["complete", "move", "delete", "reopen", "undo"])(
     "does not allow %s on another handler’s event",

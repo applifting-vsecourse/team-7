@@ -1,5 +1,6 @@
 import { useId, useState } from "react";
 import type { ScheduledEvent } from "../api/eventsQueryOptions";
+import type { DraggedEvent } from "../lib/calendarDrag";
 import {
   CircleCheck,
   CircleExclamation,
@@ -7,10 +8,12 @@ import {
   Comment,
 } from "@gravity-ui/icons";
 import { Button, Separator } from "@heroui/react";
+import { useDrag } from "react-aria";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
+import { scheduledEventDragType } from "../lib/calendarDrag";
 import { RatingStars } from "./RatingStars";
 import { ScheduledExerciseDialog } from "./ScheduledExerciseDialog";
 import { TrainingHistoryDialog } from "./TrainingHistoryDialog";
@@ -29,6 +32,8 @@ export type EventProps = {
   state?: "upcoming" | "completed" | "unfinished";
   className?: string;
   headingLevel?: "h3" | "h4";
+  /** Lets an unfinished training be dragged to another calendar day. */
+  isDraggable?: boolean;
 };
 
 const backgrounds = {
@@ -55,6 +60,7 @@ export function Event({
   state = "upcoming",
   className,
   headingLevel: Heading = "h3",
+  isDraggable = false,
 }: EventProps) {
   const { t, i18n } = useTranslation();
   const titleId = useId();
@@ -62,15 +68,32 @@ export function Event({
   const isUpcoming = state === "upcoming";
   const isCompleted = state === "completed";
   const StatusIcon = isCompleted ? CircleCheck : CircleExclamation;
+  // Pointer dragging only; keyboard and touch users move a training from its dialog.
+  const { dragProps, isDragging } = useDrag({
+    isDisabled: !isDraggable || !scheduledEvent || historyOnly || isCompleted,
+    hasDragButton: true,
+    getAllowedDropOperations: () => ["move"],
+    getItems: () => [
+      {
+        [scheduledEventDragType]: JSON.stringify({
+          id: scheduledEvent!.id,
+          startsAt: scheduledEvent!.startsAt,
+          durationMinutes: scheduledEvent!.durationMinutes,
+        } satisfies DraggedEvent),
+      },
+    ],
+  });
 
   return (
     <>
       <article
+        {...dragProps}
         aria-labelledby={historyOnly ? undefined : titleId}
         aria-label={historyOnly ? exercise : undefined}
         className={cn(
           "relative flex w-full max-w-full min-w-0 cursor-pointer flex-col overflow-clip rounded-2xl py-2 pr-3 pl-4 text-foreground shadow-card transition duration-150 ease-out hover:shadow-card-hover motion-safe:hover:-translate-y-0.5 md:self-stretch",
           backgrounds[state],
+          isDragging && "opacity-50",
           className,
         )}
       >
