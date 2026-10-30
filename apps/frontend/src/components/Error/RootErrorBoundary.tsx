@@ -6,7 +6,7 @@ import { translateMessage } from "@/i18n/messages";
 import { ErrorLayout } from "./ErrorLayout";
 
 type RootErrorBoundaryProps = {
-  error: Error;
+  error: unknown;
 };
 
 export function RootErrorBoundary({ error }: RootErrorBoundaryProps) {
@@ -15,7 +15,7 @@ export function RootErrorBoundary({ error }: RootErrorBoundaryProps) {
     <ErrorLayout
       title={t(($) => $.errors.unexpected.title)}
       description={
-        error.message
+        error instanceof Error && error.message
           ? translateMessage(t, error.message)
           : t(($) => $.errors.unexpected.description)
       }
