@@ -1,7 +1,7 @@
+import { ArrowRotateRight } from "@gravity-ui/icons";
 import { Button, toast } from "@heroui/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Navigate } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
@@ -56,7 +56,10 @@ export function VerifyEmailPrompt({
         onPress={() => resend.mutate(user.email)}
       >
         {resend.isPending ? (
-          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+          <ArrowRotateRight
+            className="size-4 animate-spin"
+            aria-hidden="true"
+          />
         ) : null}
         {t(($) => $.auth.verifyEmail.resend)}
       </Button>
