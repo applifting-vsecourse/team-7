@@ -1,9 +1,9 @@
-import { Loader2 } from "lucide-react";
+import { ArrowRotateRight } from "@gravity-ui/icons";
 
 export function AppLoadingScreen() {
   return (
     <div className="grid min-h-svh place-content-center">
-      <Loader2 className="size-8 animate-spin text-muted" />
+      <ArrowRotateRight className="size-8 animate-spin text-muted" />
     </div>
   );
 }

@@ -1,9 +1,9 @@
 import { useId } from "react";
 import type { DisciplineDog } from "../api/disciplinesQueryOptions";
 import { toast } from "@heroui/react";
-import { Dog as DogIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { DogIcon } from "@/components/DogIcon";
 import { czechFrom, pluralForm } from "@/lib/plural";
 
 import { useSession } from "@/features/auth/hooks/useSession";

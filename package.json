@@ -24,20 +24,20 @@
     "test:debug": "vitest run --inspect-brk --no-file-parallelism --maxWorkers=1"
   },
   "devDependencies": {
-    "@tanstack/eslint-plugin-query": "5.101.4",
+    "@tanstack/eslint-plugin-query": "5.105.0",
     "@tanstack/eslint-plugin-router": "1.162.0",
-    "@vitest/coverage-v8": "4.1.11",
+    "@vitest/coverage-v8": "5.0.5",
     "dotenv-flow": "^4.1.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
     "npm-run-all": "^4.1.5",
-    "oxfmt": "0.72.0",
-    "oxlint": "1.87.0",
-    "oxlint-tsgolint": "7.0.2004",
+    "oxfmt": "0.75.0",
+    "oxlint": "1.90.0",
+    "oxlint-tsgolint": "7.0.2005",
     "typescript": "catalog:",
-    "vite": "^8.2.1",
-    "vitest": "4.1.11",
-    "vitest-mock-extended": "^5.1.1"
+    "vite": "catalog:",
+    "vitest": "5.0.5",
+    "vitest-mock-extended": "5.1.1"
   },
   "engines": {
     "node": ">=24"

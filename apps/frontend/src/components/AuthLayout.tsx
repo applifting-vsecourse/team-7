@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
+import { ArrowLeft } from "@gravity-ui/icons";
 import { buttonVariants } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import DogImg from "@/assets/signin-dog.jpg";

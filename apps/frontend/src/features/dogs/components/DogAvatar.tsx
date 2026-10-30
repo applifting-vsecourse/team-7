@@ -1,5 +1,6 @@
 import { Avatar } from "@heroui/react";
-import { Dog as DogIcon } from "lucide-react";
+
+import { DogIcon } from "@/components/DogIcon";
 
 import { dogAvatarUrl } from "@/features/dogs/api/dogAvatarUrl";
 import type { Dog } from "@/features/dogs/api/dogsQueryOptions";

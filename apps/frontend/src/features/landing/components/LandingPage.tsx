@@ -1,12 +1,11 @@
+import {
+  Calendar,
+  FileCheck,
+  ClockArrowRotateLeft,
+  Hierarchy,
+} from "@gravity-ui/icons";
 import { buttonVariants } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
-import {
-  CalendarDays,
-  ClipboardCheck,
-  History,
-  ListTree,
-  type LucideIcon,
-} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
@@ -14,11 +13,11 @@ import HeroImg from "@/assets/landing-hero.jpg";
 import Layout from "@/components/Layout";
 
 const features = [
-  { id: "plan", icon: ListTree },
-  { id: "calendar", icon: CalendarDays },
-  { id: "log", icon: ClipboardCheck },
-  { id: "progress", icon: History },
-] as const satisfies readonly { id: string; icon: LucideIcon }[];
+  { id: "plan", icon: Hierarchy },
+  { id: "calendar", icon: Calendar },
+  { id: "log", icon: FileCheck },
+  { id: "progress", icon: ClockArrowRotateLeft },
+] as const satisfies readonly { id: string; icon: typeof Calendar }[];
 
 /**
  * Public landing page: a photo-backed intro with the sign-up / sign-in CTAs,

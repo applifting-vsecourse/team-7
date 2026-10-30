@@ -1,6 +1,6 @@
+import { ArrowRightFromSquare } from "@gravity-ui/icons";
 import { Avatar, Button, buttonVariants, Dropdown, Label } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
-import { LogOut } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes.ts";
@@ -58,7 +58,7 @@ export function HeaderMenu() {
             textValue={t(($) => $.auth.signOut)}
             isDisabled={signOut.isPending}
           >
-            <LogOut className="size-4" />
+            <ArrowRightFromSquare className="size-4" />
             <Label>{t(($) => $.auth.signOut)}</Label>
           </Dropdown.Item>
         </Dropdown.Menu>
