@@ -35,7 +35,7 @@
     "oxlint": "1.90.0",
     "oxlint-tsgolint": "7.0.2005",
     "typescript": "catalog:",
-    "vite": "8.3.5",
+    "vite": "catalog:",
     "vitest": "5.0.5",
     "vitest-mock-extended": "5.1.1"
   },
