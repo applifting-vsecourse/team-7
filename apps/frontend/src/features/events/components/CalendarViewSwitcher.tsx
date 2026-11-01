@@ -16,15 +16,13 @@ const labels = {
 type CalendarViewSwitcherProps = {
   value: CalendarView;
   onChange: (view: CalendarView) => void;
-  /** Stretches the options across the row, as on the mobile layout. */
-  fullWidth?: boolean;
   className?: string;
 };
 
+/** One attached group; stretches across the row on phones, as in Figma. */
 export function CalendarViewSwitcher({
   value,
   onChange,
-  fullWidth,
   className,
 }: CalendarViewSwitcherProps) {
   const { t } = useTranslation();
@@ -34,21 +32,17 @@ export function CalendarViewSwitcher({
       aria-label={t(($) => $.calendar.views.label)}
       selectionMode="single"
       disallowEmptySelection
-      isDetached
-      fullWidth={fullWidth}
+      size="sm"
       selectedKeys={[value]}
       onSelectionChange={(keys) => {
         const [view] = keys;
         if (view) onChange(view as CalendarView);
       }}
-      className={cn("gap-2", className)}
+      className={cn("w-full md:w-auto", className)}
     >
-      {CALENDAR_VIEWS.map((view) => (
-        <ToggleButton
-          key={view}
-          id={view}
-          className={cn(fullWidth && "flex-1")}
-        >
+      {CALENDAR_VIEWS.map((view, index) => (
+        <ToggleButton key={view} id={view} className="flex-1 md:flex-none">
+          {index > 0 && <ToggleButtonGroup.Separator />}
           {t(labels[view])}
         </ToggleButton>
       ))}

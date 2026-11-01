@@ -1,8 +1,7 @@
-import type { ComponentProps, Ref } from "react";
+import type { ComponentProps, ReactNode, Ref } from "react";
 import { useId, useLayoutEffect, useRef, useState } from "react";
 import type { MoveEvent } from "../hooks/useMoveEvent";
-import { ChevronLeft, ChevronRight } from "@gravity-ui/icons";
-import { Button, ButtonGroup, ScrollShadow } from "@heroui/react";
+import { ScrollShadow } from "@heroui/react";
 import { useRouter } from "@tanstack/react-router";
 import {
   addDays,
@@ -29,9 +28,16 @@ import {
   moveToDay,
   scheduledEventDragType,
 } from "../lib/calendarDrag";
+import { CalendarHeading } from "./CalendarHeading";
+import { CalendarNavigation } from "./CalendarNavigation";
 import { Event } from "./Event";
 
-export function WeeklyCalendar() {
+type WeeklyCalendarProps = {
+  /** The day / week / month switcher shown in the heading. */
+  viewSwitcher?: ReactNode;
+};
+
+export function WeeklyCalendar({ viewSwitcher }: WeeklyCalendarProps) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const headingId = useId();
@@ -94,14 +100,16 @@ export function WeeklyCalendar() {
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <QueryFeedback query={query} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2
-          id={headingId}
-          className="text-xl leading-7 font-semibold tracking-tight"
-        >
-          {t(($) => $.calendar.weeklyOverview)}
-        </h2>
-        <div className="flex flex-wrap items-center gap-4">
+      <CalendarHeading
+        title={
+          <h2
+            id={headingId}
+            className="text-xl leading-7 font-semibold tracking-tight"
+          >
+            {t(($) => $.calendar.weeklyOverview)}
+          </h2>
+        }
+        summary={
           <p
             aria-live="polite"
             aria-atomic="true"
@@ -109,43 +117,23 @@ export function WeeklyCalendar() {
           >
             {range}
           </p>
-          <ButtonGroup
-            variant="secondary"
-            size="sm"
-            aria-label={t(($) => $.calendar.weeklyOverview)}
-          >
-            <Button
-              isIconOnly
-              aria-label={t(($) => $.calendar.previousWeek)}
-              onPress={() => changeWeek(addWeeks(week, -1))}
-            >
-              <ChevronLeft className="size-4 text-accent" aria-hidden="true" />
-            </Button>
-            <Button
-              isIconOnly
-              aria-label={t(($) => $.calendar.nextWeek)}
-              onPress={() => changeWeek(addWeeks(week, 1))}
-            >
-              <ButtonGroup.Separator />
-              <ChevronRight className="size-4 text-accent" aria-hidden="true" />
-            </Button>
-            <Button
-              aria-current={currentWeek ? "true" : undefined}
-              className={
-                currentWeek
-                  ? "bg-accent-soft text-accent-soft-foreground"
-                  : undefined
-              }
-              onPress={() =>
-                changeWeek(startOfWeek(new Date(), { weekStartsOn: 1 }))
-              }
-            >
-              <ButtonGroup.Separator />
-              {t(($) => $.calendar.thisWeek)}
-            </Button>
-          </ButtonGroup>
-        </div>
-      </div>
+        }
+        viewSwitcher={viewSwitcher}
+        navigation={
+          <CalendarNavigation
+            label={t(($) => $.calendar.weeklyOverview)}
+            previousLabel={t(($) => $.calendar.previousWeek)}
+            nextLabel={t(($) => $.calendar.nextWeek)}
+            currentLabel={t(($) => $.calendar.thisWeek)}
+            isCurrent={currentWeek}
+            onPrevious={() => changeWeek(addWeeks(week, -1))}
+            onNext={() => changeWeek(addWeeks(week, 1))}
+            onCurrent={() =>
+              changeWeek(startOfWeek(new Date(), { weekStartsOn: 1 }))
+            }
+          />
+        }
+      />
       <ScrollShadow
         ref={scrollRef}
         orientation="horizontal"

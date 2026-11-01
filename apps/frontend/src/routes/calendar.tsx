@@ -50,6 +50,9 @@ function CalendarPage() {
       search: (prev) => ({ ...prev, date: format(next, "yyyy-MM-dd") }),
       replace: true,
     });
+  const headingSwitcher = (
+    <CalendarViewSwitcher value={view} onChange={changeView} />
+  );
 
   return (
     <Layout title={t(($) => $.navigation.calendar)} sidebar={<Sidebar />}>
@@ -78,30 +81,24 @@ function CalendarPage() {
             <Plus className="size-4 shrink-0" aria-hidden="true" />
             {t(($) => $.calendar.scheduleExercise)}
           </Button>
-          <CalendarViewSwitcher
-            value={view}
-            onChange={changeView}
-            className="hidden md:flex"
-          />
         </div>
         <DogFilter />
-        {/* On phones the switcher sits under the dog filter, as in Figma. */}
-        <CalendarViewSwitcher
-          value={view}
-          onChange={changeView}
-          fullWidth
-          className="md:hidden"
-        />
         {view === "day" ? (
-          <DailyCalendar date={date} today={today} onDateChange={changeDate} />
+          <DailyCalendar
+            date={date}
+            today={today}
+            onDateChange={changeDate}
+            viewSwitcher={headingSwitcher}
+          />
         ) : view === "month" ? (
           <MonthlyCalendar
             date={date}
             today={today}
             onDateChange={changeDate}
+            viewSwitcher={headingSwitcher}
           />
         ) : (
-          <WeeklyCalendar />
+          <WeeklyCalendar viewSwitcher={headingSwitcher} />
         )}
       </section>
       {scheduling && (

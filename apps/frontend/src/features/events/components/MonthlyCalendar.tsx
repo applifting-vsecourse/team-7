@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { type ReactNode, useId } from "react";
 import { Calendar } from "@heroui/react";
 import {
   type CalendarDate,
@@ -27,6 +27,7 @@ import { capitalizeFirst, cn } from "@/lib/utils";
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 
 import { useCalendarEvents } from "../hooks/useCalendarEvents";
+import { CalendarHeading } from "./CalendarHeading";
 import { CalendarNavigation } from "./CalendarNavigation";
 import { Event } from "./Event";
 
@@ -35,6 +36,8 @@ type MonthlyCalendarProps = {
   date: Date;
   today: Date;
   onDateChange: (date: Date) => void;
+  /** The day / week / month switcher shown in the heading. */
+  viewSwitcher?: ReactNode;
 };
 
 const toIsoDate = (date: Date) => format(date, "yyyy-MM-dd");
@@ -46,6 +49,7 @@ export function MonthlyCalendar({
   date,
   today,
   onDateChange,
+  viewSwitcher,
 }: MonthlyCalendarProps) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
@@ -81,25 +85,30 @@ export function MonthlyCalendar({
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <QueryFeedback query={query} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2
-          id={headingId}
-          aria-live="polite"
-          className="text-xl leading-7 font-semibold tracking-tight"
-        >
-          {monthLabel}
-        </h2>
-        <CalendarNavigation
-          label={t(($) => $.calendar.monthlyOverview)}
-          previousLabel={t(($) => $.calendar.previousMonth)}
-          nextLabel={t(($) => $.calendar.nextMonth)}
-          currentLabel={t(($) => $.calendar.thisMonth)}
-          isCurrent={isSameMonth(date, today)}
-          onPrevious={() => onDateChange(addMonths(date, -1))}
-          onNext={() => onDateChange(addMonths(date, 1))}
-          onCurrent={() => onDateChange(today)}
-        />
-      </div>
+      <CalendarHeading
+        title={
+          <h2
+            id={headingId}
+            aria-live="polite"
+            className="text-xl leading-7 font-semibold tracking-tight"
+          >
+            {monthLabel}
+          </h2>
+        }
+        viewSwitcher={viewSwitcher}
+        navigation={
+          <CalendarNavigation
+            label={t(($) => $.calendar.monthlyOverview)}
+            previousLabel={t(($) => $.calendar.previousMonth)}
+            nextLabel={t(($) => $.calendar.nextMonth)}
+            currentLabel={t(($) => $.calendar.thisMonth)}
+            isCurrent={isSameMonth(date, today)}
+            onPrevious={() => onDateChange(addMonths(date, -1))}
+            onNext={() => onDateChange(addMonths(date, 1))}
+            onCurrent={() => onDateChange(today)}
+          />
+        }
+      />
 
       {/* Wide screens: every day is a tile summarising its exercises and
           opening the day view. */}

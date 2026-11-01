@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { type ReactNode, useId } from "react";
 import { addDays, startOfDay, format, isSameDay } from "date-fns";
 import { useTranslation } from "react-i18next";
 
@@ -8,6 +8,7 @@ import { capitalizeFirst } from "@/lib/utils";
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 
 import { useCalendarEvents } from "../hooks/useCalendarEvents";
+import { CalendarHeading } from "./CalendarHeading";
 import { CalendarNavigation } from "./CalendarNavigation";
 import { Event } from "./Event";
 
@@ -15,12 +16,15 @@ type DailyCalendarProps = {
   date: Date;
   today: Date;
   onDateChange: (date: Date) => void;
+  /** The day / week / month switcher shown in the heading. */
+  viewSwitcher?: ReactNode;
 };
 
 export function DailyCalendar({
   date,
   today,
   onDateChange,
+  viewSwitcher,
 }: DailyCalendarProps) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
@@ -41,36 +45,41 @@ export function DailyCalendar({
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <QueryFeedback query={query} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div
-          aria-live="polite"
-          aria-atomic="true"
-          className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
-        >
-          <h2
-            id={headingId}
-            className="text-xl leading-7 font-semibold tracking-tight"
+      <CalendarHeading
+        title={
+          <div
+            aria-live="polite"
+            aria-atomic="true"
+            className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
           >
-            <time dateTime={format(date, "yyyy-MM-dd")}>{dateLabel}</time>
-          </h2>
-          <p className="text-base leading-7 font-medium text-muted">
-            {weekday} ·{" "}
-            {t(($) => $.calendar.exerciseCount[pluralForm(events.length)], {
-              count: events.length,
-            })}
-          </p>
-        </div>
-        <CalendarNavigation
-          label={t(($) => $.calendar.dailyOverview)}
-          previousLabel={t(($) => $.calendar.previousDay)}
-          nextLabel={t(($) => $.calendar.nextDay)}
-          currentLabel={t(($) => $.calendar.today)}
-          isCurrent={isSameDay(date, today)}
-          onPrevious={() => onDateChange(addDays(date, -1))}
-          onNext={() => onDateChange(addDays(date, 1))}
-          onCurrent={() => onDateChange(today)}
-        />
-      </div>
+            <h2
+              id={headingId}
+              className="text-xl leading-7 font-semibold tracking-tight"
+            >
+              <time dateTime={format(date, "yyyy-MM-dd")}>{dateLabel}</time>
+            </h2>
+            <p className="text-base leading-7 font-medium text-muted">
+              {weekday} ·{" "}
+              {t(($) => $.calendar.exerciseCount[pluralForm(events.length)], {
+                count: events.length,
+              })}
+            </p>
+          </div>
+        }
+        viewSwitcher={viewSwitcher}
+        navigation={
+          <CalendarNavigation
+            label={t(($) => $.calendar.dailyOverview)}
+            previousLabel={t(($) => $.calendar.previousDay)}
+            nextLabel={t(($) => $.calendar.nextDay)}
+            currentLabel={t(($) => $.calendar.today)}
+            isCurrent={isSameDay(date, today)}
+            onPrevious={() => onDateChange(addDays(date, -1))}
+            onNext={() => onDateChange(addDays(date, 1))}
+            onCurrent={() => onDateChange(today)}
+          />
+        }
+      />
       {events.length === 0 ? (
         <p className="text-sm text-muted">{t(($) => $.calendar.empty)}</p>
       ) : (
