@@ -22,32 +22,21 @@ import {
   type TranslationSelector,
 } from "@/i18n/messages";
 
+import { passwordWithConfirmationSchema } from "@/features/auth/lib/password-schema";
+
 import { PasswordInput } from "./PasswordInput";
 
-const schema = z
-  .object({
-    email: z
-      .string()
-      .trim()
-      .min(1, keyFromSelector(messageSelectors.emailRequired))
-      .email(keyFromSelector(messageSelectors.emailInvalid)),
-    name: z
-      .string()
-      .trim()
-      .min(1, keyFromSelector(messageSelectors.nameRequired)),
-    password: z
-      .string()
-      .trim()
-      .min(8, keyFromSelector(messageSelectors.passwordMinLength)),
-    passwordConfirmation: z
-      .string()
-      .trim()
-      .min(1, keyFromSelector(messageSelectors.passwordConfirmationRequired)),
-  })
-  .refine((values) => values.password === values.passwordConfirmation, {
-    message: keyFromSelector(messageSelectors.passwordMismatch),
-    path: ["passwordConfirmation"],
-  });
+const schema = passwordWithConfirmationSchema.safeExtend({
+  email: z
+    .string()
+    .trim()
+    .min(1, keyFromSelector(messageSelectors.emailRequired))
+    .email(keyFromSelector(messageSelectors.emailInvalid)),
+  name: z
+    .string()
+    .trim()
+    .min(1, keyFromSelector(messageSelectors.nameRequired)),
+});
 
 type FormValues = z.infer<typeof schema>;
 

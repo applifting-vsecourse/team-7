@@ -6,6 +6,7 @@ import * as express from "express";
 import { AppModule } from "./app.module";
 import { BetterAuth } from "./shared/auth/providers/better-auth.provider";
 import { Config } from "./shared/config/config.service";
+import { frontendOrigins } from "./shared/config/frontend-origins";
 
 /**
  * Main application entry point
@@ -20,7 +21,7 @@ async function main(): Promise<void> {
 
   // Configure CORS - Allows cross-origin requests from specific origins
   app.enableCors({
-    origin: [config.backendUrl, config.frontendUrl],
+    origin: [new URL(config.backendUrl).origin, ...frontendOrigins(config)],
     credentials: true,
   });
 

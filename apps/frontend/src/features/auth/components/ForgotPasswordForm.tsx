@@ -19,7 +19,7 @@ import { ROUTES } from "@/app/routes";
 import { messageSelectors, translateMessage } from "@/i18n/messages";
 
 import { authClient } from "@/features/auth/lib/auth-client";
-import { toAbsoluteUrl } from "@/features/auth/lib/redirect";
+import { toRelativeUrl } from "@/features/auth/lib/redirect";
 
 const schema = z.object({
   email: z
@@ -44,26 +44,20 @@ export function ForgotPasswordForm() {
       validationBehavior="aria"
       className="flex flex-col gap-6"
       onSubmit={form.handleSubmit(async ({ email }) => {
-        if (isPending) return;
         setErrorMessage(null);
         setSent(false);
         try {
           const { error } = await authClient.requestPasswordReset({
             email,
-            redirectTo: toAbsoluteUrl(ROUTES.resetPassword),
+            redirectTo: toRelativeUrl(ROUTES.resetPassword),
           });
           if (error) {
-            throw new Error(
-              error.message ?? keyFromSelector(messageSelectors.resetFailed),
-            );
+            setErrorMessage(keyFromSelector(messageSelectors.resetFailed));
+          } else {
+            setSent(true);
           }
-          setSent(true);
-        } catch (error) {
-          setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : keyFromSelector(messageSelectors.resetFailed),
-          );
+        } catch {
+          setErrorMessage(keyFromSelector(messageSelectors.resetFailed));
         }
       })}
     >

@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsSemVer,
+  IsString,
   IsUrl,
 } from "class-validator";
 
@@ -56,6 +57,12 @@ export class Config {
   @IsUrl({ require_tld: false })
   @IsNotEmpty()
   readonly frontendUrl!: string;
+
+  // Explicit aliases/preview deployments allowed by both CORS and BetterAuth.
+  @Env("ADDITIONAL_FRONTEND_ORIGINS", { expose: true })
+  @IsOptional()
+  @IsString()
+  readonly additionalFrontendOrigins?: string;
 
   @Env("PORT", { expose: true, defaultValue: 4050 })
   readonly port!: number;

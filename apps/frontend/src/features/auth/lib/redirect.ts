@@ -1,4 +1,7 @@
-import { type ParsedLocation } from "@tanstack/react-router";
+import {
+  defaultParseSearch,
+  type ParsedLocation,
+} from "@tanstack/react-router";
 
 export const encodeRedirectUri = (location: ParsedLocation) =>
   encodeURIComponent(location.href);
@@ -18,4 +21,33 @@ export const decodeRedirectUri = (encoded: string) => {
   } catch {
     return "/";
   }
+};
+
+// Email callbacks are resolved against FRONTEND_URL by the backend.
+export const toRelativeUrl = (path: string) => {
+  const url = new URL(toAbsoluteUrl(path));
+  return `${url.pathname}${url.search}${url.hash}`;
+};
+
+export const verificationRedirect = (from?: string) => {
+  try {
+    const path = from ? decodeRedirectUri(from) : "/overview";
+    const url = new URL(path, window.location.origin);
+    return url.origin === window.location.origin &&
+      url.pathname !== "/verify-email"
+      ? `${url.pathname}${url.search}${url.hash}`
+      : "/overview";
+  } catch {
+    return "/overview";
+  }
+};
+
+// Router `to` accepts a pathname; search and hash must be passed separately.
+export const toNavigationOptions = (path: string) => {
+  const url = new URL(toAbsoluteUrl(path));
+  return {
+    to: url.pathname,
+    search: defaultParseSearch(url.search),
+    hash: url.hash.slice(1),
+  };
 };

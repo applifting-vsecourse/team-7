@@ -36,6 +36,9 @@ import { EmailModule } from "./email.module";
 export class MailModule {}
 
 export function createAdapter(config: Config): EmailService {
+  if (config.emailRedirectTo && config.nodeEnv === "production") {
+    throw new Error("EMAIL_REDIRECT_TO must not be set in production");
+  }
   if (config.resendApiKey) {
     return ResendAdapterFactory.create({
       apiKey: config.resendApiKey,
