@@ -8,9 +8,16 @@ import { ROUTES } from "@/app/routes";
 
 import { authSessionQueryOptions } from "@/features/auth/api/authSessionQueryOptions";
 import { authClient } from "@/features/auth/lib/auth-client";
-import { toAbsoluteUrl } from "@/features/auth/lib/redirect";
+import {
+  toAbsoluteUrl,
+  toNavigationOptions,
+} from "@/features/auth/lib/redirect";
 
-export function VerifyEmailPrompt() {
+export function VerifyEmailPrompt({
+  redirectTo = ROUTES.overview,
+}: {
+  redirectTo?: string;
+}) {
   const { t } = useTranslation();
   // The link is usually opened in another tab; coming back here rechecks the
   // session and lets the user in once the email is verified.
@@ -22,7 +29,7 @@ export function VerifyEmailPrompt() {
     mutationFn: async (email: string) => {
       const { error } = await authClient.sendVerificationEmail({
         email,
-        callbackURL: toAbsoluteUrl(ROUTES.overview),
+        callbackURL: toAbsoluteUrl(redirectTo),
       });
       if (error) throw new Error(error.message);
     },
@@ -32,7 +39,9 @@ export function VerifyEmailPrompt() {
 
   const user = data?.user;
   if (!user) return <Navigate to={ROUTES.login} />;
-  if (user.emailVerified) return <Navigate to={ROUTES.overview} />;
+  if (user.emailVerified) {
+    return <Navigate {...toNavigationOptions(redirectTo)} />;
+  }
 
   return (
     <>

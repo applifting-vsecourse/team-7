@@ -8,6 +8,22 @@ import { createAdapter, redirectEmails } from "./mail.module";
 describe("createAdapter", () => {
   afterEach(() => vi.restoreAllMocks());
 
+  it("rejects email redirection in production before creating a transport", () => {
+    const smtp = vi.spyOn(SMTPAdapterFactory, "create");
+    expect(() =>
+      createAdapter(
+        mock<Config>({
+          nodeEnv: "production",
+          emailRedirectTo: "dev@example.com",
+          smtpHost: "smtp.example.com",
+          smtpUsername: "mail@example.com",
+          smtpPassword: "password",
+        }),
+      ),
+    ).toThrow("EMAIL_REDIRECT_TO must not be set in production");
+    expect(smtp).not.toHaveBeenCalled();
+  });
+
   it("uses SMTP when configured without a Resend API key", () => {
     const adapter = { sendEmail: vi.fn() };
     const smtp = vi

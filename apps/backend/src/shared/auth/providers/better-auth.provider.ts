@@ -2,12 +2,14 @@ import { Inject, Provider } from "@nestjs/common";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { EmailService } from "@/core/email/interfaces/email-service.interface";
+import { emailLanguageFromUrl, emailMessages } from "@/core/email/messages";
 import { renderEmail } from "@/core/email/render";
 import { ResetPassword } from "@/core/email/templates/reset-password";
 import { VerifyEmail } from "@/core/email/templates/verify-email";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { betterAuthCoreConfig } from "@/shared/auth/config/better-auth.config";
 import { Config } from "@/shared/config/config.service";
+import { frontendOrigins } from "@/shared/config/frontend-origins";
 
 const createAuth = (
   prismaService: PrismaService,
@@ -29,8 +31,26 @@ const createAuth = (
       // The link goes through BetterAuth, which checks the token and redirects
       // to the frontend's `redirectTo` with `?token=` or `?error=INVALID_TOKEN`.
       sendResetPassword: async ({ user, url }) => {
-        const html = await renderEmail(ResetPassword, { name: user.name, url });
-        await emailProvider.sendEmail(user.email, "Password reset", html);
+        // Relative callbacks otherwise resolve against the auth server.
+        const resetUrl = new URL(url);
+        const callback = resetUrl.searchParams.get("callbackURL");
+        if (callback?.startsWith("/") && !callback.startsWith("//")) {
+          resetUrl.searchParams.set(
+            "callbackURL",
+            new URL(callback, config.frontendUrl).href,
+          );
+        }
+        const language = emailLanguageFromUrl(resetUrl.href);
+        const html = await renderEmail(ResetPassword, {
+          language,
+          name: user.name,
+          url: resetUrl.href,
+        });
+        await emailProvider.sendEmail(
+          user.email,
+          emailMessages[language].resetPassword.subject,
+          html,
+        );
       },
     },
     user: {
@@ -43,7 +63,7 @@ const createAuth = (
         },
       },
     },
-    trustedOrigins: [config.frontendUrl],
+    trustedOrigins: frontendOrigins(config),
     // Google is enabled only when configured, so dev and CI run without it.
     socialProviders:
       config.googleClientId && config.googleClientSecret
@@ -62,10 +82,11 @@ const createAuth = (
     },
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
-        const html = await renderEmail(VerifyEmail, { url });
+        const language = emailLanguageFromUrl(url);
+        const html = await renderEmail(VerifyEmail, { url, language });
         await emailProvider.sendEmail(
           user.email,
-          "Verify your email address",
+          emailMessages[language].verifyEmail.subject,
           html,
         );
       },

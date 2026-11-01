@@ -13,30 +13,17 @@ import { keyFromSelector } from "i18next";
 import { Loader2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { z } from "zod";
+import { type z } from "zod";
 
 import { messageSelectors, translateMessage } from "@/i18n/messages";
 
 import { authClient } from "@/features/auth/lib/auth-client";
 import { authErrorMessage } from "@/features/auth/lib/auth-error";
+import { passwordWithConfirmationSchema } from "@/features/auth/lib/password-schema";
 
 import { PasswordInput } from "./PasswordInput";
 
-const schema = z
-  .object({
-    password: z
-      .string()
-      .trim()
-      .min(8, keyFromSelector(messageSelectors.passwordMinLength)),
-    passwordConfirmation: z
-      .string()
-      .trim()
-      .min(1, keyFromSelector(messageSelectors.passwordConfirmationRequired)),
-  })
-  .refine((values) => values.password === values.passwordConfirmation, {
-    message: keyFromSelector(messageSelectors.passwordMismatch),
-    path: ["passwordConfirmation"],
-  });
+const schema = passwordWithConfirmationSchema;
 
 type ResetPasswordFormProps = {
   token: string;
@@ -60,7 +47,6 @@ export function ResetPasswordForm({
       validationBehavior="aria"
       className="flex flex-col gap-6"
       onSubmit={form.handleSubmit(async ({ password }) => {
-        if (isPending) return;
         setErrorMessage(null);
         try {
           const { error } = await authClient.resetPassword({

@@ -10,7 +10,10 @@ vi.mock("@/features/auth/lib/auth-client", () => ({
 }));
 
 describe("forgot password form", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    window.history.replaceState(null, "", "/forgot-password?lng=en");
+  });
 
   it("validates email before requesting a reset", async () => {
     render(<ForgotPasswordForm />);
@@ -30,10 +33,28 @@ describe("forgot password form", () => {
     await userEvent.click(screen.getByRole("button", { name: "Send link" }));
     expect(authClient.requestPasswordReset).toHaveBeenCalledExactlyOnceWith({
       email: "duck@example.com",
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: "/reset-password?lng=en",
     });
     expect(await screen.findByRole("status")).toHaveTextContent(
       "If an account exists",
+    );
+  });
+
+  it("translates BetterAuth errors instead of displaying their English messages", async () => {
+    vi.mocked(authClient.requestPasswordReset).mockResolvedValue({
+      data: null,
+      error: {
+        code: "INVALID_REDIRECT_URL",
+        message: "Invalid redirect URL",
+        status: 403,
+        statusText: "Forbidden",
+      },
+    });
+    render(<ForgotPasswordForm />);
+    await userEvent.type(screen.getByLabelText("Email"), "duck@example.com");
+    await userEvent.click(screen.getByRole("button", { name: "Send link" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unable to send reset link",
     );
   });
 
@@ -45,7 +66,7 @@ describe("forgot password form", () => {
     await userEvent.type(screen.getByLabelText("Email"), "duck@example.com");
     await userEvent.click(screen.getByRole("button", { name: "Send link" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Connection failed",
+      "Unable to send reset link",
     );
     expect(screen.getByRole("button", { name: "Send link" })).toBeEnabled();
   });

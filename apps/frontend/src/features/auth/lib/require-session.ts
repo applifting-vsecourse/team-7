@@ -25,5 +25,10 @@ export async function requireVerifiedSession({
       search: { from: encodeRedirectUri(location) },
     });
   }
-  if (!session.user.emailVerified) throw redirect({ to: ROUTES.verifyEmail });
+  if (!session.user.emailVerified) {
+    throw redirect({
+      to: ROUTES.verifyEmail,
+      search: { from: encodeRedirectUri(location) },
+    });
+  }
 }

@@ -1,9 +1,11 @@
 import { Alert, Link, toast } from "@heroui/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
 import { AuthLayout } from "@/components/AuthLayout";
+import { authKeys } from "@/lib/auth-keys";
 
 import { ResetPasswordForm } from "@/features/auth/components/ResetPasswordForm";
 
@@ -22,6 +24,7 @@ export const Route = createFileRoute("/reset-password")({
 function ResetPasswordPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { token, error } = Route.useSearch();
 
   return (
@@ -42,6 +45,8 @@ function ResetPasswordPage() {
           <ResetPasswordForm
             token={token}
             onSuccess={async () => {
+              await queryClient.cancelQueries({ queryKey: authKeys.session() });
+              queryClient.setQueryData(authKeys.session(), null);
               toast.success(t(($) => $.auth.newPassword.success));
               await navigate({ to: ROUTES.login });
             }}
