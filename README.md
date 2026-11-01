@@ -76,6 +76,8 @@ Install the recommended Oxc VS Code extension for formatting and lint fixes on s
 
 ## Deployment
 
+The [GitHub Actions deployment workflow](.github/workflows/deploy.yml) bakes SMTP settings into the backend image from repository secrets. Set `SMTP_HOST`, `SMTP_USERNAME` (also the sender address), and `SMTP_PASSWORD`. Optional `SMTP_PORT` and `SMTP_SECURE` default to `465` and `true`; for STARTTLS use `587` and `false`. Missing required SMTP secrets fail the workflow before building. SMTP takes priority over an existing Resend key. Changing SMTP secrets requires rebuilding and redeploying the image; Coolify runtime overrides take precedence over baked values.
+
 The whole app ships as one Docker Compose stack — Postgres, the backend, and the frontend (built to static files, served by nginx). See [`docker-compose.yml`](docker-compose.yml).
 
 ```shell
