@@ -94,7 +94,7 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
       aria-labelledby={headingId}
       className="flex w-full max-w-xl min-w-weekly-stats-min flex-col items-start gap-4 self-stretch md:w-auto md:flex-1 md:shrink-0 md:self-auto"
     >
-      <div className="flex w-full flex-wrap items-center justify-between gap-2">
+      <div className="flex w-full flex-wrap items-end justify-between gap-2">
         <h2
           id={headingId}
           className="flex items-center gap-2 text-xl leading-7 font-semibold tracking-tight"
@@ -105,7 +105,7 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
           />
           {t(($) => $.weeklyStats.title)}
         </h2>
-        <p className="text-xs leading-5 text-muted">
+        <p className="text-sm leading-6 text-muted">
           {t(($) => $.weeklyStats.dateRange, {
             start: formatDate(data.weekStart),
             end: formatDate(data.weekEnd),
@@ -130,7 +130,7 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
             </ProgressCircle>
             <p className="text-sm leading-6 font-medium">{completedLabel}</p>
           </div>
-          <p className="text-xs leading-5 text-muted">{remainingLabel}</p>
+          <p className="text-sm leading-6 text-muted">{remainingLabel}</p>
         </div>
 
         <div className="flex h-3 items-center">

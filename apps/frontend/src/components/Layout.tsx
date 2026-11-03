@@ -61,7 +61,9 @@ export default function Layout({
           className={cn(
             "flex min-w-0 flex-1",
             sidebar
-              ? "flex-col items-stretch bg-background md:h-full md:flex-row md:items-start md:overflow-y-auto md:[&>section]:min-h-full"
+              ? // pb-32 on phones: room to scroll the last content (and its
+                // menus) above the bottom browser chrome and the thumb.
+                "flex-col items-stretch bg-background pb-32 md:h-full md:flex-row md:items-start md:overflow-y-auto md:pb-4 md:[&>section]:min-h-full"
               : "items-start justify-center",
             className,
           )}

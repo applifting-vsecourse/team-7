@@ -28,7 +28,7 @@ export function MobileSidebar({ children }: { children: ReactNode }) {
           <Drawer.Dialog
             id="mobile-sidebar"
             aria-label={t(($) => $.navigation.main)}
-            className="w-sidebar gap-6 overflow-hidden p-4 sm:w-sidebar"
+            className="w-sidebar gap-6 overflow-hidden rounded-r-3xl p-4 sm:w-sidebar"
           >
             <Drawer.Header className="shrink-0 flex-row items-center justify-between">
               <HeaderLogo iconOnly />
@@ -42,9 +42,7 @@ export function MobileSidebar({ children }: { children: ReactNode }) {
                 <Xmark className="size-4" aria-hidden="true" />
               </Button>
             </Drawer.Header>
-            <Drawer.Body className="flex flex-col text-foreground">
-              {children}
-            </Drawer.Body>
+            <Drawer.Body className="flex flex-col">{children}</Drawer.Body>
           </Drawer.Dialog>
         </Drawer.Content>
       </Drawer.Backdrop>

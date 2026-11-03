@@ -40,7 +40,6 @@ function VerifyEmailPage() {
       footer={
         <Button
           variant="ghost"
-          size="sm"
           isPending={signOut.isPending}
           isDisabled={signOut.isPending}
           onPress={() => signOut.mutate()}
