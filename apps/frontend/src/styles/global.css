@@ -346,6 +346,62 @@
     @apply bg-background;
   }
 
+  /* The kit mutes all dialog body text, so instructions, names and headings
+     came out grey. Body text is foreground (DESIGN.md); supporting text opts
+     into text-muted itself. Alert dialogs (delete confirmations) keep the kit
+     default. */
+  .modal__body,
+  .drawer__body {
+    @apply text-foreground;
+  }
+
+  /* The kit puts the pointer cursor on the checkbox wrapper, which stretches
+     across the row in column layouts, but only the box and label toggle.
+     Hug the content so the pointer only shows where a click does something. */
+  .checkbox {
+    @apply w-fit max-w-full;
+  }
+
+  /* Figma rings radio and checkbox controls with a 2px --background halo so
+     the white control doesn't melt into white cards. A ring, not ::before (the
+     kit uses that for the checked fill); on --background it is invisible. */
+  .checkbox__control,
+  .radio__control {
+    @apply ring-2 ring-background;
+  }
+
+  /* Backdrops are as tall as the visual viewport (above the iOS keyboard),
+     which they must stay: they centre the dialog and, with scroll="outside",
+     are its scroller. Extend only their paint to the whole screen, so the dim
+     also covers the keyboard's form bar and the corners around it. */
+  .modal__backdrop--opaque,
+  .modal__backdrop--blur,
+  .alert-dialog__backdrop--opaque,
+  .alert-dialog__backdrop--blur,
+  .drawer__backdrop--opaque,
+  .drawer__backdrop--blur {
+    box-shadow: 0 0 0 100lvh var(--color-backdrop);
+  }
+
+  /* Native date/time inputs: iOS Safari gives them an intrinsic minimum width
+     and height, ignores `width` (so they overflow their grid cell) and centres
+     the value. Make them behave like the other fields. */
+  input[type="date"],
+  input[type="time"] {
+    @apply relative min-w-0 appearance-none;
+  }
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value {
+    @apply min-h-lh text-start;
+  }
+  /* Fields draw their own calendar/clock icon (iOS has none), so hide the
+     native indicator but stretch it over the field: a click anywhere still
+     opens the picker on desktop. */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    @apply absolute inset-0 size-auto cursor-pointer opacity-0;
+  }
+
   /* Figma marks the selected toggle (e.g. the calendar view switcher) with
      the solid accent, like a primary button, not the kit's soft accent. */
   .toggle-button {
