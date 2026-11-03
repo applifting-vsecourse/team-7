@@ -51,6 +51,24 @@ The ports are deliberately odd — 3050, 4050, and Postgres on 5433 rather than 
 
 Verification/reset emails are printed to the backend terminal (console mailer) unless you configure Resend or SMTP in `apps/backend/.env`.
 
+### Your `.env` files are yours to maintain
+
+`apps/backend/.env` and `apps/frontend/.env` are gitignored, so nobody's local settings or secrets get committed. That also means **git never updates them for you**:
+
+- `pnpm dev` only creates a missing `.env` by copying its `.env.example`. A file that already exists is left alone, so when someone adds or changes a variable in an `.env.example`, compare it with your `.env` and copy the change over yourself.
+- Anything personal is set by hand in your own `.env`: SMTP/Resend credentials (`apps/backend/.env`), or the LAN dev proxy for opening the app on your phone (`apps/frontend/.env`, see below).
+
+### Opening the dev app on your phone (LAN)
+
+Set this in `apps/frontend/.env`:
+
+```shell
+VITE_API_URL=/api
+VITE_BETTER_AUTH_URL=/
+```
+
+Then open the `lanFrontendUrls` address from the backend's startup log on a phone on the same Wi-Fi.
+
 ### HeroUI docs for AI agents
 
 [`HEROUI.md`](HEROUI.md) indexes the HeroUI v3 docs, but the docs themselves are downloaded into `.heroui-docs/` (gitignored), so every developer generates them once after cloning:
