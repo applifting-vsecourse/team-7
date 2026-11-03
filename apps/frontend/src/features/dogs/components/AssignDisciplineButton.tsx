@@ -14,12 +14,12 @@ export function AssignDisciplineButton({
   const { t } = useTranslation();
   return (
     <Dropdown>
-      <Button size="sm" className={className}>
+      <Button className={className}>
         <Plus className="size-4" aria-hidden="true" />
         {t(($) => $.dogProfile.assignDiscipline)}
         <ChevronDown className="size-4" aria-hidden="true" />
       </Button>
-      <Dropdown.Popover className="min-w-60">
+      <Dropdown.Popover placement="bottom end" className="min-w-60">
         <Dropdown.Menu
           onAction={(key) => (key === "library" ? onLibrary() : onCreate())}
         >
@@ -27,17 +27,23 @@ export function AssignDisciplineButton({
             id="library"
             textValue={t(($) => $.dogProfile.fromLibrary)}
           >
-            <Label>{t(($) => $.dogProfile.fromLibrary)}</Label>
-            <Description>{t(($) => $.dogProfile.fromLibraryHint)}</Description>
+            <div className="flex flex-col">
+              <Label>{t(($) => $.dogProfile.fromLibrary)}</Label>
+              <Description>
+                {t(($) => $.dogProfile.fromLibraryHint)}
+              </Description>
+            </div>
           </Dropdown.Item>
           <Dropdown.Item
             id="create"
             textValue={t(($) => $.disciplines.newDiscipline)}
           >
-            <Label>{t(($) => $.disciplines.newDiscipline)}</Label>
-            <Description>
-              {t(($) => $.dogProfile.newDisciplineHint)}
-            </Description>
+            <div className="flex flex-col">
+              <Label>{t(($) => $.disciplines.newDiscipline)}</Label>
+              <Description>
+                {t(($) => $.dogProfile.newDisciplineHint)}
+              </Description>
+            </div>
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown.Popover>

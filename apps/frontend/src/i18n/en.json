@@ -434,7 +434,6 @@
     "removeGoal": "Unassign goal",
     "unassigned": "Unassigned",
     "assign": "Assign",
-    "exerciseDetail": "Exercise details: {{name}}",
     "noTrainingHistory": "Training history for this exercise will appear here. No records are available yet.",
     "removeExercise": "Unassign exercise",
     "close": "Close",
@@ -482,7 +481,6 @@
     "invalid": "Enter a valid date, time and duration (1–1440 minutes)."
   },
   "exerciseDetail": {
-    "goal": "Goal {{name}}",
     "history": "History",
     "averageRating": "Average rating over 30 days",
     "ratingValue": "{{rating}} / 5",

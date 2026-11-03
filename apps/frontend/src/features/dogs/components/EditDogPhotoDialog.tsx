@@ -72,7 +72,7 @@ export function EditDogPhotoDialog({
         isDismissable={!mutation.isPending}
         isKeyboardDismissDisabled={mutation.isPending}
       >
-        <Modal.Container size="sm">
+        <Modal.Container size="sm" scroll="outside">
           <Modal.Dialog>
             <Modal.CloseTrigger />
             <Modal.Header>
@@ -115,10 +115,10 @@ export function EditDogPhotoDialog({
                   </Button>
                 ) : null}
               </Modal.Body>
-              <Modal.Footer className="flex-col-reverse sm:flex-row">
+              <Modal.Footer className="flex-wrap">
                 <Button
                   variant="secondary"
-                  className="w-full sm:w-auto"
+                  className="flex-auto sm:flex-none"
                   isDisabled={mutation.isPending}
                   onPress={() => {
                     setIsOpen(false);
@@ -129,7 +129,7 @@ export function EditDogPhotoDialog({
                 </Button>
                 <Button
                   type="submit"
-                  className="w-full sm:w-auto"
+                  className="flex-auto sm:flex-none"
                   isPending={mutation.isPending}
                   isDisabled={!photo || photoError || mutation.isPending}
                 >

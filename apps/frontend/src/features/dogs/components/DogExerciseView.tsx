@@ -28,6 +28,7 @@ import { api } from "@/lib/api-client";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { disciplinesKey } from "@/features/disciplines/api/disciplinesQueryOptions";
+import { ContextLine } from "@/features/disciplines/components/ContextLine";
 import { EmptyState } from "@/features/disciplines/components/EmptyState";
 import {
   eventsKey,
@@ -168,7 +169,6 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
             <Dropdown>
               <Button
                 isIconOnly
-                size="sm"
                 variant="secondary"
                 isDisabled={remove.isPending}
                 aria-label={t(($) => $.disciplines.exerciseActions, {
@@ -183,8 +183,12 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
                     id="remove"
                     variant="danger"
                     textValue={t(($) => $.dogProfile.removeExercise)}
+                    className="items-start"
                   >
-                    <TrashBin className="size-4 shrink-0" aria-hidden="true" />
+                    {/* h-5 = the label's line height, so the icon centres on it. */}
+                    <span className="flex h-5 shrink-0 items-center">
+                      <TrashBin className="size-4" aria-hidden="true" />
+                    </span>
                     <div className="flex flex-col">
                       <Label>{t(($) => $.dogProfile.removeExercise)}</Label>
                       <Description>
@@ -199,10 +203,14 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
             </Dropdown>
           )}
         </div>
-        <p className="flex items-center gap-2 text-base leading-7 text-muted">
-          <Flag className="size-5 shrink-0 text-warning" aria-hidden="true" />
-          {t(($) => $.exerciseDetail.goal, { name: goal.name })}
-        </p>
+        {/* Same context line as the exercise dialogs: "🏳 Cíl: name". */}
+        <ContextLine
+          icon={
+            <Flag className="size-4 shrink-0 text-warning" aria-hidden="true" />
+          }
+          label={t(($) => $.disciplines.exerciseForm.context)}
+          value={goal.name}
+        />
       </div>
       <p className="text-base leading-7 whitespace-pre-wrap">
         {exercise.procedure || t(($) => $.training.noProcedure)}
@@ -255,7 +263,7 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
             description={t(($) => $.exerciseDetail.emptyDescription)}
             action={
               exercise.assigned ? (
-                <Button size="sm" onPress={() => setScheduling(true)}>
+                <Button onPress={() => setScheduling(true)}>
                   <Plus className="size-4" aria-hidden="true" />
                   {t(($) => $.calendar.scheduleExercise)}
                 </Button>

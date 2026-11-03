@@ -1,3 +1,4 @@
+import { useId } from "react";
 import type { DogGoalAssignment } from "../api/dogProfileQueryOptions";
 import {
   ChevronRight,
@@ -7,14 +8,7 @@ import {
   Flag,
   Plus,
 } from "@gravity-ui/icons";
-import {
-  Button,
-  buttonVariants,
-  Chip,
-  Dropdown,
-  Label,
-  Separator,
-} from "@heroui/react";
+import { Button, Chip, Dropdown, Label, Separator } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
@@ -56,6 +50,7 @@ export function DogGoal({
   onRemove: () => void;
 }) {
   const { t } = useTranslation();
+  const rowId = useId();
   const completed = Boolean(assignment?.completedAt);
   return (
     <>
@@ -65,8 +60,8 @@ export function DogGoal({
           !assignment
             ? "border border-dashed border-muted bg-surface"
             : completed
-              ? "bg-event-tile-success"
-              : "bg-background",
+              ? "bg-event-tile-success shadow-surface"
+              : "bg-background shadow-surface",
         )}
       >
         <div className="flex flex-wrap items-start gap-3">
@@ -84,7 +79,9 @@ export function DogGoal({
               aria-hidden="true"
             />
           )}
-          <div className="min-w-0 flex-1">
+          {/* min-w-50 (200px) as in Figma: the menu stays beside the text
+              until the text would get narrower than that. */}
+          <div className="min-w-50 flex-1">
             <h3
               className={cn(
                 "text-base leading-6 font-medium tracking-tight wrap-break-word",
@@ -102,8 +99,26 @@ export function DogGoal({
                 { count: goal.exercises.length },
               )}
             </p>
+            {completed && (
+              <Chip
+                color="success"
+                variant="primary"
+                size="sm"
+                className="mt-1"
+              >
+                <CircleCheck className="size-3" aria-hidden="true" />
+                <Chip.Label>{t(($) => $.dogProfile.done)}</Chip.Label>
+              </Chip>
+            )}
           </div>
-          <div className="flex w-full items-center gap-3 sm:w-auto">
+          <div
+            className={cn(
+              "flex items-center gap-3",
+              // The done chip lives in the text column, so a completed goal
+              // only has its menu here and keeps it on the title row.
+              !completed && "w-full sm:w-auto",
+            )}
+          >
             {!assignment ? (
               <Button
                 variant="outline"
@@ -118,15 +133,9 @@ export function DogGoal({
               </Button>
             ) : (
               <>
-                {completed ? (
-                  <Chip color="success" size="sm">
-                    <CircleCheck className="size-3" aria-hidden="true" />
-                    <Chip.Label>{t(($) => $.dogProfile.done)}</Chip.Label>
-                  </Chip>
-                ) : (
+                {!completed && (
                   <Button
                     variant="secondary"
-                    size="sm"
                     isDisabled={isPending}
                     onPress={() =>
                       onAction({ type: "complete", goalId: goal.id })
@@ -140,7 +149,6 @@ export function DogGoal({
                   <Button
                     isIconOnly
                     variant="ghost"
-                    size="sm"
                     aria-label={t(($) => $.disciplines.goalActions, {
                       name: goal.name,
                     })}
@@ -203,37 +211,37 @@ export function DogGoal({
                 </Button>
               </div>
             )}
-            <div className="flex flex-col gap-2">
+            {/* Same layout as ExerciseRow in the discipline library. Rows have
+                py-1 so the hover background has room; gap-2 + 2 × py-1 keeps
+                the library's 16px rhythm, and -mx-2/px-2 keeps the text on
+                the card's content edge. */}
+            <ul className="-mx-2 flex flex-col gap-2">
               {goal.exercises.map((item) => {
                 const selected = assignment.exercises.some(
                   (selected) => selected.exerciseId === item.id,
                 );
-                return (
-                  <div key={item.id} className="flex items-center gap-2 py-2">
+                const nameId = `${rowId}-${item.id}-name`;
+                const metaId = `${rowId}-${item.id}-meta`;
+                const content = (
+                  <>
                     <Circle
-                      className="size-4 shrink-0 text-muted"
+                      className="mt-1 size-4 shrink-0 text-muted"
                       aria-hidden="true"
                     />
-                    <div className="min-w-0 flex-1">
-                      <p
+                    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <span
+                        id={nameId}
                         className={cn(
-                          "text-sm leading-6 wrap-break-word",
+                          "text-sm leading-6 font-medium wrap-break-word",
                           !selected && "text-muted",
                         )}
                       >
-                        {selected ? (
-                          <Link
-                            to="/dogs/$dogId/exercises/$exerciseId"
-                            params={{ dogId, exerciseId: item.id }}
-                            className="hover:text-accent"
-                          >
-                            {item.name}
-                          </Link>
-                        ) : (
-                          item.name
-                        )}
-                      </p>
-                      <p className="text-xs leading-5 text-muted">
+                        {item.name}
+                      </span>
+                      <span
+                        id={metaId}
+                        className="text-xs leading-5 text-muted"
+                      >
                         {selected ? (
                           <LastTraining
                             date={lastTrainingByExercise.get(item.id) ?? null}
@@ -241,47 +249,50 @@ export function DogGoal({
                         ) : (
                           t(($) => $.dogProfile.unassigned)
                         )}
-                      </p>
-                    </div>
+                      </span>
+                    </span>
+                  </>
+                );
+                return (
+                  <li key={item.id}>
                     {selected ? (
                       <Link
                         to="/dogs/$dogId/exercises/$exerciseId"
                         params={{ dogId, exerciseId: item.id }}
-                        className={buttonVariants({
-                          size: "sm",
-                          variant: "ghost",
-                          isIconOnly: true,
-                        })}
-                        aria-label={t(($) => $.dogProfile.exerciseDetail, {
-                          name: item.name,
-                        })}
+                        aria-labelledby={nameId}
+                        aria-describedby={metaId}
+                        className="flex items-start gap-3 rounded-2xl px-2 py-1 transition-colors outline-none hover:bg-default focus-visible:focus-ring"
                       >
+                        {content}
                         <ChevronRight
-                          className="size-4 text-accent"
+                          className="mt-1 size-4 shrink-0 text-accent"
                           aria-hidden="true"
                         />
                       </Link>
                     ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        isDisabled={isPending}
-                        onPress={() =>
-                          onAction({
-                            type: "assignExercise",
-                            goalId: goal.id,
-                            exerciseId: item.id,
-                          })
-                        }
-                      >
-                        <Plus className="size-4" aria-hidden="true" />
-                        {t(($) => $.dogProfile.assign)}
-                      </Button>
+                      <div className="flex items-start gap-3 px-2 py-1">
+                        {content}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          isDisabled={isPending}
+                          onPress={() =>
+                            onAction({
+                              type: "assignExercise",
+                              goalId: goal.id,
+                              exerciseId: item.id,
+                            })
+                          }
+                        >
+                          <Plus className="size-4" aria-hidden="true" />
+                          {t(($) => $.dogProfile.assign)}
+                        </Button>
+                      </div>
                     )}
-                  </div>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           </>
         )}
       </article>

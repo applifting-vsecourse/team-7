@@ -11,7 +11,9 @@ export function DoneSection({
   return (
     <Disclosure defaultExpanded className="w-full">
       <Disclosure.Heading>
-        <Disclosure.Trigger className="text-base font-medium">
+        {/* The kit's trigger is inline-block, so the block-level chevron SVG
+            wrapped onto its own line; keep title and chevron in one row. */}
+        <Disclosure.Trigger className="inline-flex items-center gap-2 text-base font-medium">
           {title}
           <Disclosure.Indicator />
         </Disclosure.Trigger>

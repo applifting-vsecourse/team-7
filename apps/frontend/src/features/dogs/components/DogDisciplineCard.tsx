@@ -78,7 +78,7 @@ export function DogDisciplineCard({
         </p>
       </div>
       <Separator className="my-1" />
-      <p className="flex items-center gap-2 text-xs leading-5 text-accent-soft-foreground">
+      <p className="flex items-center gap-2 text-sm leading-6 text-accent-soft-foreground">
         <Clock className="size-4 shrink-0 text-accent" aria-hidden="true" />
         <LastTraining date={discipline.lastTrainingAt} />
       </p>

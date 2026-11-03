@@ -48,7 +48,7 @@ export function DogProfileView({ dog }: { dog: DogProfile }) {
   );
   return (
     <>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-8">
         <DogHeader dog={dog} />
         {dog.disciplines.length > 0 && (
           <div className="flex flex-wrap items-center gap-x-6 gap-y-4 md:gap-x-10">
@@ -90,7 +90,7 @@ export function DogProfileView({ dog }: { dog: DogProfile }) {
       ) : (
         <>
           <section
-            className="flex flex-col gap-8"
+            className="flex flex-col gap-6"
             aria-labelledby="dog-disciplines-heading"
           >
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-3">

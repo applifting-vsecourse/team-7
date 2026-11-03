@@ -434,7 +434,6 @@
     "removeGoal": "Odebrat cíl psovi",
     "unassigned": "Nepřiřazeno",
     "assign": "Přiřadit",
-    "exerciseDetail": "Detail cvičení {{name}}",
     "noTrainingHistory": "Zde se zobrazí historie tréninků tohoto cvičení. Zatím nejsou dostupné žádné záznamy.",
     "removeExercise": "Odebrat cvičení psovi",
     "close": "Zavřít",
@@ -482,7 +481,6 @@
     "invalid": "Zadejte platné datum, čas a délku (1–1440 minut)."
   },
   "exerciseDetail": {
-    "goal": "Cíl {{name}}",
     "history": "Historie",
     "averageRating": "Průměrné hodnocení za 30 dní",
     "ratingValue": "{{rating}} / 5",
