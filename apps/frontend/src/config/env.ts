@@ -1,8 +1,12 @@
 import { z } from "zod";
 
+// An absolute URL, or a path on this origin ("/api") served by the Vite dev
+// proxy, which makes the app work from localhost and the LAN alike.
+const urlOrPath = z.union([z.string().url(), z.string().startsWith("/")]);
+
 const envSchema = z.object({
-  VITE_API_URL: z.string().url(),
-  VITE_BETTER_AUTH_URL: z.string().url(),
+  VITE_API_URL: urlOrPath,
+  VITE_BETTER_AUTH_URL: urlOrPath,
 });
 
 type EnvSchema = z.infer<typeof envSchema>;
