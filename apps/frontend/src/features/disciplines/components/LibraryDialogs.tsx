@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import type { DogRef, Exercise, Goal } from "../api/disciplinesQueryOptions";
 import { ChartLine, Flag } from "@gravity-ui/icons";
 import { Alert, toast } from "@heroui/react";
@@ -12,32 +11,13 @@ import {
   useSaveExercise,
   useSaveGoal,
 } from "../hooks/useLibraryMutations";
+import { ContextLine } from "./ContextLine";
 import { LibraryItemDialog } from "./LibraryItemDialog";
 
 type DialogState = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 };
-
-function ContextLine({
-  icon,
-  label,
-  value,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <p className="flex min-w-0 items-center gap-1.5 text-sm">
-      {icon}
-      <span className="text-muted">{label}</span>
-      <span className="min-w-0 font-medium wrap-break-word text-foreground">
-        {value}
-      </span>
-    </p>
-  );
-}
 
 /** "Nová disciplína" / "Upravit disciplínu". A new discipline opens its detail. */
 export function DisciplineDialog({

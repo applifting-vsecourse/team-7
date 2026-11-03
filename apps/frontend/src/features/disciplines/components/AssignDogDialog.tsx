@@ -55,7 +55,7 @@ export function AssignDogDialog({
       isDismissable={!assign.isPending}
       isKeyboardDismissDisabled={assign.isPending}
     >
-      <Modal.Container>
+      <Modal.Container scroll="outside">
         <Modal.Dialog className="sm:max-w-160">
           <Modal.CloseTrigger />
           <Modal.Header>
@@ -182,18 +182,22 @@ function AssignSteps({
             <p className="text-sm text-danger">{t(($) => $.dogs.loadError)}</p>
             <Button
               variant="secondary"
-              size="sm"
               onPress={() => void dogsQuery.refetch()}
             >
               {t(($) => $.dogs.retry)}
             </Button>
           </div>
         ) : availableDogs.length === 0 ? (
-          <p className="text-sm leading-6 text-muted">
-            {dogsQuery.data.length === 0
-              ? t(($) => $.disciplines.assignDialog.noDogs)
-              : t(($) => $.disciplines.assignDialog.allDogsAssigned)}
-          </p>
+          <Alert status="accent">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>
+                {dogsQuery.data.length === 0
+                  ? t(($) => $.disciplines.assignDialog.noDogs)
+                  : t(($) => $.disciplines.assignDialog.allDogsAssigned)}
+              </Alert.Title>
+            </Alert.Content>
+          </Alert>
         ) : (
           <RadioGroup
             aria-label={t(($) => $.disciplines.assignDialog.dogLabel)}
@@ -230,16 +234,19 @@ function AssignSteps({
           </Alert>
         ) : null}
       </Modal.Body>
-      <Modal.Footer className="flex-col-reverse sm:flex-row">
+      <Modal.Footer className="flex-wrap">
         <Button
           variant="secondary"
           onPress={onClose}
-          className="w-full sm:w-auto"
+          className="flex-auto sm:flex-none"
         >
           {t(($) => $.disciplines.cancel)}
         </Button>
         {selectedDog ? (
-          <Button onPress={() => setStep("goals")} className="w-full sm:w-auto">
+          <Button
+            onPress={() => setStep("goals")}
+            className="flex-auto sm:flex-none"
+          >
             {t(($) => $.disciplines.assignDialog.continue)}
           </Button>
         ) : null}
@@ -471,12 +478,12 @@ function GoalsStep({
           </p>
         ) : null}
       </Modal.Body>
-      <Modal.Footer className="flex-col-reverse sm:flex-row">
+      <Modal.Footer className="flex-wrap">
         <Button
           variant="secondary"
           isDisabled={isPending}
           onPress={onBack}
-          className="w-full sm:w-auto"
+          className="flex-auto sm:flex-none"
         >
           {t(($) => $.disciplines.assignDialog.back)}
         </Button>
@@ -490,7 +497,7 @@ function GoalsStep({
             }
             onSubmit(picked);
           }}
-          className="w-full sm:w-auto"
+          className="flex-auto sm:flex-none"
         >
           {picked.length === 0
             ? t(($) => $.disciplines.assignDialog.submitEmpty)
