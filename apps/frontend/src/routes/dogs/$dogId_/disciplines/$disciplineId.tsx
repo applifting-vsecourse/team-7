@@ -3,16 +3,41 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import Layout from "@/components/Layout";
 import { Sidebar } from "@/components/Sidebar";
+import { loadBeforeTransition } from "@/lib/motion";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { requireVerifiedSession } from "@/features/auth/lib/require-session";
-import { dogProfileQueryOptions } from "@/features/dogs/api/dogProfileQueryOptions";
+import { disciplineQueryOptions } from "@/features/disciplines/api/disciplinesQueryOptions";
+import {
+  dogProfileQueryOptions,
+  dogSelectionQueryOptions,
+} from "@/features/dogs/api/dogProfileQueryOptions";
 import { DogDisciplineView } from "@/features/dogs/components/DogDisciplineView";
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 
 export const Route = createFileRoute("/dogs/$dogId_/disciplines/$disciplineId")(
   {
     beforeLoad: requireVerifiedSession,
+    // Same as the library detail; a preload only fills the cache.
+    loader: ({ context: { queryClient, userId }, params, preload }) =>
+      loadBeforeTransition(
+        queryClient.ensureQueryData({
+          ...dogProfileQueryOptions(userId, params.dogId),
+          revalidateIfStale: !preload,
+        }),
+        queryClient.ensureQueryData({
+          ...disciplineQueryOptions(userId, params.disciplineId),
+          revalidateIfStale: !preload,
+        }),
+        queryClient.ensureQueryData({
+          ...dogSelectionQueryOptions(
+            userId,
+            params.dogId,
+            params.disciplineId,
+          ),
+          revalidateIfStale: !preload,
+        }),
+      ),
     component: DogDisciplinePage,
   },
 );

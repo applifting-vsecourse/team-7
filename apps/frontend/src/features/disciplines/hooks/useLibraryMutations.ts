@@ -5,22 +5,64 @@ import { api } from "@/lib/api-client";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 
-import { disciplinesKey } from "../api/disciplinesQueryOptions";
+import {
+  type DisciplineDetail,
+  disciplinesKey,
+  type Goal,
+} from "../api/disciplinesQueryOptions";
 
 type Saved = { id: string };
 
+/** Applies a confirmed change to a cached discipline detail. */
+type Patch<TVariables, TResult> = (
+  detail: DisciplineDetail,
+  variables: TVariables,
+  result: TResult,
+) => DisciplineDetail;
+
+/**
+ * `patch` is for edits of a list on the current page: the cache changes as
+ * soon as the server confirms, so the dialog closes on the new list, its
+ * enter / exit animation (PresenceList) plays in view rather than under the
+ * backdrop, and a removed row can't be acted on again. The refetch isn't
+ * awaited; flows that navigate afterwards keep waiting for fresh data.
+ */
 function useLibraryMutation<TVariables, TResult = unknown>(
   mutationFn: (variables: TVariables) => Promise<TResult>,
+  patch?: Patch<TVariables, TResult>,
 ) {
   const { user } = useSession();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: disciplinesKey(user?.id) }),
+    onSuccess: async (result, variables) => {
+      if (patch) {
+        const details = { queryKey: [...disciplinesKey(user?.id), "detail"] };
+        await queryClient.cancelQueries(details);
+        queryClient.setQueriesData<DisciplineDetail>(
+          details,
+          (detail) => detail && patch(detail, variables, result),
+        );
+      }
+      const refetch = queryClient.invalidateQueries({
+        queryKey: disciplinesKey(user?.id),
+      });
+      if (!patch) await refetch;
+    },
   });
 }
+
+const mapExercises = (
+  detail: DisciplineDetail,
+  update: (exercises: Goal["exercises"], goal: Goal) => Goal["exercises"],
+) => ({
+  ...detail,
+  goals: detail.goals.map((goal) => ({
+    ...goal,
+    exercises: update(goal.exercises, goal),
+  })),
+});
 
 const path = (...segments: string[]) =>
   segments.map(encodeURIComponent).join("/");
@@ -63,11 +105,37 @@ export function useSaveGoal() {
           : api.post(path("disciplines", disciplineId, "goals"), { json })
       ).json<Saved>();
     },
+    (detail, { disciplineId, id, values }, saved) => {
+      const fields = { name: values.name, criterion: values.text || null };
+      if (id) {
+        return {
+          ...detail,
+          goals: detail.goals.map((goal) =>
+            goal.id === id ? { ...goal, ...fields } : goal,
+          ),
+        };
+      }
+      return detail.id === disciplineId
+        ? {
+            ...detail,
+            goals: [
+              ...detail.goals,
+              { ...fields, id: saved.id, exercises: [], dogs: [] },
+            ],
+          }
+        : detail;
+    },
   );
 }
 
 export function useDeleteGoal() {
-  return useLibraryMutation((id: string) => api.delete(path("goals", id)));
+  return useLibraryMutation(
+    (id: string) => api.delete(path("goals", id)),
+    (detail, id) => ({
+      ...detail,
+      goals: detail.goals.filter((goal) => goal.id !== id),
+    }),
+  );
 }
 
 export function useSaveExercise() {
@@ -87,6 +155,19 @@ export function useSaveExercise() {
           ? api.patch(path("exercises", id), { json })
           : api.post(path("goals", goalId, "exercises"), { json })
       ).json<Saved>();
+    },
+    (detail, { goalId, id, values }, saved) => {
+      const fields = { name: values.name, procedure: values.text || null };
+      return mapExercises(detail, (exercises, goal) => {
+        if (id) {
+          return exercises.map((exercise) =>
+            exercise.id === id ? { ...exercise, ...fields } : exercise,
+          );
+        }
+        return goal.id === goalId
+          ? [...exercises, { ...fields, id: saved.id, dogCount: 0 }]
+          : exercises;
+      });
     },
   );
 }
@@ -117,11 +198,21 @@ export function useAssignDiscipline() {
 
 /** Takes all goals and exercises of a discipline from a dog. */
 export function useRemoveDiscipline() {
-  return useLibraryMutation((target: DogDiscipline) =>
-    putSelection(target, []),
+  return useLibraryMutation(
+    (target: DogDiscipline) => putSelection(target, []),
+    (detail, { disciplineId, dogId }) =>
+      detail.id === disciplineId
+        ? { ...detail, dogs: detail.dogs.filter((dog) => dog.id !== dogId) }
+        : detail,
   );
 }
 
 export function useDeleteExercise() {
-  return useLibraryMutation((id: string) => api.delete(path("exercises", id)));
+  return useLibraryMutation(
+    (id: string) => api.delete(path("exercises", id)),
+    (detail, id) =>
+      mapExercises(detail, (exercises) =>
+        exercises.filter((exercise) => exercise.id !== id),
+      ),
+  );
 }

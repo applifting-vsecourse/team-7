@@ -4,6 +4,7 @@ import { toast } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
 import { DogIcon } from "@/components/DogIcon";
+import { PresenceItem, PresenceList } from "@/components/PresenceList";
 import { czechFrom, pluralForm } from "@/lib/plural";
 
 import { useSession } from "@/features/auth/hooks/useSession";
@@ -43,24 +44,25 @@ export function DisciplineDogs({
       >
         {t(($) => $.disciplines.dogs)}
       </h2>
-      {dogs.length === 0 ? (
-        <p className="flex items-start gap-1 text-sm leading-6 text-muted">
-          <DogIcon className="mt-1 size-4 shrink-0" aria-hidden="true" />
-          {t(($) => $.disciplines.dogsEmpty)}
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {dogs.map((dog) => (
-            <DogRow
-              key={dog.id}
-              discipline={discipline}
-              dog={dog}
-              avatarDog={dogsById.get(dog.id) ?? dog}
-              {...totals}
-            />
-          ))}
-        </ul>
-      )}
+      <PresenceList
+        empty={
+          <p className="flex animate-enter items-start gap-1 text-sm leading-6 text-muted">
+            <DogIcon className="mt-1 size-4 shrink-0" aria-hidden="true" />
+            {t(($) => $.disciplines.dogsEmpty)}
+          </p>
+        }
+        className="flex flex-col gap-2"
+      >
+        {dogs.map((dog) => (
+          <DogRow
+            key={dog.id}
+            discipline={discipline}
+            dog={dog}
+            avatarDog={dogsById.get(dog.id) ?? dog}
+            {...totals}
+          />
+        ))}
+      </PresenceList>
     </section>
   );
 }
@@ -81,7 +83,7 @@ function DogRow({
   const names = { discipline: discipline.name, dog: dog.name };
 
   return (
-    <li className="flex items-center gap-3">
+    <PresenceItem className="flex items-center gap-3">
       <DogAvatar dog={avatarDog} />
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="text-sm leading-6 wrap-break-word">{dog.name}</span>
@@ -116,7 +118,7 @@ function DogRow({
           )
         }
       />
-    </li>
+    </PresenceItem>
   );
 }
 

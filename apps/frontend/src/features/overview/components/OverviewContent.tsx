@@ -80,7 +80,7 @@ export function OverviewContent() {
     );
   }
   return (
-    <OverviewEvents>
+    <OverviewEvents isUpdating={query.isPlaceholderData}>
       <WeeklyStats data={query.data.stats} />
       {calendars.map((calendar) => (
         <Calendar key={calendar.variant} {...calendar} />

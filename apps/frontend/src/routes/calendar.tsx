@@ -20,6 +20,7 @@ import { DailyCalendar } from "@/features/events/components/DailyCalendar";
 import { MonthlyCalendar } from "@/features/events/components/MonthlyCalendar";
 import { ScheduleExerciseDialog } from "@/features/events/components/ScheduleExerciseDialog";
 import { WeeklyCalendar } from "@/features/events/components/WeeklyCalendar";
+import { periodTransition } from "@/features/events/lib/periodTransition";
 
 // Invalid values fall back to the defaults instead of an error page.
 const calendarSearchSchema = z.object({
@@ -49,7 +50,11 @@ function CalendarPage() {
     void navigate({
       search: (prev) => ({ ...prev, date: format(next, "yyyy-MM-dd") }),
       replace: true,
+      viewTransition: periodTransition(view, date, next),
     });
+  const headingSwitcher = (
+    <CalendarViewSwitcher value={view} onChange={changeView} />
+  );
 
   return (
     <Layout title={t(($) => $.navigation.calendar)} sidebar={<Sidebar />}>
@@ -78,30 +83,24 @@ function CalendarPage() {
             <Plus className="size-4 shrink-0" aria-hidden="true" />
             {t(($) => $.calendar.scheduleExercise)}
           </Button>
-          <CalendarViewSwitcher
-            value={view}
-            onChange={changeView}
-            className="hidden md:flex"
-          />
         </div>
         <DogFilter />
-        {/* On phones the switcher sits under the dog filter, as in Figma. */}
-        <CalendarViewSwitcher
-          value={view}
-          onChange={changeView}
-          fullWidth
-          className="md:hidden"
-        />
         {view === "day" ? (
-          <DailyCalendar date={date} today={today} onDateChange={changeDate} />
+          <DailyCalendar
+            date={date}
+            today={today}
+            onDateChange={changeDate}
+            viewSwitcher={headingSwitcher}
+          />
         ) : view === "month" ? (
           <MonthlyCalendar
             date={date}
             today={today}
             onDateChange={changeDate}
+            viewSwitcher={headingSwitcher}
           />
         ) : (
-          <WeeklyCalendar />
+          <WeeklyCalendar viewSwitcher={headingSwitcher} />
         )}
       </section>
       {scheduling && (

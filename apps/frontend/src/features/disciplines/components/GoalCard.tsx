@@ -3,6 +3,8 @@ import { Flag, Plus } from "@gravity-ui/icons";
 import { Alert, Button, Separator } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
+import { PresenceHeight, PresenceList } from "@/components/PresenceList";
+
 import { useDialogState } from "../hooks/useDialogState";
 import { useDeleteGoal } from "../hooks/useLibraryMutations";
 import { DeleteDialog } from "./DeleteDialog";
@@ -53,25 +55,28 @@ export function GoalCard({
         />
       </div>
       <Separator />
-      {goal.exercises.length === 0 ? (
-        <Alert status="warning">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Title>
-              {t(($) => $.disciplines.goalNoExercisesTitle)}
-            </Alert.Title>
-            <Alert.Description>
-              {t(($) => $.disciplines.goalNoExercisesDescription)}
-            </Alert.Description>
-          </Alert.Content>
-        </Alert>
-      ) : (
-        <ul className="flex flex-col gap-4">
+      <PresenceHeight className="flex flex-col gap-4">
+        <PresenceList
+          empty={
+            <Alert status="warning" className="animate-enter">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Title>
+                  {t(($) => $.disciplines.goalNoExercisesTitle)}
+                </Alert.Title>
+                <Alert.Description>
+                  {t(($) => $.disciplines.goalNoExercisesDescription)}
+                </Alert.Description>
+              </Alert.Content>
+            </Alert>
+          }
+          className="flex flex-col gap-4"
+        >
           {goal.exercises.map((exercise) => (
             <ExerciseRow key={exercise.id} goal={goal} exercise={exercise} />
           ))}
-        </ul>
-      )}
+        </PresenceList>
+      </PresenceHeight>
       <Button
         variant="outline"
         className="self-start"
