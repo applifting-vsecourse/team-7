@@ -12,7 +12,10 @@ type CalendarNavigationProps = {
   onCurrent: () => void;
 };
 
-/** Previous / next / back-to-now controls shared by the day and month views. */
+/**
+ * Previous / back-to-now / next controls shared by the calendar views.
+ * Stretches across the row on phones, as in Figma.
+ */
 export function CalendarNavigation({
   label,
   previousLabel,
@@ -24,23 +27,36 @@ export function CalendarNavigation({
   onCurrent,
 }: CalendarNavigationProps) {
   return (
-    <ButtonGroup variant="secondary" size="sm" aria-label={label}>
-      <Button isIconOnly aria-label={previousLabel} onPress={onPrevious}>
+    <ButtonGroup
+      variant="tertiary"
+      size="sm"
+      aria-label={label}
+      className="w-full md:w-auto"
+    >
+      <Button
+        isIconOnly
+        aria-label={previousLabel}
+        onPress={onPrevious}
+        className="flex-1 md:flex-none"
+      >
         <ChevronLeft className="size-4 text-accent" aria-hidden="true" />
-      </Button>
-      <Button isIconOnly aria-label={nextLabel} onPress={onNext}>
-        <ButtonGroup.Separator />
-        <ChevronRight className="size-4 text-accent" aria-hidden="true" />
       </Button>
       <Button
         onPress={onCurrent}
         aria-current={isCurrent ? "true" : undefined}
-        className={
-          isCurrent ? "bg-accent-soft text-accent-soft-foreground" : undefined
-        }
+        className="flex-1 md:flex-none"
       >
         <ButtonGroup.Separator />
         {currentLabel}
+      </Button>
+      <Button
+        isIconOnly
+        aria-label={nextLabel}
+        onPress={onNext}
+        className="flex-1 md:flex-none"
+      >
+        <ButtonGroup.Separator />
+        <ChevronRight className="size-4 text-accent" aria-hidden="true" />
       </Button>
     </ButtonGroup>
   );

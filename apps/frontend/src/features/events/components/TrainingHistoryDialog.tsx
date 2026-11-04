@@ -4,6 +4,8 @@ import { Chip, Modal } from "@heroui/react";
 import { format, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
 
+import { transitionName } from "@/lib/utils";
+
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 
 import { RatingStars } from "./RatingStars";
@@ -25,8 +27,12 @@ export function TrainingHistoryDialog({
         if (!open) onClose();
       }}
     >
-      <Modal.Container size="lg">
-        <Modal.Dialog className="bg-background sm:max-w-160">
+      <Modal.Container size="lg" className="grow-from-trigger">
+        {/* Shares the tile's name, so the tile grows into this dialog. */}
+        <Modal.Dialog
+          className="bg-background sm:max-w-160"
+          style={transitionName("event", event.id)}
+        >
           <Modal.CloseTrigger aria-label={t(($) => $.dogProfile.close)} />
           <Modal.Header className="flex-col gap-2">
             <Modal.Heading className="text-2xl font-semibold tracking-tight">

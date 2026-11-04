@@ -1,8 +1,8 @@
+import { useEffect, useRef } from "react";
 import { ToggleButton, ToggleButtonGroup } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
 import { type TranslationSelector } from "@/i18n/messages";
-import { cn } from "@/lib/utils";
 
 export const CALENDAR_VIEWS = ["day", "week", "month"] as const;
 export type CalendarView = (typeof CALENDAR_VIEWS)[number];
@@ -16,39 +16,47 @@ const labels = {
 type CalendarViewSwitcherProps = {
   value: CalendarView;
   onChange: (view: CalendarView) => void;
-  /** Stretches the options across the row, as on the mobile layout. */
-  fullWidth?: boolean;
-  className?: string;
 };
 
+// Each view renders its own switcher, so a change mounts a new one and focus
+// has to follow, or keyboard users would drop back to the top of the page.
+let refocus = false;
+
+/** One attached group; stretches across the row on phones, as in Figma. */
 export function CalendarViewSwitcher({
   value,
   onChange,
-  fullWidth,
-  className,
 }: CalendarViewSwitcherProps) {
   const { t } = useTranslation();
+  const selectedRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (refocus) selectedRef.current?.focus();
+    refocus = false;
+  }, []);
 
   return (
     <ToggleButtonGroup
       aria-label={t(($) => $.calendar.views.label)}
       selectionMode="single"
       disallowEmptySelection
-      isDetached
-      fullWidth={fullWidth}
+      size="sm"
       selectedKeys={[value]}
       onSelectionChange={(keys) => {
         const [view] = keys;
-        if (view) onChange(view as CalendarView);
+        if (!view) return;
+        refocus = true;
+        onChange(view as CalendarView);
       }}
-      className={cn("gap-2", className)}
+      className="w-full md:w-auto"
     >
-      {CALENDAR_VIEWS.map((view) => (
+      {CALENDAR_VIEWS.map((view, index) => (
         <ToggleButton
           key={view}
           id={view}
-          className={cn(fullWidth && "flex-1")}
+          className="flex-1 md:flex-none"
+          ref={view === value ? selectedRef : undefined}
         >
+          {index > 0 && <ToggleButtonGroup.Separator />}
           {t(labels[view])}
         </ToggleButton>
       ))}

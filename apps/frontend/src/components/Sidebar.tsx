@@ -13,9 +13,14 @@ import { useTranslation } from "react-i18next";
 
 import { mobileSidebarOpenAtom } from "@/app/atoms/mobileSidebarOpenAtom";
 import { ROUTES } from "@/app/routes";
+import { transitionName } from "@/lib/utils";
 
 import { AddDogButton } from "@/features/dogs/components/AddDogDialog";
 import { SidebarDogs } from "@/features/dogs/components/SidebarDogs";
+
+// The active highlight slides to the newly active link across the route's
+// view transition (only one link is active at a time).
+const activeLink = { style: transitionName("nav-active") };
 
 export function Sidebar() {
   const { t } = useTranslation();
@@ -35,6 +40,7 @@ export function Sidebar() {
           <Link
             to={ROUTES.overview}
             onClick={() => setMobileSidebarOpen(false)}
+            activeProps={activeLink}
             className={buttonVariants({
               variant: "ghost",
               className:
@@ -51,6 +57,7 @@ export function Sidebar() {
           <Link
             to={ROUTES.calendar}
             onClick={() => setMobileSidebarOpen(false)}
+            activeProps={activeLink}
             className={buttonVariants({
               variant: "ghost",
               className:
@@ -67,6 +74,7 @@ export function Sidebar() {
           <Link
             to={ROUTES.disciplines}
             onClick={() => setMobileSidebarOpen(false)}
+            activeProps={activeLink}
             className={buttonVariants({
               variant: "ghost",
               className:

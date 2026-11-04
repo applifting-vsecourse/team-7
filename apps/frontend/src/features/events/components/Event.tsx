@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import type { ScheduledEvent } from "../api/eventsQueryOptions";
 import type { DraggedEvent } from "../lib/calendarDrag";
 import {
@@ -11,7 +11,8 @@ import { Button, Separator } from "@heroui/react";
 import { useDrag } from "react-aria";
 import { useTranslation } from "react-i18next";
 
-import { cn } from "@/lib/utils";
+import { withViewTransition } from "@/lib/motion";
+import { cn, transitionName } from "@/lib/utils";
 
 import { scheduledEventDragType } from "../lib/calendarDrag";
 import { RatingStars } from "./RatingStars";
@@ -65,9 +66,40 @@ export function Event({
   const { t, i18n } = useTranslation();
   const titleId = useId();
   const [isOpen, setIsOpen] = useState(false);
+  // The tile grows into its dialog and shrinks back (view transition). It
+  // carries the shared name only during the morph; a permanent name would
+  // make it fly on every route change and break the calendar's period slide.
+  const tileRef = useRef<HTMLElement>(null);
+  const setTileName = (name: string) => {
+    if (tileRef.current) tileRef.current.style.viewTransitionName = name;
+  };
+  const morphName = transitionName(
+    "event",
+    scheduledEvent?.id ?? "",
+  ).viewTransitionName;
+  const open = () => {
+    setTileName(morphName);
+    void withViewTransition(() => {
+      setTileName("");
+      setIsOpen(true);
+    });
+  };
+  const close = () => {
+    void withViewTransition(() => {
+      setIsOpen(false);
+      setTileName(morphName);
+    }).finally(() => setTileName(""));
+  };
   const isUpcoming = state === "upcoming";
   const isCompleted = state === "completed";
   const StatusIcon = isCompleted ? CircleCheck : CircleExclamation;
+  // Celebrates only a change seen on screen, not tiles that load completed.
+  const [shownState, setShownState] = useState(state);
+  const [justCompleted, setJustCompleted] = useState(false);
+  if (state !== shownState) {
+    setShownState(state);
+    setJustCompleted(state === "completed");
+  }
   // Pointer dragging only; keyboard and touch users move a training from its dialog.
   const { dragProps, isDragging } = useDrag({
     isDisabled: !isDraggable || !scheduledEvent || historyOnly || isCompleted,
@@ -87,12 +119,14 @@ export function Event({
   return (
     <>
       <article
+        ref={tileRef}
         {...dragProps}
         aria-labelledby={historyOnly ? undefined : titleId}
         aria-label={historyOnly ? exercise : undefined}
         className={cn(
-          "relative flex w-full max-w-full min-w-0 cursor-pointer flex-col overflow-clip rounded-2xl py-2 pr-3 pl-4 text-foreground shadow-card transition duration-150 ease-out hover:shadow-card-hover motion-safe:hover:-translate-y-0.5 md:self-stretch",
+          "relative flex w-full max-w-full min-w-0 interactive-lift cursor-pointer flex-col overflow-clip rounded-2xl py-2 pr-3 pl-4 text-foreground shadow-card md:self-stretch",
           backgrounds[state],
+          justCompleted && "animate-celebrate",
           isDragging && "opacity-50",
           className,
         )}
@@ -102,11 +136,14 @@ export function Event({
             variant="ghost"
             className="absolute inset-0 z-10 h-full w-full bg-transparent"
             aria-label={t(($) => $.training.open, { name: exercise })}
-            onPress={() => setIsOpen(true)}
+            onPress={open}
           />
         )}
         <span
-          className={cn("absolute inset-y-0 left-0 w-1", accents[state])}
+          className={cn(
+            "absolute inset-y-0 left-0 w-1 state-colors",
+            accents[state],
+          )}
           aria-hidden="true"
         />
         <p
@@ -151,6 +188,7 @@ export function Event({
               className={cn(
                 "size-3 shrink-0",
                 isCompleted ? "text-success" : "text-warning",
+                justCompleted && "animate-pop",
               )}
               aria-hidden="true"
             />
@@ -197,15 +235,9 @@ export function Event({
       {scheduledEvent &&
         isOpen &&
         (historyOnly ? (
-          <TrainingHistoryDialog
-            event={scheduledEvent}
-            onClose={() => setIsOpen(false)}
-          />
+          <TrainingHistoryDialog event={scheduledEvent} onClose={close} />
         ) : (
-          <ScheduledExerciseDialog
-            event={scheduledEvent}
-            onClose={() => setIsOpen(false)}
-          />
+          <ScheduledExerciseDialog event={scheduledEvent} onClose={close} />
         ))}
     </>
   );

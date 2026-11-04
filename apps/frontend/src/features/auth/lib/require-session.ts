@@ -31,4 +31,5 @@ export async function requireVerifiedSession({
       search: { from: encodeRedirectUri(location) },
     });
   }
+  return { userId: session.user.id };
 }

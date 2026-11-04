@@ -20,6 +20,8 @@ import i18n from "@/i18n";
 import { api } from "@/lib/api-client";
 import { routeTree } from "@/routeTree.gen";
 
+import { disciplineQueryOptions } from "./api/disciplinesQueryOptions";
+
 const state = vi.hoisted(() => ({
   responses: new Map<string, () => unknown>(),
   post: vi.fn<(path: string, options: unknown) => unknown>(),
@@ -128,10 +130,16 @@ const poslusnostDetail: DisciplineDetail = {
   ],
 };
 
-function renderRoute(path: string) {
+function renderRoute(path: string, cached?: DisciplineDetail) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
+  if (cached) {
+    queryClient.setQueryData(
+      disciplineQueryOptions("user-1", cached.id).queryKey,
+      cached,
+    );
+  }
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [path] }),
@@ -508,6 +516,120 @@ describe("disciplines", () => {
     );
     await waitFor(() =>
       expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument(),
+    );
+  });
+
+  const openExerciseAction = async (
+    user: ReturnType<typeof userEvent.setup>,
+    action: "Delete" | "Edit",
+  ) => {
+    await user.click(
+      await screen.findByRole("button", {
+        name: "More actions for exercise Přivolání z 5 metrů",
+      }),
+    );
+    await user.click(await screen.findByRole("menuitem", { name: action }));
+  };
+
+  it("removes a deleted exercise without waiting for the refetch", async () => {
+    const user = userEvent.setup();
+    state.delete.mockImplementation(() => {
+      state.responses.set("disciplines/d1", () => new Promise(() => {}));
+    });
+    renderRoute("/disciplines/d1?lng=en");
+
+    await openExerciseAction(user, "Delete");
+    const dialog = await screen.findByRole("alertdialog");
+    await user.click(within(dialog).getByRole("button", { name: "Delete" }));
+
+    await waitFor(() =>
+      expect(screen.queryByText("Přivolání z 5 metrů")).not.toBeInTheDocument(),
+    );
+    expect(screen.getByText("Spolehlivé přivolání")).toBeInTheDocument();
+  });
+
+  it("keeps the exercise when deleting it fails", async () => {
+    const user = userEvent.setup();
+    state.delete.mockRejectedValue(new Error("offline"));
+    renderRoute("/disciplines/d1?lng=en");
+
+    await openExerciseAction(user, "Delete");
+    const dialog = await screen.findByRole("alertdialog");
+    await user.click(within(dialog).getByRole("button", { name: "Delete" }));
+
+    await waitFor(() => expect(state.delete).toHaveBeenCalled());
+    expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
+    expect(screen.getByText("Přivolání z 5 metrů")).toBeInTheDocument();
+  });
+
+  it("shows an edited exercise without waiting for the refetch", async () => {
+    const user = userEvent.setup();
+    renderRoute("/disciplines/d1?lng=en");
+
+    await openExerciseAction(user, "Edit");
+    const dialog = await screen.findByRole("dialog");
+    state.responses.set("disciplines/d1", () => new Promise(() => {}));
+    const [name] = within(dialog).getAllByRole("textbox");
+    await user.clear(name!);
+    await user.type(name!, "Přivolání z 10 metrů");
+    await user.click(within(dialog).getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("Přivolání z 10 metrů")).toBeInTheDocument();
+  });
+
+  it("doesn't refetch a cached detail when its link is preloaded", async () => {
+    const router = renderRoute("/disciplines?lng=en", poslusnostDetail);
+    await screen.findByRole("link", { name: /Poslušnost/ });
+    vi.mocked(api.get).mockClear();
+
+    await router.preloadRoute({
+      to: "/disciplines/$disciplineId",
+      params: { disciplineId: "d1" },
+    });
+
+    expect(vi.mocked(api.get).mock.calls.map(([path]) => path)).not.toContain(
+      "disciplines/d1",
+    );
+  });
+
+  it("shows a created exercise without waiting for the refetch", async () => {
+    const user = userEvent.setup();
+    state.post.mockResolvedValue({ id: "e2" });
+    renderRoute("/disciplines/d1?lng=en");
+
+    const goal = await screen.findByRole("article", {
+      name: "Spolehlivé přivolání",
+    });
+    await user.click(
+      within(goal).getByRole("button", { name: "Add exercise" }),
+    );
+    const dialog = await screen.findByRole("dialog");
+    state.responses.set("disciplines/d1", () => new Promise(() => {}));
+    const [name] = within(dialog).getAllByRole("textbox");
+    await user.type(name!, "Přivolání z 20 metrů");
+    await user.click(
+      within(dialog).getByRole("button", { name: "Add exercise" }),
+    );
+
+    expect(await screen.findByText("Přivolání z 20 metrů")).toBeInTheDocument();
+  });
+
+  it("opens the detail on a slow connection without waiting for the data", async () => {
+    state.responses.set("disciplines/d1", () => new Promise(() => {}));
+    renderRoute("/disciplines/d1?lng=en");
+
+    expect(
+      await screen.findByRole("link", { name: "Disciplines" }),
+    ).toHaveAttribute("aria-current", "page");
+  });
+
+  it("shows a cached detail at once and revalidates it", async () => {
+    state.responses.set("disciplines/d1", () => new Promise(() => {}));
+    renderRoute("/disciplines/d1?lng=en", poslusnostDetail);
+
+    expect(await screen.findByText("Spolehlivé přivolání")).toBeInTheDocument();
+    expect(vi.mocked(api.get).mock.calls.map(([path]) => path)).toContain(
+      "disciplines/d1",
     );
   });
 

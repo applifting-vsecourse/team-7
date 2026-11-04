@@ -5,7 +5,9 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
+import { PresenceItem, PresenceList } from "@/components/PresenceList";
 import { pluralForm } from "@/lib/plural";
+import { transitionName } from "@/lib/utils";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 
@@ -91,7 +93,12 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
             id="discipline-heading"
             className="text-3xl leading-9 font-semibold tracking-tight wrap-break-word"
           >
-            {discipline.name}
+            <span
+              className="inline-block"
+              style={transitionName("discipline", discipline.id)}
+            >
+              {discipline.name}
+            </span>
           </h1>
           {discipline.description ? (
             <p className="text-base leading-7 wrap-break-word">
@@ -161,21 +168,22 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
               </p>
             ) : null}
           </div>
-          {discipline.goals.length === 0 ? (
-            <EmptyState
-              icon={Flag}
-              title={t(($) => $.disciplines.goalsEmptyTitle)}
-              description={t(($) => $.disciplines.goalsEmptyDescription)}
-            />
-          ) : (
-            <ul className="flex flex-col gap-6">
-              {discipline.goals.map((goal) => (
-                <li key={goal.id}>
-                  <GoalCard discipline={discipline} goal={goal} />
-                </li>
-              ))}
-            </ul>
-          )}
+          <PresenceList
+            empty={
+              <EmptyState
+                icon={Flag}
+                title={t(($) => $.disciplines.goalsEmptyTitle)}
+                description={t(($) => $.disciplines.goalsEmptyDescription)}
+              />
+            }
+            className="flex flex-col gap-6"
+          >
+            {discipline.goals.map((goal) => (
+              <PresenceItem key={goal.id}>
+                <GoalCard discipline={discipline} goal={goal} />
+              </PresenceItem>
+            ))}
+          </PresenceList>
         </section>
         <Separator orientation="vertical" className="hidden lg:block" />
         <div className="lg:w-64 lg:shrink-0 xl:w-80">

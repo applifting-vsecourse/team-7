@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { type ReactNode, useId } from "react";
 import { Calendar } from "@heroui/react";
 import {
   type CalendarDate,
@@ -11,7 +11,6 @@ import {
   addDays,
   eachDayOfInterval,
   endOfMonth,
-  endOfWeek,
   format,
   isSameDay,
   isSameMonth,
@@ -21,24 +20,35 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
+import { PresenceItem, PresenceList } from "@/components/PresenceList";
 import { pluralForm } from "@/lib/plural";
 import { capitalizeFirst, cn } from "@/lib/utils";
 
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 
 import { useCalendarEvents } from "../hooks/useCalendarEvents";
+import { CalendarHeading } from "./CalendarHeading";
 import { CalendarNavigation } from "./CalendarNavigation";
 import { Event } from "./Event";
+import { SwipePager } from "./SwipePager";
 
 type MonthlyCalendarProps = {
   /** The selected day; its month is the one shown. */
   date: Date;
   today: Date;
   onDateChange: (date: Date) => void;
+  /** The day / week / month switcher shown in the heading. */
+  viewSwitcher: ReactNode;
 };
 
 const toIsoDate = (date: Date) => format(date, "yyyy-MM-dd");
 const toCalendarDate = (date: Date) => parseDate(toIsoDate(date));
+// Whole weeks covering the month: Monday before the 1st to the Monday after
+// the last day (exclusive).
+const gridRange = (month: Date): [Date, Date] => [
+  startOfWeek(month, { weekStartsOn: 1 }),
+  addDays(startOfWeek(endOfMonth(month), { weekStartsOn: 1 }), 7),
+];
 const fromCalendarDate = (date: CalendarDate) =>
   date.toDate(getLocalTimeZone());
 
@@ -46,19 +56,21 @@ export function MonthlyCalendar({
   date,
   today,
   onDateChange,
+  viewSwitcher,
 }: MonthlyCalendarProps) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
   const locale = i18n.resolvedLanguage ?? "cs";
   const monthStart = startOfMonth(date);
+  const [gridStart, gridEnd] = gridRange(monthStart);
   const days = eachDayOfInterval({
-    start: startOfWeek(monthStart, { weekStartsOn: 1 }),
-    end: endOfWeek(endOfMonth(monthStart), { weekStartsOn: 1 }),
+    start: gridStart,
+    end: addDays(gridEnd, -1),
   });
-  const { query, eventsOf } = useCalendarEvents(
-    days[0]!,
-    addDays(days[days.length - 1]!, 1),
-  );
+  const { query, eventsOf } = useCalendarEvents(gridStart, gridEnd, [
+    gridRange(addMonths(monthStart, -1)),
+    gridRange(addMonths(monthStart, 1)),
+  ]);
   const selectedEvents = eventsOf(date);
   const exerciseCount = (count: number) =>
     t(($) => $.calendar.exerciseCount[pluralForm(count)], { count });
@@ -80,26 +92,32 @@ export function MonthlyCalendar({
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
+      <CalendarHeading
+        title={
+          <h2
+            id={headingId}
+            aria-live="polite"
+            className="text-xl leading-7 font-semibold tracking-tight"
+          >
+            {monthLabel}
+          </h2>
+        }
+        viewSwitcher={viewSwitcher}
+        navigation={
+          <CalendarNavigation
+            label={t(($) => $.calendar.monthlyOverview)}
+            previousLabel={t(($) => $.calendar.previousMonth)}
+            nextLabel={t(($) => $.calendar.nextMonth)}
+            currentLabel={t(($) => $.calendar.thisMonth)}
+            isCurrent={isSameMonth(date, today)}
+            onPrevious={() => onDateChange(addMonths(date, -1))}
+            onNext={() => onDateChange(addMonths(date, 1))}
+            onCurrent={() => onDateChange(today)}
+          />
+        }
+      />
+      {/* Below the heading, so the controls stay put while a view loads. */}
       <QueryFeedback query={query} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2
-          id={headingId}
-          aria-live="polite"
-          className="text-xl leading-7 font-semibold tracking-tight"
-        >
-          {monthLabel}
-        </h2>
-        <CalendarNavigation
-          label={t(($) => $.calendar.monthlyOverview)}
-          previousLabel={t(($) => $.calendar.previousMonth)}
-          nextLabel={t(($) => $.calendar.nextMonth)}
-          currentLabel={t(($) => $.calendar.thisMonth)}
-          isCurrent={isSameMonth(date, today)}
-          onPrevious={() => onDateChange(addMonths(date, -1))}
-          onNext={() => onDateChange(addMonths(date, 1))}
-          onCurrent={() => onDateChange(today)}
-        />
-      </div>
 
       {/* Wide screens: every day is a tile summarising its exercises and
           opening the day view. */}
@@ -114,7 +132,10 @@ export function MonthlyCalendar({
             </span>
           ))}
         </div>
-        <ol aria-labelledby={headingId} className="grid grid-cols-7 gap-3">
+        <ol
+          aria-labelledby={headingId}
+          className="grid grid-cols-7 gap-3 period-transition"
+        >
           {days.map((day) => {
             const dayEvents = eventsOf(day);
             const isToday = isSameDay(day, today);
@@ -161,7 +182,12 @@ export function MonthlyCalendar({
 
       {/* Narrow screens: a compact month picker marks days with exercises and
           lists the selected day below it. */}
-      <div className="flex flex-col gap-6 lg:hidden">
+      {/* Hidden on wide screens, so its period name never clashes with the grid's. */}
+      <SwipePager
+        onPrevious={() => onDateChange(addMonths(date, -1))}
+        onNext={() => onDateChange(addMonths(date, 1))}
+        className="flex flex-col gap-6 period-transition lg:hidden"
+      >
         <Calendar
           aria-labelledby={headingId}
           firstDayOfWeek="mon"
@@ -202,19 +228,23 @@ export function MonthlyCalendar({
             {shortDateFormatter.format(date)} ·{" "}
             {exerciseCount(selectedEvents.length)}
           </h3>
-          {selectedEvents.length === 0 ? (
-            <p className="text-sm text-muted">{t(($) => $.calendar.empty)}</p>
-          ) : (
-            <ul className="flex flex-col gap-3">
-              {selectedEvents.map((event) => (
-                <li key={event.id}>
-                  <Event {...event} headingLevel="h4" />
-                </li>
-              ))}
-            </ul>
-          )}
+          <PresenceList
+            empty={
+              <p className="animate-enter text-sm text-muted">
+                {t(($) => $.calendar.empty)}
+              </p>
+            }
+            key={toIsoDate(date)}
+            className="flex stagger flex-col gap-3"
+          >
+            {selectedEvents.map((event) => (
+              <PresenceItem key={event.id}>
+                <Event {...event} headingLevel="h4" />
+              </PresenceItem>
+            ))}
+          </PresenceList>
         </section>
-      </div>
+      </SwipePager>
     </div>
   );
 }

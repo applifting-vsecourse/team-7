@@ -1,33 +1,40 @@
-import { useId } from "react";
+import { type ReactNode, useId } from "react";
 import { addDays, startOfDay, format, isSameDay } from "date-fns";
 import { useTranslation } from "react-i18next";
 
+import { PresenceItem, PresenceList } from "@/components/PresenceList";
 import { pluralForm } from "@/lib/plural";
 import { capitalizeFirst } from "@/lib/utils";
 
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 
 import { useCalendarEvents } from "../hooks/useCalendarEvents";
+import { CalendarHeading } from "./CalendarHeading";
 import { CalendarNavigation } from "./CalendarNavigation";
 import { Event } from "./Event";
+import { SwipePager } from "./SwipePager";
 
 type DailyCalendarProps = {
   date: Date;
   today: Date;
   onDateChange: (date: Date) => void;
+  /** The day / week / month switcher shown in the heading. */
+  viewSwitcher: ReactNode;
 };
 
 export function DailyCalendar({
   date,
   today,
   onDateChange,
+  viewSwitcher,
 }: DailyCalendarProps) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
-  const { query, eventsOf } = useCalendarEvents(
-    startOfDay(date),
-    addDays(startOfDay(date), 1),
-  );
+  const day = startOfDay(date);
+  const { query, eventsOf } = useCalendarEvents(day, addDays(day, 1), [
+    [addDays(day, -1), day],
+    [addDays(day, 1), addDays(day, 2)],
+  ]);
   const locale = i18n.resolvedLanguage ?? "cs";
   const events = eventsOf(date);
   const dateLabel = new Intl.DateTimeFormat(locale, {
@@ -40,43 +47,62 @@ export function DailyCalendar({
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <QueryFeedback query={query} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div
-          aria-live="polite"
-          aria-atomic="true"
-          className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
-        >
-          <h2
-            id={headingId}
-            className="text-xl leading-7 font-semibold tracking-tight"
+      <CalendarHeading
+        title={
+          <div
+            aria-live="polite"
+            aria-atomic="true"
+            className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
           >
-            <time dateTime={format(date, "yyyy-MM-dd")}>{dateLabel}</time>
-          </h2>
-          <p className="text-base leading-7 font-medium text-muted">
-            {weekday} ·{" "}
-            {t(($) => $.calendar.exerciseCount[pluralForm(events.length)], {
-              count: events.length,
-            })}
-          </p>
-        </div>
-        <CalendarNavigation
-          label={t(($) => $.calendar.dailyOverview)}
-          previousLabel={t(($) => $.calendar.previousDay)}
-          nextLabel={t(($) => $.calendar.nextDay)}
-          currentLabel={t(($) => $.calendar.today)}
-          isCurrent={isSameDay(date, today)}
-          onPrevious={() => onDateChange(addDays(date, -1))}
-          onNext={() => onDateChange(addDays(date, 1))}
-          onCurrent={() => onDateChange(today)}
-        />
-      </div>
-      {events.length === 0 ? (
-        <p className="text-sm text-muted">{t(($) => $.calendar.empty)}</p>
-      ) : (
-        <ol aria-labelledby={headingId} className="flex flex-col gap-3">
+            <h2
+              id={headingId}
+              className="text-xl leading-7 font-semibold tracking-tight"
+            >
+              <time dateTime={format(date, "yyyy-MM-dd")}>{dateLabel}</time>
+            </h2>
+            <p className="text-base leading-7 font-medium text-muted">
+              {weekday} ·{" "}
+              {t(($) => $.calendar.exerciseCount[pluralForm(events.length)], {
+                count: events.length,
+              })}
+            </p>
+          </div>
+        }
+        viewSwitcher={viewSwitcher}
+        navigation={
+          <CalendarNavigation
+            label={t(($) => $.calendar.dailyOverview)}
+            previousLabel={t(($) => $.calendar.previousDay)}
+            nextLabel={t(($) => $.calendar.nextDay)}
+            currentLabel={t(($) => $.calendar.today)}
+            isCurrent={isSameDay(date, today)}
+            onPrevious={() => onDateChange(addDays(date, -1))}
+            onNext={() => onDateChange(addDays(date, 1))}
+            onCurrent={() => onDateChange(today)}
+          />
+        }
+      />
+      {/* Below the heading, so the controls stay put while a view loads. */}
+      <QueryFeedback query={query} />
+      {/* min-h keeps an empty day swipeable on touch screens. */}
+      <SwipePager
+        onPrevious={() => onDateChange(addDays(date, -1))}
+        onNext={() => onDateChange(addDays(date, 1))}
+        className="min-h-40 period-transition md:min-h-0"
+      >
+        <PresenceList
+          empty={
+            <p className="animate-enter text-sm text-muted">
+              {t(($) => $.calendar.empty)}
+            </p>
+          }
+          as="ol"
+          key={format(date, "yyyy-MM-dd")}
+          aria-labelledby={headingId}
+          className="flex stagger flex-col gap-3"
+        >
           {events.map((event) => (
-            <li key={event.id} className="flex items-start gap-3">
+            <PresenceItem key={event.id} className="flex items-start gap-3">
               {/* The tile repeats the time; the column only aids scanning on wider screens. */}
               <span
                 aria-hidden="true"
@@ -85,10 +111,10 @@ export function DailyCalendar({
                 {event.time}
               </span>
               <Event {...event} className="flex-1" />
-            </li>
+            </PresenceItem>
           ))}
-        </ol>
-      )}
+        </PresenceList>
+      </SwipePager>
     </div>
   );
 }

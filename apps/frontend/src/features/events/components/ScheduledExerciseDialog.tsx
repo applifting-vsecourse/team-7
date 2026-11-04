@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type CSSProperties, useState } from "react";
 import type { ScheduledEvent } from "../api/eventsQueryOptions";
 import type { ScheduleValues } from "../schemas/scheduleSchema";
 import {
@@ -32,6 +32,7 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { translateMessage } from "@/i18n/messages";
+import { transitionName } from "@/lib/utils";
 
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 
@@ -75,6 +76,13 @@ export function ScheduledExerciseDialog({
     },
   });
   const rating = useWatch({ control: result.control, name: "rating" });
+  // Stars that change animate one after another, counted from the previous rating.
+  const [shownRating, setShownRating] = useState(rating);
+  const [fillFrom, setFillFrom] = useState(0);
+  if (rating !== shownRating) {
+    setFillFrom(shownRating);
+    setShownRating(rating);
+  }
   const displayDate = parseISO(event.completedAt ?? event.startsAt);
   const when = t(($) => $.training.when, {
     date: new Intl.DateTimeFormat(i18n.resolvedLanguage ?? "cs", {
@@ -94,8 +102,12 @@ export function ScheduledExerciseDialog({
         if (!open && !action.isPending) onClose();
       }}
     >
-      <Modal.Container size="lg" scroll="outside">
-        <Modal.Dialog className="bg-background sm:max-w-160">
+      <Modal.Container size="lg" scroll="outside" className="grow-from-trigger">
+        {/* Shares the tile's name, so the tile grows into this dialog. */}
+        <Modal.Dialog
+          className="bg-background sm:max-w-160"
+          style={transitionName("event", event.id)}
+        >
           <Modal.CloseTrigger
             isDisabled={action.isPending}
             aria-label={t(($) => $.training.cancel)}
@@ -269,11 +281,25 @@ export function ScheduledExerciseDialog({
                                   <Radio.Control className="sr-only">
                                     <Radio.Indicator />
                                   </Radio.Control>
+                                  {/* Switching Star ↔ StarFill remounts the
+                                      icon, so only stars that just changed
+                                      animate: filled ones pop left to right,
+                                      emptied ones deflate right to left. */}
                                   <Icon
                                     className={
                                       value <= field.value
-                                        ? "size-6 text-warning"
-                                        : "size-6 text-muted"
+                                        ? "size-6 animate-pop text-warning stagger-delay"
+                                        : value <= fillFrom
+                                          ? "size-6 animate-unpop text-muted stagger-delay"
+                                          : "size-6 text-muted"
+                                    }
+                                    style={
+                                      {
+                                        "--i":
+                                          value <= field.value
+                                            ? Math.max(0, value - fillFrom - 1)
+                                            : fillFrom - value,
+                                      } as CSSProperties
                                     }
                                     aria-hidden="true"
                                   />

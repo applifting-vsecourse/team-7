@@ -1,6 +1,11 @@
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
 
+import {
+  PresenceItem,
+  PresenceList,
+  PresenceSection,
+} from "@/components/PresenceList";
 import { cn } from "@/lib/utils";
 
 import { Event, type EventProps } from "./Event";
@@ -20,9 +25,10 @@ export function Calendar({ variant, events }: CalendarProps) {
   }[variant];
 
   return (
-    <section
+    // Content above it (the weekly stats) changes height.
+    <PresenceSection
       aria-labelledby={headingId}
-      className="flex w-full max-w-full min-w-0 flex-col gap-4 md:w-calendar-cell"
+      className="flex w-full max-w-full min-w-0 flex-col gap-4 md:w-calendar-cell md:flex-none"
     >
       <h2
         id={headingId}
@@ -39,17 +45,20 @@ export function Calendar({ variant, events }: CalendarProps) {
           />
         )}
       </h2>
-      {events.length === 0 ? (
-        <p className="text-sm text-muted">{t(($) => $.calendar.empty)}</p>
-      ) : (
-        <ul className="flex flex-col gap-3">
-          {events.map(({ id, ...event }) => (
-            <li key={id}>
-              <Event {...event} />
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
+      <PresenceList
+        empty={
+          <p className="animate-enter text-sm text-muted">
+            {t(($) => $.calendar.empty)}
+          </p>
+        }
+        className="flex stagger flex-col gap-3"
+      >
+        {events.map(({ id, ...event }) => (
+          <PresenceItem key={id}>
+            <Event {...event} />
+          </PresenceItem>
+        ))}
+      </PresenceList>
+    </PresenceSection>
   );
 }

@@ -57,6 +57,7 @@ export default function Layout({
           </div>
         )}
         <main
+          data-page-scroller={sidebar ? true : undefined}
           className={cn(
             "flex min-w-0 flex-1",
             sidebar
