@@ -49,16 +49,16 @@ importers:
         specifier: 5.0.5
         version: 5.0.5(vitest@5.0.5)
       dotenv-flow:
-        specifier: ^4.1.0
+        specifier: 4.1.0
         version: 4.1.0
       husky:
-        specifier: ^9.1.7
+        specifier: 9.1.7
         version: 9.1.7
       lint-staged:
-        specifier: ^17.6.0
+        specifier: 17.6.0
         version: 17.6.0
       npm-run-all:
-        specifier: ^4.1.5
+        specifier: 4.1.5
         version: 4.1.5
       oxfmt:
         specifier: 0.75.0
@@ -251,7 +251,7 @@ importers:
         specifier: catalog:react19
         version: 19.2.8
       react-aria:
-        specifier: ^3.53.1
+        specifier: 3.53.1
         version: 3.53.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react-dom:
         specifier: catalog:react19
