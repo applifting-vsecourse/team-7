@@ -120,6 +120,8 @@ from Vitest. `pnpm check` also lints and type-checks them.
 CI runs these tests **after both builds**, using a fresh Postgres service,
 migrations and seed data. Playwright starts the built backend and frontend
 preview server in CI; local runs keep using your existing servers. The
+CI browser requests reduced motion, which disables the app's animations.
+The
 `playwright-results` workflow artifact contains the HTML report, plus traces
 and screenshots for failures, retained for 14 days. These generated files are
 gitignored. Browser tests are separate from `pnpm check-all` because they need

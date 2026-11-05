@@ -17,6 +17,7 @@ export default defineConfig({
   outputDir: `${root}/test-results`,
   use: {
     baseURL: "http://localhost:3050",
+    reducedMotion: "reduce",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
