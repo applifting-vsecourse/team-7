@@ -355,6 +355,13 @@
     @apply text-foreground;
   }
 
+  /* Scaling the full-height container during entry can temporarily overflow
+     the backdrop. Keep its scrollbar space stable when the animation ends;
+     matching gutters on both sides keep the dialog centred in the viewport. */
+  .modal__backdrop:has(.modal__container--scroll-outside) {
+    scrollbar-gutter: stable both-edges;
+  }
+
   /* The kit puts the pointer cursor on the checkbox wrapper, which stretches
      across the row in column layouts, but only the box and label toggle.
      Hug the content so the pointer only shows where a click does something. */
