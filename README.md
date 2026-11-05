@@ -112,10 +112,18 @@ account created by the development seed (`caffeinatedduck@example.com` /
 `password1`). If your local database uses another verified account, set
 `E2E_USER_EMAIL` and `E2E_USER_PASSWORD` when running the command.
 
-Playwright covers Czech sign-in validation, protected-route redirects, and a
-real sign-in → overview → calendar → reload → sign-out flow. It reads training
-data without changing it. Specs live in `apps/frontend/e2e/` and run separately
-from Vitest. `pnpm check` also lints and type-checks them.
+Playwright covers Czech sign-in validation, invalid credentials, protected-route
+redirects, session persistence and sign-out, adding a dog without a photo, and
+creating a discipline with a goal and exercise. A complete training flow assigns
+the exercise to the dog, schedules it in the calendar, records a rating and note,
+and verifies the result after reloading. Each creation test uses unique names
+and deletes its own dog and discipline through the API during teardown, including
+their goals, exercises, assignments and calendar entries.
+
+Specs live in `apps/frontend/e2e/`; page objects and all element locators live
+in `apps/frontend/e2e/pom/`. Shared fixtures provide page objects, credentials,
+and test-data cleanup. Tests run separately from Vitest. `pnpm check` also lints
+and type-checks them.
 
 CI runs these tests **after both builds**, using a fresh Postgres service,
 migrations and seed data. Playwright starts the built backend and frontend
