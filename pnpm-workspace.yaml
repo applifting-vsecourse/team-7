@@ -4,9 +4,9 @@ packages:
 catalogs:
   default:
     "@types/node": 24.13.3
-    react-hook-form: ^7.85.0
+    react-hook-form: 7.91.0
     typescript: ^6
-    zod: ^4.4.3
+    zod: 4.6.7
     vite: 8.3.5
   react19:
     "@types/react": ^19.2.18
