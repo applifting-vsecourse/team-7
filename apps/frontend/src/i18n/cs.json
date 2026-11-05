@@ -498,6 +498,8 @@
     "chartPoint": "{{date}}: {{rating}} z 5 hvězd"
   },
   "training": {
+    "disciplineLabel": "Disciplína",
+    "goalLabel": "Cíl",
     "open": "Otevřít trénink: {{name}}",
     "menu": "Akce tréninku",
     "rating": "Hodnocení",
@@ -527,7 +529,6 @@
     "noteTooLong": "Poznámka může obsahovat nejvýše 1000 znaků.",
     "futureDate": "Vyberte dnešek nebo pozdější datum.",
     "duplicateDay": "Tento pes má v ten den stejné cvičení už naplánované.",
-    "when": "{{date}} · {{time}} · {{duration}} min",
     "noProcedure": "K tomuto cvičení zatím nebyl přidán postup."
   }
 }

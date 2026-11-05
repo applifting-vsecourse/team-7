@@ -34,8 +34,6 @@ import { useTranslation } from "react-i18next";
 import { translateMessage } from "@/i18n/messages";
 import { transitionName } from "@/lib/utils";
 
-import { DogAvatar } from "@/features/dogs/components/DogAvatar";
-
 import { useEventAction } from "../hooks/useEventAction";
 import { isDuplicateDayError } from "../hooks/useMoveEvent";
 import {
@@ -44,6 +42,7 @@ import {
 } from "../schemas/eventResultSchema";
 import { futureScheduleSchema } from "../schemas/scheduleSchema";
 import { ScheduleFields } from "./ScheduleFields";
+import { TrainingMeta } from "./TrainingMeta";
 
 export function ScheduledExerciseDialog({
   event,
@@ -52,7 +51,7 @@ export function ScheduledExerciseDialog({
   event: ScheduledEvent;
   onClose: () => void;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [today] = useState(() => new Date());
   const [mode, setMode] = useState<"result" | "schedule">("result");
   const action = useEventAction(event.id, onClose);
@@ -83,16 +82,6 @@ export function ScheduledExerciseDialog({
     setFillFrom(shownRating);
     setShownRating(rating);
   }
-  const displayDate = parseISO(event.completedAt ?? event.startsAt);
-  const when = t(($) => $.training.when, {
-    date: new Intl.DateTimeFormat(i18n.resolvedLanguage ?? "cs", {
-      weekday: "short",
-      day: "numeric",
-      month: "numeric",
-    }).format(displayDate),
-    time: format(displayDate, "HH:mm"),
-    duration: event.durationMinutes,
-  });
   return (
     <Modal.Backdrop
       isOpen
@@ -119,9 +108,13 @@ export function ScheduledExerciseDialog({
               </Modal.Heading>
               {mode === "result" && (completed || overdue) && (
                 <div className="flex flex-wrap items-center gap-2">
-                  <Chip color={completed ? "success" : "warning"} size="sm">
+                  <Chip
+                    color={completed ? "success" : "warning"}
+                    variant="soft"
+                    size="lg"
+                  >
                     {completed && (
-                      <CircleCheck className="size-3" aria-hidden="true" />
+                      <CircleCheck className="size-3.5" aria-hidden="true" />
                     )}
                     <Chip.Label>
                       {completed
@@ -151,15 +144,14 @@ export function ScheduledExerciseDialog({
             {mode === "result" && (
               <Dropdown>
                 <Button
-                  variant="secondary"
+                  variant="tertiary"
                   isIconOnly
-                  size="sm"
                   isDisabled={action.isPending}
                   aria-label={t(($) => $.training.menu)}
                 >
                   <EllipsisVertical className="size-4" aria-hidden="true" />
                 </Button>
-                <Dropdown.Popover>
+                <Dropdown.Popover placement="bottom end">
                   <Dropdown.Menu
                     onAction={(key) => {
                       if (key === "schedule") {
@@ -230,17 +222,7 @@ export function ScheduledExerciseDialog({
             }}
           >
             <Modal.Body className="flex flex-col gap-5">
-              <div className="flex flex-col gap-1">
-                <p className="text-base font-medium">{when}</p>
-                <p className="text-sm text-muted">
-                  {event.exercise.goal.discipline.name} ·{" "}
-                  {event.exercise.goal.name}
-                </p>
-              </div>
-              <div className="flex w-fit min-w-48 items-center gap-3 rounded-3xl bg-default px-3 py-1.5">
-                <DogAvatar dog={event.dog} />
-                <span className="text-sm font-medium">{event.dog.name}</span>
-              </div>
+              <TrainingMeta event={event} />
               {mode === "schedule" ? (
                 <ScheduleFields
                   control={schedule.control}
@@ -263,7 +245,9 @@ export function ScheduledExerciseDialog({
                         onChange={(value) => field.onChange(Number(value))}
                         onBlur={field.onBlur}
                         orientation="horizontal"
-                        className="gap-2"
+                        // Label above the stars, as in Figma; the horizontal
+                        // orientation still drives arrow-key navigation.
+                        className="flex-col gap-2"
                       >
                         <Label>{t(($) => $.training.rating)}</Label>
                         <div className="flex gap-1">
@@ -350,11 +334,11 @@ export function ScheduledExerciseDialog({
                 </p>
               )}
             </Modal.Body>
-            <Modal.Footer className="flex-col-reverse sm:flex-row">
+            <Modal.Footer className="flex-wrap">
               <Button
                 type="button"
                 variant="secondary"
-                className="w-full sm:w-auto"
+                className="flex-auto sm:flex-none"
                 isDisabled={action.isPending}
                 onPress={() => {
                   if (mode === "result") onClose();
@@ -370,7 +354,7 @@ export function ScheduledExerciseDialog({
               </Button>
               <Button
                 type="submit"
-                className="w-full sm:w-auto"
+                className="flex-auto sm:flex-none"
                 isPending={action.isPending}
                 isDisabled={action.isPending || (mode === "result" && !rating)}
               >
