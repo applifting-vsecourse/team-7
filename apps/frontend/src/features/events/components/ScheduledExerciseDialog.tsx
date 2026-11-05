@@ -1,9 +1,17 @@
-import { type CSSProperties, useState } from "react";
+import {
+  type CSSProperties,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import type { ScheduledEvent } from "../api/eventsQueryOptions";
 import type { ScheduleValues } from "../schemas/scheduleSchema";
 import {
   Calendar,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   CircleCheck,
   EllipsisVertical,
   Circle,
@@ -32,7 +40,7 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { translateMessage } from "@/i18n/messages";
-import { transitionName } from "@/lib/utils";
+import { cn, transitionName } from "@/lib/utils";
 
 import { useEventAction } from "../hooks/useEventAction";
 import { isDuplicateDayError } from "../hooks/useMoveEvent";
@@ -232,6 +240,9 @@ export function ScheduledExerciseDialog({
                 />
               ) : (
                 <>
+                  {event.exercise.procedure?.trim() && (
+                    <ExerciseProcedure text={event.exercise.procedure} />
+                  )}
                   <Controller
                     control={result.control}
                     name="rating"
@@ -369,5 +380,68 @@ export function ScheduledExerciseDialog({
         </Modal.Dialog>
       </Modal.Container>
     </Modal.Backdrop>
+  );
+}
+
+/**
+ * The exercise's free-text procedure, kept as written (line breaks included).
+ * A long one starts clamped to a few lines with a toggle to read it all; the
+ * toggle only appears when the text actually overflows the clamp.
+ */
+function ExerciseProcedure({ text }: { text: string }) {
+  const { t } = useTranslation();
+  const headingId = useId();
+  const textId = useId();
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+
+  useLayoutEffect(() => {
+    const element = textRef.current;
+    // Measured only while clamped; expanding keeps the toggle in place.
+    if (!element || isExpanded) return;
+    const measure = () =>
+      setOverflows(element.scrollHeight > element.clientHeight);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [isExpanded, text]);
+
+  return (
+    <section aria-labelledby={headingId} className="flex flex-col gap-2">
+      <h3 id={headingId} className="text-sm font-medium">
+        {t(($) => $.training.procedure)}
+      </h3>
+      <p
+        ref={textRef}
+        id={textId}
+        className={cn(
+          "text-sm leading-6 whitespace-pre-wrap",
+          !isExpanded && "line-clamp-4",
+        )}
+      >
+        {text.trim()}
+      </p>
+      {overflows && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="self-start"
+          aria-expanded={isExpanded}
+          aria-controls={textId}
+          onPress={() => setIsExpanded((expanded) => !expanded)}
+        >
+          {isExpanded
+            ? t(($) => $.training.showLess)
+            : t(($) => $.training.showFullProcedure)}
+          {isExpanded ? (
+            <ChevronUp className="size-4" aria-hidden="true" />
+          ) : (
+            <ChevronDown className="size-4" aria-hidden="true" />
+          )}
+        </Button>
+      )}
+    </section>
   );
 }

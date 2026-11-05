@@ -542,7 +542,10 @@
     "noteTooLong": "The note can contain up to 1000 characters.",
     "futureDate": "Choose today or a future date.",
     "duplicateDay": "This dog already has this exercise planned for that day.",
-    "noProcedure": "No instructions have been added to this exercise."
+    "noProcedure": "No instructions have been added to this exercise.",
+    "procedure": "Exercise description",
+    "showFullProcedure": "Show full description",
+    "showLess": "Show less"
   },
   "status": {
     "paused": "Paused",
