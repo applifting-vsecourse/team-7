@@ -1,12 +1,6 @@
 import { useId } from "react";
-import {
-  Calendar,
-  ChartLine,
-  Circle,
-  LayoutList,
-  Rectangles4,
-} from "@gravity-ui/icons";
-import { Button, buttonVariants, Separator } from "@heroui/react";
+import { Calendar, ChartLine, Circle, Rectangles4 } from "@gravity-ui/icons";
+import { buttonVariants, Separator } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 import { useTranslation } from "react-i18next";
@@ -88,14 +82,6 @@ export function Sidebar() {
               aria-hidden="true"
             />
           </Link>
-          <Button
-            variant="ghost"
-            isDisabled
-            className="h-9 justify-start gap-2 rounded-3xl px-4 opacity-100 md:opacity-50"
-          >
-            <LayoutList className="size-4 shrink-0" aria-hidden="true" />
-            {t(($) => $.navigation.plans)}
-          </Button>
         </nav>
         <section aria-labelledby={headingId} className="flex flex-col gap-6">
           <div className="flex items-center gap-3">

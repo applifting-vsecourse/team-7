@@ -222,6 +222,8 @@ describe("overview routing", () => {
       "href",
       "/calendar",
     );
+    // Plans are out of the MVP, so the navigation must not offer them.
+    expect(screen.queryByText("Plans")).not.toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "My dogs" }),
     ).toBeInTheDocument();
@@ -373,12 +375,12 @@ describe("overview routing", () => {
     ).not.toBeInTheDocument();
     expect(trigger).toHaveAttribute("aria-expanded", "false");
     await user.click(trigger);
-    expect(
-      screen.getByRole("dialog", { name: "Main navigation" }),
-    ).toBeInTheDocument();
+    const drawer = screen.getByRole("dialog", { name: "Main navigation" });
+    expect(drawer).toBeInTheDocument();
     expect(
       (await screen.findAllByText("Test User's dog")).length,
     ).toBeGreaterThan(0);
+    expect(within(drawer).queryByText("Plans")).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Close menu" }));
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
