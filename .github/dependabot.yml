@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: sunday
+      time: "01:00"
+      timezone: Europe/Prague
+    groups:
+      minor-and-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    ignore:
+      # Keep Prisma 7 updates enabled; remove these rules when ready for Prisma 8.
+      - dependency-name: prisma
+        versions: [">=8.0.0-0 <9.0.0-0"]
+      - dependency-name: "@prisma/*"
+        versions: [">=8.0.0-0 <9.0.0-0"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: sunday
+      time: "01:00"
+      timezone: Europe/Prague
+    groups:
+      actions:
+        patterns: ["*"]
