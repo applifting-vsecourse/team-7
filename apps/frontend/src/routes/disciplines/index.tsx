@@ -45,7 +45,6 @@ function DisciplinesPage() {
             </p>
           </div>
           <Button
-            size="lg"
             className="w-full shrink-0 md:w-auto"
             onPress={() => setIsCreating(true)}
           >

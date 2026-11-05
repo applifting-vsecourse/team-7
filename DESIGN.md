@@ -11,7 +11,7 @@ Controls come directly from `@heroui/react` (HeroUI v3). Use its accessible comp
 ## Colour
 
 - **Never hardcode a colour.** No `#hex`, no `bg-blue-500`, no `rgb()`. Use semantic classes: `bg-background`, `text-foreground`, `text-muted`, `bg-surface`, `bg-accent`, `bg-default`, `border-border`, `text-danger`, or a token defined in `global.css`.
-- **One primary button per view.** Everything else is `outline`, `ghost`, `secondary` or a plain link.
+- **One primary button per view.** Everything else uses a non-primary variant (`secondary`, `tertiary`, `outline`, `ghost`) or is a plain link; pick the one Figma shows.
 - **`danger` only for destructive actions and errors.** Never for emphasis.
 - Body text is `foreground`; supporting text is `muted`. There is no third level.
 - Never rely on colour alone to convey state (success, warning, error) — pair it with text or an icon.
@@ -55,6 +55,13 @@ Use the Tailwind scale; no arbitrary values like `p-[13px]` unless a size token 
 
 - **Every dialog surface is `bg-background`**, including delete confirmations. The kit's default dialog surface matches the input colour, so fields would disappear into it.
 - **Dialog titles use the Heading 3 style** (`text-2xl font-semibold tracking-tight`). Delete confirmations are the exception and keep the kit's default title.
+- **Dialogs scroll as a whole on small screens**: `Modal.Container scroll="outside"`. With the phone keyboard open, a fixed header and footer leave almost no room for a scrolling body.
+- **Footer buttons share a row on phones**: `Modal.Footer className="flex-wrap"`, buttons `flex-auto sm:flex-none`. They wrap onto separate lines only when the labels don't fit side by side.
+- **Dialog body text is `foreground`.** `global.css` resets the kit's muted `.modal__body` / `.drawer__body`, so don't add `text-foreground` inside dialogs; add `text-muted` only to supporting text (step labels, metadata, empty states).
+
+## Alerts
+
+- **A one-line info, warning or success message uses `Alert.Title`, not `Alert.Description`.** The title takes the status colour (Figma's info message); the kit mutes the description. Use `Alert.Description` only under a title, for a second, supporting line.
 
 ## Toasts
 

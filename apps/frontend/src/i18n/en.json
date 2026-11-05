@@ -433,7 +433,6 @@
     "removeGoal": "Unassign goal",
     "unassigned": "Unassigned",
     "assign": "Assign",
-    "exerciseDetail": "Exercise details: {{name}}",
     "noTrainingHistory": "Training history for this exercise will appear here. No records are available yet.",
     "removeExercise": "Unassign exercise",
     "close": "Close",
@@ -481,7 +480,6 @@
     "invalid": "Enter a valid date, time and duration (1–1440 minutes)."
   },
   "exerciseDetail": {
-    "goal": "Goal {{name}}",
     "history": "History",
     "averageRating": "Average rating over 30 days",
     "ratingValue": "{{rating}} / 5",
@@ -499,6 +497,8 @@
     "chartPoint": "{{date}}: {{rating}} out of 5 stars"
   },
   "training": {
+    "disciplineLabel": "Discipline",
+    "goalLabel": "Goal",
     "open": "Open training: {{name}}",
     "menu": "Training actions",
     "rating": "Rating",
@@ -528,7 +528,6 @@
     "noteTooLong": "The note can contain up to 1000 characters.",
     "futureDate": "Choose today or a future date.",
     "duplicateDay": "This dog already has this exercise planned for that day.",
-    "when": "{{date}} · {{time}} · {{duration}} min",
     "noProcedure": "No instructions have been added to this exercise."
   }
 }

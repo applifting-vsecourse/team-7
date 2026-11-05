@@ -27,7 +27,7 @@ export function DisciplineList() {
         <p className="text-sm text-danger">
           {t(($) => $.disciplines.loadError)}
         </p>
-        <Button variant="secondary" size="sm" onPress={() => void refetch()}>
+        <Button variant="secondary" onPress={() => void refetch()}>
           {t(($) => $.disciplines.retry)}
         </Button>
       </div>

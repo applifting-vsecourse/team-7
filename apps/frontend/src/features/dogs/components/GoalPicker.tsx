@@ -17,15 +17,16 @@ export function GoalPicker({
 }) {
   const { t } = useTranslation();
   const selected = selection?.exerciseIds ?? [];
+  // Checked and indeterminate are exclusive: the kit draws both marks at once
+  // otherwise. A partly picked goal is indeterminate, and clicking it selects
+  // every exercise, as in AssignDogDialog.
+  const allSelected =
+    Boolean(selection) && selected.length >= goal.exercises.length;
   return (
     <div className="flex flex-col gap-2 rounded-3xl bg-surface p-4 shadow-card">
       <Checkbox
-        isSelected={Boolean(selection)}
-        isIndeterminate={Boolean(
-          selection &&
-          goal.exercises.length &&
-          selected.length < goal.exercises.length,
-        )}
+        isSelected={allSelected}
+        isIndeterminate={Boolean(selection) && !allSelected}
         isDisabled={isDisabled}
         onChange={(checked) =>
           onChange(

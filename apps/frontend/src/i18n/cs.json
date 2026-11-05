@@ -433,7 +433,6 @@
     "removeGoal": "Odebrat cíl psovi",
     "unassigned": "Nepřiřazeno",
     "assign": "Přiřadit",
-    "exerciseDetail": "Detail cvičení {{name}}",
     "noTrainingHistory": "Zde se zobrazí historie tréninků tohoto cvičení. Zatím nejsou dostupné žádné záznamy.",
     "removeExercise": "Odebrat cvičení psovi",
     "close": "Zavřít",
@@ -481,7 +480,6 @@
     "invalid": "Zadejte platné datum, čas a délku (1–1440 minut)."
   },
   "exerciseDetail": {
-    "goal": "Cíl {{name}}",
     "history": "Historie",
     "averageRating": "Průměrné hodnocení za 30 dní",
     "ratingValue": "{{rating}} / 5",
@@ -499,6 +497,8 @@
     "chartPoint": "{{date}}: {{rating}} z 5 hvězd"
   },
   "training": {
+    "disciplineLabel": "Disciplína",
+    "goalLabel": "Cíl",
     "open": "Otevřít trénink: {{name}}",
     "menu": "Akce tréninku",
     "rating": "Hodnocení",
@@ -528,7 +528,6 @@
     "noteTooLong": "Poznámka může obsahovat nejvýše 1000 znaků.",
     "futureDate": "Vyberte dnešek nebo pozdější datum.",
     "duplicateDay": "Tento pes má v ten den stejné cvičení už naplánované.",
-    "when": "{{date}} · {{time}} · {{duration}} min",
     "noProcedure": "K tomuto cvičení zatím nebyl přidán postup."
   }
 }

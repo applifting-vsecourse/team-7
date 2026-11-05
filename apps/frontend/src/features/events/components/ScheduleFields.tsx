@@ -1,7 +1,8 @@
 import type { ScheduleValues } from "../schemas/scheduleSchema";
+import { Calendar, Clock } from "@gravity-ui/icons";
 import {
   FieldError,
-  Input,
+  InputGroup,
   Label,
   ListBox,
   Select,
@@ -52,11 +53,25 @@ export function ScheduleFields({
                   ? t(($) => $.planning.date)
                   : t(($) => $.planning.time)}
               </Label>
-              <Input
-                ref={field.ref}
-                min={kind === "date" ? minDate : undefined}
-                className="w-full min-w-0"
-              />
+              {/* Our own icon: iOS shows no picker indicator, and the native
+                  one is hidden on desktop (global.css) to avoid two icons. */}
+              <InputGroup fullWidth>
+                <InputGroup.Prefix>
+                  {kind === "date" ? (
+                    <Calendar
+                      className="size-4 text-muted"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <Clock className="size-4 text-muted" aria-hidden="true" />
+                  )}
+                </InputGroup.Prefix>
+                <InputGroup.Input
+                  ref={field.ref}
+                  min={kind === "date" ? minDate : undefined}
+                  className="min-w-0"
+                />
+              </InputGroup>
               <FieldError>
                 {fieldState.error &&
                   translateMessage(t, fieldState.error.message!)}

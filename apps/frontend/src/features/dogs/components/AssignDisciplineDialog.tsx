@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import {
   Alert,
   Button,
@@ -67,7 +67,7 @@ export function AssignDisciplineDialog({
       isDismissable={!save.isPending}
       isKeyboardDismissDisabled={save.isPending}
     >
-      <Modal.Container size="lg">
+      <Modal.Container size="lg" scroll="outside">
         <Modal.Dialog className="sm:max-w-160">
           <Modal.CloseTrigger />
           <Modal.Header>
@@ -100,9 +100,14 @@ export function AssignDisciplineDialog({
                 {library.isSuccess && (
                   <>
                     {available.length === 0 ? (
-                      <p className="text-sm text-muted">
-                        {t(($) => $.dogProfile.noAvailableDisciplines)}
-                      </p>
+                      <Alert status="accent">
+                        <Alert.Indicator />
+                        <Alert.Content>
+                          <Alert.Title>
+                            {t(($) => $.dogProfile.noAvailableDisciplines)}
+                          </Alert.Title>
+                        </Alert.Content>
+                      </Alert>
                     ) : (
                       <RadioGroup
                         aria-label={t(($) => $.navigation.disciplines)}
@@ -123,9 +128,9 @@ export function AssignDisciplineDialog({
                     <Alert status="accent">
                       <Alert.Indicator />
                       <Alert.Content>
-                        <Alert.Description>
+                        <Alert.Title>
                           {t(($) => $.dogProfile.libraryNotice)}
-                        </Alert.Description>
+                        </Alert.Title>
                       </Alert.Content>
                     </Alert>
                   </>
@@ -186,11 +191,11 @@ export function AssignDisciplineDialog({
               </p>
             )}
           </Modal.Body>
-          <Modal.Footer className="flex-col-reverse sm:flex-row">
+          <Modal.Footer className="flex-wrap">
             <Button
               variant="secondary"
               isDisabled={save.isPending}
-              className="w-full sm:w-auto"
+              className="flex-auto sm:flex-none"
               onPress={() => (step === 1 ? onClose() : setStep(1))}
             >
               {step === 1
@@ -206,7 +211,7 @@ export function AssignDisciplineDialog({
                     save.isPending
               }
               isPending={save.isPending}
-              className="w-full sm:w-auto"
+              className="flex-auto sm:flex-none"
               onPress={async () => {
                 if (step === 1) {
                   setStep(2);
@@ -246,30 +251,47 @@ function DisciplineRadio({
   };
 }) {
   const { t } = useTranslation();
+  const id = useId();
   return (
+    // The card is the Radio.Content (the clickable label), so the whole tile,
+    // description included, selects the discipline.
     <Radio
       value={discipline.id}
-      className="rounded-3xl bg-surface p-4 shadow-card"
+      className="w-full"
+      // Name only; the goal/exercise summary is the description.
+      aria-labelledby={`${id}-name`}
+      aria-describedby={`${id}-summary`}
     >
-      <Radio.Content>
-        <Radio.Control>
+      <Radio.Content className="flex w-full items-start gap-3 rounded-3xl bg-surface p-4 shadow-card">
+        {/* mt-1 centres the 16px control on the name's 24px line. */}
+        <Radio.Control className="mt-1">
           <Radio.Indicator />
         </Radio.Control>
-        <span className="text-sm font-medium">{discipline.name}</span>
+        <span className="flex min-w-0 flex-col">
+          <span
+            id={`${id}-name`}
+            className="text-sm leading-6 font-medium wrap-break-word"
+          >
+            {discipline.name}
+          </span>
+          <Description id={`${id}-summary`}>
+            {t(($) => $.disciplines.goalsSummary, {
+              goals: t(
+                ($) =>
+                  $.disciplines.goalCount[pluralForm(discipline.goalCount)],
+                { count: discipline.goalCount },
+              ),
+              exercises: t(
+                ($) =>
+                  $.disciplines.exerciseCount[
+                    pluralForm(discipline.exerciseCount)
+                  ],
+                { count: discipline.exerciseCount },
+              ),
+            })}
+          </Description>
+        </span>
       </Radio.Content>
-      <Description className="pl-7">
-        {t(($) => $.disciplines.goalsSummary, {
-          goals: t(
-            ($) => $.disciplines.goalCount[pluralForm(discipline.goalCount)],
-            { count: discipline.goalCount },
-          ),
-          exercises: t(
-            ($) =>
-              $.disciplines.exerciseCount[pluralForm(discipline.exerciseCount)],
-            { count: discipline.exerciseCount },
-          ),
-        })}
-      </Description>
     </Radio>
   );
 }

@@ -173,7 +173,6 @@ export function DogDisciplineView({
           <Dropdown>
             <Button
               isIconOnly
-              size="sm"
               variant="secondary"
               aria-label={t(($) => $.disciplines.actions)}
             >
@@ -250,7 +249,6 @@ export function DogDisciplineView({
           </h2>
           <Button
             variant="outline"
-            size="sm"
             onPress={() => setCreating({ type: "goal" })}
           >
             <Plus className="size-4" aria-hidden="true" />

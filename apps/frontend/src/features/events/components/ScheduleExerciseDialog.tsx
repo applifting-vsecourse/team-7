@@ -214,7 +214,6 @@ export function ScheduleExerciseDialog({
                       setSelectionError(false);
                     }}
                     className="gap-2"
-                    variant="secondary"
                   >
                     {dogs.data?.map((item) => {
                       const age = dogAge(item.birthDate);
@@ -286,7 +285,6 @@ export function ScheduleExerciseDialog({
                                     className="flex flex-col gap-2 rounded-3xl bg-surface p-4 shadow-card"
                                   >
                                     <Checkbox
-                                      variant="secondary"
                                       isSelected={count === items.length}
                                       isIndeterminate={
                                         count > 0 && count < items.length
@@ -310,7 +308,6 @@ export function ScheduleExerciseDialog({
                                     <div className="flex flex-col gap-2 pl-8">
                                       {items.map((item) => (
                                         <Checkbox
-                                          variant="secondary"
                                           key={item.id}
                                           isSelected={selected.includes(
                                             item.id,
@@ -339,17 +336,19 @@ export function ScheduleExerciseDialog({
                       ))}
                     </>
                   ) : (
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-8">
                       {selectedExercises.map((item, index) => (
                         <div
                           key={item.id}
                           className="flex flex-col gap-3 sm:flex-row sm:items-start"
                         >
                           <div className="min-w-0 sm:w-50 sm:shrink-0">
-                            <h3 className="text-base font-medium">
+                            {/* One step above the field labels (text-sm), so
+                                each exercise reads as the heading of its fields. */}
+                            <h3 className="text-lg leading-7 font-medium tracking-tight wrap-break-word">
                               {item.name}
                             </h3>
-                            <p className="text-xs leading-5 text-muted">
+                            <p className="text-sm leading-6 text-muted">
                               {item.disciplineName} · {item.goalName}
                             </p>
                           </div>
@@ -378,12 +377,12 @@ export function ScheduleExerciseDialog({
                 </p>
               )}
             </Modal.Body>
-            <Modal.Footer className="flex-col-reverse sm:flex-row">
+            <Modal.Footer className="flex-wrap">
               <Button
                 type="button"
                 variant="secondary"
                 isDisabled={save.isPending}
-                className="w-full sm:w-auto"
+                className="flex-auto sm:flex-none"
                 onPress={() => {
                   if (step === 1) onClose();
                   else {
@@ -400,7 +399,7 @@ export function ScheduleExerciseDialog({
                 type="submit"
                 isPending={save.isPending}
                 isDisabled={save.isPending}
-                className="w-full sm:w-auto"
+                className="flex-auto sm:flex-none"
               >
                 {step === 3
                   ? t(($) => $.planning.schedule, {

@@ -7,6 +7,7 @@ import { AppModule } from "./app.module";
 import { BetterAuth } from "./shared/auth/providers/better-auth.provider";
 import { Config } from "./shared/config/config.service";
 import { frontendOrigins } from "./shared/config/frontend-origins";
+import { lanUrls } from "./shared/config/lan-urls";
 
 /**
  * Main application entry point
@@ -55,6 +56,9 @@ async function main(): Promise<void> {
       port: config.port,
       backendUrl: config.backendUrl,
       frontendUrl: config.frontendUrl,
+      // Open one of these on a phone on the same network (needs the Vite dev
+      // proxy: VITE_API_URL=/api, see apps/frontend/.env.example).
+      lanFrontendUrls: lanUrls(config.frontendUrl),
     });
   }
 

@@ -37,7 +37,7 @@ export function DisciplineDogs({
   const dogsById = new Map(ownDogs?.map((dog) => [dog.id, dog]));
 
   return (
-    <section aria-labelledby={headingId} className="flex flex-col gap-3">
+    <section aria-labelledby={headingId} className="flex flex-col gap-6">
       <h2
         id={headingId}
         className="text-lg leading-7 font-semibold tracking-tight"

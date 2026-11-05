@@ -60,7 +60,6 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            size="sm"
             className="flex-1 md:flex-none"
             onPress={() => setEditing(true)}
           >
@@ -70,7 +69,6 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
           <Dropdown>
             <Button
               variant="ghost"
-              size="sm"
               isIconOnly
               aria-label={t(($) => $.dogProfile.dogActions)}
             >
@@ -87,21 +85,37 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
                   id="archive"
                   textValue={t(($) => $.dogProfile.archive)}
                   isDisabled={Boolean(dog.archivedAt)}
+                  className="items-start"
                 >
-                  <Archive className="size-4 text-muted" aria-hidden="true" />
-                  <Label>{t(($) => $.dogProfile.archive)}</Label>
-                  <Description>
-                    {t(($) => $.dogProfile.archiveHint)}
-                  </Description>
+                  {/* h-5 = the label's line height, so the icon centres on it. */}
+                  <span className="flex h-5 shrink-0 items-center">
+                    <Archive className="size-4 text-muted" aria-hidden="true" />
+                  </span>
+                  <div className="flex flex-col">
+                    <Label>{t(($) => $.dogProfile.archive)}</Label>
+                    <Description>
+                      {t(($) => $.dogProfile.archiveHint)}
+                    </Description>
+                  </div>
                 </Dropdown.Item>
                 <Dropdown.Item
                   id="delete"
                   variant="danger"
                   textValue={t(($) => $.disciplines.delete)}
+                  className="items-start"
                 >
-                  <TrashBin className="size-4 text-danger" aria-hidden="true" />
-                  <Label>{t(($) => $.disciplines.delete)}</Label>
-                  <Description>{t(($) => $.dogProfile.deleteHint)}</Description>
+                  <span className="flex h-5 shrink-0 items-center">
+                    <TrashBin
+                      className="size-4 text-danger"
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <div className="flex flex-col">
+                    <Label>{t(($) => $.disciplines.delete)}</Label>
+                    <Description>
+                      {t(($) => $.dogProfile.deleteHint)}
+                    </Description>
+                  </div>
                 </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown.Popover>
@@ -116,7 +130,7 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
         isDismissable={!save.isPending}
         isKeyboardDismissDisabled={save.isPending}
       >
-        <Modal.Container>
+        <Modal.Container scroll="outside">
           <Modal.Dialog>
             <Modal.CloseTrigger />
             <Modal.Header>

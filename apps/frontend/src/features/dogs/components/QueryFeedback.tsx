@@ -30,7 +30,6 @@ export function QueryFeedback({
       </p>
       <Button
         variant="secondary"
-        size="sm"
         onPress={() => {
           void query.refetch();
         }}

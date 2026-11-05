@@ -1,14 +1,12 @@
 import type { ScheduledEvent } from "../api/eventsQueryOptions";
 import { CircleCheck } from "@gravity-ui/icons";
 import { Chip, Modal } from "@heroui/react";
-import { format, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
 
 import { transitionName } from "@/lib/utils";
 
-import { DogAvatar } from "@/features/dogs/components/DogAvatar";
-
 import { RatingStars } from "./RatingStars";
+import { TrainingMeta } from "./TrainingMeta";
 
 /** History is intentionally read-only, unlike calendar training actions. */
 export function TrainingHistoryDialog({
@@ -18,8 +16,7 @@ export function TrainingHistoryDialog({
   event: ScheduledEvent;
   onClose: () => void;
 }) {
-  const { t, i18n } = useTranslation();
-  const date = parseISO(event.completedAt ?? event.startsAt);
+  const { t } = useTranslation();
   return (
     <Modal.Backdrop
       isOpen
@@ -27,8 +24,7 @@ export function TrainingHistoryDialog({
         if (!open) onClose();
       }}
     >
-      <Modal.Container size="lg" className="grow-from-trigger">
-        {/* Shares the tile's name, so the tile grows into this dialog. */}
+      <Modal.Container size="lg" scroll="outside" className="grow-from-trigger">
         <Modal.Dialog
           className="bg-background sm:max-w-160"
           style={transitionName("event", event.id)}
@@ -50,27 +46,7 @@ export function TrainingHistoryDialog({
             </Chip>
           </Modal.Header>
           <Modal.Body className="flex flex-col gap-5">
-            <div className="flex flex-col gap-1">
-              <p className="text-base font-medium">
-                {t(($) => $.training.when, {
-                  date: new Intl.DateTimeFormat(i18n.resolvedLanguage ?? "cs", {
-                    weekday: "short",
-                    day: "numeric",
-                    month: "numeric",
-                  }).format(date),
-                  time: format(date, "HH:mm"),
-                  duration: event.durationMinutes,
-                })}
-              </p>
-              <p className="text-sm text-muted">
-                {event.exercise.goal.discipline.name} ·{" "}
-                {event.exercise.goal.name}
-              </p>
-            </div>
-            <div className="flex w-fit min-w-48 items-center gap-3 rounded-3xl bg-default px-3 py-1.5">
-              <DogAvatar dog={event.dog} />
-              <span className="text-sm font-medium">{event.dog.name}</span>
-            </div>
+            <TrainingMeta event={event} />
             {event.rating !== null && (
               <div className="flex flex-col gap-2">
                 <p className="text-sm">{t(($) => $.training.rating)}</p>

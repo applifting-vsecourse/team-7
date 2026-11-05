@@ -63,7 +63,7 @@ export function LibraryItemDialog({
       isDismissable={!isPending}
       isKeyboardDismissDisabled={isPending}
     >
-      <Modal.Container>
+      <Modal.Container scroll="outside">
         <Modal.Dialog>
           <Modal.CloseTrigger />
           <Modal.Header>
@@ -120,7 +120,7 @@ function LibraryItemForm({
     >
       <Modal.Body className="flex flex-col gap-5">
         {description ? (
-          <p className="text-sm leading-6 text-foreground">{description}</p>
+          <p className="text-sm leading-6">{description}</p>
         ) : null}
         {context}
         <Controller
@@ -173,12 +173,12 @@ function LibraryItemForm({
           </Description>
         ) : null}
       </Modal.Body>
-      <Modal.Footer className="flex-col-reverse sm:flex-row">
+      <Modal.Footer className="flex-wrap">
         <Button
           variant="secondary"
           isDisabled={isSubmitting}
           onPress={onCancel}
-          className="w-full sm:w-auto"
+          className="flex-auto sm:flex-none"
         >
           {t(($) => $.disciplines.cancel)}
         </Button>
@@ -186,7 +186,7 @@ function LibraryItemForm({
           type="submit"
           isPending={isSubmitting}
           isDisabled={isSubmitting}
-          className="w-full sm:w-auto"
+          className="flex-auto sm:flex-none"
         >
           {submitLabel}
         </Button>

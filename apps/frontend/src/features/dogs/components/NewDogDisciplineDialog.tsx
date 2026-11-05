@@ -40,9 +40,9 @@ export function NewDogDisciplineDialog({
         <Alert status="accent">
           <Alert.Indicator />
           <Alert.Content>
-            <Alert.Description>
+            <Alert.Title>
               {t(($) => $.dogProfile.newDisciplineNotice, { name: dog.name })}
-            </Alert.Description>
+            </Alert.Title>
           </Alert.Content>
         </Alert>
       }

@@ -29,7 +29,6 @@ export function CalendarNavigation({
   return (
     <ButtonGroup
       variant="tertiary"
-      size="sm"
       aria-label={label}
       className="w-full md:w-auto"
     >

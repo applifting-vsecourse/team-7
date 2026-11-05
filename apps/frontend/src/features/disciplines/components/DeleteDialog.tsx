@@ -70,12 +70,12 @@ export function DeleteDialog({
               </p>
             ) : null}
           </AlertDialog.Body>
-          <AlertDialog.Footer className="flex-col-reverse sm:flex-row">
+          <AlertDialog.Footer className="flex-wrap">
             <Button
               variant="secondary"
               isDisabled={isPending}
               onPress={() => onOpenChange(false)}
-              className="w-full sm:w-auto"
+              className="flex-auto sm:flex-none"
             >
               {t(($) => $.disciplines.cancel)}
             </Button>
@@ -84,7 +84,7 @@ export function DeleteDialog({
               isPending={isPending}
               isDisabled={isPending}
               onPress={onConfirm}
-              className="w-full sm:w-auto"
+              className="flex-auto sm:flex-none"
             >
               {confirmLabel ?? t(($) => $.disciplines.deleteDialog.confirm)}
             </Button>

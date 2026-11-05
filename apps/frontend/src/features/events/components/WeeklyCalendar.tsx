@@ -161,7 +161,11 @@ export function WeeklyCalendar({ viewSwitcher }: WeeklyCalendarProps) {
         role="region"
         aria-labelledby={headingId}
       >
-        <div className="flex w-max stagger items-start">
+        {/* Every day stretches to the tallest one, so empty days are as
+            easy to drop a training on as full ones. The bottom padding keeps
+            the columns out of the strip the kit leaves unfaded for the
+            scrollbar, so the edge fade covers their full height. */}
+        <div className="flex w-max stagger items-stretch pb-(--scroll-shadow-scrollbar-size)">
           {Array.from({ length: 7 }, (_, index) => {
             const date = addDays(week, index);
             const isToday = isSameDay(date, today);

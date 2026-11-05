@@ -261,10 +261,10 @@ export function AddDogForm({
           </p>
         ) : null}
       </Modal.Body>
-      <Modal.Footer className="flex-col-reverse sm:flex-row">
+      <Modal.Footer className="flex-wrap">
         <Button
           variant="secondary"
-          className="w-full sm:w-auto"
+          className="flex-auto sm:flex-none"
           isDisabled={isSubmitting}
           onPress={onCancel}
         >
@@ -272,7 +272,7 @@ export function AddDogForm({
         </Button>
         <Button
           type="submit"
-          className="w-full sm:w-auto"
+          className="flex-auto sm:flex-none"
           isPending={isSubmitting}
           isDisabled={isSubmitting}
         >

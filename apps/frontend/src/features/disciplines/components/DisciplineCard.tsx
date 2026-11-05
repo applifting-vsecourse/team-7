@@ -55,7 +55,7 @@ export function DisciplineCard({
         />
       </div>
       {discipline.dogs.length > 0 ? (
-        <p className="flex items-center gap-1 text-xs leading-5 text-muted">
+        <p className="flex items-center gap-1 text-sm leading-6 text-muted">
           <DogIcon className="size-4 shrink-0 text-accent" aria-hidden="true" />
           <span className="min-w-0 flex-1 wrap-break-word">{dogNames}</span>
         </p>

@@ -49,7 +49,7 @@ export function AddDogDialog() {
       isDismissable={!addDog.isPending}
       isKeyboardDismissDisabled={addDog.isPending}
     >
-      <Modal.Container size="lg">
+      <Modal.Container size="lg" scroll="outside">
         <Modal.Dialog className="min-w-0 md:max-w-200">
           <Modal.CloseTrigger />
           <Modal.Header>
