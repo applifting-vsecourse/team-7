@@ -253,4 +253,44 @@ describe("scheduled exercise dialog", () => {
     await user.click(screen.getByRole("button", { name: "Mark as completed" }));
     await waitFor(() => expect(close).toHaveBeenCalledOnce());
   });
+  it("shows the exercise description with its line breaks", () => {
+    setup({
+      ...event,
+      exercise: { ...event.exercise, procedure: "Sit the dog.\nCall once." },
+    });
+    const section = screen.getByRole("region", {
+      name: "Exercise description",
+    });
+    expect(section.querySelector("p")?.textContent).toBe(
+      "Sit the dog.\nCall once.",
+    );
+    // A description that fits needs no toggle.
+    expect(
+      screen.queryByRole("button", { name: "Show full description" }),
+    ).not.toBeInTheDocument();
+  });
+  it("hides the description section when the exercise has none", () => {
+    setup({ ...event, exercise: { ...event.exercise, procedure: null } });
+    expect(
+      screen.queryByRole("region", { name: "Exercise description" }),
+    ).not.toBeInTheDocument();
+  });
+  it("collapses a long description and expands it on request", async () => {
+    vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockReturnValue(240);
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(96);
+    const { user } = setup();
+    const toggle = screen.getByRole("button", {
+      name: "Show full description",
+    });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await user.click(toggle);
+    expect(screen.getByRole("button", { name: "Show less" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    await user.click(screen.getByRole("button", { name: "Show less" }));
+    expect(
+      screen.getByRole("button", { name: "Show full description" }),
+    ).toHaveAttribute("aria-expanded", "false");
+  });
 });

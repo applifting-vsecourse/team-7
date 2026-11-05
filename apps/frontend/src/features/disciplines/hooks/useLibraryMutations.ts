@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 
 import { useSession } from "@/features/auth/hooks/useSession";
+import { eventsKey } from "@/features/events/api/eventsQueryOptions";
 
 import {
   type DisciplineDetail,
@@ -45,6 +46,9 @@ function useLibraryMutation<TVariables, TResult = unknown>(
           (detail) => detail && patch(detail, variables, result),
         );
       }
+      // Scheduled trainings show library names and procedures (calendar and
+      // overview), so they follow any library change.
+      void queryClient.invalidateQueries({ queryKey: eventsKey(user?.id) });
       const refetch = queryClient.invalidateQueries({
         queryKey: disciplinesKey(user?.id),
       });
