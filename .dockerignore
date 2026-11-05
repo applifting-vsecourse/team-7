@@ -6,6 +6,8 @@
 **/*.tsbuildinfo
 **/build
 **/coverage
+playwright-report
+test-results
 **/.turbo
 **/.next
 **/.cache

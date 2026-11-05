@@ -93,12 +93,37 @@ pnpm test:watch                    # watch tests across both apps
 pnpm test --project backend        # run only backend tests
 pnpm test --project frontend       # run only frontend tests
 pnpm test:cov                      # combined coverage report in coverage/
+pnpm test:e2e                      # Playwright against the running local app
+pnpm test:e2e:ui                   # interactive Playwright runner
+pnpm test:e2e:report               # open the last Playwright HTML report
 pnpm backend prisma:migrations:run # create + apply a migration after schema changes
 pnpm backend prisma:studio         # browse/edit the database
 pnpm backend seed                  # re-seed the database
 pnpm dev:down                      # stop the database container
 pnpm docs:heroui                   # download HeroUI docs for AI agents (answer y at the React warning)
 ```
+
+## Browser tests
+
+Install Chromium once with `pnpm exec playwright install chromium`, then run
+`pnpm test:e2e` against the app already running at `http://localhost:3050`
+with its backend at `http://localhost:4050`. The tests use the verified demo
+account created by the development seed (`caffeinatedduck@example.com` /
+`password1`). If your local database uses another verified account, set
+`E2E_USER_EMAIL` and `E2E_USER_PASSWORD` when running the command.
+
+Playwright covers Czech sign-in validation, protected-route redirects, and a
+real sign-in → overview → calendar → reload → sign-out flow. It reads training
+data without changing it. Specs live in `apps/frontend/e2e/` and run separately
+from Vitest. `pnpm check` also lints and type-checks them.
+
+CI runs these tests **after both builds**, using a fresh Postgres service,
+migrations and seed data. Playwright starts the built backend and frontend
+preview server in CI; local runs keep using your existing servers. The
+`playwright-results` workflow artifact contains the HTML report, plus traces
+and screenshots for failures, retained for 14 days. These generated files are
+gitignored. Browser tests are separate from `pnpm check-all` because they need
+running services and Chromium.
 
 ## Linting and formatting
 
