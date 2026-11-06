@@ -31,6 +31,7 @@ import { DogSelectionService } from "@/modules/dogs/services/dog-selection.servi
 import { User } from "@/shared/auth/decorators/user.decorator";
 import { Identity } from "@/shared/auth/domain/identity";
 import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
+import { nextExercisePosition } from "@/shared/domain/exercise-order";
 import { optionalText } from "@/shared/utils/optional-text";
 import {
   DogDisciplineSelectionDto,
@@ -148,6 +149,7 @@ export class DogSelectionController {
       const exercise = await tx.exercise.create({
         data: {
           goalId: params.goalId,
+          position: await nextExercisePosition(tx, params.goalId),
           name: body.name.trim(),
           procedure: optionalText(body.procedure),
         },

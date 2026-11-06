@@ -12,6 +12,7 @@ import {
 } from "@/generated/prisma/client";
 import type { DogGoalSelection } from "@/modules/dogs/domain/dog-selection";
 import { findActiveDog, findOwnedDog } from "@/modules/dogs/domain/owned-dog";
+import { dogExerciseOrder } from "@/shared/domain/exercise-order";
 
 export type DogSelectionScope = {
   userId: string;
@@ -23,7 +24,7 @@ const goalInclude = {
   goal: true,
   exercises: {
     include: { exercise: true },
-    orderBy: { createdAt: "asc" as const },
+    orderBy: dogExerciseOrder,
   },
 } satisfies Prisma.DogGoalInclude;
 

@@ -1,4 +1,5 @@
 import { PrismaService } from "@/core/prisma/prisma.service";
+import { dogExerciseOrder } from "@/shared/domain/exercise-order";
 
 export async function seedEvents(prisma: PrismaService): Promise<void> {
   const dogs = await prisma.dog.findMany({
@@ -15,7 +16,7 @@ export async function seedEvents(prisma: PrismaService): Promise<void> {
         select: {
           exercises: {
             where: { status: "in_progress" },
-            orderBy: { createdAt: "asc" },
+            orderBy: dogExerciseOrder,
             take: 1,
             select: { exerciseId: true },
           },

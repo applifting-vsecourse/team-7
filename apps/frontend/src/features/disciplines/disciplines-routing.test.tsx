@@ -9,7 +9,7 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createStore, Provider } from "jotai";
 import { HTTPError } from "ky";
@@ -612,6 +612,168 @@ describe("disciplines", () => {
     );
 
     expect(await screen.findByText("Přivolání z 20 metrů")).toBeInTheDocument();
+  });
+
+  describe("exercise order", () => {
+    const threeExercises: DisciplineDetail = {
+      ...poslusnostDetail,
+      goals: [
+        {
+          ...poslusnostDetail.goals[0]!,
+          exercises: ["Z 5 metrů", "Z 10 metrů", "Od hračky"].map(
+            (name, index) => ({
+              id: `e${index + 1}`,
+              name,
+              procedure: null,
+              dogCount: 0,
+            }),
+          ),
+        },
+      ],
+    };
+    const goalExercises = () =>
+      screen.getByRole("grid", {
+        name: "Exercises of goal Spolehlivé přivolání",
+      });
+    const rowNames = () =>
+      within(goalExercises())
+        .getAllByRole("row")
+        .map((row) => row.getAttribute("aria-label") ?? row.textContent);
+
+    // Moves a row two drop positions down (the first of three ends last).
+    // React Aria's keyboard drag: Enter on the handle lifts the row, arrows
+    // walk the drop positions, Enter drops.
+    async function moveTwoDown(
+      user: ReturnType<typeof userEvent.setup>,
+      name = "Z 5 metrů",
+    ) {
+      await screen.findByText(name);
+      const handle = screen.getByRole("button", {
+        name: `Move exercise ${name}`,
+      });
+      act(() => handle.focus());
+      await user.keyboard("{Enter}");
+      await user.keyboard("{ArrowDown}{ArrowDown}");
+      await user.keyboard("{Enter}");
+    }
+
+    // Like the API: a saved order comes back on the next fetch.
+    const saveOrder = async (_path: string, options: unknown) => {
+      const { exerciseIds } = (options as { json: { exerciseIds: string[] } })
+        .json;
+      const [goal] = threeExercises.goals;
+      const saved = {
+        ...threeExercises,
+        goals: [
+          {
+            ...goal!,
+            exercises: exerciseIds.map((id) =>
+              goal!.exercises.find((exercise) => exercise.id === id)!,
+            ),
+          },
+        ],
+      };
+      state.responses.set("disciplines/d1", () => saved);
+    };
+
+    beforeEach(() => {
+      state.responses.set("disciplines/d1", () => threeExercises);
+    });
+
+    it("doesn't offer reordering a single exercise", async () => {
+      state.responses.set("disciplines/d1", () => poslusnostDetail);
+      renderRoute("/disciplines/d1?lng=en");
+
+      await screen.findByText("Přivolání z 5 metrů");
+      expect(
+        screen.queryByRole("button", { name: /Move exercise/ }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("moves an exercise from the keyboard and saves the order", async () => {
+      const user = userEvent.setup();
+      state.put.mockImplementation(saveOrder);
+      renderRoute("/disciplines/d1?lng=en");
+
+      await moveTwoDown(user);
+
+      await waitFor(() =>
+        expect(state.put).toHaveBeenCalledWith("goals/g1/exercise-order", {
+          json: { exerciseIds: ["e2", "e3", "e1"] },
+        }),
+      );
+      await waitFor(() =>
+        expect(rowNames()).toEqual(["Z 10 metrů", "Od hračky", "Z 5 metrů"]),
+      );
+    });
+
+    it("shows the new order while saving it and holds further moves", async () => {
+      const user = userEvent.setup();
+      state.put.mockReturnValue(new Promise(() => {}));
+      renderRoute("/disciplines/d1?lng=en");
+
+      await moveTwoDown(user);
+
+      await waitFor(() =>
+        expect(rowNames()).toEqual(["Z 10 metrů", "Od hračky", "Z 5 metrů"]),
+      );
+
+      // A second drag would race the first save; the handles wait for it.
+      await moveTwoDown(user, "Z 10 metrů");
+      expect(state.put).toHaveBeenCalledTimes(1);
+    });
+
+    it("restores the order and offers a retry when saving fails", async () => {
+      const user = userEvent.setup();
+      state.put.mockRejectedValueOnce(new Error("offline"));
+      renderRoute("/disciplines/d1?lng=en");
+
+      await moveTwoDown(user);
+
+      expect(
+        await screen.findByText("The exercise order couldn't be saved."),
+      ).toBeInTheDocument();
+      expect(rowNames()).toEqual(["Z 5 metrů", "Z 10 metrů", "Od hračky"]);
+
+      state.put.mockImplementation(saveOrder);
+      await user.click(screen.getByRole("button", { name: "Try again" }));
+
+      await waitFor(() => expect(state.put).toHaveBeenCalledTimes(2));
+      expect(state.put).toHaveBeenLastCalledWith("goals/g1/exercise-order", {
+        json: { exerciseIds: ["e2", "e3", "e1"] },
+      });
+      await waitFor(() =>
+        expect(
+          screen.queryByText("The exercise order couldn't be saved."),
+        ).not.toBeInTheDocument(),
+      );
+      await waitFor(() =>
+        expect(rowNames()).toEqual(["Z 10 metrů", "Od hračky", "Z 5 metrů"]),
+      );
+    });
+
+    it("asks to reorder again when the exercises changed elsewhere", async () => {
+      const user = userEvent.setup();
+      state.put.mockRejectedValueOnce(
+        new HTTPError(
+          new Response(null, { status: 409 }),
+          new Request("http://localhost/api/goals/g1/exercise-order"),
+          {} as never,
+        ),
+      );
+      renderRoute("/disciplines/d1?lng=en");
+
+      await moveTwoDown(user);
+
+      expect(
+        await screen.findByText(
+          "The exercises changed in the meantime. Please reorder them again.",
+        ),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Try again" }),
+      ).not.toBeInTheDocument();
+    });
   });
 
   it("opens the detail on a slow connection without waiting for the data", async () => {

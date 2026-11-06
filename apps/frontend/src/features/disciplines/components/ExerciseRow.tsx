@@ -1,31 +1,65 @@
-import type { Exercise, Goal } from "../api/disciplinesQueryOptions";
-import { Circle } from "@gravity-ui/icons";
+import type { Exercise } from "../api/disciplinesQueryOptions";
+import { Circle, Grip } from "@gravity-ui/icons";
+import { Button } from "@heroui/react";
+import { GridListItem } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { PresenceItem } from "@/components/PresenceList";
+import { cn } from "@/lib/utils";
 
-import { useDialogState } from "../hooks/useDialogState";
-import { useDeleteExercise } from "../hooks/useLibraryMutations";
-import { DeleteDialog } from "./DeleteDialog";
 import { ItemMenu } from "./ItemMenu";
-import { ExerciseDialog } from "./LibraryDialogs";
 
+/**
+ * An exercise in its goal's reorderable list (ExerciseList). Its dialogs live
+ * in the list: events from a portalled dialog bubble through the React tree
+ * and would reach the row's drag and grid handlers.
+ */
 export function ExerciseRow({
-  goal,
   exercise,
+  isReorderable,
+  onEdit,
+  onDelete,
 }: {
-  goal: Goal;
   exercise: Exercise;
+  // A single exercise has nothing to swap places with.
+  isReorderable: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
   const { t } = useTranslation();
-  const { dialog, open, close, onOpenChange } = useDialogState<
-    "edit" | "delete"
-  >();
-  const remove = useDeleteExercise();
 
   return (
-    <PresenceItem className="flex items-start gap-3">
-      <Circle className="mt-1 size-4 shrink-0 text-muted" aria-hidden="true" />
+    <GridListItem
+      id={exercise.id}
+      textValue={exercise.name}
+      className={({ isDragging, isFocusVisible }) =>
+        cn(
+          "flex items-start gap-3 rounded-xl py-2 state-dim outline-none",
+          isDragging && "opacity-50",
+          isFocusVisible && "focus-ring",
+        )
+      }
+    >
+      {isReorderable ? (
+        // Pointer users drag the row; keyboard and screen reader users
+        // focus this handle, press Enter, move with arrows and drop.
+        <Button
+          slot="drag"
+          isIconOnly
+          variant="ghost"
+          size="sm"
+          className="cursor-grab"
+          aria-label={t(($) => $.disciplines.moveExercise, {
+            name: exercise.name,
+          })}
+        >
+          <Grip className="size-4 text-muted" aria-hidden="true" />
+        </Button>
+      ) : (
+        <Circle
+          className="mt-1 size-4 shrink-0 text-muted"
+          aria-hidden="true"
+        />
+      )}
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <p className="text-sm leading-6 font-medium wrap-break-word">
           {exercise.name}
@@ -40,30 +74,9 @@ export function ExerciseRow({
         label={t(($) => $.disciplines.exerciseActions, {
           name: exercise.name,
         })}
-        onEdit={() => open("edit")}
-        onDelete={() => {
-          remove.reset();
-          open("delete");
-        }}
+        onEdit={onEdit}
+        onDelete={onDelete}
       />
-      <ExerciseDialog
-        isOpen={dialog === "edit"}
-        onOpenChange={onOpenChange}
-        goal={goal}
-        exercise={exercise}
-      />
-      <DeleteDialog
-        isOpen={dialog === "delete"}
-        onOpenChange={onOpenChange}
-        title={t(($) => $.disciplines.deleteDialog.exerciseTitle, {
-          name: exercise.name,
-        })}
-        body={t(($) => $.disciplines.deleteDialog.exerciseBody)}
-        affectedDogCount={exercise.dogCount}
-        isPending={remove.isPending}
-        isError={remove.isError}
-        onConfirm={() => remove.mutate(exercise.id, { onSuccess: close })}
-      />
-    </PresenceItem>
+    </GridListItem>
   );
 }

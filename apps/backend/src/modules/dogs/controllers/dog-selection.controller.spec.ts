@@ -31,6 +31,7 @@ describe("dog discipline selections API", () => {
     dog: { findFirst: vi.fn() },
     discipline: { findFirst: vi.fn() },
     goal: { findMany: vi.fn() },
+    exercise: { aggregate: vi.fn(), create: vi.fn() },
     dogDiscipline: { upsert: vi.fn(), deleteMany: vi.fn() },
     dogGoal: {
       findMany: vi.fn(),
@@ -478,6 +479,39 @@ describe("dog discipline selections API", () => {
       where: { dogId_exerciseId: { dogId: "dog-a", exerciseId: "e1" } },
     });
     expect(prisma.dogGoal.delete).not.toHaveBeenCalled();
+  });
+
+  it("creates a library exercise at the end of its goal and selects it", async () => {
+    prisma.exercise.aggregate.mockResolvedValue({ _max: { position: 4 } });
+    prisma.exercise.create.mockImplementation(({ data }) =>
+      Promise.resolve({ id: "e9", ...data }),
+    );
+    prisma.goal.findMany.mockResolvedValue([
+      { id: "g1", exercises: [{ id: "e1" }, { id: "e9" }] },
+    ]);
+
+    const response = await request("POST", "/goals/g1/library-exercises", {
+      name: "Přivolání od hračky",
+    });
+
+    expect(response.status).toBe(201);
+    expect(prisma.exercise.aggregate).toHaveBeenCalledWith({
+      where: { goalId: "g1" },
+      _max: { position: true },
+    });
+    expect(prisma.exercise.create).toHaveBeenCalledWith({
+      data: {
+        goalId: "g1",
+        position: 5,
+        name: "Přivolání od hračky",
+        procedure: null,
+      },
+    });
+    expect(prisma.dogExercise.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: { dogId: "dog-a", goalId: "g1", exerciseId: "e9" },
+      }),
+    );
   });
 
   it("does not add an exercise until its goal is assigned", async () => {

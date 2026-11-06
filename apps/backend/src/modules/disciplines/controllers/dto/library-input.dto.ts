@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsOptional, IsString, Matches, MaxLength } from "class-validator";
+import {
+  ArrayMaxSize,
+  ArrayUnique,
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+} from "class-validator";
 
 export const NAME_MAX_LENGTH = 100;
 export const TEXT_MAX_LENGTH = 1000;
@@ -59,4 +68,23 @@ export class ExerciseInputDto {
   @IsString()
   @MaxLength(TEXT_MAX_LENGTH)
   procedure?: string;
+}
+
+// Far above any real goal; bounds the work validation does on a request.
+export const EXERCISE_ORDER_MAX_SIZE = 500;
+const ID_MAX_LENGTH = 100;
+
+export class ExerciseOrderDto {
+  @ApiProperty({
+    type: [String],
+    description: "Every exercise of the goal, in the new order",
+    maxItems: EXERCISE_ORDER_MAX_SIZE,
+  })
+  @IsArray()
+  @ArrayMaxSize(EXERCISE_ORDER_MAX_SIZE)
+  @ArrayUnique()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  @MaxLength(ID_MAX_LENGTH, { each: true })
+  exerciseIds!: string[];
 }

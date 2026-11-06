@@ -1,5 +1,6 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Delete,
   HttpCode,
@@ -8,12 +9,14 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   UseGuards,
   UsePipes,
   ValidationPipe,
 } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiCookieAuth,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -26,8 +29,13 @@ import type { Exercise, Goal } from "@/generated/prisma/client";
 import { User } from "@/shared/auth/decorators/user.decorator";
 import { Identity } from "@/shared/auth/domain/identity";
 import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
+import { nextExercisePosition } from "@/shared/domain/exercise-order";
 import { optionalText } from "@/shared/utils/optional-text";
-import { ExerciseInputDto, GoalInputDto } from "./dto/library-input.dto";
+import {
+  ExerciseInputDto,
+  ExerciseOrderDto,
+  GoalInputDto,
+} from "./dto/library-input.dto";
 
 @ApiTags("disciplines")
 @ApiCookieAuth()
@@ -103,7 +111,55 @@ export class GoalsController {
         name: body.name.trim(),
         procedure: optionalText(body.procedure),
         goalId: goal.id,
+        position: await nextExercisePosition(this.prisma, goal.id),
       },
+    });
+  }
+
+  @Put(":id/exercise-order")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: "Reorder a goal's exercises",
+    description:
+      "The order is purely visual: statuses, results and scheduled trainings stay as they are.",
+  })
+  @ApiNoContentResponse({ description: "Order saved" })
+  @ApiBadRequestResponse({ description: "Invalid exercise order" })
+  @ApiNotFoundResponse({ description: "Goal not found" })
+  @ApiConflictResponse({
+    description: "The list doesn't match the goal's current exercises",
+  })
+  async reorderExercises(
+    @User() user: Identity,
+    @Param("id") id: string,
+    @Body() body: ExerciseOrderDto,
+  ): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const goal = await tx.goal.findFirst({
+        where: { id, discipline: { userId: user.id } },
+        select: { exercises: { select: { id: true } } },
+      });
+
+      if (!goal) throw new NotFoundException("Goal not found");
+
+      // A stale list (an exercise added or deleted elsewhere) would leave
+      // some exercises without a place, so the client has to reload first.
+      const current = new Set(goal.exercises.map((exercise) => exercise.id));
+      const matches =
+        body.exerciseIds.length === current.size &&
+        body.exerciseIds.every((exerciseId) => current.has(exerciseId));
+      if (!matches) {
+        throw new ConflictException(
+          "exerciseIds must list every exercise of the goal",
+        );
+      }
+
+      for (const [position, exerciseId] of body.exerciseIds.entries()) {
+        await tx.exercise.updateMany({
+          where: { id: exerciseId, goalId: id },
+          data: { position },
+        });
+      }
     });
   }
 }

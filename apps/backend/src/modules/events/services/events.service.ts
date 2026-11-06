@@ -7,6 +7,7 @@ import {
 import { randomUUID } from "node:crypto";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { Prisma, type ScheduledExercise } from "@/generated/prisma/client";
+import { dogExerciseOrder } from "@/shared/domain/exercise-order";
 import {
   plannableDogExercise,
   withPaused,
@@ -44,7 +45,7 @@ export class EventsService {
         exercises: {
           where: { status: { not: "mastered" } },
           include: { exercise: true },
-          orderBy: { createdAt: "asc" },
+          orderBy: dogExerciseOrder,
         },
       },
       orderBy: { createdAt: "asc" },
