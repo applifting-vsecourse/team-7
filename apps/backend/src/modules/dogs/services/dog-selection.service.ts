@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { setTimeout as sleep } from "node:timers/promises";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import {
   type DogExerciseStatus,
@@ -27,6 +28,15 @@ const goalInclude = {
     orderBy: dogExerciseOrder,
   },
 } satisfies Prisma.DogGoalInclude;
+
+// A failed query surfaces as P2034; a failed COMMIT as the raw driver error.
+const isWriteConflict = (error: unknown) => {
+  const e = error as {
+    code?: string;
+    cause?: { kind?: string };
+  } | null;
+  return e?.code === "P2034" || e?.cause?.kind === "TransactionWriteConflict";
+};
 
 @Injectable()
 export class DogSelectionService {
@@ -63,13 +73,13 @@ export class DogSelectionService {
           { isolationLevel: "Serializable" },
         );
       } catch (error) {
-        if (
-          typeof error === "object" &&
-          error !== null &&
-          "code" in error &&
-          error.code === "P2034"
-        ) {
-          if (attempt < 2) continue;
+        if (isWriteConflict(error)) {
+          // Postgres may flag unrelated saves (small tables lock whole), so
+          // retry with a random, growing pause instead of colliding again.
+          if (attempt < 4) {
+            await sleep(Math.random() * 25 * 2 ** attempt);
+            continue;
+          }
           throw new ConflictException(
             "Selection changed concurrently; retry the request",
           );

@@ -536,9 +536,18 @@ describe("dog discipline selections API", () => {
       200,
     );
     expect(prisma.$transaction).toHaveBeenCalledTimes(2);
+    // A conflict at COMMIT arrives as the driver adapter error.
+    prisma.$transaction.mockRejectedValueOnce({
+      cause: { kind: "TransactionWriteConflict", originalCode: "40001" },
+    });
+    expect((await request("PUT", "/selection", { goals: [] })).status).toBe(
+      200,
+    );
+    prisma.$transaction.mockClear();
     prisma.$transaction.mockRejectedValue({ code: "P2034" });
     expect((await request("PUT", "/selection", { goals: [] })).status).toBe(
       409,
     );
+    expect(prisma.$transaction).toHaveBeenCalledTimes(5);
   });
 });
