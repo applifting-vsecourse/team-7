@@ -444,7 +444,6 @@
     "doneDisciplines": "Completed disciplines ({{count}})",
     "assignGoal": "Assign goal",
     "markComplete": "Mark as completed",
-    "reopen": "Reopen goal",
     "removeGoal": "Unassign goal",
     "unassigned": "Unassigned",
     "assign": "Assign",
@@ -544,5 +543,53 @@
     "futureDate": "Choose today or a future date.",
     "duplicateDay": "This dog already has this exercise planned for that day.",
     "noProcedure": "No instructions have been added to this exercise."
+  },
+  "status": {
+    "paused": "Paused",
+    "mastered": "Mastered",
+    "goalPausedChip": "Goal paused",
+    "pauseGoal": "Pause goal",
+    "pauseHint": "It won't be offered when scheduling.",
+    "resume": "Return to in progress",
+    "resumeGoalHint": "Its exercises will be offered when scheduling again.",
+    "resumeExerciseHint": "It will be offered when scheduling again.",
+    "removeGoalHint": "The goal's exercises will be unassigned from {{name}}; ratings are kept.",
+    "pauseExercise": "Pause exercise",
+    "markMastered": "Mark as mastered",
+    "markMasteredHint": "{{name}} knows it. It stays in the history.",
+    "pausedCount": {
+      "one": "{{count}} paused",
+      "few": "{{count}} paused",
+      "other": "{{count}} paused"
+    },
+    "masteredCount": {
+      "one": "{{count}} mastered",
+      "few": "{{count}} mastered",
+      "other": "{{count}} mastered"
+    },
+    "pausedGoals": "Paused goals ({{count}})",
+    "pausedExercises": "Paused exercises ({{count}})",
+    "disciplineSubtitle": {
+      "one": "{{name}} trains {{selected}} of {{total}} goals in this discipline; {{count}} is paused.",
+      "few": "{{name}} trains {{selected}} of {{total}} goals in this discipline; {{count}} are paused.",
+      "other": "{{name}} trains {{selected}} of {{total}} goals in this discipline; {{count}} are paused."
+    },
+    "noActiveGoals": "No goals in progress. Return a paused goal to in progress or assign one from the library.",
+    "goalPaused": "Goal paused",
+    "goalPausedDescription": "{{name}} won't be offered when scheduling.",
+    "goalResumed": "Goal returned to in progress",
+    "goalResumedDescription": "The exercises of {{name}} will be offered when scheduling again.",
+    "goalCompleted": "Goal completed",
+    "goalCompletedDescription": "{{name}} is now among the completed goals.",
+    "exercisePaused": "Exercise paused",
+    "exercisePausedDescription": "{{name}} won't be offered when scheduling.",
+    "saveError": "Could not save the status.",
+    "retry": "Try again",
+    "notPlannable": {
+      "exercisePaused": "This exercise is paused. To schedule it, return it to in progress in the menu.",
+      "exerciseMastered": "This exercise is mastered. To schedule it, return it to in progress in the menu.",
+      "goalPaused": "The goal {{goal}} is paused. To schedule this exercise, return the goal to in progress on the discipline page.",
+      "goalCompleted": "The goal {{goal}} is completed. To schedule this exercise, return the goal to in progress on the discipline page."
+    }
   }
 }

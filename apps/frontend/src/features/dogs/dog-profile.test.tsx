@@ -1,4 +1,5 @@
 import type { DogProfile } from "./api/dogProfileQueryOptions";
+import { toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   createMemoryHistory,
@@ -152,7 +153,11 @@ describe("dog profile", () => {
     }));
     state.get.set("dogs/dog-1/disciplines/d1/selection", () => ({
       goals: [
-        { goalId: "g1", completedAt: null, exercises: [{ exerciseId: "e1" }] },
+        {
+          goalId: "g1",
+          status: "in_progress",
+          exercises: [{ exerciseId: "e1", status: "in_progress" }],
+        },
       ],
     }));
     const user = userEvent.setup();
@@ -203,6 +208,7 @@ describe("dog profile", () => {
       rating: null,
       note: null,
       completedAt: null,
+      paused: false,
       dog: { id: "dog-1", name: "Mája", avatarVersion: null },
       exercise: {
         id: "e1",
@@ -310,13 +316,19 @@ describe("dog profile", () => {
       ...emptyDog,
       disciplines: [{ ...summary, completedGoalCount: 0 }],
     };
-    let completedAt: string | null = null;
+    let status = "in_progress";
     state.get.set("dogs/dog-1", () => dog);
     state.get.set("dogs/dog-1/disciplines/d1/selection", () => ({
-      goals: [{ goalId: "g1", completedAt, exercises: [{ exerciseId: "e1" }] }],
+      goals: [
+        {
+          goalId: "g1",
+          status,
+          exercises: [{ exerciseId: "e1", status: "in_progress" }],
+        },
+      ],
     }));
     state.patch.mockImplementation(async () => {
-      completedAt = "2026-10-24T10:00:00.000Z";
+      status = "completed";
       return {};
     });
     renderRoute("/dogs/dog-1/disciplines/d1?lng=en");
@@ -333,12 +345,218 @@ describe("dog profile", () => {
     await waitFor(() =>
       expect(state.patch).toHaveBeenCalledWith(
         "dogs/dog-1/disciplines/d1/goals/g1",
-        { json: { completed: true } },
+        { json: { status: "completed" } },
       ),
     );
     expect(
       await screen.findByRole("button", { name: "Completed goals (1)" }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Mark as completed" }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("goal status", () => {
+  const goal = (status: string, exercises: [string, string][] = []) => ({
+    status,
+    exercises: exercises.map(([exerciseId, status]) => ({
+      exerciseId,
+      status,
+    })),
+  });
+  const disciplinePath = "/dogs/dog-1/disciplines/d1?lng=en";
+  const card = (name: string) => screen.getByRole("article", { name });
+  async function menuItems(
+    user: ReturnType<typeof userEvent.setup>,
+    name: string,
+  ) {
+    await user.click(
+      within(card(name)).getByRole("button", {
+        name: `More actions for goal ${name}`,
+      }),
+    );
+    const items = (await screen.findAllByRole("menuitem")).map(
+      (item) => item.textContent,
+    );
+    await user.keyboard("{Escape}");
+    await waitFor(() =>
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument(),
+    );
+    return items;
+  }
+  afterEach(() => toast.clear());
+
+  it("offers each goal status the other two and shows exercise statuses by icon and text", async () => {
+    const user = userEvent.setup();
+    state.get.set("disciplines/d1", () => ({
+      ...discipline,
+      goals: [
+        ...discipline.goals,
+        { id: "g3", name: "Heel", criterion: null, dogs: [], exercises: [] },
+      ],
+    }));
+    state.get.set("dogs/dog-1/disciplines/d1/selection", () => ({
+      goals: [
+        {
+          goalId: "g1",
+          ...goal("in_progress", [
+            ["e1", "paused"],
+            ["e2", "mastered"],
+          ]),
+        },
+        { goalId: "g2", ...goal("paused") },
+        { goalId: "g3", ...goal("completed") },
+      ],
+    }));
+    renderRoute(disciplinePath);
+    expect(
+      await screen.findByText(
+        "Mája trains 3 of 3 goals in this discipline; 1 is paused.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(card("Recall")).getByText("2 exercises · 1 paused · 1 mastered"),
+    ).toBeInTheDocument();
+    expect(within(card("Recall")).getByText(/^Paused ·/)).toBeInTheDocument();
+    expect(within(card("Recall")).getByText(/^Mastered ·/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Paused goals (1)" }),
+    ).toBeInTheDocument();
+    expect(within(card("Stay")).getByText("Paused")).toBeInTheDocument();
+    expect(
+      within(card("Stay")).queryByRole("button", { name: "Mark as completed" }),
+    ).not.toBeInTheDocument();
+
+    expect(await menuItems(user, "Recall")).toEqual([
+      expect.stringMatching(/^Pause goal/),
+      "Add exercise",
+      expect.stringMatching(/^Unassign goal/),
+    ]);
+    expect(await menuItems(user, "Stay")).toEqual([
+      expect.stringMatching(/^Return to in progress/),
+      "Mark as completed",
+      "Add exercise",
+      expect.stringMatching(/^Unassign goal/),
+    ]);
+    expect(await menuItems(user, "Heel")).toEqual([
+      expect.stringMatching(/^Return to in progress/),
+      expect.stringMatching(/^Pause goal/),
+      "Add exercise",
+      expect.stringMatching(/^Unassign goal/),
+    ]);
+  });
+
+  it("pauses a goal at once, confirms after saving and keeps its exercises' own status", async () => {
+    const user = userEvent.setup();
+    const success = vi.spyOn(toast, "success");
+    let status = "in_progress";
+    state.get.set("dogs/dog-1/disciplines/d1/selection", () => ({
+      goals: [
+        {
+          goalId: "g1",
+          ...goal(status, [
+            ["e1", "in_progress"],
+            ["e2", "mastered"],
+          ]),
+        },
+      ],
+    }));
+    let save!: () => void;
+    state.patch.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          save = () => {
+            status = "paused";
+            resolve({});
+          };
+        }),
+    );
+    renderRoute(disciplinePath);
+    await user.click(
+      await screen.findByRole("button", {
+        name: "More actions for goal Recall",
+      }),
+    );
+    await user.click(
+      await screen.findByRole("menuitem", { name: /^Pause goal/ }),
+    );
+    // Shown before the server answers, but not confirmed yet.
+    expect(
+      await screen.findByRole("button", { name: "Paused goals (1)" }),
+    ).toBeInTheDocument();
+    expect(success).not.toHaveBeenCalled();
+    expect(state.patch).toHaveBeenCalledExactlyOnceWith(
+      "dogs/dog-1/disciplines/d1/goals/g1",
+      { json: { status: "paused" } },
+    );
+    // The paused goal shows its exercise in progress as paused; the mastered
+    // one keeps its own status.
+    expect(within(card("Recall")).getByText(/^Paused ·/)).toBeInTheDocument();
+    expect(within(card("Recall")).getByText(/^Mastered ·/)).toBeInTheDocument();
+    save();
+    await waitFor(() =>
+      expect(success).toHaveBeenCalledWith("Goal paused", {
+        description: "Recall won't be offered when scheduling.",
+      }),
+    );
+    expect(
+      screen.getByRole("button", { name: "Paused goals (1)" }),
+    ).toBeInTheDocument();
+  });
+
+  it("restores the saved status and offers a retry when saving fails", async () => {
+    const user = userEvent.setup();
+    const danger = vi.spyOn(toast, "danger");
+    let status = "in_progress";
+    state.get.set("dogs/dog-1/disciplines/d1/selection", () => ({
+      goals: [{ goalId: "g1", ...goal(status, [["e1", "in_progress"]]) }],
+    }));
+    state.patch.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+    renderRoute(disciplinePath);
+    await user.click(
+      await screen.findByRole("button", { name: "Mark as completed" }),
+    );
+    await waitFor(() =>
+      expect(danger).toHaveBeenCalledWith(
+        "Could not save the status.",
+        expect.objectContaining({ timeout: 0 }),
+      ),
+    );
+    // Nothing unsaved is shown as saved.
+    expect(
+      screen.queryByRole("button", { name: "Completed goals (1)" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Mark as completed" }),
+    ).toBeInTheDocument();
+    state.patch.mockImplementation(async () => {
+      status = "completed";
+      return {};
+    });
+    const retry = danger.mock.calls[0]![1]!.actionProps!;
+    expect(retry.children).toBe("Try again");
+    retry.onPress?.({} as never);
+    expect(
+      await screen.findByRole("button", { name: "Completed goals (1)" }),
+    ).toBeInTheDocument();
+    expect(state.patch).toHaveBeenCalledTimes(2);
+  });
+
+  it("offers creating a goal without status controls when the dog has no goals", async () => {
+    state.get.set("disciplines/d1", () => ({ ...discipline, goals: [] }));
+    renderRoute(disciplinePath);
+    expect(
+      await screen.findByText(
+        "No goals in progress yet. Add a goal or assign one from the library.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Add goal" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /^More actions for goal/ }),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Mark as completed" }),
     ).not.toBeInTheDocument();

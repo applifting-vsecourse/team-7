@@ -444,7 +444,6 @@
     "doneDisciplines": "Splněné disciplíny ({{count}})",
     "assignGoal": "Přiřadit cíl",
     "markComplete": "Označit jako splněný",
-    "reopen": "Znovu otevřít cíl",
     "removeGoal": "Odebrat cíl psovi",
     "unassigned": "Nepřiřazeno",
     "assign": "Přiřadit",
@@ -544,5 +543,53 @@
     "futureDate": "Vyberte dnešek nebo pozdější datum.",
     "duplicateDay": "Tento pes má v ten den stejné cvičení už naplánované.",
     "noProcedure": "K tomuto cvičení zatím nebyl přidán postup."
+  },
+  "status": {
+    "paused": "Pozastaveno",
+    "mastered": "Zvládnuto",
+    "goalPausedChip": "Cíl pozastaven",
+    "pauseGoal": "Pozastavit cíl",
+    "pauseHint": "Nebude se nabízet při plánování.",
+    "resume": "Vrátit do rozpracovaných",
+    "resumeGoalHint": "Cvičení se znovu nabídnou při plánování.",
+    "resumeExerciseHint": "Znovu se nabídne při plánování.",
+    "removeGoalHint": "Cvičení cíle se psovi {{name}} odeberou, hodnocení zůstanou.",
+    "pauseExercise": "Pozastavit cvičení",
+    "markMastered": "Označit jako zvládnuté",
+    "markMasteredHint": "{{name}} ho umí. Zůstane v historii.",
+    "pausedCount": {
+      "one": "{{count}} pozastavené",
+      "few": "{{count}} pozastavená",
+      "other": "{{count}} pozastavených"
+    },
+    "masteredCount": {
+      "one": "{{count}} zvládnuté",
+      "few": "{{count}} zvládnutá",
+      "other": "{{count}} zvládnutých"
+    },
+    "pausedGoals": "Pozastavené cíle ({{count}})",
+    "pausedExercises": "Pozastavená cvičení ({{count}})",
+    "disciplineSubtitle": {
+      "one": "{{name}} trénuje {{selected}} z {{total}} cílů této disciplíny, {{count}} je pozastavený.",
+      "few": "{{name}} trénuje {{selected}} z {{total}} cílů této disciplíny, {{count}} jsou pozastavené.",
+      "other": "{{name}} trénuje {{selected}} z {{total}} cílů této disciplíny, {{count}} je pozastavených."
+    },
+    "noActiveGoals": "Zatím žádné rozpracované cíle. Vraťte pozastavený cíl do rozpracovaných nebo přiřaďte cíl z knihovny.",
+    "goalPaused": "Cíl pozastaven",
+    "goalPausedDescription": "{{name}} se nebude nabízet při plánování.",
+    "goalResumed": "Cíl vrácen do rozpracovaných",
+    "goalResumedDescription": "Cvičení cíle {{name}} se znovu nabídnou při plánování.",
+    "goalCompleted": "Cíl splněn",
+    "goalCompletedDescription": "{{name}} najdete mezi splněnými cíli.",
+    "exercisePaused": "Cvičení pozastaveno",
+    "exercisePausedDescription": "{{name}} se nebude nabízet při plánování.",
+    "saveError": "Stav se nepodařilo uložit.",
+    "retry": "Zkusit znovu",
+    "notPlannable": {
+      "exercisePaused": "Cvičení je pozastavené. Aby šlo naplánovat, vraťte ho v menu do rozpracovaných.",
+      "exerciseMastered": "Cvičení je zvládnuté. Aby šlo naplánovat, vraťte ho v menu do rozpracovaných.",
+      "goalPaused": "Cíl {{goal}} je pozastavený. Aby šlo cvičení naplánovat, vraťte cíl do rozpracovaných v detailu disciplíny.",
+      "goalCompleted": "Cíl {{goal}} je splněný. Aby šlo cvičení naplánovat, vraťte cíl do rozpracovaných v detailu disciplíny."
+    }
   }
 }

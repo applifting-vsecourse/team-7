@@ -3,11 +3,18 @@ import { z } from "zod";
 
 import { api } from "@/lib/api-client";
 
+import {
+  exerciseStatusSchema,
+  goalStatusSchema,
+} from "@/features/dogs/schemas/statusSchema";
+
 export const planningExerciseSchema = z.object({
   id: z.string(),
   name: z.string(),
+  status: exerciseStatusSchema,
   goalId: z.string(),
   goalName: z.string(),
+  goalStatus: goalStatusSchema,
   disciplineId: z.string(),
   disciplineName: z.string(),
 });
@@ -20,6 +27,8 @@ export const eventSchema = z.object({
   rating: z.number().nullable(),
   note: z.string().nullable(),
   completedAt: z.string().nullable(),
+  // The exercise or its goal is paused for this dog.
+  paused: z.boolean(),
   dog: z.object({
     id: z.string(),
     name: z.string(),
