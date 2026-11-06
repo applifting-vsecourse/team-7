@@ -56,11 +56,12 @@ export function NeglectedDisciplines({
   return (
     <section
       aria-label={title}
-      className="flex flex-col gap-1 rounded-3xl bg-warning-soft pb-3"
+      className="flex animate-enter flex-col gap-1 rounded-3xl bg-warning-soft pb-3"
     >
       {/* Spec: the kit's warning alert as the header, without its own surface. */}
       <Alert status="warning" className="bg-transparent shadow-none">
-        <Alert.Indicator />
+        {/* The icon springs in once the block has slid into place. */}
+        <Alert.Indicator className="animate-pop [--i:4] stagger-delay" />
         <Alert.Content>
           <Alert.Title>{title}</Alert.Title>
         </Alert.Content>
