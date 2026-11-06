@@ -19,6 +19,7 @@ describe("overview", () => {
   const service = new OverviewService(prisma);
   beforeEach(() => {
     vi.resetAllMocks();
+    prisma.dogExercise.findMany.mockResolvedValue([]);
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-25T23:30:00Z")); // Monday in Prague, DST has ended.
   });

@@ -7,7 +7,10 @@ import { DogExerciseDetailsService } from "./dog-exercise-details.service";
 describe("dog exercise details", () => {
   const prisma = mockDeep<PrismaService>();
   const service = new DogExerciseDetailsService(prisma);
-  beforeEach(() => vi.resetAllMocks());
+  beforeEach(() => {
+    vi.resetAllMocks();
+    prisma.dogExercise.findMany.mockResolvedValue([]);
+  });
   it("rejects another handler's dog before reading training history", async () => {
     prisma.dog.findFirst.mockResolvedValue(null);
     await expect(service.get("user-a", "dog-b", "e1")).rejects.toBeInstanceOf(
@@ -59,7 +62,9 @@ describe("dog exercise details", () => {
       status: null,
       goalStatus: null,
     });
-    expect(result.events).toEqual([{ id: "result-a", rating: 4 }]);
+    expect(result.events).toEqual([
+      { id: "result-a", rating: 4, paused: false },
+    ]);
     expect(prisma.scheduledExercise.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { dogId: "dog-a", exerciseId: "e1", deletedAt: null },

@@ -25,6 +25,8 @@ describe("exercise scheduling", () => {
     );
     prisma.dog.findFirst.mockResolvedValue({ id: "dog-a" } as never);
     prisma.dogExercise.count.mockResolvedValue(1);
+    prisma.dogExercise.findMany.mockResolvedValue([]);
+    prisma.scheduledExercise.findMany.mockResolvedValue([]);
     prisma.scheduledExercise.createMany.mockResolvedValue({ count: 1 });
   });
   it("checks ownership and saves the whole batch in a transaction", async () => {
@@ -40,8 +42,9 @@ describe("exercise scheduling", () => {
       where: {
         dogId: "dog-a",
         exerciseId: { in: ["exercise-a"] },
+        status: "in_progress",
         dogGoal: {
-          completedAt: null,
+          status: "in_progress",
           goal: { discipline: { userId: "user-a" } },
         },
       },
@@ -64,7 +67,7 @@ describe("exercise scheduling", () => {
     );
     expect(prisma.scheduledExercise.createMany).not.toHaveBeenCalled();
   });
-  it("rejects the entire batch when an exercise is unassigned or completed", async () => {
+  it("rejects the entire batch when an exercise is unassigned, paused, mastered or its goal is not in progress", async () => {
     prisma.dogExercise.count.mockResolvedValue(0);
     await expect(service.schedule("user-a", input)).rejects.toBeInstanceOf(
       BadRequestException,
@@ -117,6 +120,65 @@ describe("exercise scheduling", () => {
           ],
         },
         omit: { undoToken: true, undoState: true, deletedAt: true },
+      }),
+    );
+  });
+  it("keeps trainings of paused exercises in the calendar and marks them", async () => {
+    prisma.scheduledExercise.findMany.mockResolvedValue([
+      { id: "a", dogId: "dog-a", exerciseId: "paused", rating: 4, note: "ok" },
+      { id: "b", dogId: "dog-a", exerciseId: "active" },
+    ] as never);
+    prisma.dogExercise.findMany.mockResolvedValue([
+      { dogId: "dog-a", exerciseId: "paused" },
+    ] as never);
+    await expect(
+      service.list("user-a", {
+        from: "2026-10-01T00:00:00Z",
+        to: "2026-11-01T00:00:00Z",
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({ id: "a", rating: 4, note: "ok", paused: true }),
+      expect.objectContaining({ id: "b", paused: false }),
+    ]);
+  });
+  it("offers paused goals and exercises read-only, without completed goals or mastered exercises", async () => {
+    prisma.dogGoal.findMany.mockResolvedValue([
+      {
+        status: "paused",
+        goal: {
+          id: "g1",
+          name: "Recall",
+          discipline: { id: "d1", name: "Ob" },
+        },
+        exercises: [
+          { status: "in_progress", exercise: { id: "e1", name: "5 m" } },
+        ],
+      },
+    ] as never);
+    await expect(service.exercises("user-a", "dog-a")).resolves.toEqual([
+      {
+        id: "e1",
+        name: "5 m",
+        status: "in_progress",
+        goalId: "g1",
+        goalName: "Recall",
+        goalStatus: "paused",
+        disciplineId: "d1",
+        disciplineName: "Ob",
+      },
+    ]);
+    expect(prisma.dogGoal.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          dogId: "dog-a",
+          status: { not: "completed" },
+          goal: { discipline: { userId: "user-a" } },
+        },
+        include: expect.objectContaining({
+          exercises: expect.objectContaining({
+            where: { status: { not: "mastered" } },
+          }),
+        }),
       }),
     );
   });
