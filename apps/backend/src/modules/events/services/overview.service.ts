@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@/core/prisma/prisma.service";
+import { withPaused } from "./exercise-status";
 import { dayMs } from "./overview.const";
 
 const shiftDay = (day: string, offset: number) =>
@@ -161,7 +162,7 @@ export class OverviewService {
         ),
         satisfactionHistory,
       },
-      events,
+      events: await withPaused(this.prisma, events),
     };
   }
 }

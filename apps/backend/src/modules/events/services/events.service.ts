@@ -7,6 +7,7 @@ import {
 import { randomUUID } from "node:crypto";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { Prisma, type ScheduledExercise } from "@/generated/prisma/client";
+import { plannableDogExercise, withPaused } from "./exercise-status";
 export type ScheduleInput = {
   dogId: string;
   timeZone: string;
@@ -27,23 +28,32 @@ export class EventsService {
       select: { id: true },
     });
     if (!dog) throw new NotFoundException("Dog not found");
+    // Paused goals and exercises come along so the dialog can list them as
+    // read-only; completed goals and mastered exercises are left out.
     const assignments = await this.prisma.dogGoal.findMany({
-      where: { dogId, completedAt: null, goal: { discipline: { userId } } },
+      where: {
+        dogId,
+        status: { not: "completed" },
+        goal: { discipline: { userId } },
+      },
       include: {
         goal: { include: { discipline: true } },
         exercises: {
+          where: { status: { not: "mastered" } },
           include: { exercise: true },
           orderBy: { createdAt: "asc" },
         },
       },
       orderBy: { createdAt: "asc" },
     });
-    return assignments.flatMap(({ goal, exercises }) =>
-      exercises.map(({ exercise }) => ({
+    return assignments.flatMap(({ goal, status: goalStatus, exercises }) =>
+      exercises.map(({ exercise, status }) => ({
         id: exercise.id,
         name: exercise.name,
+        status,
         goalId: goal.id,
         goalName: goal.name,
+        goalStatus,
         disciplineId: goal.discipline.id,
         disciplineName: goal.discipline.name,
       })),
@@ -56,35 +66,37 @@ export class EventsService {
     const duration = to.getTime() - from.getTime();
     if (!Number.isFinite(duration) || duration <= 0 || duration > 62 * 86400000)
       throw new BadRequestException("Choose a range of at most 62 days");
-    return this.prisma.scheduledExercise.findMany({
-      where: {
-        dog: { userId, archivedAt: null },
-        deletedAt: null,
-        OR: [
-          { completedAt: { gte: from, lt: to } },
-          { completedAt: null, startsAt: { gte: from, lt: to } },
-        ],
-      },
-      omit: { undoToken: true, undoState: true, deletedAt: true },
-      include: {
-        dog: { select: { id: true, name: true, avatarVersion: true } },
-        exercise: {
-          select: {
-            id: true,
-            name: true,
-            procedure: true,
-            goal: {
-              select: {
-                id: true,
-                name: true,
-                discipline: { select: { id: true, name: true } },
+    return this.prisma.scheduledExercise
+      .findMany({
+        where: {
+          dog: { userId, archivedAt: null },
+          deletedAt: null,
+          OR: [
+            { completedAt: { gte: from, lt: to } },
+            { completedAt: null, startsAt: { gte: from, lt: to } },
+          ],
+        },
+        omit: { undoToken: true, undoState: true, deletedAt: true },
+        include: {
+          dog: { select: { id: true, name: true, avatarVersion: true } },
+          exercise: {
+            select: {
+              id: true,
+              name: true,
+              procedure: true,
+              goal: {
+                select: {
+                  id: true,
+                  name: true,
+                  discipline: { select: { id: true, name: true } },
+                },
               },
             },
           },
         },
-      },
-      orderBy: [{ startsAt: "asc" }, { id: "asc" }],
-    });
+        orderBy: [{ startsAt: "asc" }, { id: "asc" }],
+      })
+      .then((events) => withPaused(this.prisma, events));
   }
 
   async schedule(userId: string, input: ScheduleInput) {
@@ -101,12 +113,12 @@ export class EventsService {
         where: {
           dogId: dog.id,
           exerciseId: { in: ids },
-          dogGoal: { completedAt: null, goal: { discipline: { userId } } },
+          ...plannableDogExercise(userId),
         },
       });
       if (count !== ids.length)
         throw new BadRequestException(
-          "Exercise is not assigned to this dog or its goal is completed",
+          "Exercise is not assigned to this dog, or it or its goal is not in progress",
         );
       return tx.scheduledExercise.createMany({
         data: input.exercises.map((item) => ({
