@@ -21,6 +21,16 @@ type Patch<TVariables, TResult> = (
   result: TResult,
 ) => DisciplineDetail;
 
+type Options<TVariables, TResult> = {
+  patch?: Patch<TVariables, TResult>;
+  /**
+   * Whether the change shows up in scheduled trainings (calendar, overview):
+   * they display library names and procedures, and lose trainings when a
+   * library item or a dog's selection is removed. Creating doesn't touch them.
+   */
+  refreshesEvents?: (variables: TVariables) => boolean;
+};
+
 /**
  * `patch` is for edits of a list on the current page: the cache changes as
  * soon as the server confirms, so the dialog closes on the new list, its
@@ -30,7 +40,7 @@ type Patch<TVariables, TResult> = (
  */
 function useLibraryMutation<TVariables, TResult = unknown>(
   mutationFn: (variables: TVariables) => Promise<TResult>,
-  patch?: Patch<TVariables, TResult>,
+  { patch, refreshesEvents }: Options<TVariables, TResult> = {},
 ) {
   const { user } = useSession();
   const queryClient = useQueryClient();
@@ -46,9 +56,9 @@ function useLibraryMutation<TVariables, TResult = unknown>(
           (detail) => detail && patch(detail, variables, result),
         );
       }
-      // Scheduled trainings show library names and procedures (calendar and
-      // overview), so they follow any library change.
-      void queryClient.invalidateQueries({ queryKey: eventsKey(user?.id) });
+      if (refreshesEvents?.(variables)) {
+        void queryClient.invalidateQueries({ queryKey: eventsKey(user?.id) });
+      }
       const refetch = queryClient.invalidateQueries({
         queryKey: disciplinesKey(user?.id),
       });
@@ -68,6 +78,9 @@ const mapExercises = (
   })),
 });
 
+const always = () => true;
+const isEdit = ({ id }: { id?: string }) => Boolean(id);
+
 const path = (...segments: string[]) =>
   segments.map(encodeURIComponent).join("/");
 
@@ -82,12 +95,14 @@ export function useSaveDiscipline() {
           : api.post("disciplines", { json })
       ).json<Saved>();
     },
+    { refreshesEvents: isEdit },
   );
 }
 
 export function useDeleteDiscipline() {
-  return useLibraryMutation((id: string) =>
-    api.delete(path("disciplines", id)),
+  return useLibraryMutation(
+    (id: string) => api.delete(path("disciplines", id)),
+    { refreshesEvents: always },
   );
 }
 
@@ -109,37 +124,40 @@ export function useSaveGoal() {
           : api.post(path("disciplines", disciplineId, "goals"), { json })
       ).json<Saved>();
     },
-    (detail, { disciplineId, id, values }, saved) => {
-      const fields = { name: values.name, criterion: values.text || null };
-      if (id) {
-        return {
-          ...detail,
-          goals: detail.goals.map((goal) =>
-            goal.id === id ? { ...goal, ...fields } : goal,
-          ),
-        };
-      }
-      return detail.id === disciplineId
-        ? {
+    {
+      refreshesEvents: isEdit,
+      patch: (detail, { disciplineId, id, values }, saved) => {
+        const fields = { name: values.name, criterion: values.text || null };
+        if (id) {
+          return {
             ...detail,
-            goals: [
-              ...detail.goals,
-              { ...fields, id: saved.id, exercises: [], dogs: [] },
-            ],
-          }
-        : detail;
+            goals: detail.goals.map((goal) =>
+              goal.id === id ? { ...goal, ...fields } : goal,
+            ),
+          };
+        }
+        return detail.id === disciplineId
+          ? {
+              ...detail,
+              goals: [
+                ...detail.goals,
+                { ...fields, id: saved.id, exercises: [], dogs: [] },
+              ],
+            }
+          : detail;
+      },
     },
   );
 }
 
 export function useDeleteGoal() {
-  return useLibraryMutation(
-    (id: string) => api.delete(path("goals", id)),
-    (detail, id) => ({
+  return useLibraryMutation((id: string) => api.delete(path("goals", id)), {
+    refreshesEvents: always,
+    patch: (detail, id) => ({
       ...detail,
       goals: detail.goals.filter((goal) => goal.id !== id),
     }),
-  );
+  });
 }
 
 export function useSaveExercise() {
@@ -160,18 +178,21 @@ export function useSaveExercise() {
           : api.post(path("goals", goalId, "exercises"), { json })
       ).json<Saved>();
     },
-    (detail, { goalId, id, values }, saved) => {
-      const fields = { name: values.name, procedure: values.text || null };
-      return mapExercises(detail, (exercises, goal) => {
-        if (id) {
-          return exercises.map((exercise) =>
-            exercise.id === id ? { ...exercise, ...fields } : exercise,
-          );
-        }
-        return goal.id === goalId
-          ? [...exercises, { ...fields, id: saved.id, dogCount: 0 }]
-          : exercises;
-      });
+    {
+      refreshesEvents: isEdit,
+      patch: (detail, { goalId, id, values }, saved) => {
+        const fields = { name: values.name, procedure: values.text || null };
+        return mapExercises(detail, (exercises, goal) => {
+          if (id) {
+            return exercises.map((exercise) =>
+              exercise.id === id ? { ...exercise, ...fields } : exercise,
+            );
+          }
+          return goal.id === goalId
+            ? [...exercises, { ...fields, id: saved.id, dogCount: 0 }]
+            : exercises;
+        });
+      },
     },
   );
 }
@@ -204,19 +225,23 @@ export function useAssignDiscipline() {
 export function useRemoveDiscipline() {
   return useLibraryMutation(
     (target: DogDiscipline) => putSelection(target, []),
-    (detail, { disciplineId, dogId }) =>
-      detail.id === disciplineId
-        ? { ...detail, dogs: detail.dogs.filter((dog) => dog.id !== dogId) }
-        : detail,
+    {
+      // Clearing the selection cancels the dog's planned trainings.
+      refreshesEvents: always,
+      patch: (detail, { disciplineId, dogId }) =>
+        detail.id === disciplineId
+          ? { ...detail, dogs: detail.dogs.filter((dog) => dog.id !== dogId) }
+          : detail,
+    },
   );
 }
 
 export function useDeleteExercise() {
-  return useLibraryMutation(
-    (id: string) => api.delete(path("exercises", id)),
-    (detail, id) =>
+  return useLibraryMutation((id: string) => api.delete(path("exercises", id)), {
+    refreshesEvents: always,
+    patch: (detail, id) =>
       mapExercises(detail, (exercises) =>
         exercises.filter((exercise) => exercise.id !== id),
       ),
-  );
+  });
 }
