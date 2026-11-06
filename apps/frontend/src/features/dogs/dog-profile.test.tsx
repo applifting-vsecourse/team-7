@@ -412,7 +412,7 @@ describe("goal status", () => {
     renderRoute(disciplinePath);
     expect(
       await screen.findByText(
-        "Mája trains 3 of 3 goals in this discipline; 1 is paused.",
+        "Mája trains 1 of 3 goals in this discipline; 1 is paused.",
       ),
     ).toBeInTheDocument();
     expect(
@@ -494,12 +494,18 @@ describe("goal status", () => {
     // one keeps its own status.
     expect(within(card("Recall")).getByText(/^Paused ·/)).toBeInTheDocument();
     expect(within(card("Recall")).getByText(/^Mastered ·/)).toBeInTheDocument();
+    // No second change can start while this one is saving.
+    const menu = screen.getByRole("button", {
+      name: "More actions for goal Recall",
+    });
+    expect(menu).toBeDisabled();
     save();
     await waitFor(() =>
       expect(success).toHaveBeenCalledWith("Goal paused", {
         description: "Recall won't be offered when scheduling.",
       }),
     );
+    await waitFor(() => expect(menu).toBeEnabled());
     expect(
       screen.getByRole("button", { name: "Paused goals (1)" }),
     ).toBeInTheDocument();

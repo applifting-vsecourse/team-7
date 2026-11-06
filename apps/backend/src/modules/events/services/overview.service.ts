@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@/core/prisma/prisma.service";
-import { withPaused } from "./exercise-status";
+import { withPaused } from "@/shared/domain/exercise-status";
 import { dayMs } from "./overview.const";
 
 const shiftDay = (day: string, offset: number) =>

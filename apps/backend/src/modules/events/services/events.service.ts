@@ -7,7 +7,10 @@ import {
 import { randomUUID } from "node:crypto";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { Prisma, type ScheduledExercise } from "@/generated/prisma/client";
-import { plannableDogExercise, withPaused } from "./exercise-status";
+import {
+  plannableDogExercise,
+  withPaused,
+} from "@/shared/domain/exercise-status";
 export type ScheduleInput = {
   dogId: string;
   timeZone: string;
