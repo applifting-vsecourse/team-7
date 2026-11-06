@@ -22,6 +22,23 @@ enum UserRole {
   @@map("user_role")
 }
 
+// Set by the handler per dog; changing a goal never changes its exercises.
+enum DogGoalStatus {
+  in_progress
+  paused
+  completed
+
+  @@map("dog_goal_status")
+}
+
+enum DogExerciseStatus {
+  in_progress
+  paused
+  mastered
+
+  @@map("dog_exercise_status")
+}
+
 model Dog {
   id            String    @id @default(cuid())
   name          String    @db.Text
@@ -97,7 +114,8 @@ model DogGoal {
   dogId       String
   goal        Goal          @relation(fields: [goalId], references: [id], onDelete: Cascade)
   goalId      String
-  // Set when the handler marks the goal achieved for this dog.
+  status      DogGoalStatus @default(in_progress)
+  // When the goal was last completed; null unless status is completed (DB check).
   completedAt DateTime?
   exercises   DogExercise[]
   createdAt   DateTime      @default(now())
@@ -115,6 +133,7 @@ model DogExercise {
   goalId     String
   exercise   Exercise @relation(fields: [exerciseId, goalId], references: [id, goalId], onDelete: Cascade)
   exerciseId String
+  status     DogExerciseStatus @default(in_progress)
   createdAt  DateTime @default(now())
 
   @@id([dogId, exerciseId])

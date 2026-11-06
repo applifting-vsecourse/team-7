@@ -1,12 +1,18 @@
 import { PrismaService } from "@/core/prisma/prisma.service";
+import type { DogExerciseStatus } from "@/generated/prisma/client";
 
-type ExerciseSeed = { name: string; procedure: string };
+type ExerciseSeed = {
+  name: string;
+  procedure: string;
+  // The dogs' status for this exercise; in progress when omitted.
+  status?: DogExerciseStatus;
+};
 type GoalSeed = {
   name: string;
   criterion: string;
   exercises: ExerciseSeed[];
-  // Picked by every dog of the user; "completed" also marks it achieved.
-  dogs?: "assigned" | "completed";
+  // Picked by every dog of the user, with this status.
+  dogs?: "assigned" | "paused" | "completed";
 };
 type DisciplineSeed = { name: string; description: string; goals: GoalSeed[] };
 
@@ -31,13 +37,17 @@ const disciplines: DisciplineSeed[] = [
         dogs: "assigned",
         exercises: [
           { name: "Přivolání z 5 metrů", procedure: "10 opakování" },
+          // Every exercise status, as in Figma S6. The first exercise stays in
+          // progress: seed-events hangs the sample history on it.
           {
             name: "Přivolání z 10 metrů",
             procedure: "10 opakování, s pomocníkem",
+            status: "paused",
           },
           {
             name: "Přivolání od hračky",
             procedure: "5 opakování, nejvyšší vzrušení",
+            status: "mastered",
           },
         ],
       },
@@ -81,7 +91,8 @@ const disciplines: DisciplineSeed[] = [
       {
         name: "Hledání v krabicích",
         criterion: "Najít pach v 1 z 10 krabic do 1 minuty.",
-        dogs: "assigned",
+        // A paused goal without seeded trainings.
+        dogs: "paused",
         exercises: [
           { name: "Jedna krabice", procedure: "10 opakování" },
           { name: "Řada krabic", procedure: "5 krabic, 3 kola" },
@@ -125,10 +136,16 @@ export async function seedDisciplines(prisma: PrismaService): Promise<void> {
             create: discipline.goals.map((goal) => ({
               name: goal.name,
               criterion: goal.criterion,
-              exercises: { create: goal.exercises },
+              exercises: {
+                create: goal.exercises.map(({ name, procedure }) => ({
+                  name,
+                  procedure,
+                })),
+              },
               dogs: goal.dogs && {
                 create: user.dogs.map((dog) => ({
                   dogId: dog.id,
+                  status: goal.dogs === "assigned" ? "in_progress" : goal.dogs,
                   completedAt: goal.dogs === "completed" ? new Date() : null,
                 })),
               },
@@ -139,19 +156,19 @@ export async function seedDisciplines(prisma: PrismaService): Promise<void> {
       });
 
       // Dogs train every exercise of the goals they picked.
-      const picked = created.goals.filter(
-        (goal) =>
-          discipline.goals.find((seed) => seed.name === goal.name)?.dogs,
-      );
-      const dogExercises = picked.flatMap((goal) =>
-        goal.exercises.flatMap((exercise) =>
+      const dogExercises = created.goals.flatMap((goal) => {
+        const seed = discipline.goals.find((item) => item.name === goal.name);
+        if (!seed?.dogs) return [];
+        return goal.exercises.flatMap((exercise) =>
           user.dogs.map((dog) => ({
             dogId: dog.id,
             goalId: goal.id,
             exerciseId: exercise.id,
+            status: seed.exercises.find((item) => item.name === exercise.name)
+              ?.status,
           })),
-        ),
-      );
+        );
+      });
       if (dogExercises.length > 0) {
         await prisma.dogExercise.createMany({ data: dogExercises });
       }
