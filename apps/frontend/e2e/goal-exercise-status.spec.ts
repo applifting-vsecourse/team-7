@@ -1,33 +1,4 @@
-import type { AppPage } from "./pom/app.page";
-import type { DisciplinePage } from "./pom/discipline.page";
-import type { DogPage } from "./pom/dog.page";
-import type { Page } from "@playwright/test";
-
-import { expect, test } from "./fixtures";
-
-/** A new dog training a new discipline with one goal and one exercise. */
-async function trainingPlan(
-  page: Page,
-  {
-    app,
-    dog,
-    discipline,
-  }: { app: AppPage; dog: DogPage; discipline: DisciplinePage },
-  names: { dog: string; discipline: string; goal: string; exercise: string },
-) {
-  await dog.create(names.dog);
-  const dogUrl = page.url();
-  await app.disciplinesLink.click();
-  await discipline.create(names.discipline, "Recall and focus training");
-  await discipline.createGoal(names.goal, "Three successful recalls in a row");
-  await discipline.createExercise(
-    names.goal,
-    names.exercise,
-    "Recall from play",
-  );
-  await discipline.assign(names.dog);
-  return dogUrl;
-}
+import { expect, test, trainingPlan } from "./fixtures";
 
 test("a paused goal stays scheduled in the calendar but is not offered for planning", async ({
   page,

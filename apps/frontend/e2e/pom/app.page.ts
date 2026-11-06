@@ -8,6 +8,12 @@ export class AppPage {
       name: "Main navigation",
     });
   }
+  get overviewLink() {
+    return this.navigation.getByRole("link", {
+      name: "Overview",
+      exact: true,
+    });
+  }
   get calendarLink() {
     return this.navigation.getByRole("link", {
       name: "Calendar",
