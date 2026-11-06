@@ -26,6 +26,7 @@ const state = vi.hoisted(() => ({
   status: "in_progress",
   goalStatus: "in_progress",
   fail: false,
+  archivedAt: null as string | null,
   remove: vi.fn(),
   post: vi.fn(),
   patch: vi.fn(),
@@ -85,7 +86,7 @@ vi.mock("@/lib/api-client", () => ({
         if (path === "dogs/dog-a/exercises/e1") {
           if (state.fail) throw new Error("offline");
           return {
-            dog,
+            dog: { ...dog, archivedAt: state.archivedAt },
             exercise: {
               ...exercise,
               assigned: state.assigned,
@@ -198,6 +199,7 @@ beforeEach(() => {
   state.goalStatus = "in_progress";
   state.events = [];
   state.fail = false;
+  state.archivedAt = null;
   toast.clear();
 });
 afterEach(() => {
@@ -220,6 +222,21 @@ describe("dog exercise detail page", () => {
     ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/dogs/dog-a/exercises/e1");
     expect(router.state.location.search.lng).toBe("en");
+  });
+  it("shows an archived dog's paused exercise without status actions or planning", async () => {
+    state.archivedAt = "2026-11-03T10:00:00.000Z";
+    state.status = "paused";
+    setup();
+    expect(await screen.findByText("No training yet")).toBeInTheDocument();
+    expect(screen.getByText("Paused")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", {
+        name: "More actions for exercise Recall from play",
+      }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Schedule exercise" }),
+    ).toBeNull();
   });
   it("shows the empty state and opens planning with the dog and exercise selected", async () => {
     const { user } = setup();

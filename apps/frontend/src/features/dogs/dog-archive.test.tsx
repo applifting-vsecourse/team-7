@@ -239,7 +239,11 @@ describe("dog archive", () => {
     state.get.set("disciplines/d1", () => discipline);
     state.get.set("dogs/dog-1/disciplines/d1/selection", () => ({
       goals: [
-        { goalId: "g1", completedAt: null, exercises: [{ exerciseId: "e1" }] },
+        {
+          goalId: "g1",
+          status: "in_progress",
+          exercises: [{ exerciseId: "e1", status: "in_progress" }],
+        },
       ],
     }));
     renderRoute("/dogs/dog-1/disciplines/d1?lng=en");
@@ -253,6 +257,9 @@ describe("dog archive", () => {
     ).toBeNull();
     expect(
       screen.queryByRole("button", { name: "Mark as completed" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "More actions for goal Recall" }),
     ).toBeNull();
     expect(screen.queryByRole("button", { name: "Assign" })).toBeNull();
     // Goals the dog doesn't train only offer assigning, so they're hidden.
