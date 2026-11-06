@@ -54,3 +54,19 @@ describe("dragging a training in the calendar", () => {
     expect(tile()).toHaveAttribute("draggable", "false");
   });
 });
+
+describe("paused training", () => {
+  it("adds a grey Paused line and keeps the training's status", () => {
+    const { rerender } = render(<Event {...props} state="completed" />);
+    expect(tile()).not.toHaveTextContent("Paused");
+    rerender(
+      <Event
+        {...props}
+        scheduledEvent={{ ...scheduledEvent, paused: true }}
+        state="completed"
+      />,
+    );
+    expect(tile()).toHaveTextContent("Paused");
+    expect(tile()).toHaveTextContent("Completed");
+  });
+});

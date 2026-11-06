@@ -15,7 +15,10 @@ import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
 import { eventsKey } from "../api/eventsQueryOptions";
 import { ScheduleExerciseDialog } from "./ScheduleExerciseDialog";
 
-const state = vi.hoisted(() => ({ post: vi.fn(async () => ({})) }));
+const state = vi.hoisted(() => ({
+  post: vi.fn(async () => ({})),
+  extra: [] as unknown[],
+}));
 vi.mock("@/features/auth/hooks/useSession", () => ({
   useSession: () => ({ user: { id: "user-a" } }),
 }));
@@ -52,6 +55,7 @@ vi.mock("@/lib/api-client", async () => {
                   disciplineId: "d1",
                   disciplineName: "Obedience",
                 },
+                ...state.extra,
               ],
       }),
       post: state.post,
@@ -61,6 +65,7 @@ vi.mock("@/lib/api-client", async () => {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  state.extra = [];
 });
 
 function setup(selected: string[] | null = ["dog-b"]) {
@@ -153,5 +158,51 @@ describe("exercise planning dialog", () => {
       "Choose at least one exercise",
     );
     expect(state.post).not.toHaveBeenCalled();
+  });
+  it("lists paused goals and exercises read-only and collapsed", async () => {
+    const exercise = {
+      disciplineId: "d1",
+      disciplineName: "Obedience",
+    };
+    state.extra = [
+      {
+        ...exercise,
+        id: "e3",
+        name: "Distance recall",
+        status: "paused",
+        goalId: "g1",
+        goalName: "Reliable recall",
+        goalStatus: "in_progress",
+      },
+      {
+        ...exercise,
+        id: "e4",
+        name: "Heel walk",
+        status: "in_progress",
+        goalId: "g2",
+        goalName: "Loose leash",
+        goalStatus: "paused",
+      },
+    ];
+    const { user } = setup();
+    await user.click(await screen.findByRole("radio", { name: /Mája/ }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    const pausedExercises = await screen.findByRole("button", {
+      name: "Paused exercises (1)",
+    });
+    const pausedGoals = screen.getByRole("button", {
+      name: "Paused goals (1)",
+    });
+    expect(pausedExercises).toHaveAttribute("aria-expanded", "false");
+    expect(pausedGoals).toHaveAttribute("aria-expanded", "false");
+    await user.click(pausedExercises);
+    await user.click(pausedGoals);
+    expect(await screen.findByText("Distance recall")).toBeVisible();
+    expect(await screen.findByText("Loose leash")).toBeVisible();
+    expect(screen.queryByText("Heel walk")).not.toBeInTheDocument();
+    for (const name of ["Distance recall", "Loose leash"]) {
+      expect(screen.queryByRole("checkbox", { name })).not.toBeInTheDocument();
+    }
+    expect(screen.getAllByRole("checkbox")).toHaveLength(3);
   });
 });
