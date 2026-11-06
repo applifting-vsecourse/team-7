@@ -8,7 +8,7 @@
     "dev": "vite",
     "format:check": "oxfmt --check .",
     "format:write": "oxfmt --write .",
-    "lint:check": "oxlint src",
+    "lint:check": "oxlint src e2e playwright.config.ts",
     "lint:fix": "oxlint --fix src",
     "start": "vite preview",
     "test": "pnpm --workspace-root test:watch --project frontend",
