@@ -117,16 +117,31 @@ describe("exercise training seed", () => {
       {
         id: "dog-a",
         goals: [
-          { disciplineId: "obedience", exercises: [{ exerciseId: "e1" }] },
-          { disciplineId: "canicross", exercises: [{ exerciseId: "e2" }] },
-          { disciplineId: "nosework", exercises: [{ exerciseId: "e3" }] },
+          {
+            goal: { disciplineId: "obedience" },
+            exercises: [{ exerciseId: "e1" }],
+          },
+          {
+            goal: { disciplineId: "canicross" },
+            exercises: [{ exerciseId: "e2" }],
+          },
+          {
+            goal: { disciplineId: "nosework" },
+            exercises: [{ exerciseId: "e3" }],
+          },
         ],
       },
       {
         id: "dog-b",
         goals: [
-          { disciplineId: "obedience", exercises: [{ exerciseId: "e1" }] },
-          { disciplineId: "obedience", exercises: [{ exerciseId: "e4" }] },
+          {
+            goal: { disciplineId: "obedience" },
+            exercises: [{ exerciseId: "e1" }],
+          },
+          {
+            goal: { disciplineId: "obedience" },
+            exercises: [{ exerciseId: "e4" }],
+          },
         ],
       },
     ] as never);
