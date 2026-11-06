@@ -74,5 +74,8 @@ export const overviewQueryOptions = (
     // new one loads, so tiles, counters and bars animate to the new data
     // instead of the page dropping back to its loading state.
     placeholderData: keepPreviousData,
+    // Offline, TanStack would pause the request and keep showing the old data;
+    // fail instead so the overview shows its error and retry (#19 AC).
+    networkMode: "always",
   });
 };
