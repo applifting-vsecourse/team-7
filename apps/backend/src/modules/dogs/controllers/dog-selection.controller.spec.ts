@@ -432,6 +432,22 @@ describe("dog discipline selections API", () => {
     expect(prisma.dogExercise.update).not.toHaveBeenCalled();
   });
 
+  it("does not change statuses while the dog is archived", async () => {
+    prisma.dog.findFirst.mockResolvedValue({
+      id: "dog-a",
+      archivedAt: new Date(),
+    });
+    expect(
+      (await request("PATCH", "/goals/g1", { status: "paused" })).status,
+    ).toBe(409);
+    expect(
+      (await request("PATCH", "/goals/g1/exercises/e1", { status: "paused" }))
+        .status,
+    ).toBe(409);
+    expect(prisma.dogGoal.update).not.toHaveBeenCalled();
+    expect(prisma.dogExercise.update).not.toHaveBeenCalled();
+  });
+
   it("deletes an individual goal assignment within the requested discipline", async () => {
     expect((await request("DELETE", "/goals/g1")).status).toBe(204);
     expect(prisma.dogGoal.findFirst).toHaveBeenCalledWith(
