@@ -56,17 +56,20 @@ describe("dragging a training in the calendar", () => {
 });
 
 describe("paused training", () => {
-  it("adds a grey Paused line and keeps the training's status", () => {
-    const { rerender } = render(<Event {...props} state="completed" />);
+  const paused = { ...scheduledEvent, paused: true };
+
+  it("adds a grey Paused line to an upcoming training", () => {
+    const { rerender } = render(<Event {...props} />);
     expect(tile()).not.toHaveTextContent("Paused");
-    rerender(
-      <Event
-        {...props}
-        scheduledEvent={{ ...scheduledEvent, paused: true }}
-        state="completed"
-      />,
-    );
+    rerender(<Event {...props} scheduledEvent={paused} />);
     expect(tile()).toHaveTextContent("Paused");
-    expect(tile()).toHaveTextContent("Completed");
   });
+
+  it.each(["completed", "unfinished"] as const)(
+    "keeps a %s training in the history without the Paused line",
+    (state) => {
+      render(<Event {...props} scheduledEvent={paused} state={state} />);
+      expect(tile()).not.toHaveTextContent("Paused");
+    },
+  );
 });

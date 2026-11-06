@@ -198,9 +198,10 @@ export function Event({
               : t(($) => $.events.unfinished)}
           </p>
         )}
-        {scheduledEvent?.paused && (
-          // Figma Event "Paused" 605:7067: a grey line, no new tile colour;
-          // the training can still be completed, moved or deleted.
+        {isUpcoming && scheduledEvent?.paused && (
+          // Figma Event "Paused" 605:7067, only on trainings still ahead (S9);
+          // history keeps just Completed / Unfinished (S5). A grey line, no
+          // new tile colour; the training can still be completed, moved or deleted.
           <p className="flex items-center gap-1 text-xs leading-5 text-muted">
             <CirclePause className="size-3 shrink-0" aria-hidden="true" />
             {t(($) => $.status.paused)}
