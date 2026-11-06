@@ -10,4 +10,5 @@ export const ROUTES = {
   disciplines: "/disciplines",
   discipline: "/disciplines/$disciplineId",
   dog: "/dogs/$dogId",
+  dogArchive: "/dogs/archive",
 } as const;

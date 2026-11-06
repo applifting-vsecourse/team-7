@@ -1,4 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  type QueryClient,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import { api } from "@/lib/api-client";
 
@@ -12,6 +16,18 @@ import {
 import { dogProfileKey } from "../api/dogProfileQueryOptions";
 import { dogsQueryOptions } from "../api/dogsQueryOptions";
 
+/** Refreshes the dog, its calendar events and the library's assignment counts. */
+export function invalidateDogData(client: QueryClient, userId?: string) {
+  return Promise.all([
+    client.invalidateQueries({ queryKey: dogProfileKey(userId) }),
+    client.invalidateQueries({ queryKey: eventsKey(userId) }),
+    client.invalidateQueries({ queryKey: planningExercisesKey(userId) }),
+    // Also covers the archived list nested under this key.
+    client.invalidateQueries({ queryKey: dogsQueryOptions(userId).queryKey }),
+    client.invalidateQueries({ queryKey: disciplinesKey(userId) }),
+  ]);
+}
+
 /** All profile writes refresh both the dog and the library's assignment counts. */
 export function useDogProfileMutation<T = void, TResult = unknown>(
   action: (variables: T) => Promise<TResult>,
@@ -20,24 +36,17 @@ export function useDogProfileMutation<T = void, TResult = unknown>(
   const client = useQueryClient();
   return useMutation({
     mutationFn: action,
-    onSuccess: async () => {
-      await Promise.all([
-        client.invalidateQueries({ queryKey: dogProfileKey(user?.id) }),
-        client.invalidateQueries({ queryKey: eventsKey(user?.id) }),
-        client.invalidateQueries({ queryKey: planningExercisesKey(user?.id) }),
-        client.invalidateQueries({
-          queryKey: dogsQueryOptions(user?.id).queryKey,
-        }),
-        client.invalidateQueries({ queryKey: disciplinesKey(user?.id) }),
-      ]);
-    },
+    onSuccess: () => invalidateDogData(client, user?.id),
   });
 }
 
+export type DogAction = "archive" | "restore" | "delete";
+
 export function useDogAction(dogId: string) {
-  return useDogProfileMutation((action: "archive" | "delete") =>
-    action === "archive"
-      ? api.post(`dogs/${encodeURIComponent(dogId)}/archive`)
-      : api.delete(`dogs/${encodeURIComponent(dogId)}`),
-  );
+  return useDogProfileMutation((action: DogAction) => {
+    const path = `dogs/${encodeURIComponent(dogId)}`;
+    return action === "delete"
+      ? api.delete(path)
+      : api.post(`${path}/${action}`);
+  });
 }

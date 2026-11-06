@@ -1,7 +1,14 @@
 import { useState } from "react";
 import type { DogProfile } from "../api/dogProfileQueryOptions";
 import { Archive, EllipsisVertical, Pencil, TrashBin } from "@gravity-ui/icons";
-import { Button, Description, Dropdown, Label, Modal } from "@heroui/react";
+import {
+  Button,
+  Description,
+  Dropdown,
+  Label,
+  Modal,
+  toast,
+} from "@heroui/react";
 import { useNavigate } from "@tanstack/react-router";
 import { differenceInYears, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -15,6 +22,7 @@ import {
   useDogAction,
   useDogProfileMutation,
 } from "../hooks/useDogProfileMutation";
+import { useRestoreDog } from "../hooks/useRestoreDog";
 import { AddDogForm, type AddDogValues } from "./AddDogForm";
 import { EditDogPhotoDialog } from "./EditDogPhotoDialog";
 
@@ -24,12 +32,36 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
   const [editing, setEditing] = useState(false);
   const [confirm, setConfirm] = useState<"archive" | "delete" | null>(null);
   const action = useDogAction(dog.id);
+  const restoreDog = useRestoreDog();
+  const archived = Boolean(dog.archivedAt);
   const save = useDogProfileMutation(
     ({ name, breed, birthDate }: AddDogValues) =>
       api.patch(`dogs/${encodeURIComponent(dog.id)}`, {
         json: { name, breed, birthDate: birthDate || null },
       }),
   );
+  const showArchivedToast = () => {
+    let undoPending = false;
+    const toastId = toast.success(
+      t(($) => $.dogArchive.archivedToast, { name: dog.name }),
+      {
+        timeout: 10000,
+        actionProps: {
+          children: t(($) => $.training.undo),
+          onPress: () => {
+            if (undoPending) return;
+            undoPending = true;
+            void restoreDog(dog)
+              .then(() => toast.close(toastId))
+              .catch(() => toast.danger(t(($) => $.dogArchive.restoreError)))
+              .finally(() => {
+                undoPending = false;
+              });
+          },
+        },
+      },
+    );
+  };
   const [today] = useState(() => new Date());
   const age = dog.birthDate
     ? differenceInYears(today, parseISO(dog.birthDate))
@@ -57,70 +89,75 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
             {meta && <p className="text-sm leading-6 text-muted">{meta}</p>}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            className="flex-1 md:flex-none"
-            onPress={() => setEditing(true)}
-          >
-            <Pencil className="size-4" aria-hidden="true" />
-            {t(($) => $.disciplines.edit)}
-          </Button>
-          <Dropdown>
+        {/* An archived dog is read-only until it is restored. */}
+        {!archived && (
+          <div className="flex items-center gap-2">
             <Button
-              variant="ghost"
-              isIconOnly
-              aria-label={t(($) => $.dogProfile.dogActions)}
+              variant="outline"
+              className="flex-1 md:flex-none"
+              onPress={() => setEditing(true)}
             >
-              <EllipsisVertical className="size-4" aria-hidden="true" />
+              <Pencil className="size-4" aria-hidden="true" />
+              {t(($) => $.disciplines.edit)}
             </Button>
-            <Dropdown.Popover placement="bottom end" className="min-w-60">
-              <Dropdown.Menu
-                onAction={(key) => {
-                  action.reset();
-                  setConfirm(key as "archive" | "delete");
-                }}
+            <Dropdown>
+              <Button
+                variant="ghost"
+                isIconOnly
+                aria-label={t(($) => $.dogProfile.dogActions)}
               >
-                <Dropdown.Item
-                  id="archive"
-                  textValue={t(($) => $.dogProfile.archive)}
-                  isDisabled={Boolean(dog.archivedAt)}
-                  className="items-start"
+                <EllipsisVertical className="size-4" aria-hidden="true" />
+              </Button>
+              <Dropdown.Popover placement="bottom end" className="min-w-60">
+                <Dropdown.Menu
+                  onAction={(key) => {
+                    action.reset();
+                    setConfirm(key as "archive" | "delete");
+                  }}
                 >
-                  {/* h-5 = the label's line height, so the icon centres on it. */}
-                  <span className="flex h-5 shrink-0 items-center">
-                    <Archive className="size-4 text-muted" aria-hidden="true" />
-                  </span>
-                  <div className="flex flex-col">
-                    <Label>{t(($) => $.dogProfile.archive)}</Label>
-                    <Description>
-                      {t(($) => $.dogProfile.archiveHint)}
-                    </Description>
-                  </div>
-                </Dropdown.Item>
-                <Dropdown.Item
-                  id="delete"
-                  variant="danger"
-                  textValue={t(($) => $.disciplines.delete)}
-                  className="items-start"
-                >
-                  <span className="flex h-5 shrink-0 items-center">
-                    <TrashBin
-                      className="size-4 text-danger"
-                      aria-hidden="true"
-                    />
-                  </span>
-                  <div className="flex flex-col">
-                    <Label>{t(($) => $.disciplines.delete)}</Label>
-                    <Description>
-                      {t(($) => $.dogProfile.deleteHint)}
-                    </Description>
-                  </div>
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown.Popover>
-          </Dropdown>
-        </div>
+                  <Dropdown.Item
+                    id="archive"
+                    textValue={t(($) => $.dogProfile.archive)}
+                    className="items-start"
+                  >
+                    {/* h-5 = the label's line height, so the icon centres on it. */}
+                    <span className="flex h-5 shrink-0 items-center">
+                      <Archive
+                        className="size-4 text-muted"
+                        aria-hidden="true"
+                      />
+                    </span>
+                    <div className="flex flex-col">
+                      <Label>{t(($) => $.dogProfile.archive)}</Label>
+                      <Description>
+                        {t(($) => $.dogProfile.archiveHint)}
+                      </Description>
+                    </div>
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    id="delete"
+                    variant="danger"
+                    textValue={t(($) => $.disciplines.delete)}
+                    className="items-start"
+                  >
+                    <span className="flex h-5 shrink-0 items-center">
+                      <TrashBin
+                        className="size-4 text-danger"
+                        aria-hidden="true"
+                      />
+                    </span>
+                    <div className="flex flex-col">
+                      <Label>{t(($) => $.disciplines.delete)}</Label>
+                      <Description>
+                        {t(($) => $.dogProfile.deleteHint)}
+                      </Description>
+                    </div>
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown.Popover>
+            </Dropdown>
+          </div>
+        )}
       </div>
       <Modal.Backdrop
         isOpen={editing}
@@ -184,6 +221,7 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
           onConfirm={async () => {
             try {
               await action.mutateAsync(confirm);
+              if (confirm === "archive") showArchivedToast();
               await navigate({ to: "/overview" });
             } catch {
               /* Show error in the dialog. */
