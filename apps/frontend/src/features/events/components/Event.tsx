@@ -4,6 +4,7 @@ import type { DraggedEvent } from "../lib/calendarDrag";
 import {
   CircleCheck,
   CircleExclamation,
+  CirclePause,
   Clock,
   Comment,
 } from "@gravity-ui/icons";
@@ -195,6 +196,14 @@ export function Event({
             {isCompleted
               ? t(($) => $.events.completed)
               : t(($) => $.events.unfinished)}
+          </p>
+        )}
+        {scheduledEvent?.paused && (
+          // Figma Event "Paused" 605:7067: a grey line, no new tile colour;
+          // the training can still be completed, moved or deleted.
+          <p className="flex items-center gap-1 text-xs leading-5 text-muted">
+            <CirclePause className="size-3 shrink-0" aria-hidden="true" />
+            {t(($) => $.status.paused)}
           </p>
         )}
         {historyOnly ? (

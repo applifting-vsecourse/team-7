@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CirclePause } from "@gravity-ui/icons";
 import {
   Button,
   Checkbox,
@@ -25,6 +26,7 @@ import { dogsQueryOptions } from "@/features/dogs/api/dogsQueryOptions";
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 import { dogAge } from "@/features/dogs/lib/dogAge";
+import { isPlannable } from "@/features/dogs/lib/exerciseStatus";
 
 import {
   eventsKey,
@@ -61,8 +63,9 @@ export function ScheduleExerciseDialog({
   const dogs = useQuery(dogsQueryOptions(user?.id));
   const exercises = useQuery(planningExercisesQueryOptions(user?.id, dogId));
   const dog = dogs.data?.find((item) => item.id === dogId);
-  const selectedExercises = (exercises.data ?? []).filter((item) =>
-    selected.includes(item.id),
+  const selectedExercises = (exercises.data ?? []).filter(
+    (item) =>
+      selected.includes(item.id) && isPlannable(item.goalStatus, item.status),
   );
   const form = useForm<ScheduleValues>({
     resolver: zodResolver(futureScheduleSchema),
@@ -119,23 +122,46 @@ export function ScheduleExerciseDialog({
     }
     setStep(step + 1);
   };
+  // Paused goals and exercises are listed read-only (Figma S8 / S8b).
   const groups = new Map<
     string,
-    { name: string; goals: Map<string, PlanningExercise[]> }
+    {
+      name: string;
+      goals: Map<
+        string,
+        { name: string; items: PlanningExercise[]; paused: [string, string][] }
+      >;
+      pausedGoals: Map<string, string>;
+    }
   >();
   for (const item of exercises.data ?? []) {
     if (!groups.has(item.disciplineId)) {
       groups.set(item.disciplineId, {
         name: item.disciplineName,
         goals: new Map(),
+        pausedGoals: new Map(),
       });
     }
     const group = groups.get(item.disciplineId)!;
-    group.goals.set(item.goalId, [
-      ...(group.goals.get(item.goalId) ?? []),
-      item,
-    ]);
+    if (item.goalStatus === "paused") {
+      group.pausedGoals.set(item.goalId, item.goalName);
+      continue;
+    }
+    const goal = group.goals.get(item.goalId) ?? {
+      name: item.goalName,
+      items: [],
+      paused: [],
+    };
+    if (isPlannable(item.goalStatus, item.status)) goal.items.push(item);
+    else goal.paused.push([item.id, item.name]);
+    group.goals.set(item.goalId, goal);
   }
+  const plannableCount = [...groups.values()].reduce(
+    (sum, group) =>
+      sum +
+      [...group.goals.values()].reduce((n, goal) => n + goal.items.length, 0),
+    0,
+  );
   const toggle = (ids: string[], checked: boolean) => {
     setSelected((previous) =>
       checked
@@ -260,7 +286,7 @@ export function ScheduleExerciseDialog({
                   {step === 2 ? (
                     <>
                       <QueryFeedback query={exercises} />
-                      {exercises.isSuccess && exercises.data.length === 0 && (
+                      {exercises.isSuccess && plannableCount === 0 && (
                         <p className="text-sm text-muted">
                           {t(($) => $.planning.noExercises)}
                         </p>
@@ -275,7 +301,8 @@ export function ScheduleExerciseDialog({
                           </Disclosure.Heading>
                           <Disclosure.Content>
                             <div className="flex flex-col gap-2 pt-4">
-                              {[...group.goals].map(([goalId, items]) => {
+                              {[...group.goals].map(([goalId, goal]) => {
+                                const { items } = goal;
                                 const count = items.filter((item) =>
                                   selected.includes(item.id),
                                 ).length;
@@ -284,27 +311,34 @@ export function ScheduleExerciseDialog({
                                     key={goalId}
                                     className="flex flex-col gap-2 rounded-3xl bg-surface p-4 shadow-card"
                                   >
-                                    <Checkbox
-                                      isSelected={count === items.length}
-                                      isIndeterminate={
-                                        count > 0 && count < items.length
-                                      }
-                                      onChange={(checked) =>
-                                        toggle(
-                                          items.map((item) => item.id),
-                                          checked,
-                                        )
-                                      }
-                                    >
-                                      <Checkbox.Content>
-                                        <Checkbox.Control>
-                                          <Checkbox.Indicator />
-                                        </Checkbox.Control>
-                                        <span className="font-semibold">
-                                          {items[0]!.goalName}
-                                        </span>
-                                      </Checkbox.Content>
-                                    </Checkbox>
+                                    {items.length ? (
+                                      <Checkbox
+                                        isSelected={count === items.length}
+                                        isIndeterminate={
+                                          count > 0 && count < items.length
+                                        }
+                                        onChange={(checked) =>
+                                          toggle(
+                                            items.map((item) => item.id),
+                                            checked,
+                                          )
+                                        }
+                                      >
+                                        <Checkbox.Content>
+                                          <Checkbox.Control>
+                                            <Checkbox.Indicator />
+                                          </Checkbox.Control>
+                                          <span className="font-semibold">
+                                            {goal.name}
+                                          </span>
+                                        </Checkbox.Content>
+                                      </Checkbox>
+                                    ) : (
+                                      // Every exercise is paused: nothing to select.
+                                      <span className="font-semibold">
+                                        {goal.name}
+                                      </span>
+                                    )}
                                     <div className="flex flex-col gap-2 pl-8">
                                       {items.map((item) => (
                                         <Checkbox
@@ -326,10 +360,29 @@ export function ScheduleExerciseDialog({
                                           </Checkbox.Content>
                                         </Checkbox>
                                       ))}
+                                      {goal.paused.length > 0 && (
+                                        // Figma S8b 622:91637 "Show paused".
+                                        <PausedGroup
+                                          title={t(
+                                            ($) => $.status.pausedExercises,
+                                            { count: goal.paused.length },
+                                          )}
+                                          items={goal.paused}
+                                        />
+                                      )}
                                     </div>
                                   </div>
                                 );
                               })}
+                              {group.pausedGoals.size > 0 && (
+                                // Figma S8 621:52343: below the goal cards.
+                                <PausedGroup
+                                  title={t(($) => $.status.pausedGoals, {
+                                    count: group.pausedGoals.size,
+                                  })}
+                                  items={[...group.pausedGoals]}
+                                />
+                              )}
                             </div>
                           </Disclosure.Content>
                         </Disclosure>
@@ -412,5 +465,39 @@ export function ScheduleExerciseDialog({
         </Modal.Dialog>
       </Modal.Container>
     </Modal.Backdrop>
+  );
+}
+
+/** Read-only names of paused goals / exercises; collapsed, as secondary information. */
+function PausedGroup({
+  title,
+  items,
+}: {
+  title: string;
+  items: [id: string, name: string][];
+}) {
+  return (
+    <Disclosure>
+      <Disclosure.Heading>
+        {/* The kit's trigger is inline-block; keep title and chevron in one row. */}
+        <Disclosure.Trigger className="inline-flex items-center gap-2 text-sm font-medium text-muted">
+          {title}
+          <Disclosure.Indicator />
+        </Disclosure.Trigger>
+      </Disclosure.Heading>
+      <Disclosure.Content>
+        <ul className="flex flex-col gap-2 pt-2">
+          {items.map(([id, name]) => (
+            <li
+              key={id}
+              className="flex items-center gap-2 text-sm font-medium text-muted"
+            >
+              <CirclePause className="size-3.5 shrink-0" aria-hidden="true" />
+              {name}
+            </li>
+          ))}
+        </ul>
+      </Disclosure.Content>
+    </Disclosure>
   );
 }
