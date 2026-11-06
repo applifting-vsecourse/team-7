@@ -115,7 +115,7 @@ describe("neglected disciplines warning", () => {
     expect(screen.getByRole("region")).toBeInTheDocument();
   });
 
-  it("opens planning for the row's dog", async () => {
+  it("opens planning for the row's dog with its discipline first and expanded", async () => {
     const { user } = renderWarning([item("Mája", "Agility")]);
     await user.click(
       screen.getByRole("button", { name: "Schedule: Mája · Agility" }),
@@ -125,5 +125,14 @@ describe("neglected disciplines warning", () => {
       within(dialog).getByText("Step 2 of 3 · Exercises"),
     ).toBeInTheDocument();
     expect(await within(dialog).findByText("Mája")).toBeInTheDocument();
+    const triggers = await within(dialog).findAllByRole("button", {
+      name: /^(Agility|Obedience)/,
+    });
+    expect(triggers.map((trigger) => trigger.textContent)).toEqual([
+      "Agility",
+      "Obedience",
+    ]);
+    expect(triggers[0]).toHaveAttribute("aria-expanded", "true");
+    expect(triggers[1]).toHaveAttribute("aria-expanded", "false");
   });
 });

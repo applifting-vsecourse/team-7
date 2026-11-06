@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   cleanup,
@@ -68,7 +69,10 @@ afterEach(() => {
   state.extra = [];
 });
 
-function setup(selected: string[] | null = ["dog-b"]) {
+function setup(
+  selected: string[] | null = ["dog-b"],
+  props: Partial<ComponentProps<typeof ScheduleExerciseDialog>> = {},
+) {
   const store = createStore();
   store.set(selectedDogIdsAtom, selected);
   const client = new QueryClient({
@@ -79,7 +83,11 @@ function setup(selected: string[] | null = ["dog-b"]) {
   render(
     <Provider store={store}>
       <QueryClientProvider client={client}>
-        <ScheduleExerciseDialog date={new Date(2099, 9, 25)} onClose={close} />
+        <ScheduleExerciseDialog
+          date={new Date(2099, 9, 25)}
+          onClose={close}
+          {...props}
+        />
       </QueryClientProvider>
     </Provider>,
   );
@@ -204,5 +212,28 @@ describe("exercise planning dialog", () => {
       expect(screen.queryByRole("checkbox", { name })).not.toBeInTheDocument();
     }
     expect(screen.getAllByRole("checkbox")).toHaveLength(3);
+  });
+  it("starts at the exercises with the given discipline first and the only one expanded", async () => {
+    state.extra = [
+      {
+        id: "e3",
+        name: "Weave",
+        goalId: "g2",
+        goalName: "Slalom",
+        goalStatus: "in_progress",
+        status: "in_progress",
+        disciplineId: "d2",
+        disciplineName: "Agility",
+      },
+    ];
+    setup(null, { initialDogId: "dog-a", initialDisciplineId: "d2" });
+    const [agility, obedience] = await screen.findAllByRole("button", {
+      name: /^(Agility|Obedience)$/,
+    });
+    expect(agility).toHaveTextContent("Agility");
+    expect(agility).toHaveAttribute("aria-expanded", "true");
+    expect(obedience).toHaveTextContent("Obedience");
+    expect(obedience).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByText("Step 2 of 3 · Exercises")).toBeInTheDocument();
   });
 });

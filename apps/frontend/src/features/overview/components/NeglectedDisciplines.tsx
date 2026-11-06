@@ -36,6 +36,7 @@ export function NeglectedDisciplines({
     <ScheduleExerciseDialog
       date={today}
       initialDogId={scheduling.dog.id}
+      initialDisciplineId={scheduling.discipline.id}
       onClose={() => setScheduling(null)}
     />
   );
