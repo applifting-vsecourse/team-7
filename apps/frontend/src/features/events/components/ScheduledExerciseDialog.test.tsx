@@ -7,6 +7,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HTTPError } from "ky";
@@ -261,9 +262,11 @@ describe("scheduled exercise dialog", () => {
     const section = screen.getByRole("region", {
       name: "Exercise description",
     });
-    expect(section.querySelector("p")?.textContent).toBe(
-      "Sit the dog.\nCall once.",
-    );
+    expect(
+      within(section).getByText("Sit the dog.\nCall once.", {
+        normalizer: (text) => text,
+      }),
+    ).toBeVisible();
     // A description that fits needs no toggle.
     expect(
       screen.queryByRole("button", { name: "Show full description" }),
