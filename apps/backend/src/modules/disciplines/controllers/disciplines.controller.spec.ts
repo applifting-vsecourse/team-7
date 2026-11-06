@@ -28,6 +28,7 @@ describe("discipline library API", () => {
   let url: string;
   const getSession = vi.mocked(getSessionFromRequest);
   const prisma = {
+    $transaction: vi.fn(),
     discipline: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
@@ -42,7 +43,9 @@ describe("discipline library API", () => {
       deleteMany: vi.fn(),
     },
     exercise: {
+      aggregate: vi.fn(),
       create: vi.fn(),
+      updateMany: vi.fn(),
       updateManyAndReturn: vi.fn(),
       deleteMany: vi.fn(),
     },
@@ -72,6 +75,7 @@ describe("discipline library API", () => {
     getSession.mockResolvedValue({
       user: { id: "user-a", role: "user", emailVerified: true },
     } as NonNullable<Awaited<ReturnType<typeof getSessionFromRequest>>>);
+    prisma.$transaction.mockImplementation(async (action) => action(prisma));
   });
 
   afterAll(async () => {
@@ -261,8 +265,9 @@ describe("discipline library API", () => {
     });
   });
 
-  it("adds an exercise to an owned goal", async () => {
+  it("adds an exercise to the end of an owned goal", async () => {
     prisma.goal.findFirst.mockResolvedValue({ id: "g1" });
+    prisma.exercise.aggregate.mockResolvedValue({ _max: { position: 2 } });
     prisma.exercise.create.mockImplementation(({ data }) =>
       Promise.resolve({ id: "e1", ...data }),
     );
@@ -278,7 +283,111 @@ describe("discipline library API", () => {
         name: "Přivolání od hračky",
         procedure: "5 opakování",
         goalId: "g1",
+        position: 3,
       },
+    });
+    expect(prisma.exercise.aggregate).toHaveBeenCalledWith({
+      where: { goalId: "g1" },
+      _max: { position: true },
+    });
+  });
+
+  it("puts the first exercise of a goal at position 0", async () => {
+    prisma.goal.findFirst.mockResolvedValue({ id: "g1" });
+    prisma.exercise.aggregate.mockResolvedValue({ _max: { position: null } });
+    prisma.exercise.create.mockImplementation(({ data }) =>
+      Promise.resolve({ id: "e1", ...data }),
+    );
+
+    await request("POST", "/goals/g1/exercises", { name: "Z 5 m" });
+
+    expect(prisma.exercise.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ position: 0 }),
+    });
+  });
+
+  it("orders a goal's exercises by the handler's order in the detail", async () => {
+    prisma.discipline.findFirst.mockResolvedValue(null);
+
+    await request("GET", "/disciplines/d1");
+
+    expect(prisma.discipline.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: {
+          goals: expect.objectContaining({
+            include: expect.objectContaining({
+              exercises: expect.objectContaining({
+                orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+              }),
+            }),
+          }),
+        },
+      }),
+    );
+  });
+
+  describe("reordering a goal's exercises", () => {
+    const exercises = [{ id: "e1" }, { id: "e2" }, { id: "e3" }];
+
+    it("saves each exercise's new position", async () => {
+      prisma.goal.findFirst.mockResolvedValue({ exercises });
+      prisma.exercise.updateMany.mockResolvedValue({ count: 1 });
+
+      const response = await request("PUT", "/goals/g1/exercise-order", {
+        exerciseIds: ["e3", "e1", "e2"],
+      });
+
+      expect(response.status).toBe(204);
+      expect(prisma.goal.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "g1", discipline: { userId: "user-a" } },
+        }),
+      );
+      expect(prisma.exercise.updateMany.mock.calls).toEqual([
+        [{ where: { id: "e3", goalId: "g1" }, data: { position: 0 } }],
+        [{ where: { id: "e1", goalId: "g1" }, data: { position: 1 } }],
+        [{ where: { id: "e2", goalId: "g1" }, data: { position: 2 } }],
+      ]);
+    });
+
+    it("returns 404 for a goal the user does not own", async () => {
+      prisma.goal.findFirst.mockResolvedValue(null);
+
+      const response = await request("PUT", "/goals/foreign/exercise-order", {
+        exerciseIds: ["e1"],
+      });
+
+      expect(response.status).toBe(404);
+      expect(prisma.exercise.updateMany).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      { case: "a missing exercise", exerciseIds: ["e2", "e1"] },
+      { case: "another goal's exercise", exerciseIds: ["e3", "e1", "x9"] },
+      { case: "an extra exercise", exerciseIds: ["e1", "e2", "e3", "e4"] },
+    ])("rejects a list with $case as stale", async ({ exerciseIds }) => {
+      prisma.goal.findFirst.mockResolvedValue({ exercises });
+
+      const response = await request("PUT", "/goals/g1/exercise-order", {
+        exerciseIds,
+      });
+
+      expect(response.status).toBe(409);
+      expect(prisma.exercise.updateMany).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      { exerciseIds: ["e1", "e1"] },
+      { exerciseIds: ["e1", ""] },
+      { exerciseIds: ["x".repeat(101)] },
+      { exerciseIds: Array.from({ length: 501 }, (_, index) => `e${index}`) },
+      { exerciseIds: "e1" },
+      {},
+    ])("rejects invalid input %o", async (body) => {
+      const response = await request("PUT", "/goals/g1/exercise-order", body);
+
+      expect(response.status).toBe(400);
+      expect(prisma.goal.findFirst).not.toHaveBeenCalled();
     });
   });
 });

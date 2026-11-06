@@ -137,9 +137,10 @@ export async function seedDisciplines(prisma: PrismaService): Promise<void> {
               name: goal.name,
               criterion: goal.criterion,
               exercises: {
-                create: goal.exercises.map(({ name, procedure }) => ({
+                create: goal.exercises.map(({ name, procedure }, position) => ({
                   name,
                   procedure,
+                  position,
                 })),
               },
               dogs: goal.dogs && {

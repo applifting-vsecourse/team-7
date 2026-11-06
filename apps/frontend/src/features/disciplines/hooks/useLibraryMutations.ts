@@ -1,16 +1,25 @@
 import type { LibraryItemValues } from "../schemas/libraryItemSchema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  type InvalidateQueryFilters,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import { api } from "@/lib/api-client";
 
 import { useSession } from "@/features/auth/hooks/useSession";
-import { eventsKey } from "@/features/events/api/eventsQueryOptions";
+import { dogProfileKey } from "@/features/dogs/api/dogProfileQueryOptions";
+import {
+  eventsKey,
+  planningExercisesKey,
+} from "@/features/events/api/eventsQueryOptions";
 
 import {
   type DisciplineDetail,
   disciplinesKey,
   type Goal,
 } from "../api/disciplinesQueryOptions";
+import { sortByIds } from "../lib/exerciseOrder";
 
 type Saved = { id: string };
 
@@ -29,18 +38,27 @@ type Options<TVariables, TResult> = {
    * library item or a dog's selection is removed. Creating doesn't touch them.
    */
   refreshesEvents?: (variables: TVariables) => boolean;
+  /** Other queries that show the change, refetched in the background. */
+  alsoRefreshes?: (userId: string | undefined) => InvalidateQueryFilters[];
+  /** Refetches the library after a failure, e.g. a rejected stale list. */
+  refetchOnError?: boolean;
 };
 
 /**
  * `patch` is for edits of a list on the current page: the cache changes as
  * soon as the server confirms, so the dialog closes on the new list, its
- * enter / exit animation (PresenceList) plays in view rather than under the
- * backdrop, and a removed row can't be acted on again. The refetch isn't
+ * enter / exit animation (PresenceList, where the list has one) plays in view
+ * rather than under the backdrop, and a removed row can't be acted on again. The refetch isn't
  * awaited; flows that navigate afterwards keep waiting for fresh data.
  */
 function useLibraryMutation<TVariables, TResult = unknown>(
   mutationFn: (variables: TVariables) => Promise<TResult>,
-  { patch, refreshesEvents }: Options<TVariables, TResult> = {},
+  {
+    patch,
+    refreshesEvents,
+    alsoRefreshes,
+    refetchOnError,
+  }: Options<TVariables, TResult> = {},
 ) {
   const { user } = useSession();
   const queryClient = useQueryClient();
@@ -59,11 +77,20 @@ function useLibraryMutation<TVariables, TResult = unknown>(
       if (refreshesEvents?.(variables)) {
         void queryClient.invalidateQueries({ queryKey: eventsKey(user?.id) });
       }
+      for (const filters of alsoRefreshes?.(user?.id) ?? []) {
+        void queryClient.invalidateQueries(filters);
+      }
       const refetch = queryClient.invalidateQueries({
         queryKey: disciplinesKey(user?.id),
       });
       if (!patch) await refetch;
     },
+    onError: refetchOnError
+      ? () =>
+          void queryClient.invalidateQueries({
+            queryKey: disciplinesKey(user?.id),
+          })
+      : undefined,
   });
 }
 
@@ -244,4 +271,36 @@ export function useDeleteExercise() {
         exercises.filter((exercise) => exercise.id !== id),
       ),
   });
+}
+
+export type ExerciseOrder = { goalId: string; exerciseIds: string[] };
+
+/**
+ * Saves the handler's order of a goal's exercises (#73). The list shows
+ * `variables` while the request runs, so a failure falls back to the cached
+ * order on its own. Dogs' plans and the planning dialog list exercises in
+ * this order too.
+ */
+export function useReorderExercises() {
+  return useLibraryMutation(
+    ({ goalId, exerciseIds }: ExerciseOrder) =>
+      api.put(path("goals", goalId, "exercise-order"), {
+        json: { exerciseIds },
+      }),
+    {
+      patch: (detail, { goalId, exerciseIds }) =>
+        mapExercises(detail, (exercises, goal) =>
+          goal.id === goalId ? sortByIds(exercises, exerciseIds) : exercises,
+        ),
+      alsoRefreshes: (userId) => [
+        {
+          queryKey: dogProfileKey(userId),
+          predicate: ({ queryKey }) => queryKey.includes("selection"),
+        },
+        { queryKey: planningExercisesKey(userId) },
+      ],
+      // A 409 means the goal's exercises changed elsewhere; show the new list.
+      refetchOnError: true,
+    },
+  );
 }

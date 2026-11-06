@@ -1,4 +1,5 @@
 import type { Dog, Prisma } from "@/generated/prisma/client";
+import { exerciseOrder } from "@/shared/domain/exercise-order";
 
 export type DogRef = Pick<Dog, "id" | "name">;
 
@@ -61,7 +62,7 @@ export const disciplineDetailInclude = {
     orderBy: byCreation,
     include: {
       exercises: {
-        orderBy: byCreation,
+        orderBy: exerciseOrder,
         include: { _count: { select: { dogs: true } } },
       },
       dogs: {

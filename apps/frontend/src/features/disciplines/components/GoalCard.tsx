@@ -1,14 +1,12 @@
 import type { Goal } from "../api/disciplinesQueryOptions";
 import { Flag, Plus } from "@gravity-ui/icons";
-import { Alert, Button, Separator } from "@heroui/react";
+import { Button, Separator } from "@heroui/react";
 import { useTranslation } from "react-i18next";
-
-import { PresenceHeight, PresenceList } from "@/components/PresenceList";
 
 import { useDialogState } from "../hooks/useDialogState";
 import { useDeleteGoal } from "../hooks/useLibraryMutations";
 import { DeleteDialog } from "./DeleteDialog";
-import { ExerciseRow } from "./ExerciseRow";
+import { ExerciseList } from "./ExerciseList";
 import { ItemMenu } from "./ItemMenu";
 import { ExerciseDialog, GoalDialog } from "./LibraryDialogs";
 
@@ -55,28 +53,7 @@ export function GoalCard({
         />
       </div>
       <Separator />
-      <PresenceHeight className="flex flex-col gap-4">
-        <PresenceList
-          empty={
-            <Alert status="warning" className="animate-enter">
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Title>
-                  {t(($) => $.disciplines.goalNoExercisesTitle)}
-                </Alert.Title>
-                <Alert.Description>
-                  {t(($) => $.disciplines.goalNoExercisesDescription)}
-                </Alert.Description>
-              </Alert.Content>
-            </Alert>
-          }
-          className="flex flex-col gap-4"
-        >
-          {goal.exercises.map((exercise) => (
-            <ExerciseRow key={exercise.id} goal={goal} exercise={exercise} />
-          ))}
-        </PresenceList>
-      </PresenceHeight>
+      <ExerciseList goal={goal} />
       <Button
         variant="outline"
         className="self-start"
