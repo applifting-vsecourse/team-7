@@ -8,7 +8,7 @@ export class DogExerciseDetailsService {
   async get(userId: string, dogId: string, exerciseId: string) {
     const dog = await this.prisma.dog.findFirst({
       where: { id: dogId, userId },
-      select: { id: true, name: true, avatarVersion: true },
+      select: { id: true, name: true, avatarVersion: true, archivedAt: true },
     });
     if (!dog) throw new NotFoundException("Dog not found");
     const exercise = await this.prisma.exercise.findFirst({

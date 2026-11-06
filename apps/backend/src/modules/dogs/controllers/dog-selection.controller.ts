@@ -162,7 +162,7 @@ export class DogSelectionController {
   })
   getSelection(@User() user: Identity, @Param() params: SelectionParams) {
     const scope = { ...params, userId: user.id };
-    return this.selections.run(scope, async (tx) => ({
+    return this.selections.read(scope, async (tx) => ({
       goals: await this.selections.list(tx, scope),
     }));
   }
@@ -187,7 +187,7 @@ export class DogSelectionController {
   @ApiOperation({ summary: "List this dog's goals in the discipline" })
   getGoals(@User() user: Identity, @Param() params: SelectionParams) {
     const scope = { ...params, userId: user.id };
-    return this.selections.run(scope, (tx) => this.selections.list(tx, scope));
+    return this.selections.read(scope, (tx) => this.selections.list(tx, scope));
   }
 
   @Post("goals")
@@ -212,7 +212,7 @@ export class DogSelectionController {
   })
   getGoal(@User() user: Identity, @Param() params: SelectionParams) {
     const scope = { ...params, userId: user.id };
-    return this.selections.run(scope, (tx) =>
+    return this.selections.read(scope, (tx) =>
       this.selections.getGoal(tx, scope, params.goalId),
     );
   }
@@ -266,7 +266,7 @@ export class DogSelectionController {
   @ApiOperation({ summary: "List the dog's selected exercises for a goal" })
   getExercises(@User() user: Identity, @Param() params: SelectionParams) {
     const scope = { ...params, userId: user.id };
-    return this.selections.run(
+    return this.selections.read(
       scope,
       async (tx) =>
         (await this.selections.getGoal(tx, scope, params.goalId)).exercises,
@@ -293,7 +293,7 @@ export class DogSelectionController {
   @ApiOperation({ summary: "Get a dog exercise assignment" })
   getExercise(@User() user: Identity, @Param() params: SelectionParams) {
     const scope = { ...params, userId: user.id };
-    return this.selections.run(scope, (tx) =>
+    return this.selections.read(scope, (tx) =>
       this.selections.getExercise(tx, scope, params.goalId, params.exerciseId),
     );
   }

@@ -94,6 +94,18 @@ describe("dog discipline selections API", () => {
     prisma.dogGoal.findMany.mockResolvedValue([assignment]);
   });
 
+  it("rejects plan changes for an archived dog but still shows its plan", async () => {
+    prisma.dog.findFirst.mockResolvedValue({
+      id: "dog-a",
+      archivedAt: new Date(),
+    });
+    prisma.dogGoal.findMany.mockResolvedValue([]);
+
+    expect((await request("POST", "")).status).toBe(409);
+    expect(prisma.dogDiscipline.upsert).not.toHaveBeenCalled();
+    expect((await request("GET", "/selection")).status).toBe(200);
+  });
+
   it("keeps an empty discipline assigned and scopes it to the authenticated owner", async () => {
     prisma.dogDiscipline.upsert.mockResolvedValue({
       dogId: "dog-a",
@@ -186,7 +198,7 @@ describe("dog discipline selections API", () => {
     });
     expect(prisma.dog.findFirst).toHaveBeenCalledWith({
       where: { id: "dog-a", userId: "user-a" },
-      select: { id: true },
+      select: { id: true, archivedAt: true },
     });
     expect(prisma.discipline.findFirst).toHaveBeenCalledWith({
       where: { id: "d1", userId: "user-a" },

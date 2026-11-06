@@ -10,20 +10,20 @@ import {
   toast,
 } from "@heroui/react";
 import { useNavigate } from "@tanstack/react-router";
-import { differenceInYears, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/lib/api-client";
-import { pluralForm } from "@/lib/plural";
 
 import { DeleteDialog } from "@/features/disciplines/components/DeleteDialog";
 
+import { useDogMeta } from "../hooks/useDogMeta";
 import {
   useDogAction,
   useDogProfileMutation,
 } from "../hooks/useDogProfileMutation";
 import { useRestoreDog } from "../hooks/useRestoreDog";
 import { AddDogForm, type AddDogValues } from "./AddDogForm";
+import { DogAvatar } from "./DogAvatar";
 import { EditDogPhotoDialog } from "./EditDogPhotoDialog";
 
 export function DogHeader({ dog }: { dog: DogProfile }) {
@@ -48,6 +48,8 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
         timeout: 10000,
         actionProps: {
           children: t(($) => $.training.undo),
+          // Matches the other undo toasts (DogExerciseView).
+          variant: "ghost",
           onPress: () => {
             if (undoPending) return;
             undoPending = true;
@@ -62,23 +64,20 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
       },
     );
   };
-  const [today] = useState(() => new Date());
-  const age = dog.birthDate
-    ? differenceInYears(today, parseISO(dog.birthDate))
-    : undefined;
-  const meta = [
-    dog.breed,
-    age !== undefined
-      ? t(($) => $.dogProfile.age[pluralForm(age)], { count: age })
-      : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const meta = useDogMeta(dog);
   return (
     <>
       <div className="flex flex-col gap-4 md:flex-row md:items-start">
         <div className="flex min-w-0 flex-1 items-start gap-4">
-          <EditDogPhotoDialog dog={dog} avatarClassName="size-14 md:size-16" />
+          {/* An archived dog is read-only, its photo included. */}
+          {archived ? (
+            <DogAvatar dog={dog} className="size-14 md:size-16" />
+          ) : (
+            <EditDogPhotoDialog
+              dog={dog}
+              avatarClassName="size-14 md:size-16"
+            />
+          )}
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <h1
               id="dog-heading"
