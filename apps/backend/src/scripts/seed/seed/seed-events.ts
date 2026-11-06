@@ -6,11 +6,15 @@ export async function seedEvents(prisma: PrismaService): Promise<void> {
     select: {
       id: true,
       goals: {
-        where: { completedAt: null, exercises: { some: {} } },
+        where: {
+          status: "in_progress",
+          exercises: { some: { status: "in_progress" } },
+        },
         orderBy: { createdAt: "asc" },
         take: 1,
         select: {
           exercises: {
+            where: { status: "in_progress" },
             orderBy: { createdAt: "asc" },
             take: 1,
             select: { exerciseId: true },
