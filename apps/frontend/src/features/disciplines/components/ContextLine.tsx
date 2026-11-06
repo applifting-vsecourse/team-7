@@ -17,7 +17,7 @@ export function ContextLine({
   return (
     <p className="flex min-w-0 items-center gap-1.5 text-sm">
       {icon}
-      <span className="text-muted">{label}</span>
+      <span className="shrink-0 text-muted">{label}</span>
       <span className="min-w-0 font-medium">{value}</span>
     </p>
   );
