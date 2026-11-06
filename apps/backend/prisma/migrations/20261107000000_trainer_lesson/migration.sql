@@ -9,3 +9,8 @@ ALTER TABLE "scheduled_exercise" ADD CONSTRAINT "scheduled_exercise_kind_check"
     (("kind" = 'exercise') = ("exerciseId" IS NOT NULL))
     AND ("kind" = 'exercise' OR ("rating" IS NULL AND "note" IS NULL))
   );
+
+-- A completed exercise has a rating; a completed lesson never has one.
+ALTER TABLE "scheduled_exercise" DROP CONSTRAINT "scheduled_exercise_result_check";
+ALTER TABLE "scheduled_exercise" ADD CONSTRAINT "scheduled_exercise_result_check"
+  CHECK ("kind" = 'lesson' OR (("completedAt" IS NULL) = ("rating" IS NULL)));
