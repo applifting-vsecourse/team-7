@@ -46,7 +46,7 @@ export class DogAvatarsService {
     if (!input?.length) throw new BadRequestException("A photo is required");
     const data = await this.prepareAvatar(input);
     const [dog] = await this.prisma.dog.updateManyAndReturn({
-      where: { id, userId },
+      where: { id, userId, archivedAt: null },
       data,
       omit: { avatar: true },
     });
@@ -57,7 +57,7 @@ export class DogAvatarsService {
   async removeAvatar(userId: string, id: string): Promise<DogDetails> {
     await findActiveDog(this.prisma, userId, id);
     const [dog] = await this.prisma.dog.updateManyAndReturn({
-      where: { id, userId },
+      where: { id, userId, archivedAt: null },
       data: { avatar: null, avatarVersion: null },
       omit: { avatar: true },
     });
