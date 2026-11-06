@@ -5,7 +5,11 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "@/core/prisma/prisma.service";
-import { Prisma } from "@/generated/prisma/client";
+import {
+  type DogExerciseStatus,
+  type DogGoalStatus,
+  Prisma,
+} from "@/generated/prisma/client";
 import type { DogGoalSelection } from "@/modules/dogs/domain/dog-selection";
 import { findActiveDog, findOwnedDog } from "@/modules/dogs/domain/owned-dog";
 
@@ -221,19 +225,37 @@ export class DogSelectionService {
     return this.replaceGoal(tx, scope, goal);
   }
 
-  async completeGoal(
+  // Status changes leave the goal's exercises, results and scheduled trainings alone.
+  async setGoalStatus(
     tx: Prisma.TransactionClient,
     scope: DogSelectionScope,
     goalId: string,
-    completed: boolean,
+    status: DogGoalStatus,
   ) {
     const goal = await this.getGoal(tx, scope, goalId);
     return tx.dogGoal.update({
       where: { dogId_goalId: { dogId: scope.dogId, goalId } },
       data: {
-        completedAt: completed ? (goal.completedAt ?? new Date()) : null,
+        status,
+        completedAt:
+          status === "completed" ? (goal.completedAt ?? new Date()) : null,
       },
       include: goalInclude,
+    });
+  }
+
+  async setExerciseStatus(
+    tx: Prisma.TransactionClient,
+    scope: DogSelectionScope,
+    goalId: string,
+    exerciseId: string,
+    status: DogExerciseStatus,
+  ) {
+    await this.getExercise(tx, scope, goalId, exerciseId);
+    return tx.dogExercise.update({
+      where: { dogId_exerciseId: { dogId: scope.dogId, exerciseId } },
+      data: { status },
+      include: { exercise: true },
     });
   }
 

@@ -198,14 +198,14 @@ describe("discipline library API", () => {
           exercises: [
             { id: "e1", name: "Z 5 m", procedure: null, _count: { dogs: 1 } },
           ],
-          dogs: [{ dog, completedAt: new Date(), _count: { exercises: 1 } }],
+          dogs: [{ dog, status: "completed", _count: { exercises: 1 } }],
         },
         {
           id: "g2",
           name: "Chůze u nohy",
           criterion: null,
           exercises: [],
-          dogs: [{ dog, completedAt: null, _count: { exercises: 0 } }],
+          dogs: [{ dog, status: "in_progress", _count: { exercises: 0 } }],
         },
       ],
     });

@@ -3,11 +3,12 @@ import { Type } from "class-transformer";
 import {
   ArrayUnique,
   IsArray,
-  IsBoolean,
+  IsEnum,
   IsNotEmpty,
   IsString,
   ValidateNested,
 } from "class-validator";
+import { DogExerciseStatus, DogGoalStatus } from "@/generated/prisma/client";
 
 export class DogExerciseSelectionDto {
   @ApiProperty({ type: [String] })
@@ -34,10 +35,16 @@ export class DogDisciplineSelectionDto {
   goals!: DogGoalSelectionDto[];
 }
 
-export class DogGoalProgressDto {
-  @ApiProperty()
-  @IsBoolean()
-  completed!: boolean;
+export class DogGoalStatusDto {
+  @ApiProperty({ enum: DogGoalStatus })
+  @IsEnum(DogGoalStatus)
+  status!: DogGoalStatus;
+}
+
+export class DogExerciseStatusDto {
+  @ApiProperty({ enum: DogExerciseStatus })
+  @IsEnum(DogExerciseStatus)
+  status!: DogExerciseStatus;
 }
 
 export class DogExerciseInputDto {

@@ -46,6 +46,7 @@ describe("dog discipline selections API", () => {
       deleteMany: vi.fn(),
       upsert: vi.fn(),
       delete: vi.fn(),
+      update: vi.fn(),
     },
   };
   const base = "/dogs/dog-a/disciplines/d1";
@@ -336,19 +337,99 @@ describe("dog discipline selections API", () => {
     expect((await request("GET", path)).status).toBe(200);
   });
 
-  it("preserves the original completion date and can reopen a goal", async () => {
+  it.each([{ status: "done" }, { completed: true }, {}])(
+    "accepts only the three goal statuses (%o)",
+    async (body) => {
+      expect((await request("PATCH", "/goals/g1", body)).status).toBe(400);
+      expect(prisma.dogGoal.update).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    // From a completed goal: completion keeps its date, leaving it clears it.
+    { from: completedAt, status: "completed", completedAt },
+    { from: completedAt, status: "paused", completedAt: null },
+    { from: completedAt, status: "in_progress", completedAt: null },
+    // From a goal in progress or paused.
+    { from: null, status: "completed", completedAt: expect.any(Date) },
+    { from: null, status: "paused", completedAt: null },
+    { from: null, status: "in_progress", completedAt: null },
+  ])(
+    "sets a goal $status (completed before: $from)",
+    async ({ from, status, completedAt: expected }) => {
+      prisma.dogGoal.findFirst.mockResolvedValue({
+        ...assignment,
+        completedAt: from,
+      });
+      expect((await request("PATCH", "/goals/g1", { status })).status).toBe(
+        200,
+      );
+      expect(prisma.dogGoal.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { dogId_goalId: { dogId: "dog-a", goalId: "g1" } },
+          data: { status, completedAt: expected },
+        }),
+      );
+    },
+  );
+
+  it("changes a goal status without touching its exercises or trainings", async () => {
     expect(
-      (await request("PATCH", "/goals/g1", { completed: true })).status,
+      (await request("PATCH", "/goals/g1", { status: "paused" })).status,
     ).toBe(200);
-    expect(prisma.dogGoal.update).toHaveBeenLastCalledWith(
-      expect.objectContaining({ data: { completedAt } }),
-    );
+    expect(prisma.dogExercise.update).not.toHaveBeenCalled();
+    expect(prisma.dogExercise.deleteMany).not.toHaveBeenCalled();
+    expect(prisma.scheduledExercise.updateMany).not.toHaveBeenCalled();
+  });
+
+  it.each(["in_progress", "paused", "mastered"])(
+    "sets an exercise %s without touching its goal or trainings",
+    async (status) => {
+      expect(
+        (await request("PATCH", "/goals/g1/exercises/e1", { status })).status,
+      ).toBe(200);
+      expect(prisma.dogExercise.update).toHaveBeenCalledWith({
+        where: { dogId_exerciseId: { dogId: "dog-a", exerciseId: "e1" } },
+        data: { status },
+        include: { exercise: true },
+      });
+      expect(prisma.dogGoal.update).not.toHaveBeenCalled();
+      expect(prisma.scheduledExercise.updateMany).not.toHaveBeenCalled();
+    },
+  );
+
+  it("rejects unknown exercise statuses and unassigned exercises", async () => {
     expect(
-      (await request("PATCH", "/goals/g1", { completed: false })).status,
-    ).toBe(200);
-    expect(prisma.dogGoal.update).toHaveBeenLastCalledWith(
-      expect.objectContaining({ data: { completedAt: null } }),
+      (
+        await request("PATCH", "/goals/g1/exercises/e1", {
+          status: "completed",
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await request("PATCH", "/goals/g1/exercises/missing", {
+          status: "paused",
+        })
+      ).status,
+    ).toBe(404);
+    expect(prisma.dogExercise.update).not.toHaveBeenCalled();
+  });
+
+  it("does not change the status of another user's dog", async () => {
+    prisma.dog.findFirst.mockResolvedValue(null);
+    expect(
+      (await request("PATCH", "/goals/g1", { status: "paused" })).status,
+    ).toBe(404);
+    expect(
+      (await request("PATCH", "/goals/g1/exercises/e1", { status: "paused" }))
+        .status,
+    ).toBe(404);
+    expect(prisma.dog.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: "dog-a", userId: "user-a" } }),
     );
+    expect(prisma.dogGoal.update).not.toHaveBeenCalled();
+    expect(prisma.dogExercise.update).not.toHaveBeenCalled();
   });
 
   it("deletes an individual goal assignment within the requested discipline", async () => {

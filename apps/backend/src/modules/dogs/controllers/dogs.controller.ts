@@ -185,8 +185,9 @@ export class DogsController {
             ([exerciseId, lastTrainingAt]) => ({ exerciseId, lastTrainingAt }),
           ),
           goalCount: selected.length,
-          completedGoalCount: selected.filter((item) => item.completedAt)
-            .length,
+          completedGoalCount: selected.filter(
+            (item) => item.status === "completed",
+          ).length,
           exerciseCount: selected.reduce(
             (total, item) => total + item.exercises.length,
             0,
