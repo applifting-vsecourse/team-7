@@ -125,9 +125,11 @@ export function DogDisciplineView({
     (count, goal) => count + goal.exercises.length,
     0,
   );
+  const archived = Boolean(dog.archivedAt);
   const goalCard = (goal: (typeof discipline.goals)[number]) => (
     <DogGoal
       key={goal.id}
+      readOnly={archived}
       dogId={dog.id}
       goal={goal}
       assignment={assignments.find((item) => item.goalId === goal.id)}
@@ -170,31 +172,33 @@ export function DogDisciplineView({
               {discipline.name}
             </span>
           </h1>
-          <Dropdown>
-            <Button
-              isIconOnly
-              variant="secondary"
-              aria-label={t(($) => $.disciplines.actions)}
-            >
-              <EllipsisVertical className="size-4" aria-hidden="true" />
-            </Button>
-            <Dropdown.Popover placement="bottom end" className="min-w-60">
-              <Dropdown.Menu
-                onAction={() => {
-                  mutate.reset();
-                  setRemoving({ type: "discipline" });
-                }}
+          {!archived && (
+            <Dropdown>
+              <Button
+                isIconOnly
+                variant="secondary"
+                aria-label={t(($) => $.disciplines.actions)}
               >
-                <Dropdown.Item
-                  id="remove"
-                  variant="danger"
-                  textValue={t(($) => $.dogProfile.removeDiscipline)}
+                <EllipsisVertical className="size-4" aria-hidden="true" />
+              </Button>
+              <Dropdown.Popover placement="bottom end" className="min-w-60">
+                <Dropdown.Menu
+                  onAction={() => {
+                    mutate.reset();
+                    setRemoving({ type: "discipline" });
+                  }}
                 >
-                  <Label>{t(($) => $.dogProfile.removeDiscipline)}</Label>
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown.Popover>
-          </Dropdown>
+                  <Dropdown.Item
+                    id="remove"
+                    variant="danger"
+                    textValue={t(($) => $.dogProfile.removeDiscipline)}
+                  >
+                    <Label>{t(($) => $.dogProfile.removeDiscipline)}</Label>
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown.Popover>
+            </Dropdown>
+          )}
         </div>
         <p className="text-base leading-7 text-muted">
           {t(($) => $.dogProfile.disciplineSubtitle, {
@@ -247,13 +251,15 @@ export function DogDisciplineView({
           >
             {t(($) => $.disciplines.goals)}
           </h2>
-          <Button
-            variant="outline"
-            onPress={() => setCreating({ type: "goal" })}
-          >
-            <Plus className="size-4" aria-hidden="true" />
-            {t(($) => $.disciplines.addGoal)}
-          </Button>
+          {!archived && (
+            <Button
+              variant="outline"
+              onPress={() => setCreating({ type: "goal" })}
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              {t(($) => $.disciplines.addGoal)}
+            </Button>
+          )}
         </div>
         {active.length ? (
           active.map(goalCard)
@@ -263,7 +269,7 @@ export function DogDisciplineView({
           </p>
         )}
       </section>
-      {unassigned.length > 0 && (
+      {unassigned.length > 0 && !archived && (
         <div className="w-full max-w-200">
           <DoneSection
             title={t(($) => $.dogProfile.unassignedGoals, {

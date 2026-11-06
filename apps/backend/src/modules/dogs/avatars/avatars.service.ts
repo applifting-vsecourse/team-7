@@ -8,6 +8,7 @@ import {
 import { randomUUID } from "node:crypto";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import type { DogDetails } from "@/modules/dogs/domain/dog-details";
+import { findActiveDog } from "@/modules/dogs/domain/owned-dog";
 import { AVATAR_UPLOAD_LIMIT } from "./avatars.constants";
 
 @Injectable()
@@ -41,11 +42,7 @@ export class DogAvatarsService {
     id: string,
     input: Buffer | undefined,
   ): Promise<DogDetails> {
-    const owned = await this.prisma.dog.findFirst({
-      where: { id, userId },
-      select: { id: true },
-    });
-    if (!owned) throw new NotFoundException("Dog not found");
+    await findActiveDog(this.prisma, userId, id);
     if (!input?.length) throw new BadRequestException("A photo is required");
     const data = await this.prepareAvatar(input);
     const [dog] = await this.prisma.dog.updateManyAndReturn({
@@ -58,6 +55,7 @@ export class DogAvatarsService {
   }
 
   async removeAvatar(userId: string, id: string): Promise<DogDetails> {
+    await findActiveDog(this.prisma, userId, id);
     const [dog] = await this.prisma.dog.updateManyAndReturn({
       where: { id, userId },
       data: { avatar: null, avatarVersion: null },

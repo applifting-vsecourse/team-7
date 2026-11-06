@@ -56,6 +56,8 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
   const { dog, exercise } = detail;
   const { goal } = exercise;
   const stats = exerciseHistory(detail.events, today);
+  // An archived dog's history stays viewable, but nothing new is planned.
+  const canEdit = exercise.assigned && !dog.archivedAt;
   const scroller = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     if (scroller.current) {
@@ -165,7 +167,7 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
           <h1 className="min-w-0 flex-1 text-3xl leading-9 font-semibold tracking-tight wrap-break-word">
             {exercise.name}
           </h1>
-          {exercise.assigned && (
+          {canEdit && (
             <Dropdown>
               <Button
                 isIconOnly
@@ -262,7 +264,7 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
             title={t(($) => $.exerciseDetail.emptyTitle)}
             description={t(($) => $.exerciseDetail.emptyDescription)}
             action={
-              exercise.assigned ? (
+              canEdit ? (
                 <Button onPress={() => setScheduling(true)}>
                   <Plus className="size-4" aria-hidden="true" />
                   {t(($) => $.calendar.scheduleExercise)}

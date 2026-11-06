@@ -39,6 +39,7 @@ export function DogGoal({
   onAction,
   onAddExercise,
   onRemove,
+  readOnly = false,
 }: {
   dogId: string;
   goal: Goal;
@@ -48,6 +49,8 @@ export function DogGoal({
   onAction: (action: GoalAction) => void;
   onAddExercise: () => void;
   onRemove: () => void;
+  /** An archived dog's goals open, but nothing can be changed. */
+  readOnly?: boolean;
 }) {
   const { t } = useTranslation();
   const rowId = useId();
@@ -111,86 +114,88 @@ export function DogGoal({
               </Chip>
             )}
           </div>
-          <div
-            className={cn(
-              "flex items-center gap-3",
-              // The done chip lives in the text column, so a completed goal
-              // only has its menu here and keeps it on the title row.
-              !completed && "w-full sm:w-auto",
-            )}
-          >
-            {!assignment ? (
-              <Button
-                variant="outline"
-                size="sm"
-                isDisabled={isPending}
-                onPress={() =>
-                  onAction({ type: "assignGoal", goalId: goal.id })
-                }
-              >
-                <Plus className="size-4" aria-hidden="true" />
-                {t(($) => $.dogProfile.assignGoal)}
-              </Button>
-            ) : (
-              <>
-                {!completed && (
-                  <Button
-                    variant="secondary"
-                    isDisabled={isPending}
-                    onPress={() =>
-                      onAction({ type: "complete", goalId: goal.id })
-                    }
-                  >
-                    <CircleCheck className="size-4" aria-hidden="true" />
-                    {t(($) => $.dogProfile.markComplete)}
-                  </Button>
-                )}
-                <Dropdown>
-                  <Button
-                    isIconOnly
-                    variant="ghost"
-                    aria-label={t(($) => $.disciplines.goalActions, {
-                      name: goal.name,
-                    })}
-                    isDisabled={isPending}
-                  >
-                    <EllipsisVertical className="size-4" aria-hidden="true" />
-                  </Button>
-                  <Dropdown.Popover placement="bottom end">
-                    <Dropdown.Menu
-                      onAction={(key) => {
-                        if (key === "remove") onRemove();
-                        else if (key === "add") onAddExercise();
-                        else onAction({ type: "reopen", goalId: goal.id });
-                      }}
+          {!readOnly && (
+            <div
+              className={cn(
+                "flex items-center gap-3",
+                // The done chip lives in the text column, so a completed goal
+                // only has its menu here and keeps it on the title row.
+                !completed && "w-full sm:w-auto",
+              )}
+            >
+              {!assignment ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  isDisabled={isPending}
+                  onPress={() =>
+                    onAction({ type: "assignGoal", goalId: goal.id })
+                  }
+                >
+                  <Plus className="size-4" aria-hidden="true" />
+                  {t(($) => $.dogProfile.assignGoal)}
+                </Button>
+              ) : (
+                <>
+                  {!completed && (
+                    <Button
+                      variant="secondary"
+                      isDisabled={isPending}
+                      onPress={() =>
+                        onAction({ type: "complete", goalId: goal.id })
+                      }
                     >
-                      {completed && (
+                      <CircleCheck className="size-4" aria-hidden="true" />
+                      {t(($) => $.dogProfile.markComplete)}
+                    </Button>
+                  )}
+                  <Dropdown>
+                    <Button
+                      isIconOnly
+                      variant="ghost"
+                      aria-label={t(($) => $.disciplines.goalActions, {
+                        name: goal.name,
+                      })}
+                      isDisabled={isPending}
+                    >
+                      <EllipsisVertical className="size-4" aria-hidden="true" />
+                    </Button>
+                    <Dropdown.Popover placement="bottom end">
+                      <Dropdown.Menu
+                        onAction={(key) => {
+                          if (key === "remove") onRemove();
+                          else if (key === "add") onAddExercise();
+                          else onAction({ type: "reopen", goalId: goal.id });
+                        }}
+                      >
+                        {completed && (
+                          <Dropdown.Item
+                            id="reopen"
+                            textValue={t(($) => $.dogProfile.reopen)}
+                          >
+                            <Label>{t(($) => $.dogProfile.reopen)}</Label>
+                          </Dropdown.Item>
+                        )}
                         <Dropdown.Item
-                          id="reopen"
-                          textValue={t(($) => $.dogProfile.reopen)}
+                          id="add"
+                          textValue={t(($) => $.disciplines.addExercise)}
                         >
-                          <Label>{t(($) => $.dogProfile.reopen)}</Label>
+                          <Label>{t(($) => $.disciplines.addExercise)}</Label>
                         </Dropdown.Item>
-                      )}
-                      <Dropdown.Item
-                        id="add"
-                        textValue={t(($) => $.disciplines.addExercise)}
-                      >
-                        <Label>{t(($) => $.disciplines.addExercise)}</Label>
-                      </Dropdown.Item>
-                      <Dropdown.Item
-                        id="remove"
-                        variant="danger"
-                        textValue={t(($) => $.dogProfile.removeGoal)}
-                      >
-                        <Label>{t(($) => $.dogProfile.removeGoal)}</Label>
-                      </Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown.Popover>
-                </Dropdown>
-              </>
-            )}
-          </div>
+                        <Dropdown.Item
+                          id="remove"
+                          variant="danger"
+                          textValue={t(($) => $.dogProfile.removeGoal)}
+                        >
+                          <Label>{t(($) => $.dogProfile.removeGoal)}</Label>
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown.Popover>
+                  </Dropdown>
+                </>
+              )}
+            </div>
+          )}
         </div>
         {assignment && (
           <>
@@ -200,15 +205,17 @@ export function DogGoal({
                 <p className="text-sm text-muted">
                   {t(($) => $.dogProfile.noExercises)}
                 </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  isDisabled={isPending}
-                  onPress={onAddExercise}
-                >
-                  <Plus className="size-4" aria-hidden="true" />
-                  {t(($) => $.disciplines.addExercise)}
-                </Button>
+                {!readOnly && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    isDisabled={isPending}
+                    onPress={onAddExercise}
+                  >
+                    <Plus className="size-4" aria-hidden="true" />
+                    {t(($) => $.disciplines.addExercise)}
+                  </Button>
+                )}
               </div>
             )}
             {/* Same layout as ExerciseRow in the discipline library. Rows have
@@ -272,21 +279,23 @@ export function DogGoal({
                     ) : (
                       <div className="flex items-start gap-3 px-2 py-1">
                         {content}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          isDisabled={isPending}
-                          onPress={() =>
-                            onAction({
-                              type: "assignExercise",
-                              goalId: goal.id,
-                              exerciseId: item.id,
-                            })
-                          }
-                        >
-                          <Plus className="size-4" aria-hidden="true" />
-                          {t(($) => $.dogProfile.assign)}
-                        </Button>
+                        {!readOnly && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            isDisabled={isPending}
+                            onPress={() =>
+                              onAction({
+                                type: "assignExercise",
+                                goalId: goal.id,
+                                exerciseId: item.id,
+                              })
+                            }
+                          >
+                            <Plus className="size-4" aria-hidden="true" />
+                            {t(($) => $.dogProfile.assign)}
+                          </Button>
+                        )}
                       </div>
                     )}
                   </li>

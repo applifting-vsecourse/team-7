@@ -8,7 +8,7 @@ import { eventSchema } from "@/features/events/api/eventsQueryOptions";
 import { dogProfileKey } from "./dogProfileQueryOptions";
 
 export const dogExerciseDetailSchema = z.object({
-  dog: eventSchema.shape.dog,
+  dog: eventSchema.shape.dog.extend({ archivedAt: z.string().nullable() }),
   exercise: eventSchema.shape.exercise.extend({ assigned: z.boolean() }),
   events: z.array(eventSchema),
 });

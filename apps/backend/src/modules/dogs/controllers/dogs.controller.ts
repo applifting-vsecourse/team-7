@@ -1,5 +1,6 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Delete,
   Get,
@@ -18,6 +19,7 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import {
   ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiCookieAuth,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -31,6 +33,7 @@ import { DisciplineInputDto } from "@/modules/disciplines/controllers/dto/librar
 import { AVATAR_UPLOAD_LIMIT } from "@/modules/dogs/avatars/avatars.constants";
 import { DogAvatarsService } from "@/modules/dogs/avatars/avatars.service";
 import type { DogDetails } from "@/modules/dogs/domain/dog-details";
+import { findActiveDog, findOwnedDog } from "@/modules/dogs/domain/owned-dog";
 import { User } from "@/shared/auth/decorators/user.decorator";
 import { Identity } from "@/shared/auth/domain/identity";
 import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
@@ -203,11 +206,7 @@ export class DogsController {
     @Body() body: DisciplineInputDto,
   ) {
     return this.prisma.$transaction(async (tx) => {
-      const dog = await tx.dog.findFirst({
-        where: { id, userId: user.id },
-        select: { id: true },
-      });
-      if (!dog) throw new NotFoundException("Dog not found");
+      const dog = await findActiveDog(tx, user.id, id);
       return tx.discipline.create({
         data: {
           name: body.name.trim(),
@@ -221,13 +220,17 @@ export class DogsController {
 
   @Post(":id/archive")
   @ApiOperation({ summary: "Archive an owned dog, keeping all its data" })
+  @ApiNotFoundResponse({ description: "Dog not found" })
+  @ApiConflictResponse({ description: "Dog is already archived" })
   async archiveDog(@User() user: Identity, @Param("id") id: string) {
+    await findActiveDog(this.prisma, user.id, id);
+    // The archivedAt condition keeps a concurrent archive from overwriting the date.
     const [dog] = await this.prisma.dog.updateManyAndReturn({
-      where: { id, userId: user.id },
+      where: { id, userId: user.id, archivedAt: null },
       data: { archivedAt: new Date() },
       omit: omitAvatar,
     });
-    if (!dog) throw new NotFoundException("Dog not found");
+    if (!dog) throw new ConflictException("Dog is already archived");
     return dog;
   }
 
@@ -237,16 +240,18 @@ export class DogsController {
     summary: "Restore an archived dog; its scheduled exercises reappear",
   })
   @ApiNotFoundResponse({ description: "Dog not found" })
+  @ApiConflictResponse({ description: "Dog is not archived" })
   async restoreDog(
     @User() user: Identity,
     @Param("id") id: string,
   ): Promise<DogDetails> {
+    await findOwnedDog(this.prisma, user.id, id);
     const [dog] = await this.prisma.dog.updateManyAndReturn({
-      where: { id, userId: user.id },
+      where: { id, userId: user.id, archivedAt: { not: null } },
       data: { archivedAt: null },
       omit: omitAvatar,
     });
-    if (!dog) throw new NotFoundException("Dog not found");
+    if (!dog) throw new ConflictException("Dog is not archived");
     return dog;
   }
 
@@ -278,18 +283,20 @@ export class DogsController {
   @ApiOperation({ summary: "Update a dog owned by the signed-in user" })
   @ApiBadRequestResponse({ description: "Invalid dog data" })
   @ApiNotFoundResponse({ description: "Dog not found" })
+  @ApiConflictResponse({ description: "Dog is archived" })
   async updateDog(
     @User() user: Identity,
     @Param("id") id: string,
     @Body() body: DogInputDto,
   ): Promise<DogDetails> {
+    await findActiveDog(this.prisma, user.id, id);
     const [dog] = await this.prisma.dog.updateManyAndReturn({
-      where: { id, userId: user.id },
+      where: { id, userId: user.id, archivedAt: null },
       data: dogFields(body),
       omit: omitAvatar,
     });
 
-    if (!dog) throw new NotFoundException("Dog not found");
+    if (!dog) throw new ConflictException("Dog is archived");
 
     return dog;
   }

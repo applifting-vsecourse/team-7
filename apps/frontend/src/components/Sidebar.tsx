@@ -1,26 +1,18 @@
 import { useId } from "react";
-import { Calendar, ChartLine, Circle, Rectangles4 } from "@gravity-ui/icons";
-import { buttonVariants, Separator } from "@heroui/react";
-import { Link } from "@tanstack/react-router";
-import { useSetAtom } from "jotai";
+import { Calendar, ChartLine, Rectangles4 } from "@gravity-ui/icons";
+import { Separator } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
-import { mobileSidebarOpenAtom } from "@/app/atoms/mobileSidebarOpenAtom";
 import { ROUTES } from "@/app/routes";
-import { transitionName } from "@/lib/utils";
+import { NavLink } from "@/components/NavLink";
 
 import { AddDogButton } from "@/features/dogs/components/AddDogDialog";
 import { SidebarArchiveLink } from "@/features/dogs/components/SidebarArchiveLink";
 import { SidebarDogs } from "@/features/dogs/components/SidebarDogs";
 
-// The active highlight slides to the newly active link across the route's
-// view transition (only one link is active at a time).
-const activeLink = { style: transitionName("nav-active") };
-
 export function Sidebar() {
   const { t } = useTranslation();
   const headingId = useId();
-  const setMobileSidebarOpen = useSetAtom(mobileSidebarOpenAtom);
 
   return (
     // The aside stays put and draws the edge fades; the inner div scrolls
@@ -32,57 +24,15 @@ export function Sidebar() {
           aria-label={t(($) => $.navigation.main)}
           className="flex flex-col gap-3"
         >
-          <Link
-            to={ROUTES.overview}
-            onClick={() => setMobileSidebarOpen(false)}
-            activeProps={activeLink}
-            className={buttonVariants({
-              variant: "ghost",
-              className:
-                "w-full h-9 justify-start gap-2 px-4 data-[status=active]:bg-accent data-[status=active]:text-accent-foreground",
-            })}
-          >
-            <Rectangles4 className="size-4 shrink-0" aria-hidden="true" />
-            <span className="flex-1">{t(($) => $.navigation.overview)}</span>
-            <Circle
-              className="hidden size-4 shrink-0 in-data-[status=active]:block"
-              aria-hidden="true"
-            />
-          </Link>
-          <Link
-            to={ROUTES.calendar}
-            onClick={() => setMobileSidebarOpen(false)}
-            activeProps={activeLink}
-            className={buttonVariants({
-              variant: "ghost",
-              className:
-                "w-full h-9 justify-start gap-2 px-4 data-[status=active]:bg-accent data-[status=active]:text-accent-foreground",
-            })}
-          >
-            <Calendar className="size-4 shrink-0" aria-hidden="true" />
-            <span className="flex-1">{t(($) => $.navigation.calendar)}</span>
-            <Circle
-              className="hidden size-4 shrink-0 in-data-[status=active]:block"
-              aria-hidden="true"
-            />
-          </Link>
-          <Link
-            to={ROUTES.disciplines}
-            onClick={() => setMobileSidebarOpen(false)}
-            activeProps={activeLink}
-            className={buttonVariants({
-              variant: "ghost",
-              className:
-                "w-full h-9 justify-start gap-2 px-4 data-[status=active]:bg-accent data-[status=active]:text-accent-foreground",
-            })}
-          >
-            <ChartLine className="size-4 shrink-0" aria-hidden="true" />
-            <span className="flex-1">{t(($) => $.navigation.disciplines)}</span>
-            <Circle
-              className="hidden size-4 shrink-0 in-data-[status=active]:block"
-              aria-hidden="true"
-            />
-          </Link>
+          <NavLink to={ROUTES.overview} icon={Rectangles4}>
+            {t(($) => $.navigation.overview)}
+          </NavLink>
+          <NavLink to={ROUTES.calendar} icon={Calendar}>
+            {t(($) => $.navigation.calendar)}
+          </NavLink>
+          <NavLink to={ROUTES.disciplines} icon={ChartLine}>
+            {t(($) => $.navigation.disciplines)}
+          </NavLink>
         </nav>
         <section aria-labelledby={headingId} className="flex flex-col gap-6">
           <div className="flex items-center gap-3">
@@ -98,7 +48,7 @@ export function Sidebar() {
           <div className="flex flex-col gap-4 md:gap-6">
             <SidebarDogs />
             <AddDogButton />
-            <SidebarArchiveLink activeProps={activeLink} />
+            <SidebarArchiveLink />
           </div>
         </section>
       </div>

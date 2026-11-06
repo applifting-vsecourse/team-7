@@ -170,6 +170,9 @@ describe("dog archive", () => {
     expect(
       screen.queryByRole("button", { name: /Assign discipline/ }),
     ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Change photo for Mája" }),
+    ).toBeNull();
 
     // The alert renders one restore button per breakpoint; only one is visible.
     const [restore] = screen.getAllByRole("button", { name: "Restore" });
@@ -184,5 +187,69 @@ describe("dog archive", () => {
       await screen.findByRole("button", { name: "More dog actions" }),
     ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/dogs/dog-1");
+  });
+
+  it("opens an archived dog's discipline without any way to change it", async () => {
+    const discipline = {
+      id: "d1",
+      name: "Obedience",
+      description: null,
+      dogs: [],
+      goals: [
+        {
+          id: "g1",
+          name: "Recall",
+          criterion: null,
+          dogs: [],
+          exercises: [
+            {
+              id: "e1",
+              name: "Recall from play",
+              procedure: null,
+              dogCount: 1,
+            },
+            { id: "e2", name: "Recall from toy", procedure: null, dogCount: 0 },
+          ],
+        },
+        { id: "g2", name: "Stay", criterion: null, dogs: [], exercises: [] },
+      ],
+    };
+    state.get.set("dogs/dog-1", () => ({
+      ...archivedDog,
+      disciplines: [
+        {
+          id: "d1",
+          name: "Obedience",
+          description: null,
+          goalCount: 1,
+          completedGoalCount: 0,
+          exerciseCount: 1,
+          averageRating: null,
+          lastTrainingAt: null,
+          exerciseTraining: [],
+        },
+      ],
+    }));
+    state.get.set("disciplines/d1", () => discipline);
+    state.get.set("dogs/dog-1/disciplines/d1/selection", () => ({
+      goals: [
+        { goalId: "g1", completedAt: null, exercises: [{ exerciseId: "e1" }] },
+      ],
+    }));
+    renderRoute("/dogs/dog-1/disciplines/d1?lng=en");
+
+    expect(
+      await screen.findByRole("link", { name: /Recall from play/ }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add goal" })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "More discipline actions" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Mark as completed" }),
+    ).toBeNull();
+    expect(screen.queryByRole("button", { name: "Assign" })).toBeNull();
+    // Goals the dog doesn't train only offer assigning, so they're hidden.
+    expect(screen.queryByText("Stay")).toBeNull();
   });
 });

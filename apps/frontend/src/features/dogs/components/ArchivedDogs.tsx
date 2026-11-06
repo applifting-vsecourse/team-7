@@ -1,18 +1,17 @@
-import { useState } from "react";
 import { Archive, ChevronRight } from "@gravity-ui/icons";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { differenceInYears, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
 import { PresenceItem, PresenceList } from "@/components/PresenceList";
-import { pluralForm } from "@/lib/plural";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { EmptyState } from "@/features/disciplines/components/EmptyState";
 
 import { archivedDogsQueryOptions, type Dog } from "../api/dogsQueryOptions";
+import { useDogMeta } from "../hooks/useDogMeta";
 import { DogAvatar } from "./DogAvatar";
 import { QueryFeedback } from "./QueryFeedback";
 import { RestoreDogButton } from "./RestoreDogButton";
@@ -63,15 +62,8 @@ export function ArchivedDogs() {
 
 function ArchivedDogCard({ dog }: { dog: Dog }) {
   const { t, i18n } = useTranslation();
-  const [today] = useState(() => new Date());
-  const age = dog.birthDate
-    ? differenceInYears(today, parseISO(dog.birthDate))
-    : undefined;
-  const meta = [
-    dog.breed,
-    age !== undefined
-      ? t(($) => $.dogProfile.age[pluralForm(age)], { count: age })
-      : null,
+  const meta = useDogMeta(
+    dog,
     dog.archivedAt
       ? t(($) => $.dogArchive.archivedOn, {
           date: new Intl.DateTimeFormat(i18n.resolvedLanguage ?? "cs").format(
@@ -79,9 +71,7 @@ function ArchivedDogCard({ dog }: { dog: Dog }) {
           ),
         })
       : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  );
   return (
     <article className="flex flex-col gap-3 rounded-2xl bg-background p-4 shadow-card sm:flex-row sm:items-center sm:gap-4">
       <div className="flex min-w-0 flex-1 items-center gap-3">

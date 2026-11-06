@@ -7,7 +7,11 @@ import { api } from "@/lib/api-client";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 
-import { invalidateDogData } from "./useDogProfileMutation";
+import {
+  invalidateArchivedDogs,
+  invalidateDog,
+  invalidateDogListings,
+} from "./useDogProfileMutation";
 
 /**
  * Restores an archived dog and confirms it with a toast. A plain async
@@ -20,12 +24,19 @@ export function useRestoreDog() {
   const client = useQueryClient();
   return async (dog: Pick<Dog, "id" | "name">) => {
     await api.post(`dogs/${encodeURIComponent(dog.id)}/restore`);
-    await invalidateDogData(client, user?.id);
     toast.success(
       t(($) => $.dogArchive.restoredToast, { name: dog.name }),
       {
         description: t(($) => $.dogArchive.restoredHint),
       },
     );
+    // Calendar and library counts refresh in the background; the caller only
+    // waits for what the current page shows, so its button doesn't stay
+    // pending on unrelated queries (nor invite a second restore meanwhile).
+    void invalidateDogListings(client, user?.id);
+    await Promise.all([
+      invalidateDog(client, user?.id),
+      invalidateArchivedDogs(client, user?.id),
+    ]);
   };
 }

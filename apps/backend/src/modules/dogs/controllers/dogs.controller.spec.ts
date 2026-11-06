@@ -58,16 +58,21 @@ describe("/api/dogs", () => {
         DogAvatarsService,
         {
           provide: PrismaService,
-          useValue: {
-            scheduledExercise: { groupBy },
-            exercise: { findMany: findExercises },
-            dog: {
-              findMany,
-              findFirst,
-              create,
-              updateManyAndReturn,
-              deleteMany,
-            },
+          useFactory: () => {
+            const prisma = {
+              scheduledExercise: { groupBy },
+              exercise: { findMany: findExercises },
+              dog: {
+                findMany,
+                findFirst,
+                create,
+                updateManyAndReturn,
+                deleteMany,
+              },
+              $transaction: (action: (tx: unknown) => unknown) =>
+                action(prisma),
+            };
+            return prisma;
           },
         },
         { provide: "BetterAuth", useValue: {} },
@@ -121,11 +126,19 @@ describe("/api/dogs", () => {
         where,
         data,
       }: {
-        where: { id: string; userId: string };
+        where: {
+          id: string;
+          userId: string;
+          archivedAt?: null | { not: null };
+        };
         data: Partial<(typeof dogs)[number]>;
       }) => {
         const matches = dogs.filter(
-          (dog) => dog.id === where.id && dog.userId === where.userId,
+          (dog) =>
+            dog.id === where.id &&
+            dog.userId === where.userId &&
+            (where.archivedAt === undefined ||
+              !dog.archivedAt === (where.archivedAt === null)),
         );
         matches.forEach((dog) => {
           Object.assign(dog, data);
@@ -245,7 +258,7 @@ describe("/api/dogs", () => {
       userId: "user-a",
     });
     expect(updateManyAndReturn).toHaveBeenCalledWith({
-      where: { id: "dog-a", userId: "user-a" },
+      where: { id: "dog-a", userId: "user-a", archivedAt: null },
       data: { name: "Buddy" },
       omit: { avatar: true },
     });
@@ -355,6 +368,23 @@ describe("/api/dogs", () => {
     expect(deleteMany).not.toHaveBeenCalled();
   });
 
+  it("keeps an archived dog read-only until it is restored", async () => {
+    signIn("user-a");
+    await request("POST", "/dog-a/archive");
+
+    expect((await request("POST", "/dog-a/archive")).status).toBe(409);
+    expect((await request("PATCH", "/dog-a", { name: "Changed" })).status).toBe(
+      409,
+    );
+    expect(
+      (await request("POST", "/dog-a/disciplines", { name: "New" })).status,
+    ).toBe(409);
+    expect(dogs[0].name).toBe("First dog");
+    // Reading the archived dog's profile still works.
+    findFirst.mockResolvedValueOnce({ ...dogs[0], disciplines: [], goals: [] });
+    expect((await fetch(`${url}/dog-a`)).status).toBe(200);
+  });
+
   it("lists archived dogs and restores only an owned dog", async () => {
     signIn("user-a");
     await request("POST", "/dog-a/archive");
@@ -373,6 +403,8 @@ describe("/api/dogs", () => {
     expect((await request("POST", "/dog-b/restore")).status).toBe(404);
     const restored = await request("POST", "/dog-a/restore");
     expect(restored.status).toBe(200);
+    // A second restore (double undo, another tab) is not a silent success.
+    expect((await request("POST", "/dog-a/restore")).status).toBe(409);
     expect(dogs[0].archivedAt).toBeNull();
     expect(await (await fetch(`${url}/archived`)).json()).toEqual([]);
     expect(await (await fetch(url)).json()).toEqual([

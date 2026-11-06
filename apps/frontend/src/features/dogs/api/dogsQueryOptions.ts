@@ -19,10 +19,15 @@ export const dogsQueryOptions = (userId: string | undefined) =>
     enabled: Boolean(userId),
   });
 
-/** Nested under the dogs key, so invalidating the dog list refreshes it too. */
+/**
+ * Its own key, so ordinary dog edits don't refetch it; only archiving,
+ * restoring and deleting invalidate it. The sidebar link reads it on every
+ * page, so a short staleTime spares a request per navigation.
+ */
 export const archivedDogsQueryOptions = (userId: string | undefined) =>
   queryOptions({
-    queryKey: [...dogsQueryOptions(userId).queryKey, "archived"],
+    queryKey: ["archivedDogs", userId],
     queryFn: ({ signal }) => api.get("dogs/archived", { signal }).json<Dog[]>(),
     enabled: Boolean(userId),
+    staleTime: 60_000,
   });

@@ -7,6 +7,7 @@ import {
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { Prisma } from "@/generated/prisma/client";
 import type { DogGoalSelection } from "@/modules/dogs/domain/dog-selection";
+import { findActiveDog, findOwnedDog } from "@/modules/dogs/domain/owned-dog";
 
 export type DogSelectionScope = {
   userId: string;
@@ -26,20 +27,26 @@ const goalInclude = {
 export class DogSelectionService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** Reads a selection; an archived dog's plan stays viewable. */
+  read<T>(
+    scope: DogSelectionScope,
+    action: (tx: Prisma.TransactionClient) => Promise<T>,
+  ): Promise<T> {
+    return this.run(scope, action, { allowArchived: true });
+  }
+
   // Serialize selection writes so concurrent saves cannot produce a merged selection.
   async run<T>(
     scope: DogSelectionScope,
     action: (tx: Prisma.TransactionClient) => Promise<T>,
+    { allowArchived = false } = {},
   ): Promise<T> {
+    const findDog = allowArchived ? findOwnedDog : findActiveDog;
     for (let attempt = 0; ; attempt++) {
       try {
         return await this.prisma.$transaction(
           async (tx) => {
-            const dog = await tx.dog.findFirst({
-              where: { id: scope.dogId, userId: scope.userId },
-              select: { id: true },
-            });
-            if (!dog) throw new NotFoundException("Dog not found");
+            await findDog(tx, scope.userId, scope.dogId);
             const discipline = await tx.discipline.findFirst({
               where: { id: scope.disciplineId, userId: scope.userId },
               select: { id: true },
