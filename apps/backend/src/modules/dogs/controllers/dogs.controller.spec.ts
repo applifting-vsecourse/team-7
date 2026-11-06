@@ -86,10 +86,18 @@ describe("/api/dogs", () => {
     findExercises.mockResolvedValue([]);
     dogs = initialDogs.map((dog) => ({ ...dog }));
     findMany.mockImplementation(
-      ({ where }: { where: { userId: string; archivedAt?: null } }) =>
+      ({
+        where,
+      }: {
+        where: { userId: string; archivedAt: null | { not: null } };
+      }) =>
         Promise.resolve(
           dogs
-            .filter((dog) => dog.userId === where.userId && !dog.archivedAt)
+            .filter(
+              (dog) =>
+                dog.userId === where.userId &&
+                !dog.archivedAt === (where.archivedAt === null),
+            )
             .map(withoutAvatar),
         ),
     );
@@ -345,6 +353,31 @@ describe("/api/dogs", () => {
     expect(dogs).toHaveLength(2);
     expect(await (await fetch(url)).json()).toEqual([]);
     expect(deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("lists archived dogs and restores only an owned dog", async () => {
+    signIn("user-a");
+    await request("POST", "/dog-a/archive");
+
+    const archived = await fetch(`${url}/archived`);
+    expect(archived.status).toBe(200);
+    expect(await archived.json()).toEqual([
+      expect.objectContaining({ id: "dog-a" }),
+    ]);
+    expect(findMany).toHaveBeenLastCalledWith({
+      where: { userId: "user-a", archivedAt: { not: null } },
+      orderBy: { archivedAt: "desc" },
+      omit: { avatar: true },
+    });
+
+    expect((await request("POST", "/dog-b/restore")).status).toBe(404);
+    const restored = await request("POST", "/dog-a/restore");
+    expect(restored.status).toBe(200);
+    expect(dogs[0].archivedAt).toBeNull();
+    expect(await (await fetch(`${url}/archived`)).json()).toEqual([]);
+    expect(await (await fetch(url)).json()).toEqual([
+      expect.objectContaining({ id: "dog-a" }),
+    ]);
   });
 
   it("returns owned discipline progress without confusing library goals with selected goals", async () => {

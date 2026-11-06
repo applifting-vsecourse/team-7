@@ -20,6 +20,7 @@ import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as DisciplinesIndexRouteImport } from './routes/disciplines/index'
 import { Route as DisciplinesDisciplineIdRouteImport } from './routes/disciplines/$disciplineId'
 import { Route as DogsDogIdRouteImport } from './routes/dogs/$dogId'
+import { Route as DogsArchiveRouteImport } from './routes/dogs/archive'
 import { Route as DogsDogIdDisciplinesDisciplineIdRouteImport } from './routes/dogs/$dogId_/disciplines/$disciplineId'
 import { Route as DogsDogIdExercisesExerciseIdRouteImport } from './routes/dogs/$dogId_/exercises/$exerciseId'
 
@@ -78,6 +79,11 @@ const DogsDogIdRoute = DogsDogIdRouteImport.update({
   path: '/dogs/$dogId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DogsArchiveRoute = DogsArchiveRouteImport.update({
+  id: '/dogs/archive',
+  path: '/dogs/archive',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DogsDogIdDisciplinesDisciplineIdRoute =
   DogsDogIdDisciplinesDisciplineIdRouteImport.update({
     id: '/dogs/$dogId_/disciplines/$disciplineId',
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof VerifyEmailRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
   '/dogs/$dogId': typeof DogsDogIdRoute
+  '/dogs/archive': typeof DogsArchiveRoute
   '/disciplines/': typeof DisciplinesIndexRoute
   '/dogs/$dogId/disciplines/$disciplineId': typeof DogsDogIdDisciplinesDisciplineIdRoute
   '/dogs/$dogId/exercises/$exerciseId': typeof DogsDogIdExercisesExerciseIdRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/verify-email': typeof VerifyEmailRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
   '/dogs/$dogId': typeof DogsDogIdRoute
+  '/dogs/archive': typeof DogsArchiveRoute
   '/disciplines': typeof DisciplinesIndexRoute
   '/dogs/$dogId/disciplines/$disciplineId': typeof DogsDogIdDisciplinesDisciplineIdRoute
   '/dogs/$dogId/exercises/$exerciseId': typeof DogsDogIdExercisesExerciseIdRoute
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/verify-email': typeof VerifyEmailRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
   '/dogs/$dogId': typeof DogsDogIdRoute
+  '/dogs/archive': typeof DogsArchiveRoute
   '/disciplines/': typeof DisciplinesIndexRoute
   '/dogs/$dogId_/disciplines/$disciplineId': typeof DogsDogIdDisciplinesDisciplineIdRoute
   '/dogs/$dogId_/exercises/$exerciseId': typeof DogsDogIdExercisesExerciseIdRoute
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/disciplines/$disciplineId'
     | '/dogs/$dogId'
+    | '/dogs/archive'
     | '/disciplines/'
     | '/dogs/$dogId/disciplines/$disciplineId'
     | '/dogs/$dogId/exercises/$exerciseId'
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/disciplines/$disciplineId'
     | '/dogs/$dogId'
+    | '/dogs/archive'
     | '/disciplines'
     | '/dogs/$dogId/disciplines/$disciplineId'
     | '/dogs/$dogId/exercises/$exerciseId'
@@ -180,6 +191,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/disciplines/$disciplineId'
     | '/dogs/$dogId'
+    | '/dogs/archive'
     | '/disciplines/'
     | '/dogs/$dogId_/disciplines/$disciplineId'
     | '/dogs/$dogId_/exercises/$exerciseId'
@@ -196,6 +208,7 @@ export interface RootRouteChildren {
   VerifyEmailRoute: typeof VerifyEmailRoute
   DisciplinesDisciplineIdRoute: typeof DisciplinesDisciplineIdRoute
   DogsDogIdRoute: typeof DogsDogIdRoute
+  DogsArchiveRoute: typeof DogsArchiveRoute
   DisciplinesIndexRoute: typeof DisciplinesIndexRoute
   DogsDogIdDisciplinesDisciplineIdRoute: typeof DogsDogIdDisciplinesDisciplineIdRoute
   DogsDogIdExercisesExerciseIdRoute: typeof DogsDogIdExercisesExerciseIdRoute
@@ -280,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DogsDogIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dogs/archive': {
+      id: '/dogs/archive'
+      path: '/dogs/archive'
+      fullPath: '/dogs/archive'
+      preLoaderRoute: typeof DogsArchiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dogs/$dogId_/disciplines/$disciplineId': {
       id: '/dogs/$dogId_/disciplines/$disciplineId'
       path: '/dogs/$dogId/disciplines/$disciplineId'
@@ -308,6 +328,7 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyEmailRoute: VerifyEmailRoute,
   DisciplinesDisciplineIdRoute: DisciplinesDisciplineIdRoute,
   DogsDogIdRoute: DogsDogIdRoute,
+  DogsArchiveRoute: DogsArchiveRoute,
   DisciplinesIndexRoute: DisciplinesIndexRoute,
   DogsDogIdDisciplinesDisciplineIdRoute: DogsDogIdDisciplinesDisciplineIdRoute,
   DogsDogIdExercisesExerciseIdRoute: DogsDogIdExercisesExerciseIdRoute,

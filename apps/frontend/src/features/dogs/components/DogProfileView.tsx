@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { DogProfile } from "../api/dogProfileQueryOptions";
-import { Calendar, ChartLine, CircleCheck } from "@gravity-ui/icons";
+import { Archive, Calendar, ChartLine, CircleCheck } from "@gravity-ui/icons";
+import { Alert } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { addWeeks, startOfWeek } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -17,6 +18,7 @@ import { DogHeader } from "./DogHeader";
 import { DogStat } from "./DogStat";
 import { DoneSection } from "./DoneSection";
 import { NewDogDisciplineDialog } from "./NewDogDisciplineDialog";
+import { RestoreDogButton } from "./RestoreDogButton";
 
 export function DogProfileView({ dog }: { dog: DogProfile }) {
   const { t } = useTranslation();
@@ -39,15 +41,36 @@ export function DogProfileView({ dog }: { dog: DogProfile }) {
     (count, item) => count + item.completedGoalCount,
     0,
   );
-  const assignButton = (className?: string) => (
-    <AssignDisciplineButton
-      className={className}
-      onLibrary={() => setDialog("library")}
-      onCreate={() => setDialog("create")}
-    />
-  );
+  const archived = Boolean(dog.archivedAt);
+  // An archived dog is read-only: its history opens, but nothing is assigned.
+  const assignButton = (className?: string) =>
+    !archived && (
+      <AssignDisciplineButton
+        className={className}
+        onLibrary={() => setDialog("library")}
+        onCreate={() => setDialog("create")}
+      />
+    );
   return (
     <>
+      {archived && (
+        // The kit's accent alert matches the surface panel, hence accent-soft.
+        <Alert status="accent" className="animate-enter bg-accent-soft">
+          <Alert.Indicator>
+            <Archive className="size-4" aria-hidden="true" />
+          </Alert.Indicator>
+          <Alert.Content>
+            <Alert.Title>
+              {t(($) => $.dogArchive.archivedTitle, { name: dog.name })}
+            </Alert.Title>
+            <Alert.Description>
+              {t(($) => $.dogArchive.archivedDescription)}
+            </Alert.Description>
+            <RestoreDogButton dog={dog} className="mt-2 sm:hidden" />
+          </Alert.Content>
+          <RestoreDogButton dog={dog} className="hidden sm:inline-flex" />
+        </Alert>
+      )}
       <div className="flex flex-col gap-8">
         <DogHeader dog={dog} />
         {dog.disciplines.length > 0 && (

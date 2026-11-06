@@ -84,7 +84,8 @@
     "calendar": "Kalendář",
     "disciplines": "Disciplíny",
     "myDogs": "Moji psi",
-    "addDog": "Přidat psa"
+    "addDog": "Přidat psa",
+    "archive": "Archiv ({{count}})"
   },
   "dogs": {
     "all": "Všichni",
@@ -131,6 +132,20 @@
       "few": "{{count}} měsíce",
       "other": "{{count}} měsíců"
     }
+  },
+  "dogArchive": {
+    "title": "Archiv psů",
+    "intro": "Archivovaní psi se neukazují v přehledu, kalendáři ani při plánování. Jejich historie zůstává a můžete je kdykoli vrátit zpátky.",
+    "emptyTitle": "Archiv je prázdný",
+    "emptyDescription": "Psi, které archivujete, najdete tady. Jejich historie zůstane a můžete je vrátit zpátky.",
+    "archivedOn": "V archivu od {{date}}",
+    "restore": "Vrátit zpátky",
+    "restoreError": "Psa se nepodařilo vrátit zpátky. Zkuste to znovu.",
+    "restoredToast": "{{name}} je zpátky",
+    "restoredHint": "Zase se ukazuje v přehledu, kalendáři i při plánování.",
+    "archivedToast": "{{name}} je v archivu",
+    "archivedTitle": "{{name}} je v archivu",
+    "archivedDescription": "Vidíte jen historii. Neukazuje se v přehledu, kalendáři ani při plánování."
   },
   "events": {
     "timeAndDuration": "{{time}} ({{duration}} min)",

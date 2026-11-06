@@ -77,6 +77,19 @@ export class DogsController {
     });
   }
 
+  // Declared before ":id" so "archived" is not captured as a dog ID.
+  @Get("archived")
+  @ApiOperation({
+    summary: "List archived dogs owned by the signed-in user, newest first",
+  })
+  getArchivedDogs(@User() user: Identity): Promise<DogDetails[]> {
+    return this.prisma.dog.findMany({
+      where: { userId: user.id, archivedAt: { not: null } },
+      orderBy: { archivedAt: "desc" },
+      omit: omitAvatar,
+    });
+  }
+
   @Get(":id")
   @ApiOperation({ summary: "Get an owned dog and its discipline progress" })
   @ApiNotFoundResponse({ description: "Dog not found" })
@@ -212,6 +225,25 @@ export class DogsController {
     const [dog] = await this.prisma.dog.updateManyAndReturn({
       where: { id, userId: user.id },
       data: { archivedAt: new Date() },
+      omit: omitAvatar,
+    });
+    if (!dog) throw new NotFoundException("Dog not found");
+    return dog;
+  }
+
+  @Post(":id/restore")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Restore an archived dog; its scheduled exercises reappear",
+  })
+  @ApiNotFoundResponse({ description: "Dog not found" })
+  async restoreDog(
+    @User() user: Identity,
+    @Param("id") id: string,
+  ): Promise<DogDetails> {
+    const [dog] = await this.prisma.dog.updateManyAndReturn({
+      where: { id, userId: user.id },
+      data: { archivedAt: null },
       omit: omitAvatar,
     });
     if (!dog) throw new NotFoundException("Dog not found");

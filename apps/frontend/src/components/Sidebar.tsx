@@ -10,6 +10,7 @@ import { ROUTES } from "@/app/routes";
 import { transitionName } from "@/lib/utils";
 
 import { AddDogButton } from "@/features/dogs/components/AddDogDialog";
+import { SidebarArchiveLink } from "@/features/dogs/components/SidebarArchiveLink";
 import { SidebarDogs } from "@/features/dogs/components/SidebarDogs";
 
 // The active highlight slides to the newly active link across the route's
@@ -97,6 +98,7 @@ export function Sidebar() {
           <div className="flex flex-col gap-4 md:gap-6">
             <SidebarDogs />
             <AddDogButton />
+            <SidebarArchiveLink activeProps={activeLink} />
           </div>
         </section>
       </div>

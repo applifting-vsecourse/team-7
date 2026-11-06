@@ -84,7 +84,8 @@
     "calendar": "Calendar",
     "disciplines": "Disciplines",
     "myDogs": "My dogs",
-    "addDog": "Add dog"
+    "addDog": "Add dog",
+    "archive": "Archive ({{count}})"
   },
   "dogs": {
     "all": "All",
@@ -131,6 +132,20 @@
       "few": "{{count}} months",
       "other": "{{count}} months"
     }
+  },
+  "dogArchive": {
+    "title": "Dog archive",
+    "intro": "Archived dogs don't appear in the overview, calendar or planning. Their history stays, and you can restore them at any time.",
+    "emptyTitle": "The archive is empty",
+    "emptyDescription": "Dogs you archive appear here. Their history stays, and you can restore them.",
+    "archivedOn": "Archived on {{date}}",
+    "restore": "Restore",
+    "restoreError": "The dog couldn't be restored. Please try again.",
+    "restoredToast": "{{name}} is back",
+    "restoredHint": "It appears in the overview, calendar and planning again.",
+    "archivedToast": "{{name}} is in the archive",
+    "archivedTitle": "{{name}} is in the archive",
+    "archivedDescription": "You see only the history. It doesn't appear in the overview, calendar or planning."
   },
   "events": {
     "timeAndDuration": "{{time}} ({{duration}} min)",
