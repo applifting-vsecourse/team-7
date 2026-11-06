@@ -27,7 +27,18 @@ export const overviewSchema = z.object({
   tomorrow: z.string(),
   stats: weeklyStatsSchema,
   events: z.array(eventSchema),
+  // In-progress disciplines with nothing planned this week (#19), never trained first.
+  neglected: z.array(
+    z.object({
+      dog: eventSchema.shape.dog,
+      discipline: z.object({ id: z.string(), name: z.string() }),
+      lastTrainedAt: z.string().nullable(),
+    }),
+  ),
 });
+export type NeglectedDiscipline = z.infer<
+  typeof overviewSchema
+>["neglected"][number];
 
 export function nextOverviewRefresh() {
   const now = new Date();

@@ -20,7 +20,7 @@ const record = (
 
 const plannable = (dogId: string, disciplineId: string, dogName = dogId) => ({
   dogGoal: {
-    dog: { id: dogId, name: dogName, avatarVersion: 0 },
+    dog: { id: dogId, name: dogName, avatarVersion: null },
     goal: { discipline: { id: disciplineId, name: disciplineId } },
   },
 });
@@ -216,7 +216,7 @@ describe("overview", () => {
       } as never);
       expect(await neglectedOf([])).toEqual([
         {
-          dog: { id: "dog-a", name: "Bára", avatarVersion: 0 },
+          dog: { id: "dog-a", name: "Bára", avatarVersion: null },
           discipline: { id: "agility", name: "agility" },
           lastTrainedAt: new Date("2026-10-02T08:00:00Z"),
         },

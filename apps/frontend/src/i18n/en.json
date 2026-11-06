@@ -156,7 +156,21 @@
   },
   "overview": {
     "loading": "Loading overview…",
-    "loadError": "Could not load the overview. Please try again."
+    "loadError": "Could not load the overview. Please try again.",
+    "neglected": {
+      "title": {
+        "one": "{{count}} discipline has no exercise this week",
+        "few": "{{count}} disciplines have no exercise this week",
+        "other": "{{count}} disciplines have no exercise this week"
+      },
+      "lastTrained": "last {{date}}",
+      "neverTrained": "not trained yet",
+      "schedule": "Schedule",
+      "scheduleFor": "Schedule: {{dog}} · {{discipline}}",
+      "showMore": "Show more ({{count}})",
+      "showLess": "Show less",
+      "dismiss": "Hide until next week"
+    }
   },
   "weeklyStats": {
     "title": "This week",

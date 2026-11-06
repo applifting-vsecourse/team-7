@@ -66,6 +66,7 @@ const data = {
     event("Slalom", "2026-01-01T10:00:00"),
     event("Completed today", "2026-10-25T10:00:00", "2026-10-26T11:00:00"),
   ],
+  neglected: [] as unknown[],
 };
 
 function renderOverview() {
@@ -161,6 +162,29 @@ describe("overview backend data", () => {
     const calls = state.get.mock.calls.length;
     await act(() => client.invalidateQueries({ queryKey: eventsKey("owner") }));
     expect(state.get.mock.calls.length).toBeGreaterThan(calls);
+  });
+
+  it("shows the neglected disciplines of the selected dogs", async () => {
+    const neglected = (dog: string, discipline: string) => ({
+      dog: { id: dog, name: dog, avatarVersion: null },
+      discipline: { id: discipline, name: discipline },
+      lastTrainedAt: null,
+    });
+    state.get.mockResolvedValue({
+      ...data,
+      neglected: [neglected("Buddy", "Agility")],
+    });
+    const { store } = renderOverview();
+    expect(await screen.findByText("Buddy · Agility")).toBeInTheDocument();
+    state.get.mockResolvedValue({
+      ...data,
+      neglected: [neglected("Rex", "Nosework")],
+    });
+    act(() => store.set(selectedDogIdsAtom, ["Rex"]));
+    expect(await screen.findByText("Rex · Nosework")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByText("Buddy · Agility")).not.toBeInTheDocument(),
+    );
   });
 
   it("shows loading and supports retrying a failed request", async () => {

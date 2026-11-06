@@ -156,7 +156,21 @@
   },
   "overview": {
     "loading": "Načítání přehledu…",
-    "loadError": "Přehled se nepodařilo načíst. Zkuste to znovu."
+    "loadError": "Přehled se nepodařilo načíst. Zkuste to znovu.",
+    "neglected": {
+      "title": {
+        "one": "{{count}} disciplína tento týden nemá žádné cvičení",
+        "few": "{{count}} disciplíny tento týden nemají žádné cvičení",
+        "other": "{{count}} disciplín tento týden nemá žádné cvičení"
+      },
+      "lastTrained": "naposledy {{date}}",
+      "neverTrained": "zatím netrénováno",
+      "schedule": "Naplánovat",
+      "scheduleFor": "Naplánovat: {{dog}} · {{discipline}}",
+      "showMore": "Zobrazit další ({{count}})",
+      "showLess": "Zobrazit méně",
+      "dismiss": "Skrýt do příštího týdne"
+    }
   },
   "weeklyStats": {
     "title": "Tento týden",

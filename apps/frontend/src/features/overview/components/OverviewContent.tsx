@@ -12,6 +12,7 @@ import {
 } from "@/features/events/components/Calendar";
 
 import { overviewQueryOptions } from "../api/overviewQueryOptions";
+import { NeglectedDisciplines } from "./NeglectedDisciplines";
 import { OverviewEvents } from "./OverviewEvents";
 import { WeeklyStats } from "./WeeklyStats";
 
@@ -80,11 +81,17 @@ export function OverviewContent() {
     );
   }
   return (
-    <OverviewEvents isUpdating={query.isPlaceholderData}>
-      <WeeklyStats data={query.data.stats} />
-      {calendars.map((calendar) => (
-        <Calendar key={calendar.variant} {...calendar} />
-      ))}
-    </OverviewEvents>
+    <>
+      <NeglectedDisciplines
+        items={query.data.neglected}
+        weekStart={query.data.stats.weekStart}
+      />
+      <OverviewEvents isUpdating={query.isPlaceholderData}>
+        <WeeklyStats data={query.data.stats} />
+        {calendars.map((calendar) => (
+          <Calendar key={calendar.variant} {...calendar} />
+        ))}
+      </OverviewEvents>
+    </>
   );
 }
