@@ -81,7 +81,7 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <h1
               id="dog-heading"
-              className="text-3xl leading-9 font-semibold tracking-tight wrap-break-word"
+              className="text-3xl leading-9 font-semibold tracking-tight"
             >
               {dog.name}
             </h1>

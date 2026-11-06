@@ -158,7 +158,7 @@ export function DogGoal({
           <div className="min-w-50 flex-1">
             <h3
               className={cn(
-                "text-base leading-6 font-medium tracking-tight wrap-break-word",
+                "text-base leading-6 font-medium tracking-tight",
                 !assignment && "text-muted",
               )}
             >
@@ -291,7 +291,7 @@ export function DogGoal({
                       <span
                         id={nameId}
                         className={cn(
-                          "text-sm leading-6 font-medium wrap-break-word",
+                          "text-sm leading-6 font-medium",
                           (!selected || shown === "paused") && "text-muted",
                         )}
                       >

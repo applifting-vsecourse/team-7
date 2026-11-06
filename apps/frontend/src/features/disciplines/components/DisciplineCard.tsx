@@ -33,7 +33,7 @@ export function DisciplineCard({
       {/* Grows so the footer lines up across cards in a row. */}
       <div className="flex flex-1 items-start gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h2 className="text-xl leading-7 font-semibold tracking-tight wrap-break-word">
+          <h2 className="text-xl leading-7 font-semibold tracking-tight">
             {/* Morphs into the detail heading; inline-block keeps the box to the text. */}
             <span
               ref={titleRef}
@@ -44,7 +44,7 @@ export function DisciplineCard({
             </span>
           </h2>
           {discipline.description ? (
-            <p className="text-sm leading-6 wrap-break-word">
+            <p className="line-clamp-3 text-sm leading-6">
               {discipline.description}
             </p>
           ) : null}
@@ -57,7 +57,7 @@ export function DisciplineCard({
       {discipline.dogs.length > 0 ? (
         <p className="flex items-center gap-1 text-sm leading-6 text-muted">
           <DogIcon className="size-4 shrink-0 text-accent" aria-hidden="true" />
-          <span className="min-w-0 flex-1 wrap-break-word">{dogNames}</span>
+          <span className="min-w-0 flex-1">{dogNames}</span>
         </p>
       ) : null}
       <Separator />

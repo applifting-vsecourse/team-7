@@ -45,7 +45,7 @@ export function VerifyEmailPrompt({
 
   return (
     <>
-      <p className="text-center text-base leading-7 wrap-break-word text-muted">
+      <p className="text-center text-base leading-7 text-muted">
         {t(($) => $.auth.verifyEmail.description, { email: user.email })}
       </p>
       <Button

@@ -36,7 +36,7 @@ export function DogDisciplineCard({
       )}
     >
       <div className="flex items-center gap-3">
-        <h3 className="min-w-0 flex-1 text-xl leading-7 font-semibold tracking-tight wrap-break-word">
+        <h3 className="min-w-0 flex-1 text-xl leading-7 font-semibold tracking-tight">
           <span
             ref={titleRef}
             className="inline-block"

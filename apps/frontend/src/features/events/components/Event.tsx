@@ -154,7 +154,7 @@ export function Event({
           )}
         >
           <Clock className="size-3 shrink-0" aria-hidden="true" />
-          <span className="min-w-0 wrap-break-word">
+          <span className="min-w-0">
             {t(($) => $.events.timeAndDuration, {
               time: date
                 ? t(($) => $.events.dateAndTime, {
@@ -224,16 +224,14 @@ export function Event({
             <div className="flex h-3 items-center">
               <Separator variant="secondary" />
             </div>
-            <p className="text-xs leading-5 font-medium wrap-break-word text-muted">
+            <p className="text-xs leading-5 font-medium text-muted">
               {dogName}
             </p>
-            <p className="text-xs leading-5 wrap-break-word text-muted">
-              {discipline}
-            </p>
+            <p className="text-xs leading-5 text-muted">{discipline}</p>
             <Heading
               id={titleId}
               className={cn(
-                "text-sm leading-6 font-medium tracking-tight wrap-break-word",
+                "text-sm leading-6 font-medium tracking-tight",
                 isCompleted && "text-muted",
               )}
             >

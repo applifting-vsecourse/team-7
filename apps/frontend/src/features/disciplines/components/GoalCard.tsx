@@ -34,13 +34,9 @@ export function GoalCard({
           aria-hidden="true"
         />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h3 className="text-base leading-7 font-medium wrap-break-word">
-            {goal.name}
-          </h3>
+          <h3 className="text-base leading-7 font-medium">{goal.name}</h3>
           {goal.criterion ? (
-            <p className="text-sm leading-6 wrap-break-word text-muted">
-              {goal.criterion}
-            </p>
+            <p className="text-sm leading-6 text-muted">{goal.criterion}</p>
           ) : null}
         </div>
         <ItemMenu

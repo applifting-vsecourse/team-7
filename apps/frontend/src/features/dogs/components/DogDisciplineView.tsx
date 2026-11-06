@@ -175,7 +175,7 @@ export function DogDisciplineView({
         <div className="flex items-start gap-4">
           <h1
             id="dog-discipline-heading"
-            className="min-w-0 flex-1 text-3xl leading-9 font-semibold tracking-tight wrap-break-word"
+            className="min-w-0 flex-1 text-3xl leading-9 font-semibold tracking-tight"
           >
             <span
               className="inline-block"
