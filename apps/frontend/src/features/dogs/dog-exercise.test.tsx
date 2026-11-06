@@ -28,6 +28,7 @@ const state = vi.hoisted(() => ({
   fail: false,
   remove: vi.fn(),
   post: vi.fn(),
+  patch: vi.fn(),
 }));
 const dog = {
   id: "dog-a",
@@ -148,8 +149,10 @@ vi.mock("@/lib/api-client", () => ({
     post: async (path: string, options: unknown) => {
       state.post(path, options);
       state.assigned = true;
-      state.status = "in_progress";
-      state.goalStatus = "in_progress";
+    },
+    patch: async (path: string, options: { json: { status: string } }) => {
+      await state.patch(path, options);
+      state.status = options.json.status;
     },
   },
 }));
@@ -191,6 +194,8 @@ function setup(path = "/dogs/dog-a/exercises/e1?lng=en") {
 beforeEach(() => {
   vi.clearAllMocks();
   state.assigned = true;
+  state.status = "in_progress";
+  state.goalStatus = "in_progress";
   state.events = [];
   state.fail = false;
   toast.clear();
@@ -316,4 +321,125 @@ describe("dog exercise detail page", () => {
       }),
     ).toBeInTheDocument();
   });
+  it.each([
+    [
+      "in_progress",
+      ["Pause exercise", "Mark as mastered", "Unassign exercise"],
+    ],
+    [
+      "paused",
+      ["Return to in progress", "Mark as mastered", "Unassign exercise"],
+    ],
+    [
+      "mastered",
+      ["Return to in progress", "Pause exercise", "Unassign exercise"],
+    ],
+  ])("offers a %s exercise the other two statuses", async (status, labels) => {
+    state.status = status;
+    const { user } = setup();
+    await user.click(
+      await screen.findByRole("button", {
+        name: "More actions for exercise Recall from play",
+      }),
+    );
+    const items = await screen.findAllByRole("menuitem");
+    expect(items).toHaveLength(labels.length);
+    labels.forEach((label, index) =>
+      expect(items[index]).toHaveTextContent(new RegExp(`^${label}`)),
+    );
+  });
+  it("pauses the exercise at once, confirms after saving and stops offering scheduling", async () => {
+    const success = vi.spyOn(toast, "success");
+    let save!: () => void;
+    state.patch.mockImplementation(
+      () => new Promise<void>((resolve) => (save = resolve)),
+    );
+    const { user } = setup();
+    expect(
+      await screen.findByRole("button", { name: "Schedule exercise" }),
+    ).toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", {
+        name: "More actions for exercise Recall from play",
+      }),
+    );
+    await user.click(
+      await screen.findByRole("menuitem", { name: /^Pause exercise/ }),
+    );
+    expect(await screen.findByText("Paused")).toBeInTheDocument();
+    expect(state.patch).toHaveBeenCalledWith(
+      "dogs/dog-a/disciplines/d1/goals/g1/exercises/e1",
+      { json: { status: "paused" } },
+    );
+    expect(success).not.toHaveBeenCalled();
+    save();
+    await waitFor(() =>
+      expect(success).toHaveBeenCalledWith("Exercise paused", {
+        description: "Recall from play won't be offered when scheduling.",
+      }),
+    );
+    expect(
+      screen.queryByRole("button", { name: "Schedule exercise" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "This exercise is paused. To schedule it, return it to in progress in the menu.",
+      ),
+    ).toBeInTheDocument();
+  });
+  it("returns to the saved status and offers a retry when saving fails", async () => {
+    const danger = vi.spyOn(toast, "danger");
+    state.patch.mockRejectedValueOnce(new Error("Internal Server Error"));
+    const { user } = setup();
+    await user.click(
+      await screen.findByRole("button", {
+        name: "More actions for exercise Recall from play",
+      }),
+    );
+    await user.click(
+      await screen.findByRole("menuitem", { name: /^Mark as mastered/ }),
+    );
+    await waitFor(() =>
+      expect(danger).toHaveBeenCalledWith(
+        "Could not save the status.",
+        expect.objectContaining({ timeout: 0 }),
+      ),
+    );
+    expect(screen.queryByText("Mastered")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Schedule exercise" }),
+    ).toBeInTheDocument();
+    danger.mock.calls[0]![1]!.actionProps!.onPress?.({} as never);
+    expect(await screen.findByText("Mastered")).toBeInTheDocument();
+    expect(state.patch).toHaveBeenCalledTimes(2);
+  });
+  it.each([
+    ["mastered", "in_progress", "Mastered", "This exercise is mastered."],
+    [
+      "in_progress",
+      "paused",
+      "Goal paused",
+      "The goal Reliable recall is paused.",
+    ],
+    [
+      "in_progress",
+      "completed",
+      null,
+      "The goal Reliable recall is completed.",
+    ],
+  ])(
+    "explains why a %s exercise of a %s goal can't be scheduled",
+    async (status, goalStatus, chip, reason) => {
+      state.status = status;
+      state.goalStatus = goalStatus;
+      setup();
+      expect(
+        await screen.findByText(new RegExp(`^${reason}`)),
+      ).toBeInTheDocument();
+      if (chip) expect(screen.getByText(chip)).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Schedule exercise" }),
+      ).not.toBeInTheDocument();
+    },
+  );
 });

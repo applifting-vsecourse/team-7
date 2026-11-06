@@ -1,9 +1,12 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { DogExerciseDetail } from "../api/dogExerciseQueryOptions";
+import type { ExerciseStatus } from "../schemas/statusSchema";
 import {
+  ArrowRotateLeft,
   Calendar,
+  CircleCheck,
+  CirclePause,
   Clock,
-  EllipsisVertical,
   Flag,
   Plus,
   Star,
@@ -13,9 +16,7 @@ import {
   Alert,
   Breadcrumbs,
   Button,
-  Description,
-  Dropdown,
-  Label,
+  Chip,
   ScrollShadow,
   toast,
 } from "@heroui/react";
@@ -42,7 +43,10 @@ import {
   dogProfileKey,
   dogDisciplinePath,
 } from "../api/dogProfileQueryOptions";
+import { useStatusMutation } from "../hooks/useStatusMutation";
 import { exerciseHistory } from "../lib/exerciseHistory";
+import { isPlannable } from "../lib/exerciseStatus";
+import { ActionsMenu, type MenuAction } from "./ActionsMenu";
 import { DogStat } from "./DogStat";
 import { ExerciseRatingChart } from "./ExerciseRatingChart";
 
@@ -54,10 +58,59 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
   const [today] = useState(() => new Date());
   const [scheduling, setScheduling] = useState(false);
   const { dog, exercise } = detail;
-  const { goal } = exercise;
+  const { goal, status, goalStatus } = exercise;
   const stats = exerciseHistory(detail.events, today);
-  // An archived dog's history stays viewable, but nothing new is planned.
-  const canEdit = exercise.assigned && !dog.archivedAt;
+  // An archived dog's history stays viewable, but nothing is changed or planned.
+  const readOnly = Boolean(dog.archivedAt);
+  const setStatus = useStatusMutation(dog.id);
+  // Figma S4 608:15330 (in progress), S5b 619:25095 (paused); a mastered
+  // exercise offers pausing instead of mastering.
+  const pause: MenuAction = {
+    id: "paused",
+    icon: CirclePause,
+    label: t(($) => $.status.pauseExercise),
+    hint: t(($) => $.status.pauseHint),
+  };
+  const resume: MenuAction = {
+    id: "in_progress",
+    icon: ArrowRotateLeft,
+    label: t(($) => $.status.resume),
+    hint: t(($) => $.status.resumeExerciseHint),
+  };
+  const master: MenuAction = {
+    id: "mastered",
+    icon: CircleCheck,
+    label: t(($) => $.status.markMastered),
+    hint: t(($) => $.status.markMasteredHint, { name: dog.name }),
+  };
+  const menu: MenuAction[] = [
+    ...(status === "paused"
+      ? [resume, master]
+      : status === "mastered"
+        ? [resume, pause]
+        : [pause, master]),
+    {
+      id: "remove",
+      icon: TrashBin,
+      label: t(($) => $.dogProfile.removeExercise),
+      hint: t(($) => $.exerciseDetail.removeDescription, { name: dog.name }),
+      danger: true,
+    },
+  ];
+  // Why the exercise can't be scheduled now; the own status first, because
+  // it is changed right here.
+  const notPlannable =
+    status === "paused"
+      ? t(($) => $.status.notPlannable.exercisePaused)
+      : status === "mastered"
+        ? t(($) => $.status.notPlannable.exerciseMastered)
+        : goalStatus === "paused"
+          ? t(($) => $.status.notPlannable.goalPaused, { goal: goal.name })
+          : goalStatus === "completed"
+            ? t(($) => $.status.notPlannable.goalCompleted, {
+                goal: goal.name,
+              })
+            : null;
   const scroller = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     if (scroller.current) {
@@ -164,45 +217,51 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
       </Breadcrumbs>
       <div className="flex flex-col gap-2">
         <div className="flex items-start gap-4">
-          <h1 className="min-w-0 flex-1 text-3xl leading-9 font-semibold tracking-tight wrap-break-word">
-            {exercise.name}
-          </h1>
-          {canEdit && (
-            <Dropdown>
-              <Button
-                isIconOnly
-                variant="secondary"
-                isDisabled={remove.isPending}
-                aria-label={t(($) => $.disciplines.exerciseActions, {
+          {/* Figma S5 608:26695 "Title + status": the chip wraps under a long name. */}
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2">
+            <h1 className="min-w-0 text-3xl leading-9 font-semibold tracking-tight wrap-break-word">
+              {exercise.name}
+            </h1>
+            {status === "mastered" ? (
+              <Chip color="success" size="sm">
+                <CircleCheck className="size-3" aria-hidden="true" />
+                <Chip.Label>{t(($) => $.status.mastered)}</Chip.Label>
+              </Chip>
+            ) : status === "paused" || goalStatus === "paused" ? (
+              // Says why: its own pause, or only its goal's.
+              <Chip size="sm">
+                <CirclePause className="size-3" aria-hidden="true" />
+                <Chip.Label>
+                  {status === "paused"
+                    ? t(($) => $.status.paused)
+                    : t(($) => $.status.goalPausedChip)}
+                </Chip.Label>
+              </Chip>
+            ) : null}
+          </div>
+          {status && !readOnly && (
+            <ActionsMenu
+              variant="secondary"
+              label={t(($) => $.disciplines.exerciseActions, {
+                name: exercise.name,
+              })}
+              actions={menu}
+              isDisabled={remove.isPending}
+              onAction={(key) => {
+                if (key === "remove") {
+                  remove.mutate();
+                  return;
+                }
+                setStatus.mutate({
+                  kind: "exercise",
+                  disciplineId: goal.discipline.id,
+                  goalId: goal.id,
+                  exerciseId: exercise.id,
                   name: exercise.name,
-                })}
-              >
-                <EllipsisVertical className="size-4" aria-hidden="true" />
-              </Button>
-              <Dropdown.Popover placement="bottom end" className="max-w-60">
-                <Dropdown.Menu onAction={() => remove.mutate()}>
-                  <Dropdown.Item
-                    id="remove"
-                    variant="danger"
-                    textValue={t(($) => $.dogProfile.removeExercise)}
-                    className="items-start"
-                  >
-                    {/* h-5 = the label's line height, so the icon centres on it. */}
-                    <span className="flex h-5 shrink-0 items-center">
-                      <TrashBin className="size-4" aria-hidden="true" />
-                    </span>
-                    <div className="flex flex-col">
-                      <Label>{t(($) => $.dogProfile.removeExercise)}</Label>
-                      <Description>
-                        {t(($) => $.exerciseDetail.removeDescription, {
-                          name: dog.name,
-                        })}
-                      </Description>
-                    </div>
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown.Popover>
-            </Dropdown>
+                  status: key as ExerciseStatus,
+                });
+              }}
+            />
           )}
         </div>
         {/* Same context line as the exercise dialogs: "🏳 Cíl: name". */}
@@ -262,9 +321,15 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
           <EmptyState
             icon={Calendar}
             title={t(($) => $.exerciseDetail.emptyTitle)}
-            description={t(($) => $.exerciseDetail.emptyDescription)}
+            description={
+              (exercise.assigned && notPlannable) ||
+              t(($) => $.exerciseDetail.emptyDescription)
+            }
             action={
-              canEdit ? (
+              !readOnly &&
+              status &&
+              goalStatus &&
+              isPlannable(goalStatus, status) ? (
                 <Button onPress={() => setScheduling(true)}>
                   <Plus className="size-4" aria-hidden="true" />
                   {t(($) => $.calendar.scheduleExercise)}
