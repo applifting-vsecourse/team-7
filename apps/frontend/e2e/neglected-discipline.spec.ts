@@ -30,6 +30,8 @@ test("a discipline without training this week is flagged until it is scheduled",
 
   await test.step("Deleting the only training brings the warning back", async () => {
     await app.calendarLink.click();
+    // The overview lists today's training too; open it only on the calendar.
+    await expect(calendar.heading).toBeVisible();
     await calendar.openTraining(training.exercise).click();
     await calendar
       .trainingDialog(training.exercise)
