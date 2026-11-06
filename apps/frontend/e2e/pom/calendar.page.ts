@@ -94,6 +94,36 @@ export class CalendarPage {
     return this.event(name).getByText("Completed", { exact: true });
   }
 
+  /** A lesson's title is fixed, so it is found by its dog. */
+  lesson(dog: string) {
+    return this.page
+      .getByRole("article", { name: "Session with a trainer", exact: true })
+      .filter({ hasText: dog });
+  }
+
+  lessonDialog() {
+    return this.page.getByRole("dialog", {
+      name: "Session with a trainer",
+      exact: true,
+    });
+  }
+
+  async planLesson(dog: string) {
+    await this.scheduleExercise.click();
+    await this.scheduleDialog
+      .getByRole("tab", { name: "With a trainer", exact: true })
+      .click();
+    await this.schedulingDog(dog).press("Space");
+    await this.continueScheduling.click();
+    await expect(this.date).not.toHaveValue("");
+    await this.start.fill("12:00");
+    await this.scheduleDialog
+      .getByRole("button", { name: "Schedule", exact: true })
+      .click();
+    await expect(this.scheduleDialog).toBeHidden();
+    await expect(this.lesson(dog)).toBeVisible();
+  }
+
   async plan(dog: string, exercise: string) {
     await this.scheduleExercise.click();
     await this.schedulingDog(dog).press("Space");
