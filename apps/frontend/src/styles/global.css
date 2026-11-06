@@ -342,6 +342,20 @@
 }
 
 @layer components {
+  /* Breadcrumbs stay on one line: items shrink and long names end in an
+     ellipsis instead of overflowing the page (the kit makes items shrink-0). */
+  .breadcrumbs {
+    @apply max-w-full min-w-0;
+  }
+  .breadcrumbs .breadcrumbs__item {
+    @apply min-w-0 shrink;
+  }
+  .breadcrumbs .breadcrumbs__link {
+    @apply block min-w-0 truncate;
+  }
+  .breadcrumbs .breadcrumbs__separator {
+    @apply shrink-0;
+  }
   /* Dialogs sit on --background rather than --overlay so fields stand out
      against them; popovers and dropdowns keep the overlay surface. */
   .modal__dialog,

@@ -159,17 +159,19 @@ export function DogDisciplineView({
     <>
       <nav
         aria-label={t(($) => $.disciplines.breadcrumbs)}
-        className="flex items-center gap-2 text-sm"
+        className="flex min-w-0 items-center gap-2 text-sm"
       >
         <Link
           to="/dogs/$dogId"
           params={{ dogId: dog.id }}
-          className="text-muted hover:text-foreground"
+          className="max-w-breadcrumb-item truncate text-muted hover:text-foreground"
         >
           {dog.name}
         </Link>
         <span aria-hidden="true">›</span>
-        <span aria-current="page">{discipline.name}</span>
+        <span aria-current="page" className="min-w-0 truncate">
+          {discipline.name}
+        </span>
       </nav>
       <div className="flex flex-col gap-2">
         <div className="flex items-start gap-4">
