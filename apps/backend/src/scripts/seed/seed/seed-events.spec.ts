@@ -11,7 +11,12 @@ describe("exercise training seed", () => {
     vi.setSystemTime(new Date(2026, 9, 25, 9));
     const prisma = mockDeep<PrismaService>();
     prisma.dog.findMany.mockResolvedValue([
-      { id: "dog-a", goals: [{ exercises: [{ exerciseId: "e1" }] }] },
+      {
+        id: "dog-a",
+        goals: [
+          { goal: { disciplineId: "d1" }, exercises: [{ exerciseId: "e1" }] },
+        ],
+      },
       { id: "dog-b", goals: [] },
     ] as never);
 
@@ -67,7 +72,12 @@ describe("exercise training seed", () => {
     vi.setSystemTime(new Date(2026, 9, 25, 9));
     const prisma = mockDeep<PrismaService>();
     prisma.dog.findMany.mockResolvedValue([
-      { id: "dog-a", goals: [{ exercises: [{ exerciseId: "e1" }] }] },
+      {
+        id: "dog-a",
+        goals: [
+          { goal: { disciplineId: "d1" }, exercises: [{ exerciseId: "e1" }] },
+        ],
+      },
     ] as never);
     const rows = new Map<
       string,
