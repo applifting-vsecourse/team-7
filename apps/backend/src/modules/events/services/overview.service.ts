@@ -1,6 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@/core/prisma/prisma.service";
-import { withPaused } from "@/shared/domain/exercise-status";
+import {
+  plannableDogExercise,
+  withPaused,
+} from "@/shared/domain/exercise-status";
 import { dayMs } from "./overview.const";
 
 const shiftDay = (day: string, offset: number) =>
@@ -37,7 +40,7 @@ export class OverviewService {
       deletedAt: null,
       ...(dogIds !== undefined && { dogId: { in: dogIds } }),
     };
-    const [records, candidates] = await Promise.all([
+    const [records, candidates, plannable] = await Promise.all([
       this.prisma.scheduledExercise.findMany({
         where: {
           ...where,
@@ -47,10 +50,12 @@ export class OverviewService {
           ],
         },
         select: {
+          dogId: true,
           startsAt: true,
           completedAt: true,
           durationMinutes: true,
           rating: true,
+          exercise: { select: { goal: { select: { disciplineId: true } } } },
         },
       }),
       this.prisma.scheduledExercise.findMany({
@@ -90,6 +95,25 @@ export class OverviewService {
           },
         },
         orderBy: [{ startsAt: "asc" }, { id: "asc" }],
+      }),
+      this.prisma.dogExercise.findMany({
+        where: {
+          AND: [
+            plannableDogExercise(userId),
+            { dogGoal: { dog: { archivedAt: null } } },
+          ],
+          ...(dogIds !== undefined && { dogId: { in: dogIds } }),
+        },
+        select: {
+          dogGoal: {
+            select: {
+              dog: { select: { id: true, name: true, avatarVersion: true } },
+              goal: {
+                select: { discipline: { select: { id: true, name: true } } },
+              },
+            },
+          },
+        },
       }),
     ]);
     const completed = records.filter((record) => {
@@ -136,6 +160,46 @@ export class OverviewService {
         ? day >= today && day <= tomorrow
         : day <= tomorrow;
     });
+    // Any item this week, in any state, counts as training the discipline.
+    const trainedThisWeek = new Set(
+      records.flatMap((record) => {
+        const day = dayOf(record.completedAt ?? record.startsAt);
+        return day >= weekStart && day <= weekEnd
+          ? [`${record.dogId}:${record.exercise.goal.disciplineId}`]
+          : [];
+      }),
+    );
+    const untrained = [
+      ...new Map(
+        plannable.map(({ dogGoal: { dog, goal } }) => [
+          `${dog.id}:${goal.discipline.id}`,
+          { dog, discipline: goal.discipline },
+        ]),
+      ),
+    ].flatMap(([key, pair]) => (trainedThisWeek.has(key) ? [] : [pair]));
+    const neglected = (
+      await Promise.all(
+        untrained.map(async (pair) => {
+          const last = await this.prisma.scheduledExercise.findFirst({
+            where: {
+              dogId: pair.dog.id,
+              deletedAt: null,
+              completedAt: { not: null },
+              exercise: { goal: { disciplineId: pair.discipline.id } },
+            },
+            orderBy: { completedAt: "desc" },
+            select: { completedAt: true },
+          });
+          return { ...pair, lastTrainedAt: last?.completedAt ?? null };
+        }),
+      )
+    ).sort(
+      (a, b) =>
+        (a.lastTrainedAt?.getTime() ?? -Infinity) -
+          (b.lastTrainedAt?.getTime() ?? -Infinity) ||
+        a.dog.name.localeCompare(b.dog.name) ||
+        a.discipline.name.localeCompare(b.discipline.name),
+    );
     return {
       today,
       tomorrow,
@@ -163,6 +227,7 @@ export class OverviewService {
         satisfactionHistory,
       },
       events: await withPaused(this.prisma, events),
+      neglected,
     };
   }
 }
