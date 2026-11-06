@@ -246,7 +246,7 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
                 name: exercise.name,
               })}
               actions={menu}
-              isDisabled={remove.isPending}
+              isDisabled={remove.isPending || setStatus.isPending}
               onAction={(key) => {
                 if (key === "remove") {
                   remove.mutate();

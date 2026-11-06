@@ -137,7 +137,7 @@ export function DogDisciplineView({
       goal={goal}
       assignment={assignments.find((item) => item.goalId === goal.id)}
       lastTrainingByExercise={lastTrainingByExercise}
-      isPending={mutate.isPending}
+      isPending={mutate.isPending || setStatus.isPending}
       onAction={(action) => mutate.mutate(action)}
       onStatus={(status) =>
         setStatus.mutate({
@@ -217,13 +217,14 @@ export function DogDisciplineView({
           {paused.length
             ? t(($) => $.status.disciplineSubtitle[pluralForm(paused.length)], {
                 name: dog.name,
-                selected: assignments.length,
+                // Paused and completed goals aren't being trained.
+                selected: active.length,
                 total: discipline.goals.length,
                 count: paused.length,
               })
             : t(($) => $.dogProfile.disciplineSubtitle, {
                 name: dog.name,
-                selected: assignments.length,
+                selected: active.length,
                 total: discipline.goals.length,
               })}
         </p>
