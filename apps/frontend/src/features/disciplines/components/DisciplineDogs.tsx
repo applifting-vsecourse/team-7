@@ -86,7 +86,7 @@ function DogRow({
     <PresenceItem className="flex items-center gap-3">
       <DogAvatar dog={avatarDog} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className="text-sm leading-6 wrap-break-word">{dog.name}</span>
+        <span className="text-sm leading-6">{dog.name}</span>
         <DogProgress dog={dog} {...totals} />
       </div>
       <ItemMenu

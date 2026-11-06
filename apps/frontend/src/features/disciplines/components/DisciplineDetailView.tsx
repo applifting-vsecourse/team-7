@@ -91,7 +91,7 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           <h1
             id="discipline-heading"
-            className="text-3xl leading-9 font-semibold tracking-tight wrap-break-word"
+            className="text-3xl leading-9 font-semibold tracking-tight"
           >
             <span
               className="inline-block"
@@ -101,9 +101,7 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
             </span>
           </h1>
           {discipline.description ? (
-            <p className="text-base leading-7 wrap-break-word">
-              {discipline.description}
-            </p>
+            <p className="text-base leading-7">{discipline.description}</p>
           ) : null}
         </div>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">

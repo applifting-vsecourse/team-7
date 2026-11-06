@@ -84,7 +84,7 @@ function ArchivedDogCard({ dog }: { dog: Dog }) {
               params={{ dogId: dog.id }}
               className="inline-flex max-w-full items-center gap-1 rounded-sm outline-none focus-visible:focus-ring"
             >
-              <span className="min-w-0 wrap-break-word">{dog.name}</span>
+              <span className="min-w-0">{dog.name}</span>
               <ChevronRight
                 className="size-4 shrink-0 text-muted"
                 aria-hidden="true"

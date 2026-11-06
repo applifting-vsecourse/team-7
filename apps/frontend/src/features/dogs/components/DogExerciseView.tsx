@@ -219,7 +219,7 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
         <div className="flex items-start gap-4">
           {/* Figma S5 608:26695 "Title + status": the chip wraps under a long name. */}
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2">
-            <h1 className="min-w-0 text-3xl leading-9 font-semibold tracking-tight wrap-break-word">
+            <h1 className="min-w-0 text-3xl leading-9 font-semibold tracking-tight">
               {exercise.name}
             </h1>
             {status === "mastered" ? (

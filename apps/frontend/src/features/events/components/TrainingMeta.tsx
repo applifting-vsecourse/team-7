@@ -51,15 +51,13 @@ export function TrainingMeta({ event }: { event: ScheduledEvent }) {
             <dt className="shrink-0 text-muted">
               {t(($) => $.training.disciplineLabel)}:
             </dt>
-            <dd className="wrap-break-word">
-              {event.exercise.goal.discipline.name}
-            </dd>
+            <dd>{event.exercise.goal.discipline.name}</dd>
           </div>
           <div className="flex min-w-0 gap-1">
             <dt className="shrink-0 text-muted">
               {t(($) => $.training.goalLabel)}:
             </dt>
-            <dd className="wrap-break-word">{event.exercise.goal.name}</dd>
+            <dd>{event.exercise.goal.name}</dd>
           </div>
         </dl>
       </div>

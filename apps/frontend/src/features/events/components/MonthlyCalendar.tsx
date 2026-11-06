@@ -168,9 +168,7 @@ export function MonthlyCalendar({
                       <span className="text-xs">
                         {exerciseCount(dayEvents.length)}
                       </span>
-                      <span className="text-xs wrap-break-word">
-                        {disciplines.join(" · ")}
-                      </span>
+                      <span className="text-xs">{disciplines.join(" · ")}</span>
                     </>
                   ) : null}
                 </Link>

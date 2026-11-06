@@ -320,8 +320,12 @@
       scrollbar-gutter: auto;
     }
   }
+  /* User text (names up to 100 chars, descriptions up to 1000) may hold a
+     single unbreakable word. Unlike `break-word`, `anywhere` also lowers the
+     min-content width, so flex items and inline-blocks shrink instead of
+     overflowing. Ordinary text still wraps at spaces first. */
   body {
-    @apply flex min-h-svh flex-col bg-background font-sans text-foreground antialiased;
+    @apply flex min-h-svh flex-col bg-background font-sans wrap-anywhere text-foreground antialiased;
   }
   /* The Figma "Layout" frame: fills the page width up to --container-content, centred by body. */
   #root {

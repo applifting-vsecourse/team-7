@@ -268,10 +268,7 @@ function DisciplineRadio({
           <Radio.Indicator />
         </Radio.Control>
         <span className="flex min-w-0 flex-col">
-          <span
-            id={`${id}-name`}
-            className="text-sm leading-6 font-medium wrap-break-word"
-          >
+          <span id={`${id}-name`} className="text-sm leading-6 font-medium">
             {discipline.name}
           </span>
           <Description id={`${id}-summary`}>

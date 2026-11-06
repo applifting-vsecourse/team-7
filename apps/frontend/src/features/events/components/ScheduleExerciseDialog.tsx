@@ -398,7 +398,7 @@ export function ScheduleExerciseDialog({
                           <div className="min-w-0 sm:w-50 sm:shrink-0">
                             {/* One step above the field labels (text-sm), so
                                 each exercise reads as the heading of its fields. */}
-                            <h3 className="text-lg leading-7 font-medium tracking-tight wrap-break-word">
+                            <h3 className="text-lg leading-7 font-medium tracking-tight">
                               {item.name}
                             </h3>
                             <p className="text-sm leading-6 text-muted">

@@ -213,7 +213,7 @@ function AssignSteps({
                   </Radio.Control>
                   <DogAvatar dog={dog} />
                   <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-sm leading-6 font-medium wrap-break-word">
+                    <span className="text-sm leading-6 font-medium">
                       {dog.name}
                     </span>
                     <DogMeta dog={dog} />
@@ -376,15 +376,13 @@ function GoalsStep({
         <Steps step={2} />
         <div className="flex items-center gap-3 self-start rounded-full bg-default py-1.5 pr-4 pl-1.5">
           <DogAvatar dog={dog} />
-          <span className="text-sm leading-6 font-medium wrap-break-word">
-            {dog.name}
-          </span>
+          <span className="text-sm leading-6 font-medium">{dog.name}</span>
         </div>
         <p className="text-sm leading-6">
           {t(($) => $.disciplines.assignDialog.pickGoals, { dog: dog.name })}
         </p>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-lg leading-7 font-semibold tracking-tight wrap-break-word">
+          <h3 className="text-lg leading-7 font-semibold tracking-tight">
             {discipline.name}
           </h3>
           <Button
@@ -416,7 +414,7 @@ function GoalsStep({
                   isDisabled={isPending || total === 0}
                   onChange={(isSelected) => toggleGoal(goal, isSelected)}
                 >
-                  <Checkbox.Content className="text-base leading-6 font-semibold wrap-break-word">
+                  <Checkbox.Content className="text-base leading-6 font-semibold">
                     <Checkbox.Control>
                       <Checkbox.Indicator />
                     </Checkbox.Control>
@@ -453,7 +451,7 @@ function GoalsStep({
                             toggleExercise(goal, exercise.id, isSelected)
                           }
                         >
-                          <Checkbox.Content className="text-sm leading-6 font-medium wrap-break-word">
+                          <Checkbox.Content className="text-sm leading-6 font-medium">
                             <Checkbox.Control>
                               <Checkbox.Indicator />
                             </Checkbox.Control>
