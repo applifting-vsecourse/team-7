@@ -9,6 +9,7 @@ import { PresenceItem, PresenceList } from "@/components/PresenceList";
 import { pluralForm } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
+import { useSession } from "@/features/auth/hooks/useSession";
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 import { ScheduleExerciseDialog } from "@/features/events/components/ScheduleExerciseDialog";
 
@@ -25,7 +26,8 @@ export function NeglectedDisciplines({
   weekStart: string;
 }) {
   const { t, i18n } = useTranslation();
-  const [dismissedWeek, setDismissedWeek] = useAtom(dismissedNeglectedWeekAtom);
+  const userId = useSession().user?.id ?? "";
+  const [dismissed, setDismissed] = useAtom(dismissedNeglectedWeekAtom);
   const [expanded, setExpanded] = useState(false);
   const [scheduling, setScheduling] = useState<NeglectedDiscipline | null>(
     null,
@@ -41,7 +43,7 @@ export function NeglectedDisciplines({
     />
   );
   // Keep the dialog open when its own scheduling removes the last row.
-  if (items.length === 0 || dismissedWeek === weekStart) return dialog;
+  if (items.length === 0 || dismissed[userId] === weekStart) return dialog;
 
   const date = new Intl.DateTimeFormat(i18n.resolvedLanguage ?? "cs", {
     day: "numeric",
@@ -64,7 +66,7 @@ export function NeglectedDisciplines({
         </Alert.Content>
         <CloseButton
           aria-label={t(($) => $.overview.neglected.dismiss)}
-          onPress={() => setDismissedWeek(weekStart)}
+          onPress={() => setDismissed({ ...dismissed, [userId]: weekStart })}
         />
       </Alert>
       <div className="flex flex-col items-start gap-2 pr-4 pl-11">

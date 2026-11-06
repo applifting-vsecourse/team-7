@@ -109,9 +109,20 @@ describe("neglected disciplines warning", () => {
     );
     expect(screen.queryByRole("region")).not.toBeInTheDocument();
     expect(
-      JSON.parse(localStorage.getItem("trainloop-neglected-dismissed")!),
-    ).toBe("2026-11-02");
+      JSON.parse(
+        localStorage.getItem("trainloop-neglected-dismissed-by-user")!,
+      ),
+    ).toEqual({ owner: "2026-11-02" });
     rerender("2026-11-09");
+    expect(screen.getByRole("region")).toBeInTheDocument();
+  });
+
+  it("ignores a dismissal by another account in the same browser", () => {
+    localStorage.setItem(
+      "trainloop-neglected-dismissed-by-user",
+      JSON.stringify({ other: "2026-11-02" }),
+    );
+    renderWarning([item("Mája", "Agility")]);
     expect(screen.getByRole("region")).toBeInTheDocument();
   });
 
