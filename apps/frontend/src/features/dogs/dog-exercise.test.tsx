@@ -23,6 +23,8 @@ import type { ScheduledEvent } from "@/features/events/api/eventsQueryOptions";
 const state = vi.hoisted(() => ({
   events: [] as unknown[],
   assigned: true,
+  status: "in_progress",
+  goalStatus: "in_progress",
   fail: false,
   remove: vi.fn(),
   post: vi.fn(),
@@ -83,7 +85,12 @@ vi.mock("@/lib/api-client", () => ({
           if (state.fail) throw new Error("offline");
           return {
             dog,
-            exercise: { ...exercise, assigned: state.assigned },
+            exercise: {
+              ...exercise,
+              assigned: state.assigned,
+              status: state.assigned ? state.status : null,
+              goalStatus: state.assigned ? state.goalStatus : null,
+            },
             events: state.events,
           };
         }
@@ -92,8 +99,10 @@ vi.mock("@/lib/api-client", () => ({
             goals: [
               {
                 goalId: "g1",
-                completedAt: null,
-                exercises: state.assigned ? [{ exerciseId: "e1" }] : [],
+                status: state.goalStatus,
+                exercises: state.assigned
+                  ? [{ exerciseId: "e1", status: state.status }]
+                  : [],
               },
             ],
           };
@@ -120,8 +129,10 @@ vi.mock("@/lib/api-client", () => ({
             {
               id: "e1",
               name: exercise.name,
+              status: "in_progress",
               goalId: "g1",
               goalName: "Reliable recall",
+              goalStatus: "in_progress",
               disciplineId: "d1",
               disciplineName: "Obedience",
             },
@@ -137,6 +148,8 @@ vi.mock("@/lib/api-client", () => ({
     post: async (path: string, options: unknown) => {
       state.post(path, options);
       state.assigned = true;
+      state.status = "in_progress";
+      state.goalStatus = "in_progress";
     },
   },
 }));
@@ -149,6 +162,7 @@ const training = (
   dogId: dog.id,
   startsAt: date,
   completedAt: rating === null ? null : date,
+  paused: false,
   durationMinutes: 15,
   rating,
   note: rating ? "Good work" : null,

@@ -3,6 +3,11 @@ import { z } from "zod";
 
 import { api } from "@/lib/api-client";
 
+import {
+  exerciseStatusSchema,
+  goalStatusSchema,
+} from "../schemas/statusSchema";
+
 const dogDisciplineSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -27,8 +32,10 @@ const dogProfileSchema = z.object({
 });
 const dogGoalSchema = z.object({
   goalId: z.string(),
-  completedAt: z.string().nullable(),
-  exercises: z.array(z.object({ exerciseId: z.string() })),
+  status: goalStatusSchema,
+  exercises: z.array(
+    z.object({ exerciseId: z.string(), status: exerciseStatusSchema }),
+  ),
 });
 export type DogProfile = z.infer<typeof dogProfileSchema>;
 export type DogDiscipline = z.infer<typeof dogDisciplineSchema>;

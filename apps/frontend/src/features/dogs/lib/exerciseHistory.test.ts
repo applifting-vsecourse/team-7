@@ -12,6 +12,7 @@ const event = (
   startsAt,
   rating,
   completedAt: rating === null ? null : startsAt,
+  paused: false,
   dogId: "dog-a",
   durationMinutes: 10,
   note: null,

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { GoalStatus } from "../schemas/statusSchema";
 import {
   CircleCheck,
   EllipsisVertical,
@@ -12,6 +13,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/lib/api-client";
+import { pluralForm } from "@/lib/plural";
 import { transitionName } from "@/lib/utils";
 
 import { useSession } from "@/features/auth/hooks/useSession";
@@ -26,6 +28,7 @@ import {
   type DogProfile,
 } from "../api/dogProfileQueryOptions";
 import { useDogProfileMutation } from "../hooks/useDogProfileMutation";
+import { useStatusMutation } from "../hooks/useStatusMutation";
 import { AverageRating } from "./AverageRating";
 import { DogGoal, type GoalAction } from "./DogGoal";
 import { DogStat } from "./DogStat";
@@ -52,16 +55,12 @@ export function DogDisciplineView({
   const [removing, setRemoving] = useState<
     { type: "discipline" } | { type: "goal"; goalId: string } | null
   >(null);
+  const setStatus = useStatusMutation(dog.id);
   const base = dogDisciplinePath(dog.id, disciplineId);
   const mutate = useDogProfileMutation(
     async (action: GoalAction | { type: "removeDiscipline" }) => {
       if (action.type === "removeDiscipline") return api.delete(base);
       const goalPath = `${base}/goals/${encodeURIComponent(action.goalId)}`;
-      if (action.type === "complete" || action.type === "reopen") {
-        return api.patch(goalPath, {
-          json: { completed: action.type === "complete" },
-        });
-      }
       if (action.type === "removeGoal") return api.delete(goalPath);
       if (action.type === "assignGoal") {
         return api.post(`${base}/goals`, {
@@ -112,12 +111,15 @@ export function DogDisciplineView({
     ]),
   );
   const assignments = selection.data.goals;
-  const active = discipline.goals.filter((goal) =>
-    assignments.some((item) => item.goalId === goal.id && !item.completedAt),
-  );
-  const done = discipline.goals.filter((goal) =>
-    assignments.some((item) => item.goalId === goal.id && item.completedAt),
-  );
+  const withStatus = (status: GoalStatus) =>
+    discipline.goals.filter((goal) =>
+      assignments.some(
+        (item) => item.goalId === goal.id && item.status === status,
+      ),
+    );
+  const active = withStatus("in_progress");
+  const paused = withStatus("paused");
+  const done = withStatus("completed");
   const unassigned = discipline.goals.filter(
     (goal) => !assignments.some((item) => item.goalId === goal.id),
   );
@@ -131,11 +133,21 @@ export function DogDisciplineView({
       key={goal.id}
       readOnly={archived}
       dogId={dog.id}
+      dogName={dog.name}
       goal={goal}
       assignment={assignments.find((item) => item.goalId === goal.id)}
       lastTrainingByExercise={lastTrainingByExercise}
       isPending={mutate.isPending}
       onAction={(action) => mutate.mutate(action)}
+      onStatus={(status) =>
+        setStatus.mutate({
+          kind: "goal",
+          disciplineId,
+          goalId: goal.id,
+          name: goal.name,
+          status,
+        })
+      }
       onAddExercise={() => setCreating({ type: "exercise", goalId: goal.id })}
       onRemove={() => {
         mutate.reset();
@@ -201,11 +213,19 @@ export function DogDisciplineView({
           )}
         </div>
         <p className="text-base leading-7 text-muted">
-          {t(($) => $.dogProfile.disciplineSubtitle, {
-            name: dog.name,
-            selected: assignments.length,
-            total: discipline.goals.length,
-          })}
+          {/* Figma S2: "…, 1 je pozastavený." */}
+          {paused.length
+            ? t(($) => $.status.disciplineSubtitle[pluralForm(paused.length)], {
+                name: dog.name,
+                selected: assignments.length,
+                total: discipline.goals.length,
+                count: paused.length,
+              })
+            : t(($) => $.dogProfile.disciplineSubtitle, {
+                name: dog.name,
+                selected: assignments.length,
+                total: discipline.goals.length,
+              })}
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-x-10 gap-y-4">
@@ -265,10 +285,22 @@ export function DogDisciplineView({
           active.map(goalCard)
         ) : (
           <p className="text-sm text-muted">
-            {t(($) => $.dogProfile.noActiveGoals)}
+            {paused.length
+              ? t(($) => $.status.noActiveGoals)
+              : t(($) => $.dogProfile.noActiveGoals)}
           </p>
         )}
       </section>
+      {paused.length > 0 && (
+        // Figma S2 608:22356: collapsible group between goals and unassigned.
+        <div className="w-full max-w-200">
+          <DoneSection
+            title={t(($) => $.status.pausedGoals, { count: paused.length })}
+          >
+            <div className="flex flex-col gap-4">{paused.map(goalCard)}</div>
+          </DoneSection>
+        </div>
+      )}
       {unassigned.length > 0 && !archived && (
         <div className="w-full max-w-200">
           <DoneSection

@@ -64,6 +64,7 @@ vi.mock("@/lib/api-client", () => ({
               rating: null,
               note: null,
               completedAt: null,
+              paused: false,
               dog: {
                 id: dogs[0]!.id,
                 name: dogs[0]!.name,

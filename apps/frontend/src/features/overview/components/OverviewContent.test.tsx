@@ -28,6 +28,7 @@ const event = (
   dogId: "dog-a",
   startsAt,
   completedAt,
+  paused: false,
   durationMinutes: 20,
   rating: completedAt ? 4 : null,
   note: null,
