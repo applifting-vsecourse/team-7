@@ -426,10 +426,10 @@ describe("/api/dogs", () => {
       goals: [
         {
           goal: { disciplineId: "d1" },
-          completedAt: new Date(),
+          status: "completed",
           exercises: [{ exerciseId: "e1" }],
         },
-        { goal: { disciplineId: "d1" }, completedAt: null, exercises: [] },
+        { goal: { disciplineId: "d1" }, status: "paused", exercises: [] },
       ],
     });
     groupBy

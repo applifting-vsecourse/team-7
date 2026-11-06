@@ -24,7 +24,10 @@ export class DogExerciseDetailsService {
             discipline: { select: { id: true, name: true } },
           },
         },
-        dogs: { where: { dogId }, select: { exerciseId: true } },
+        dogs: {
+          where: { dogId },
+          select: { status: true, dogGoal: { select: { status: true } } },
+        },
       },
     });
     if (!exercise) throw new NotFoundException("Exercise not found");
@@ -51,6 +54,17 @@ export class DogExerciseDetailsService {
       orderBy: [{ startsAt: "asc" }, { id: "asc" }],
     });
     const { dogs, ...details } = exercise;
-    return { dog, exercise: { ...details, assigned: dogs.length > 0 }, events };
+    const [assignment] = dogs;
+    return {
+      dog,
+      exercise: {
+        ...details,
+        assigned: Boolean(assignment),
+        // Null when the exercise or its goal is no longer assigned to the dog.
+        status: assignment?.status ?? null,
+        goalStatus: assignment?.dogGoal.status ?? null,
+      },
+      events,
+    };
   }
 }

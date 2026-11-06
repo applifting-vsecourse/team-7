@@ -36,8 +36,9 @@ import {
   DogDisciplineSelectionDto,
   DogExerciseInputDto,
   DogExerciseSelectionDto,
-  DogGoalProgressDto,
+  DogExerciseStatusDto,
   DogGoalSelectionDto,
+  DogGoalStatusDto,
 } from "./dto/dog-selection.dto";
 
 type SelectionParams = {
@@ -237,15 +238,18 @@ export class DogSelectionController {
   }
 
   @Patch("goals/:goalId")
-  @ApiOperation({ summary: "Mark the dog's goal completed or reopen it" })
-  completeGoal(
+  @ApiOperation({
+    summary:
+      "Set the dog's goal in progress, paused or completed; its exercises keep their status",
+  })
+  setGoalStatus(
     @User() user: Identity,
     @Param() params: SelectionParams,
-    @Body() body: DogGoalProgressDto,
+    @Body() body: DogGoalStatusDto,
   ) {
     const scope = { ...params, userId: user.id };
     return this.selections.run(scope, (tx) =>
-      this.selections.completeGoal(tx, scope, params.goalId, body.completed),
+      this.selections.setGoalStatus(tx, scope, params.goalId, body.status),
     );
   }
 
@@ -295,6 +299,28 @@ export class DogSelectionController {
     const scope = { ...params, userId: user.id };
     return this.selections.read(scope, (tx) =>
       this.selections.getExercise(tx, scope, params.goalId, params.exerciseId),
+    );
+  }
+
+  @Patch("goals/:goalId/exercises/:exerciseId")
+  @ApiOperation({
+    summary:
+      "Set the dog's exercise in progress, paused or mastered; the goal keeps its status",
+  })
+  setExerciseStatus(
+    @User() user: Identity,
+    @Param() params: SelectionParams,
+    @Body() body: DogExerciseStatusDto,
+  ) {
+    const scope = { ...params, userId: user.id };
+    return this.selections.run(scope, (tx) =>
+      this.selections.setExerciseStatus(
+        tx,
+        scope,
+        params.goalId,
+        params.exerciseId,
+        body.status,
+      ),
     );
   }
 

@@ -54,7 +54,11 @@ describe("dog exercise details", () => {
       { id: "result-a", rating: 4 },
     ] as never);
     const result = await service.get("user-a", "dog-a", "e1");
-    expect(result.exercise.assigned).toBe(false);
+    expect(result.exercise).toMatchObject({
+      assigned: false,
+      status: null,
+      goalStatus: null,
+    });
     expect(result.events).toEqual([{ id: "result-a", rating: 4 }]);
     expect(prisma.scheduledExercise.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -62,5 +66,21 @@ describe("dog exercise details", () => {
         omit: { undoToken: true, undoState: true, deletedAt: true },
       }),
     );
+  });
+
+  it("returns the dog's own exercise status and its goal's status", async () => {
+    prisma.dog.findFirst.mockResolvedValue({ id: "dog-a" } as never);
+    prisma.exercise.findFirst.mockResolvedValue({
+      id: "e1",
+      dogs: [{ status: "mastered", dogGoal: { status: "paused" } }],
+    } as never);
+    prisma.scheduledExercise.findMany.mockResolvedValue([]);
+    const { exercise } = await service.get("user-a", "dog-a", "e1");
+    expect(exercise).toEqual({
+      id: "e1",
+      assigned: true,
+      status: "mastered",
+      goalStatus: "paused",
+    });
   });
 });

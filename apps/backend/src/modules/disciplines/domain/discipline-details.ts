@@ -68,7 +68,7 @@ export const disciplineDetailInclude = {
         where: activeDog,
         orderBy: byCreation,
         select: {
-          completedAt: true,
+          status: true,
           dog: dogRef,
           _count: { select: { exercises: true } },
         },
@@ -105,7 +105,7 @@ export function toDisciplineSummary(row: SummaryRow): DisciplineSummary {
 export function toDisciplineDetail(row: DetailRow): DisciplineDetail {
   const dogs = new Map<string, DisciplineDog>();
   for (const goal of row.goals) {
-    for (const { dog, completedAt, _count } of goal.dogs) {
+    for (const { dog, status, _count } of goal.dogs) {
       const entry = dogs.get(dog.id) ?? {
         ...dog,
         goalCount: 0,
@@ -114,7 +114,7 @@ export function toDisciplineDetail(row: DetailRow): DisciplineDetail {
       };
       entry.goalCount += 1;
       entry.exerciseCount += _count.exercises;
-      if (completedAt) entry.completedGoalCount += 1;
+      if (status === "completed") entry.completedGoalCount += 1;
       dogs.set(dog.id, entry);
     }
   }
