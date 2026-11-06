@@ -88,9 +88,10 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
             {meta && <p className="text-sm leading-6 text-muted">{meta}</p>}
           </div>
         </div>
-        {/* An archived dog is read-only until it is restored. */}
-        {!archived && (
-          <div className="flex items-center gap-2">
+        {/* An archived dog is read-only until it is restored; it can only be
+            deleted. */}
+        <div className="flex items-center gap-2">
+          {!archived && (
             <Button
               variant="outline"
               className="flex-1 md:flex-none"
@@ -99,21 +100,23 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
               <Pencil className="size-4" aria-hidden="true" />
               {t(($) => $.disciplines.edit)}
             </Button>
-            <Dropdown>
-              <Button
-                variant="ghost"
-                isIconOnly
-                aria-label={t(($) => $.dogProfile.dogActions)}
+          )}
+          <Dropdown>
+            <Button
+              variant="ghost"
+              isIconOnly
+              aria-label={t(($) => $.dogProfile.dogActions)}
+            >
+              <EllipsisVertical className="size-4" aria-hidden="true" />
+            </Button>
+            <Dropdown.Popover placement="bottom end" className="min-w-60">
+              <Dropdown.Menu
+                onAction={(key) => {
+                  action.reset();
+                  setConfirm(key as "archive" | "delete");
+                }}
               >
-                <EllipsisVertical className="size-4" aria-hidden="true" />
-              </Button>
-              <Dropdown.Popover placement="bottom end" className="min-w-60">
-                <Dropdown.Menu
-                  onAction={(key) => {
-                    action.reset();
-                    setConfirm(key as "archive" | "delete");
-                  }}
-                >
+                {!archived && (
                   <Dropdown.Item
                     id="archive"
                     textValue={t(($) => $.dogProfile.archive)}
@@ -133,30 +136,30 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
                       </Description>
                     </div>
                   </Dropdown.Item>
-                  <Dropdown.Item
-                    id="delete"
-                    variant="danger"
-                    textValue={t(($) => $.disciplines.delete)}
-                    className="items-start"
-                  >
-                    <span className="flex h-5 shrink-0 items-center">
-                      <TrashBin
-                        className="size-4 text-danger"
-                        aria-hidden="true"
-                      />
-                    </span>
-                    <div className="flex flex-col">
-                      <Label>{t(($) => $.disciplines.delete)}</Label>
-                      <Description>
-                        {t(($) => $.dogProfile.deleteHint)}
-                      </Description>
-                    </div>
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown.Popover>
-            </Dropdown>
-          </div>
-        )}
+                )}
+                <Dropdown.Item
+                  id="delete"
+                  variant="danger"
+                  textValue={t(($) => $.disciplines.delete)}
+                  className="items-start"
+                >
+                  <span className="flex h-5 shrink-0 items-center">
+                    <TrashBin
+                      className="size-4 text-danger"
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <div className="flex flex-col">
+                    <Label>{t(($) => $.disciplines.delete)}</Label>
+                    <Description>
+                      {t(($) => $.dogProfile.deleteHint)}
+                    </Description>
+                  </div>
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown.Popover>
+          </Dropdown>
+        </div>
       </div>
       <Modal.Backdrop
         isOpen={editing}

@@ -44,12 +44,14 @@ export type DisciplineDetail = {
 
 const dogRef = { select: { id: true, name: true } } as const;
 const byCreation = { createdAt: "asc" } as const;
+// Archived dogs are hidden from the library until they are restored.
+const activeDog = { dog: { archivedAt: null } } as const;
 
 export const disciplineSummaryInclude = {
   goals: {
     select: {
       _count: { select: { exercises: true } },
-      dogs: { select: { dog: dogRef } },
+      dogs: { where: activeDog, select: { dog: dogRef } },
     },
   },
 } satisfies Prisma.DisciplineInclude;
@@ -63,6 +65,7 @@ export const disciplineDetailInclude = {
         include: { _count: { select: { dogs: true } } },
       },
       dogs: {
+        where: activeDog,
         orderBy: byCreation,
         select: {
           completedAt: true,

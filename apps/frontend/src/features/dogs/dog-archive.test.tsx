@@ -165,18 +165,24 @@ describe("dog archive", () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
     expect(
-      screen.queryByRole("button", { name: "More dog actions" }),
-    ).toBeNull();
-    expect(
       screen.queryByRole("button", { name: /Assign discipline/ }),
     ).toBeNull();
     expect(
       screen.queryByRole("button", { name: "Change photo for Mája" }),
     ).toBeNull();
+    // Of the dog actions, only deleting stays available.
+    await userEvent.click(
+      screen.getByRole("button", { name: "More dog actions" }),
+    );
+    const menu = await screen.findByRole("menu");
+    expect(
+      within(menu)
+        .getAllByRole("menuitem")
+        .map((item) => item.textContent),
+    ).toEqual([expect.stringContaining("Delete")]);
+    await userEvent.keyboard("{Escape}");
 
-    // The alert renders one restore button per breakpoint; only one is visible.
-    const [restore] = screen.getAllByRole("button", { name: "Restore" });
-    await userEvent.click(restore as HTMLElement);
+    await userEvent.click(screen.getByRole("button", { name: "Restore" }));
 
     expect(state.post).toHaveBeenCalledWith("dogs/dog-1/restore");
     expect(await screen.findByText("Mája is back")).toBeInTheDocument();
@@ -184,7 +190,7 @@ describe("dog archive", () => {
       expect(screen.queryByText("Mája is in the archive")).toBeNull(),
     );
     expect(
-      await screen.findByRole("button", { name: "More dog actions" }),
+      await screen.findByRole("button", { name: "Edit" }),
     ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/dogs/dog-1");
   });

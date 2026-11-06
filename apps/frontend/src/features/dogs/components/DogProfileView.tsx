@@ -59,16 +59,18 @@ export function DogProfileView({ dog }: { dog: DogProfile }) {
           <Alert.Indicator>
             <Archive className="size-4" aria-hidden="true" />
           </Alert.Indicator>
-          <Alert.Content>
-            <Alert.Title>
-              {t(($) => $.dogArchive.archivedTitle, { name: dog.name })}
-            </Alert.Title>
-            <Alert.Description>
-              {t(($) => $.dogArchive.archivedDescription)}
-            </Alert.Description>
-            <RestoreDogButton dog={dog} className="mt-2 sm:hidden" />
+          {/* One restore button: under the text on phones, beside it from sm up. */}
+          <Alert.Content className="gap-2 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex min-w-0 flex-1 flex-col">
+              <Alert.Title>
+                {t(($) => $.dogArchive.archivedTitle, { name: dog.name })}
+              </Alert.Title>
+              <Alert.Description>
+                {t(($) => $.dogArchive.archivedDescription)}
+              </Alert.Description>
+            </div>
+            <RestoreDogButton dog={dog} className="shrink-0" />
           </Alert.Content>
-          <RestoreDogButton dog={dog} className="hidden sm:inline-flex" />
         </Alert>
       )}
       <div className="flex flex-col gap-8">
@@ -86,16 +88,20 @@ export function DogProfileView({ dog }: { dog: DogProfile }) {
               label={t(($) => $.dogProfile.completedGoals)}
               tone="success"
             />
-            <DogStat
-              icon={Calendar}
-              value={
-                events.data
-                  ? events.data.filter((event) => event.dogId === dog.id).length
-                  : t(($) => $.dogProfile.noData)
-              }
-              label={t(($) => $.dogProfile.weeklyTrainings)}
-              tone="warning"
-            />
+            {/* An archived dog's sessions are hidden, so the count would be 0. */}
+            {!archived && (
+              <DogStat
+                icon={Calendar}
+                value={
+                  events.data
+                    ? events.data.filter((event) => event.dogId === dog.id)
+                        .length
+                    : t(($) => $.dogProfile.noData)
+                }
+                label={t(($) => $.dogProfile.weeklyTrainings)}
+                tone="warning"
+              />
+            )}
           </div>
         )}
       </div>

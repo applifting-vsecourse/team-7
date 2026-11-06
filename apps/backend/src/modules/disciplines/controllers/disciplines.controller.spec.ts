@@ -126,6 +126,37 @@ describe("discipline library API", () => {
     );
   });
 
+  it("leaves archived dogs out of the library's dog lists", async () => {
+    const activeOnly = { dog: { archivedAt: null } };
+    prisma.discipline.findMany.mockResolvedValue([]);
+    await request("GET", "/disciplines");
+    expect(prisma.discipline.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: {
+          goals: expect.objectContaining({
+            select: expect.objectContaining({
+              dogs: expect.objectContaining({ where: activeOnly }),
+            }),
+          }),
+        },
+      }),
+    );
+
+    prisma.discipline.findFirst.mockResolvedValue(null);
+    await request("GET", "/disciplines/d1");
+    expect(prisma.discipline.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: {
+          goals: expect.objectContaining({
+            include: expect.objectContaining({
+              dogs: expect.objectContaining({ where: activeOnly }),
+            }),
+          }),
+        },
+      }),
+    );
+  });
+
   it("creates a discipline for the session user with trimmed text", async () => {
     prisma.discipline.create.mockImplementation(({ data }) =>
       Promise.resolve({ id: "d1", ...data }),
