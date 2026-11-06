@@ -34,6 +34,10 @@ export function useStatusMutation(dogId: string) {
   const client = useQueryClient();
 
   const mutation = useMutation({
+    // Offline, the default ("online") would pause the request and leave the
+    // optimistic status looking saved; fail at once instead, roll back and
+    // offer the retry.
+    networkMode: "always",
     mutationFn: (change: StatusChange) => {
       const goal = `${dogDisciplinePath(dogId, change.disciplineId)}/goals/${encodeURIComponent(change.goalId)}`;
       const path =

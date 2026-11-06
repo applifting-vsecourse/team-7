@@ -5,6 +5,7 @@ import process from "node:process";
 import { AppPage } from "./pom/app.page";
 import { CalendarPage } from "./pom/calendar.page";
 import { DisciplinePage } from "./pom/discipline.page";
+import { DogDisciplinePage } from "./pom/dog-discipline.page";
 import { DogPage } from "./pom/dog.page";
 import { LoginPage } from "./pom/login.page";
 
@@ -18,6 +19,7 @@ type Fixtures = {
   app: AppPage;
   dog: DogPage;
   discipline: DisciplinePage;
+  dogDiscipline: DogDisciplinePage;
   calendar: CalendarPage;
   training: { dog: string; discipline: string; goal: string; exercise: string };
 };
@@ -34,6 +36,9 @@ export const test = base.extend<Fixtures>({
   },
   discipline: async ({ page }, provide) => {
     await provide(new DisciplinePage(page));
+  },
+  dogDiscipline: async ({ page }, provide) => {
+    await provide(new DogDisciplinePage(page));
   },
   calendar: async ({ page }, provide) => {
     await provide(new CalendarPage(page));
