@@ -102,6 +102,8 @@ const disciplines: DisciplineSeed[] = [
       {
         name: "Hledání v interiéru",
         criterion: "Prohledat místnost a označit úkryt.",
+        // Trained only before this week: the overview warns about it (#19).
+        dogs: "assigned",
         exercises: [
           { name: "Nízké úkryty", procedure: "3 úkryty do výšky kolen" },
           { name: "Vysoké úkryty", procedure: "2 úkryty nad hlavou psa" },

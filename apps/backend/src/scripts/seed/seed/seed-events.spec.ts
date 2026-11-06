@@ -109,4 +109,43 @@ describe("exercise training seed", () => {
     expect(rows.get("seed-overdue-dog-a")!.deletedAt).toEqual(deletedAt);
     expect(rows.get("seed-history-dog-a-e1-0")!.deletedAt).toEqual(deletedAt);
   });
+  it("seeds one training before this week in the dog's last other in-progress discipline", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 10, 6, 9));
+    const prisma = mockDeep<PrismaService>();
+    prisma.dog.findMany.mockResolvedValue([
+      {
+        id: "dog-a",
+        goals: [
+          { disciplineId: "obedience", exercises: [{ exerciseId: "e1" }] },
+          { disciplineId: "canicross", exercises: [{ exerciseId: "e2" }] },
+          { disciplineId: "nosework", exercises: [{ exerciseId: "e3" }] },
+        ],
+      },
+      {
+        id: "dog-b",
+        goals: [
+          { disciplineId: "obedience", exercises: [{ exerciseId: "e1" }] },
+          { disciplineId: "obedience", exercises: [{ exerciseId: "e4" }] },
+        ],
+      },
+    ] as never);
+
+    await seedEvents(prisma);
+
+    const lapsed = prisma.scheduledExercise.upsert.mock.calls
+      .map(([input]) => input.create)
+      .filter((session) => session.id?.startsWith("seed-lapsed"));
+    expect(lapsed).toEqual([
+      {
+        id: "seed-lapsed-dog-a",
+        dogId: "dog-a",
+        exerciseId: "e3",
+        startsAt: new Date(2026, 9, 27, 18),
+        completedAt: new Date(2026, 9, 27, 18),
+        durationMinutes: 15,
+        rating: 3,
+      },
+    ]);
+  });
 });
