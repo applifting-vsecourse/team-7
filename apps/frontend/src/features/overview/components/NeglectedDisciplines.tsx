@@ -85,7 +85,10 @@ export function NeglectedDisciplines({
                   {item.lastTrainedAt ? (
                     <time dateTime={item.lastTrainedAt}>
                       {t(($) => $.overview.neglected.lastTrained, {
-                        date: date.format(new Date(item.lastTrainedAt)),
+                        // Keep "27. 10." on one line on narrow screens.
+                        date: date
+                          .format(new Date(item.lastTrainedAt))
+                          .replaceAll(" ", " "),
                       })}
                     </time>
                   ) : (
