@@ -21,6 +21,8 @@ export const planningExerciseSchema = z.object({
 export type PlanningExercise = z.infer<typeof planningExerciseSchema>;
 export const eventSchema = z.object({
   id: z.string(),
+  // A lesson with a trainer (#70) has a dog and a time only: no exercise or result.
+  kind: z.enum(["exercise", "lesson"]),
   dogId: z.string(),
   startsAt: z.string(),
   durationMinutes: z.number(),
@@ -34,16 +36,18 @@ export const eventSchema = z.object({
     name: z.string(),
     avatarVersion: z.string().nullable(),
   }),
-  exercise: z.object({
-    id: z.string(),
-    name: z.string(),
-    procedure: z.string().nullable(),
-    goal: z.object({
+  exercise: z
+    .object({
       id: z.string(),
       name: z.string(),
-      discipline: z.object({ id: z.string(), name: z.string() }),
-    }),
-  }),
+      procedure: z.string().nullable(),
+      goal: z.object({
+        id: z.string(),
+        name: z.string(),
+        discipline: z.object({ id: z.string(), name: z.string() }),
+      }),
+    })
+    .nullable(),
 });
 export type ScheduledEvent = z.infer<typeof eventSchema>;
 

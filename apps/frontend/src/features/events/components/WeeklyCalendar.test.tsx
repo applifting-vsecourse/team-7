@@ -25,6 +25,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => ({
 
 const training = {
   id: "event-a",
+  kind: "exercise",
   dogId: "dog-a",
   startsAt: new Date(2026, 10, 3, 8).toISOString(),
   durationMinutes: 10,

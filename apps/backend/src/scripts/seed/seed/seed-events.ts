@@ -123,5 +123,26 @@ export async function seedEvents(prisma: PrismaService): Promise<void> {
         },
       });
     }
+
+    // Tomorrow's lesson with a trainer (#70), one identity per calendar day.
+    const lessonAt = new Date();
+    lessonAt.setDate(lessonAt.getDate() + 1);
+    lessonAt.setHours(17, 0, 0, 0);
+    const lessonId = `seed-lesson-${dog.id}-${[
+      lessonAt.getFullYear(),
+      String(lessonAt.getMonth() + 1).padStart(2, "0"),
+      String(lessonAt.getDate()).padStart(2, "0"),
+    ].join("-")}`;
+    await prisma.scheduledExercise.upsert({
+      where: { id: lessonId },
+      update: {},
+      create: {
+        id: lessonId,
+        kind: "lesson",
+        dogId: dog.id,
+        startsAt: lessonAt,
+        durationMinutes: 60,
+      },
+    });
   }
 }

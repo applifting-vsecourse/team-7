@@ -30,6 +30,26 @@ export class ScheduledExerciseInputDto {
   @Max(1440)
   durationMinutes!: number;
 }
+export class LessonInputDto {
+  @ApiProperty({ example: "Europe/Prague" })
+  @IsTimeZone()
+  timeZone!: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  dogId!: string;
+
+  @ApiProperty({ format: "date-time" })
+  @IsDateString({ strict: true })
+  startsAt!: string;
+
+  @ApiProperty({ minimum: 1, maximum: 1440 })
+  @IsInt()
+  @Min(1)
+  @Max(1440)
+  durationMinutes!: number;
+}
 export class ScheduleInputDto {
   @ApiProperty({ example: "Europe/Prague" })
   @IsTimeZone()

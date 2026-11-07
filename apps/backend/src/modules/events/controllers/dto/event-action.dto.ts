@@ -12,11 +12,16 @@ import {
 } from "class-validator";
 
 export class CompleteEventDto {
-  @ApiProperty({ minimum: 1, maximum: 5 })
+  @ApiPropertyOptional({
+    minimum: 1,
+    maximum: 5,
+    description: "Required for exercises; a lesson with a trainer has none",
+  })
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Max(5)
-  rating!: number;
+  rating?: number;
 
   @ApiPropertyOptional({ maxLength: 1000 })
   @IsOptional()

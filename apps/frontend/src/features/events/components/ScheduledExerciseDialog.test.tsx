@@ -56,6 +56,7 @@ vi.mock("@/lib/api-client", () => ({
 }));
 const event: ScheduledEvent = {
   id: "event-a",
+  kind: "exercise",
   dogId: "dog-a",
   startsAt: "2099-01-02T08:00:00Z",
   durationMinutes: 10,
@@ -257,7 +258,7 @@ describe("scheduled exercise dialog", () => {
   it("shows the exercise description with its line breaks", () => {
     setup({
       ...event,
-      exercise: { ...event.exercise, procedure: "Sit the dog.\nCall once." },
+      exercise: { ...event.exercise!, procedure: "Sit the dog.\nCall once." },
     });
     const section = screen.getByRole("region", {
       name: "Exercise description",
@@ -273,7 +274,7 @@ describe("scheduled exercise dialog", () => {
     ).not.toBeInTheDocument();
   });
   it("hides the description section when the exercise has none", () => {
-    setup({ ...event, exercise: { ...event.exercise, procedure: null } });
+    setup({ ...event, exercise: { ...event.exercise!, procedure: null } });
     expect(
       screen.queryByRole("region", { name: "Exercise description" }),
     ).not.toBeInTheDocument();
@@ -295,5 +296,41 @@ describe("scheduled exercise dialog", () => {
     expect(
       screen.getByRole("button", { name: "Show full description" }),
     ).toHaveAttribute("aria-expanded", "false");
+  });
+});
+
+describe("lesson with a trainer (Figma L5–L10)", () => {
+  const lesson: ScheduledEvent = { ...event, kind: "lesson", exercise: null };
+  it("is completed without stars, rating or note", async () => {
+    const { user, close } = setup(lesson);
+    expect(
+      screen.getByRole("heading", { name: "Session with a trainer" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Rating")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Note")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Mark as completed" }));
+    await waitFor(() => expect(close).toHaveBeenCalledOnce());
+    expect(state.patch).toHaveBeenCalledWith("events/event-a/result", {
+      json: {},
+    });
+  });
+  it("only closes once completed and offers to return it to planned", async () => {
+    const { user, close } = setup({
+      ...lesson,
+      completedAt: "2099-01-02T08:00:00Z",
+    });
+    expect(
+      screen.queryByRole("button", { name: "Mark as completed" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /Exercise details/ }),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Training actions" }));
+    expect(
+      await screen.findByRole("menuitem", { name: "Return to planned" }),
+    ).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    await user.click(screen.getByRole("button", { name: "Close" }));
+    expect(close).toHaveBeenCalled();
   });
 });

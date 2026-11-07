@@ -23,8 +23,8 @@ describe("exercise training seed", () => {
     await seedEvents(prisma);
     await seedEvents(prisma);
 
-    expect(prisma.scheduledExercise.upsert).toHaveBeenCalledTimes(22);
-    expect(prisma.scheduledExercise.upsert).toHaveBeenNthCalledWith(12, {
+    expect(prisma.scheduledExercise.upsert).toHaveBeenCalledTimes(24);
+    expect(prisma.scheduledExercise.upsert).toHaveBeenNthCalledWith(13, {
       where: { id: "seed-overdue-dog-a" },
       update: {},
       create: {
@@ -62,7 +62,14 @@ describe("exercise training seed", () => {
         durationMinutes: 20,
       },
     ]);
-    expect(calls.slice(0, 11)).toEqual(calls.slice(11));
+    expect(calls[11]![0].create).toEqual({
+      id: "seed-lesson-dog-a-2026-10-26",
+      kind: "lesson",
+      dogId: "dog-a",
+      startsAt: new Date(2026, 9, 26, 17),
+      durationMinutes: 60,
+    });
+    expect(calls.slice(0, 12)).toEqual(calls.slice(12));
     expect(
       calls.every(([input]) => Object.keys(input.update).length === 0),
     ).toBe(true);
@@ -106,7 +113,7 @@ describe("exercise training seed", () => {
     rows.get("seed-history-dog-a-e1-0")!.deletedAt = deletedAt;
     vi.setSystemTime(new Date(2026, 9, 26, 9));
     await seedEvents(prisma);
-    expect(rows.size).toBe(12);
+    expect(rows.size).toBe(14);
     expect(rows.get("seed-planned-dog-a-2026-10-27")!.startsAt).toEqual(
       new Date(2026, 9, 27, 18),
     );

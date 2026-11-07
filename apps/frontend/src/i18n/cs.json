@@ -154,6 +154,9 @@
     "unfinished": "Nesplněno",
     "dateAndTime": "{{date}} – {{time}}"
   },
+  "lesson": {
+    "title": "Cvičení s trenérem"
+  },
   "overview": {
     "loading": "Načítání přehledu…",
     "loadError": "Přehled se nepodařilo načíst. Zkuste to znovu.",
@@ -509,7 +512,14 @@
     "schedule": "Naplánovat {{count}} cvičení",
     "success": "Cvičení byla naplánována.",
     "error": "Cvičení se nepodařilo naplánovat. Zkuste to znovu.",
-    "invalid": "Zadejte platné datum, čas a délku (1–1440 minut)."
+    "invalid": "Zadejte platné datum, čas a délku (1–1440 minut).",
+    "kind": "Typ cvičení",
+    "kindOwn": "Vlastní",
+    "kindLesson": "S trenérem",
+    "lessonStepDog": "Krok 1 ze 2 · Pes",
+    "lessonStepTime": "Krok 2 ze 2 · Termín",
+    "scheduleLesson": "Naplánovat",
+    "lessonSuccess": "Cvičení s trenérem naplánováno"
   },
   "exerciseDetail": {
     "history": "Historie",
@@ -563,7 +573,8 @@
     "noProcedure": "K tomuto cvičení zatím nebyl přidán postup.",
     "procedure": "Popis cvičení",
     "showFullProcedure": "Zobrazit celý popis",
-    "showLess": "Zobrazit méně"
+    "showLess": "Zobrazit méně",
+    "close": "Zavřít"
   },
   "status": {
     "paused": "Pozastaveno",

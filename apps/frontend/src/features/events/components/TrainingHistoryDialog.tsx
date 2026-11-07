@@ -32,7 +32,8 @@ export function TrainingHistoryDialog({
           <Modal.CloseTrigger aria-label={t(($) => $.dogProfile.close)} />
           <Modal.Header className="flex-col gap-2">
             <Modal.Heading className="text-2xl font-semibold tracking-tight">
-              {event.exercise.name}
+              {/* Only an exercise has a history; lessons never reach this dialog. */}
+              {event.exercise?.name}
             </Modal.Heading>
             <Chip size="sm" color={event.completedAt ? "success" : "warning"}>
               {event.completedAt && (

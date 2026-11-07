@@ -104,4 +104,24 @@ describe("training stats", () => {
       trainingStats(records, localCalendar(today, "Europe/Prague")).streakDays,
     ).toBe(42);
   });
+
+  it("counts a completed lesson with a trainer without a rating and keeps the streak with it", () => {
+    const calendar = localCalendar(new Date("2026-10-28T12:00:00Z"), "UTC");
+    expect(
+      trainingStats(
+        [
+          // The lesson: completed, never rated.
+          record("2026-10-27T17:00:00Z", "2026-10-27T17:00:00Z"),
+          record("2026-10-26T09:00:00Z", "2026-10-26T09:00:00Z", 4),
+          record("2026-10-26T17:00:00Z", null),
+        ],
+        calendar,
+      ),
+    ).toMatchObject({
+      completedExercises: 2,
+      plannedExercises: 3,
+      streakDays: 2,
+      satisfaction: 4,
+    });
+  });
 });

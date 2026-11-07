@@ -157,4 +157,24 @@ describe("overview", () => {
     );
     expect(result.neglected).toBe(ranked);
   });
+
+  it("lists an overdue lesson with a trainer as not paused", async () => {
+    vi.setSystemTime(new Date("2026-10-28T12:00:00Z"));
+    const lesson = {
+      id: "lesson",
+      ...record("2026-10-26T17:00:00Z", null),
+      kind: "lesson",
+      exerciseId: null,
+      exercise: null,
+    };
+    prisma.scheduledExercise.findMany
+      .mockResolvedValueOnce([lesson] as never)
+      .mockResolvedValueOnce([lesson] as never);
+    const overview = await service.get("owner", { timeZone: "UTC" });
+    expect(overview.events).toEqual([
+      expect.objectContaining({ id: "lesson", paused: false }),
+    ]);
+    // Lessons have no exercise to look up as paused.
+    expect(prisma.dogExercise.findMany).not.toHaveBeenCalled();
+  });
 });

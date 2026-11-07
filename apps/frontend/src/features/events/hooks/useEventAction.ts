@@ -11,7 +11,8 @@ import { dogProfileKey } from "@/features/dogs/api/dogProfileQueryOptions";
 import { eventsKey } from "../api/eventsQueryOptions";
 
 export type EventAction =
-  | { type: "result"; rating: number; note: string }
+  // A lesson with a trainer is completed without a rating or note.
+  | { type: "result"; rating?: number; note?: string }
   | {
       type: "schedule";
       startsAt: string;

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { localCalendar } from "./local-calendar";
-import { rankNeglected, untrainedThisWeek } from "./neglected-disciplines";
+import {
+  type DisciplineTraining,
+  rankNeglected,
+  untrainedThisWeek,
+} from "./neglected-disciplines";
 
 const training = (
   startsAt: string,
@@ -36,7 +40,7 @@ describe("neglected disciplines", () => {
       new Date("2026-10-25T23:30:00Z"),
       "Europe/Prague",
     );
-    const untrained = (trainings: ReturnType<typeof training>[]) =>
+    const untrained = (trainings: DisciplineTraining[]) =>
       untrainedThisWeek([pair("dog-a", "agility")], trainings, calendar);
 
     it("lists each dog and discipline once", () => {
@@ -82,6 +86,14 @@ describe("neglected disciplines", () => {
       ],
     ])("still lists a discipline with a training only %s", (_, item) => {
       expect(untrained([item])).toEqual([pair("dog-a", "agility")]);
+    });
+
+    it("does not count a lesson with a trainer as training a discipline", () => {
+      const lesson = {
+        ...training("2026-10-27T08:00:00Z", null),
+        exercise: null,
+      };
+      expect(untrained([lesson])).toEqual([pair("dog-a", "agility")]);
     });
   });
 

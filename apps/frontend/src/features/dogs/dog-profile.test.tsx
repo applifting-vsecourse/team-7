@@ -202,6 +202,7 @@ describe("dog profile", () => {
     }));
     const session = {
       id: "session-a",
+      kind: "exercise",
       dogId: "dog-1",
       startsAt: "2026-10-25T08:00:00Z",
       durationMinutes: 10,

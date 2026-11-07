@@ -5,12 +5,15 @@ export type DogDiscipline = {
   discipline: { id: string; name: string };
 };
 
-/** A training reduced to the dog and discipline it trains. */
+/**
+ * A training reduced to the dog and discipline it trains. A lesson with a
+ * trainer (#70) has no exercise, so it trains no discipline.
+ */
 export type DisciplineTraining = {
   dogId: string;
   startsAt: Date;
   completedAt: Date | null;
-  exercise: { goal: { disciplineId: string } };
+  exercise: { goal: { disciplineId: string } } | null;
 };
 
 const keyOf = (dogId: string, disciplineId: string) =>
@@ -18,8 +21,8 @@ const keyOf = (dogId: string, disciplineId: string) =>
 
 type Training = Omit<DisciplineTraining, "startsAt">;
 
-const trainingKey = (training: Training) =>
-  keyOf(training.dogId, training.exercise.goal.disciplineId);
+const trainingKey = ({ dogId, exercise }: Training) =>
+  exercise ? [keyOf(dogId, exercise.goal.disciplineId)] : [];
 
 /**
  * Distinct dog–discipline pairs with nothing this week. Any training this week,
@@ -38,7 +41,7 @@ export function untrainedThisWeek(
           calendar.dayOf(training.completedAt ?? training.startsAt),
         ),
       )
-      .map(trainingKey),
+      .flatMap(trainingKey),
   );
   const distinct = new Map(
     pairs.map((pair) => [keyOf(pair.dog.id, pair.discipline.id), pair]),
@@ -55,7 +58,8 @@ export function untrainedThisWeek(
 export function rankNeglected(pairs: DogDiscipline[], completions: Training[]) {
   const lastTrained = new Map<string, Date>();
   for (const training of completions) {
-    const key = trainingKey(training);
+    const [key] = trainingKey(training);
+    if (!key) continue;
     const known = lastTrained.get(key);
     if (training.completedAt && (!known || training.completedAt > known))
       lastTrained.set(key, training.completedAt);

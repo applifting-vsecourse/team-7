@@ -141,6 +141,64 @@ describe("exercise scheduling", () => {
       expect.objectContaining({ id: "b", paused: false }),
     ]);
   });
+  it("lists lessons with a trainer as never paused without looking them up", async () => {
+    prisma.scheduledExercise.findMany.mockResolvedValue([
+      { id: "lesson", kind: "lesson", dogId: "dog-a", exerciseId: null },
+    ] as never);
+    await expect(
+      service.list("user-a", {
+        from: "2026-10-01T00:00:00Z",
+        to: "2026-11-01T00:00:00Z",
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({ id: "lesson", paused: false }),
+    ]);
+    expect(prisma.dogExercise.findMany).not.toHaveBeenCalled();
+  });
+  describe("lesson with a trainer", () => {
+    const lesson = {
+      dogId: "dog-a",
+      timeZone: "Europe/Prague",
+      startsAt: "2099-10-25T15:00:00.000Z",
+      durationMinutes: 60,
+    };
+    it("saves a dog, time and duration only", async () => {
+      prisma.scheduledExercise.create.mockResolvedValue({ id: "l" } as never);
+      await expect(service.scheduleLesson("user-a", lesson)).resolves.toEqual({
+        id: "l",
+      });
+      expect(prisma.dog.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "dog-a", userId: "user-a", archivedAt: null },
+        }),
+      );
+      expect(prisma.scheduledExercise.create).toHaveBeenCalledWith({
+        data: {
+          kind: "lesson",
+          dogId: "dog-a",
+          startsAt: new Date(lesson.startsAt),
+          durationMinutes: 60,
+        },
+        select: { id: true },
+      });
+    });
+    it("rejects another handler’s or an archived dog", async () => {
+      prisma.dog.findFirst.mockResolvedValue(null);
+      await expect(
+        service.scheduleLesson("user-b", lesson),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      expect(prisma.scheduledExercise.create).not.toHaveBeenCalled();
+    });
+    it("rejects a past date", async () => {
+      await expect(
+        service.scheduleLesson("user-a", {
+          ...lesson,
+          startsAt: "2000-01-01T08:00:00Z",
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.scheduledExercise.create).not.toHaveBeenCalled();
+    });
+  });
   it("offers paused goals and exercises read-only, without completed goals or mastered exercises", async () => {
     prisma.dogGoal.findMany.mockResolvedValue([
       {
@@ -194,6 +252,7 @@ describe("scheduled exercise actions", () => {
   const now = new Date("2026-10-24T12:00:00Z");
   const event = {
     id: "event-a",
+    kind: "exercise" as const,
     dogId: "dog-a",
     exerciseId: "exercise-a",
     startsAt: new Date("2026-10-25T08:00:00Z"),
@@ -381,6 +440,47 @@ describe("scheduled exercise actions", () => {
       }),
     );
     await move("2026-10-28T16:00:00Z");
+    expect(prisma.scheduledExercise.update).toHaveBeenCalledOnce();
+  });
+  it("completes a lesson without a rating and rejects rating one", async () => {
+    const lesson = { ...event, kind: "lesson" as const, exerciseId: null };
+    prisma.scheduledExercise.findFirst.mockResolvedValue(lesson);
+    await service.complete("user-a", event.id, {});
+    expect(prisma.scheduledExercise.update).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          completedAt: now,
+          rating: null,
+          note: null,
+        }),
+      }),
+    );
+    await expect(
+      service.complete("user-a", event.id, { rating: 4 }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      service.complete("user-a", event.id, { note: "ok" }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.scheduledExercise.update).toHaveBeenCalledOnce();
+  });
+  it("still requires a rating to complete an exercise", async () => {
+    await expect(
+      service.complete("user-a", event.id, {}),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.scheduledExercise.update).not.toHaveBeenCalled();
+  });
+  it("moves a lesson onto a day that already has another lesson", async () => {
+    prisma.scheduledExercise.findFirst.mockResolvedValue({
+      ...event,
+      kind: "lesson",
+      exerciseId: null,
+    });
+    await service.move("user-a", event.id, {
+      startsAt: "2099-01-01T08:00:00Z",
+      durationMinutes: 60,
+      timeZone: "Europe/Prague",
+    });
+    expect(prisma.scheduledExercise.findMany).not.toHaveBeenCalled();
     expect(prisma.scheduledExercise.update).toHaveBeenCalledOnce();
   });
   it.each(["complete", "move", "delete", "reopen", "undo"])(

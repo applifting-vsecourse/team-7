@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CirclePause } from "@gravity-ui/icons";
+import { CirclePause, Plus } from "@gravity-ui/icons";
 import {
   Button,
   Checkbox,
@@ -8,11 +8,13 @@ import {
   Modal,
   Radio,
   RadioGroup,
+  Tabs,
   toast,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useSetAtom } from "jotai";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -23,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { useSession } from "@/features/auth/hooks/useSession";
 import { dogProfileKey } from "@/features/dogs/api/dogProfileQueryOptions";
 import { dogsQueryOptions } from "@/features/dogs/api/dogsQueryOptions";
+import { addDogDialogOpenAtom } from "@/features/dogs/atoms/addDogDialogOpenAtom";
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 import { dogAge } from "@/features/dogs/lib/dogAge";
@@ -58,6 +61,11 @@ export function ScheduleExerciseDialog({
   const queryClient = useQueryClient();
   const [today] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const [step, setStep] = useState(initialDogId ? 2 : 1);
+  // Figma L1/L2: an own exercise (3 steps) or a lesson with a trainer (2 steps).
+  const [kind, setKind] = useState<"exercise" | "lesson">("exercise");
+  const lesson = kind === "lesson";
+  const lastStep = lesson ? 2 : 3;
+  const openAddDog = useSetAtom(addDogDialogOpenAtom);
   const [dogId, setDogId] = useState(initialDogId ?? "");
   const [selected, setSelected] = useState<string[]>(
     initialExerciseId ? [initialExerciseId] : [],
@@ -97,6 +105,31 @@ export function ScheduleExerciseDialog({
       onClose();
     },
   });
+  const lessonForm = useForm<ScheduleValues>({
+    resolver: zodResolver(futureScheduleSchema),
+    defaultValues: { exercises: [] },
+  });
+  const saveLesson = useMutation({
+    mutationFn: async (values: ScheduleValues) => {
+      const row = values.exercises[0]!;
+      await api.post("events/lessons", {
+        json: {
+          dogId,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          startsAt: new Date(`${row.date}T${row.time}`).toISOString(),
+          durationMinutes: row.durationMinutes,
+        },
+      });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: eventsKey(user?.id) });
+      toast.success(t(($) => $.planning.lessonSuccess));
+      onClose();
+    },
+  });
+  const isPending = save.isPending || saveLesson.isPending;
+  const startDate =
+    format(date, "yyyy-MM-dd") < today ? today : format(date, "yyyy-MM-dd");
   const next = () => {
     if (
       (step === 1 && !dog) ||
@@ -106,17 +139,28 @@ export function ScheduleExerciseDialog({
       return;
     }
     setSelectionError(false);
-    if (step === 2) {
+    if (lesson) {
+      // Figma L3 defaults; values the handler already entered are kept.
+      if (!lessonForm.getValues("exercises").length) {
+        lessonForm.reset({
+          exercises: [
+            {
+              exerciseId: "lesson",
+              date: startDate,
+              time: "17:00",
+              durationMinutes: 60,
+            },
+          ],
+        });
+      }
+    } else if (step === 2) {
       const previous = form.getValues("exercises");
       form.reset({
         exercises: selectedExercises.map(
           (item) =>
             previous.find((row) => row.exerciseId === item.id) ?? {
               exerciseId: item.id,
-              date:
-                format(date, "yyyy-MM-dd") < today
-                  ? today
-                  : format(date, "yyyy-MM-dd"),
+              date: startDate,
               time: "07:15",
               durationMinutes: 10,
             },
@@ -177,15 +221,15 @@ export function ScheduleExerciseDialog({
     <Modal.Backdrop
       isOpen
       onOpenChange={(open) => {
-        if (!open && !save.isPending) onClose();
+        if (!open && !isPending) onClose();
       }}
-      isDismissable={!save.isPending}
-      isKeyboardDismissDisabled={save.isPending}
+      isDismissable={!isPending}
+      isKeyboardDismissDisabled={isPending}
     >
       <Modal.Container size="lg" scroll="outside">
         <Modal.Dialog className="bg-background sm:max-w-160">
           <Modal.CloseTrigger
-            isDisabled={save.isPending}
+            isDisabled={isPending}
             aria-label={t(($) => $.planning.cancel)}
           />
           <Modal.Header>
@@ -196,25 +240,55 @@ export function ScheduleExerciseDialog({
           <Form
             validationBehavior="aria"
             onSubmit={(event) => {
-              if (step !== 3) {
+              if (step !== lastStep) {
                 event.preventDefault();
                 next();
+              } else if (lesson) {
+                void lessonForm.handleSubmit((values) =>
+                  saveLesson.mutate(values),
+                )(event);
               } else {
                 void form.handleSubmit((values) => save.mutate(values))(event);
               }
             }}
           >
             <Modal.Body className="flex flex-col gap-5">
+              {step === 1 && (
+                <Tabs
+                  selectedKey={kind}
+                  onSelectionChange={(key) => {
+                    setKind(key as typeof kind);
+                    setSelectionError(false);
+                  }}
+                >
+                  <Tabs.ListContainer>
+                    <Tabs.List aria-label={t(($) => $.planning.kind)}>
+                      <Tabs.Tab id="exercise">
+                        {t(($) => $.planning.kindOwn)}
+                        <Tabs.Indicator />
+                      </Tabs.Tab>
+                      <Tabs.Tab id="lesson">
+                        {t(($) => $.planning.kindLesson)}
+                        <Tabs.Indicator />
+                      </Tabs.Tab>
+                    </Tabs.List>
+                  </Tabs.ListContainer>
+                </Tabs>
+              )}
               <div className="flex flex-col gap-2" aria-live="polite">
                 <p className="text-xs font-medium text-muted">
-                  {step === 1
-                    ? t(($) => $.planning.stepDog)
-                    : step === 2
-                      ? t(($) => $.planning.stepExercises)
-                      : t(($) => $.planning.stepTimes)}
+                  {lesson
+                    ? step === 1
+                      ? t(($) => $.planning.lessonStepDog)
+                      : t(($) => $.planning.lessonStepTime)
+                    : step === 1
+                      ? t(($) => $.planning.stepDog)
+                      : step === 2
+                        ? t(($) => $.planning.stepExercises)
+                        : t(($) => $.planning.stepTimes)}
                 </p>
                 <div className="flex gap-1" aria-hidden="true">
-                  {[1, 2, 3].map((value) => (
+                  {(lesson ? [1, 2] : [1, 2, 3]).map((value) => (
                     <span
                       key={value}
                       className={cn(
@@ -229,9 +303,21 @@ export function ScheduleExerciseDialog({
                 <>
                   <QueryFeedback query={dogs} />
                   {dogs.isSuccess && dogs.data.length === 0 && (
-                    <p className="text-sm text-muted">
-                      {t(($) => $.planning.noDogs)}
-                    </p>
+                    <div className="flex animate-enter flex-col items-start gap-3">
+                      <p className="text-sm text-muted">
+                        {t(($) => $.planning.noDogs)}
+                      </p>
+                      <Button
+                        variant="secondary"
+                        onPress={() => {
+                          onClose();
+                          openAddDog(true);
+                        }}
+                      >
+                        <Plus className="size-4" aria-hidden="true" />
+                        {t(($) => $.navigation.addDog)}
+                      </Button>
+                    </div>
                   )}
                   <RadioGroup
                     aria-label={t(($) => $.planning.dog)}
@@ -286,7 +372,20 @@ export function ScheduleExerciseDialog({
                       <span className="text-sm font-medium">{dog.name}</span>
                     </div>
                   )}
-                  {step === 2 ? (
+                  {lesson ? (
+                    // Figma L3: the lesson's row, laid out like a training's times.
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                      <h3 className="min-w-0 text-lg leading-7 font-medium tracking-tight wrap-break-word sm:w-50 sm:shrink-0">
+                        {t(($) => $.lesson.title)}
+                      </h3>
+                      <ScheduleFields
+                        control={lessonForm.control}
+                        index={0}
+                        isDisabled={saveLesson.isPending}
+                        minDate={today}
+                      />
+                    </div>
+                  ) : step === 2 ? (
                     <>
                       <QueryFeedback query={exercises} />
                       {exercises.isSuccess && plannableCount === 0 && (
@@ -440,7 +539,7 @@ export function ScheduleExerciseDialog({
                     : t(($) => $.planning.chooseExercises)}
                 </p>
               )}
-              {save.isError && (
+              {(save.isError || saveLesson.isError) && (
                 <p role="alert" className="text-sm text-danger">
                   {t(($) => $.planning.error)}
                 </p>
@@ -450,7 +549,7 @@ export function ScheduleExerciseDialog({
               <Button
                 type="button"
                 variant="secondary"
-                isDisabled={save.isPending}
+                isDisabled={isPending}
                 className="flex-auto sm:flex-none"
                 onPress={() => {
                   if (step === 1) onClose();
@@ -466,15 +565,17 @@ export function ScheduleExerciseDialog({
               </Button>
               <Button
                 type="submit"
-                isPending={save.isPending}
-                isDisabled={save.isPending}
+                isPending={isPending}
+                isDisabled={isPending}
                 className="flex-auto sm:flex-none"
               >
-                {step === 3
-                  ? t(($) => $.planning.schedule, {
-                      count: selectedExercises.length,
-                    })
-                  : t(($) => $.planning.next)}
+                {step !== lastStep
+                  ? t(($) => $.planning.next)
+                  : lesson
+                    ? t(($) => $.planning.scheduleLesson)
+                    : t(($) => $.planning.schedule, {
+                        count: selectedExercises.length,
+                      })}
               </Button>
             </Modal.Footer>
           </Form>
