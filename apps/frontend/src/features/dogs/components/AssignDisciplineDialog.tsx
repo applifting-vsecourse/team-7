@@ -38,6 +38,7 @@ export function AssignDisciplineDialog({
 }) {
   const { t } = useTranslation();
   const { user } = useSession();
+  const summary = useGoalsSummary();
   const [step, setStep] = useState(1);
   const [disciplineId, setDisciplineId] = useState("");
   const [selection, setSelection] = useState<GoalSelection[]>([]);
@@ -120,7 +121,12 @@ export function AssignDisciplineDialog({
                         {available.map((discipline) => (
                           <DisciplineRadio
                             key={discipline.id}
-                            discipline={discipline}
+                            value={discipline.id}
+                            name={discipline.name}
+                            description={summary(
+                              discipline.goalCount,
+                              discipline.exerciseCount,
+                            )}
                           />
                         ))}
                       </RadioGroup>
@@ -240,25 +246,37 @@ export function AssignDisciplineDialog({
   );
 }
 
-function DisciplineRadio({
-  discipline,
-}: {
-  discipline: {
-    id: string;
-    name: string;
-    goalCount: number;
-    exerciseCount: number;
-  };
-}) {
+/** "3 goals · 8 exercises" for a discipline tile. */
+export function useGoalsSummary() {
   const { t } = useTranslation();
+  return (goals: number, exercises: number) =>
+    t(($) => $.disciplines.goalsSummary, {
+      goals: t(($) => $.disciplines.goalCount[pluralForm(goals)], {
+        count: goals,
+      }),
+      exercises: t(($) => $.disciplines.exerciseCount[pluralForm(exercises)], {
+        count: exercises,
+      }),
+    });
+}
+
+export function DisciplineRadio({
+  value,
+  name,
+  description,
+}: {
+  value: string;
+  name: string;
+  description: string;
+}) {
   const id = useId();
   return (
     // The card is the Radio.Content (the clickable label), so the whole tile,
     // description included, selects the discipline.
     <Radio
-      value={discipline.id}
+      value={value}
       className="w-full"
-      // Name only; the goal/exercise summary is the description.
+      // Name only; the summary is the description.
       aria-labelledby={`${id}-name`}
       aria-describedby={`${id}-summary`}
     >
@@ -269,24 +287,9 @@ function DisciplineRadio({
         </Radio.Control>
         <span className="flex min-w-0 flex-col">
           <span id={`${id}-name`} className="text-sm leading-6 font-medium">
-            {discipline.name}
+            {name}
           </span>
-          <Description id={`${id}-summary`}>
-            {t(($) => $.disciplines.goalsSummary, {
-              goals: t(
-                ($) =>
-                  $.disciplines.goalCount[pluralForm(discipline.goalCount)],
-                { count: discipline.goalCount },
-              ),
-              exercises: t(
-                ($) =>
-                  $.disciplines.exerciseCount[
-                    pluralForm(discipline.exerciseCount)
-                  ],
-                { count: discipline.exerciseCount },
-              ),
-            })}
-          </Description>
+          <Description id={`${id}-summary`}>{description}</Description>
         </span>
       </Radio.Content>
     </Radio>

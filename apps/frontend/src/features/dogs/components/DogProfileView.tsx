@@ -10,6 +10,8 @@ import { pluralForm } from "@/lib/plural";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { eventsQueryOptions } from "@/features/events/api/eventsQueryOptions";
+import { CatalogDisciplineDialog } from "@/features/onboarding/components/CatalogDisciplineDialog";
+import { useTour } from "@/features/onboarding/hooks/useTour";
 
 import { AssignDisciplineButton } from "./AssignDisciplineButton";
 import { AssignDisciplineDialog } from "./AssignDisciplineDialog";
@@ -30,7 +32,10 @@ export function DogProfileView({ dog }: { dog: DogProfile }) {
       to: addWeeks(week, 1).toISOString(),
     }),
   );
-  const [dialog, setDialog] = useState<"library" | "create" | null>(null);
+  const [dialog, setDialog] = useState<"library" | "create" | "catalog" | null>(
+    null,
+  );
+  const tour = useTour();
   const active = dog.disciplines.filter((item) => !isDisciplineDone(item));
   const done = dog.disciplines.filter(isDisciplineDone);
   const total = dog.disciplines.reduce(
@@ -49,6 +54,11 @@ export function DogProfileView({ dog }: { dog: DogProfile }) {
         className={className}
         onLibrary={() => setDialog("library")}
         onCreate={() => setDialog("create")}
+        onPress={
+          tour.step === "assignDiscipline"
+            ? () => setDialog("catalog")
+            : undefined
+        }
       />
     );
   return (
@@ -186,6 +196,13 @@ export function DogProfileView({ dog }: { dog: DogProfile }) {
       )}
       {dialog === "create" && (
         <NewDogDisciplineDialog dog={dog} onClose={() => setDialog(null)} />
+      )}
+      {dialog === "catalog" && (
+        <CatalogDisciplineDialog
+          dog={dog}
+          onClose={() => setDialog(null)}
+          onCustom={() => setDialog("create")}
+        />
       )}
     </>
   );

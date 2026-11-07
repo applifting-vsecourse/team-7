@@ -5,20 +5,31 @@ import { useTranslation } from "react-i18next";
 export function AssignDisciplineButton({
   onLibrary,
   onCreate,
+  onPress,
   className,
 }: {
   onLibrary: () => void;
   onCreate: () => void;
+  /** Skips the menu, e.g. in the tour, which opens its own dialog (O4). */
+  onPress?: () => void;
   className?: string;
 }) {
   const { t } = useTranslation();
+  const button = (
+    <Button
+      className={className}
+      data-tour="assign-discipline"
+      onPress={onPress}
+    >
+      <Plus className="size-4" aria-hidden="true" />
+      {t(($) => $.dogProfile.assignDiscipline)}
+      <ChevronDown className="size-4" aria-hidden="true" />
+    </Button>
+  );
+  if (onPress) return button;
   return (
     <Dropdown>
-      <Button className={className}>
-        <Plus className="size-4" aria-hidden="true" />
-        {t(($) => $.dogProfile.assignDiscipline)}
-        <ChevronDown className="size-4" aria-hidden="true" />
-      </Button>
+      {button}
       <Dropdown.Popover placement="bottom end" className="min-w-60">
         <Dropdown.Menu
           onAction={(key) => (key === "library" ? onLibrary() : onCreate())}

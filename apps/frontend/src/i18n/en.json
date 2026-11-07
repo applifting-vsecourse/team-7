@@ -625,6 +625,91 @@
       "goalCompleted": "The goal {{goal}} is completed. To schedule this exercise, return the goal to in progress on the discipline page."
     }
   },
+  "onboarding": {
+    "label": "Guide",
+    "stepOf": "Step {{current}} of {{total}}",
+    "skip": "Skip",
+    "back": "Back",
+    "next": "Next",
+    "start": "Start",
+    "finish": "Finish",
+    "later": "Later",
+    "done": "Done",
+    "install": "Install",
+    "close": "Close the guide",
+    "steps": {
+      "welcome": {
+        "title": "Welcome to TrainLoop",
+        "body": "In a few minutes we'll add a dog, pick a discipline and plan your first week of exercises."
+      },
+      "menu": {
+        "title": "Open the menu",
+        "body": "The menu holds your dogs, calendar and disciplines. Tap it."
+      },
+      "addDog": {
+        "title": "Add a dog",
+        "body": "Click Add dog. A name is enough, the rest can wait.",
+        "bodyTouch": "Tap Add dog. A name is enough, the rest can wait."
+      },
+      "dogProfile": {
+        "title": "{{name}} is in",
+        "body": "This is the dog's profile. You'll see disciplines, progress and ratings here."
+      },
+      "assignDiscipline": {
+        "title": "Assign a discipline",
+        "body": "Pick a ready-made discipline with goals and exercises, or create your own."
+      },
+      "openCalendar": {
+        "title": "Discipline assigned",
+        "body": "Now let's plan the first exercise. Open the Calendar.",
+        "bodyTouch": "Now let's plan the first exercise. Open the menu and tap Calendar."
+      },
+      "schedule": {
+        "title": "Plan an exercise",
+        "body": "Choose a dog, exercise and time. The dog and discipline are already selected."
+      },
+      "event": {
+        "title": "Exercises are planned",
+        "body": "After training, click the exercise, rate it with stars and add a note or video if you like."
+      },
+      "views": {
+        "title": "Day, week, month",
+        "body": "Switch the calendar view here. Done, your first week is planned!"
+      },
+      "installIos": {
+        "title": "Add TrainLoop to your home screen",
+        "body": "Open it at training with one tap, like an app.",
+        "share": "At the bottom of Safari, tap Share (the square with an arrow).",
+        "addToHome": "Choose Add to Home Screen.",
+        "confirm": "Confirm with Add."
+      },
+      "installAndroid": {
+        "title": "Install TrainLoop",
+        "body": "Open it at training with one tap, like an app. Tap Install, or open ⋮ at the top right in Chrome and choose Add to Home screen."
+      }
+    },
+    "catalog": {
+      "intro": "Pick a ready-made discipline or create your own. You can edit goals and exercises at any time.",
+      "prefilled": "Ready-made · {{summary}}",
+      "custom": "Your own discipline",
+      "customHint": "Start with an empty discipline and add goals yourself.",
+      "loadError": "The ready-made disciplines couldn't be loaded."
+    },
+    "card": {
+      "title": "Getting started · {{count}} of 3 done",
+      "description": "Finish the setup and plan your first week.",
+      "continue": "Continue the guide",
+      "hide": "Hide Getting started",
+      "addDog": "Add a dog",
+      "assignDiscipline": "Assign a discipline",
+      "planWeek": "Plan the first week",
+      "done": "Done"
+    },
+    "menu": {
+      "start": "Start the guide",
+      "install": "Add to home screen"
+    }
+  },
   "settings": {
     "notifications": "Email notifications",
     "description": "Choose whether TrainLoop reminds you about scheduled training.",

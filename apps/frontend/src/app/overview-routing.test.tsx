@@ -236,10 +236,10 @@ describe("overview routing", () => {
     expect(
       (await screen.findAllByText("Test User's dog")).length,
     ).toBeGreaterThan(0);
-    expect(vi.mocked(api.get).mock.calls[0]?.[0]).toBe("dogs");
-    expect(vi.mocked(api.get).mock.calls[0]?.[1]?.signal).toBeInstanceOf(
-      AbortSignal,
-    );
+    const dogsCall = vi
+      .mocked(api.get)
+      .mock.calls.find(([path]) => path === "dogs");
+    expect(dogsCall?.[1]?.signal).toBeInstanceOf(AbortSignal);
   });
 
   it("protects the calendar and preserves its language in the login destination", async () => {

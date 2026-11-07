@@ -48,6 +48,7 @@ export function CalendarViewSwitcher({
         onChange(view as CalendarView);
       }}
       className="w-full md:w-auto"
+      data-tour="calendar-views"
     >
       {CALENDAR_VIEWS.map((view, index) => (
         <ToggleButton

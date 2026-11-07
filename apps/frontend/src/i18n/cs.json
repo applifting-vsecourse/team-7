@@ -625,6 +625,91 @@
       "goalCompleted": "Cíl {{goal}} je splněný. Aby šlo cvičení naplánovat, vraťte cíl do rozpracovaných v detailu disciplíny."
     }
   },
+  "onboarding": {
+    "label": "Průvodce",
+    "stepOf": "Krok {{current}} z {{total}}",
+    "skip": "Přeskočit",
+    "back": "Zpět",
+    "next": "Další",
+    "start": "Začít",
+    "finish": "Dokončit",
+    "later": "Později",
+    "done": "Hotovo",
+    "install": "Nainstalovat",
+    "close": "Ukončit průvodce",
+    "steps": {
+      "welcome": {
+        "title": "Vítejte v TrainLoop",
+        "body": "Za pár minut přidáme psa, vybereme disciplínu a naplánujeme první týden cvičení."
+      },
+      "menu": {
+        "title": "Otevřete menu",
+        "body": "V menu najdete psy, kalendář a disciplíny. Klepněte na něj."
+      },
+      "addDog": {
+        "title": "Přidejte psa",
+        "body": "Klikněte na Přidat psa. Stačí jméno, zbytek doplníte později.",
+        "bodyTouch": "Klepněte na Přidat psa. Stačí jméno, zbytek doplníte později."
+      },
+      "dogProfile": {
+        "title": "{{name}} je v aplikaci",
+        "body": "Tohle je profil psa. Uvidíte tu disciplíny, pokrok a hodnocení."
+      },
+      "assignDiscipline": {
+        "title": "Přiřaďte disciplínu",
+        "body": "Vyberte připravenou disciplínu s cíli a cvičeními, nebo si založte vlastní."
+      },
+      "openCalendar": {
+        "title": "Disciplína je přiřazená",
+        "body": "Teď naplánujeme první cvičení. Otevřete Kalendář.",
+        "bodyTouch": "Teď naplánujeme první cvičení. Otevřete menu a klepněte na Kalendář."
+      },
+      "schedule": {
+        "title": "Naplánujte cvičení",
+        "body": "Vyberte psa, cvičení a termín. Pes i disciplína už budou předvybrané."
+      },
+      "event": {
+        "title": "Cvičení jsou naplánovaná",
+        "body": "Po tréninku na cvičení klikněte, ohodnoťte ho hvězdičkami a případně přidejte poznámku nebo video."
+      },
+      "views": {
+        "title": "Den, týden, měsíc",
+        "body": "Tady přepnete pohled kalendáře. Hotovo, první týden je naplánovaný!"
+      },
+      "installIos": {
+        "title": "Přidejte si TrainLoop na plochu",
+        "body": "Na tréninku ho otevřete jedním klepnutím, jako aplikaci.",
+        "share": "Dole v Safari klepněte na Sdílet (čtvereček se šipkou).",
+        "addToHome": "Zvolte Přidat na plochu.",
+        "confirm": "Potvrďte Přidat."
+      },
+      "installAndroid": {
+        "title": "Nainstalujte si TrainLoop",
+        "body": "Na tréninku ho otevřete jedním klepnutím, jako aplikaci. Klepněte na Nainstalovat, nebo v Chromu otevřete ⋮ vpravo nahoře a zvolte Přidat na plochu."
+      }
+    },
+    "catalog": {
+      "intro": "Vyberte připravenou disciplínu, nebo si založte vlastní. Cíle a cvičení si můžete kdykoli upravit.",
+      "prefilled": "Předvyplněná · {{summary}}",
+      "custom": "Vlastní disciplína",
+      "customHint": "Začnete s prázdnou disciplínou a cíle si doplníte sami.",
+      "loadError": "Připravené disciplíny se nepodařilo načíst."
+    },
+    "card": {
+      "title": "Začínáme · {{count}} ze 3 hotovo",
+      "description": "Dokončete nastavení a naplánujte první týden.",
+      "continue": "Pokračovat v průvodci",
+      "hide": "Skrýt kartu Začínáme",
+      "addDog": "Přidat psa",
+      "assignDiscipline": "Přiřadit disciplínu",
+      "planWeek": "Naplánovat první týden",
+      "done": "Hotovo"
+    },
+    "menu": {
+      "start": "Spustit průvodce",
+      "install": "Přidat na plochu"
+    }
+  },
   "settings": {
     "notifications": "E-mailová upozornění",
     "description": "Vyberte si, zda vám má TrainLoop připomínat naplánovaný trénink.",

@@ -30,6 +30,7 @@ import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
 import { dogAge } from "@/features/dogs/lib/dogAge";
 import { isPlannable } from "@/features/dogs/lib/exerciseStatus";
+import { useTour } from "@/features/onboarding/hooks/useTour";
 
 import {
   eventsKey,
@@ -59,6 +60,7 @@ export function ScheduleExerciseDialog({
   const { t } = useTranslation();
   const { user } = useSession();
   const queryClient = useQueryClient();
+  const tour = useTour();
   const [today] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const [step, setStep] = useState(initialDogId ? 2 : 1);
   // Figma L1/L2: an own exercise (3 steps) or a lesson with a trainer (2 steps).
@@ -103,6 +105,7 @@ export function ScheduleExerciseDialog({
       ]);
       toast.success(t(($) => $.planning.success));
       onClose();
+      tour.complete("schedule");
     },
   });
   const lessonForm = useForm<ScheduleValues>({

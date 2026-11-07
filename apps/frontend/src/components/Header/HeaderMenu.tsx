@@ -1,12 +1,28 @@
-import { ArrowRightFromSquare, Gear } from "@gravity-ui/icons";
-import { Avatar, Button, buttonVariants, Dropdown, Label } from "@heroui/react";
+import {
+  ArrowDownToSquare,
+  ArrowRightFromSquare,
+  Compass,
+  Gear,
+} from "@gravity-ui/icons";
+import {
+  Avatar,
+  Button,
+  buttonVariants,
+  Dropdown,
+  Label,
+  useMediaQuery,
+} from "@heroui/react";
 import { createLink, Link } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
 import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes.ts";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { useSignOut } from "@/features/auth/hooks/useSignOut";
+import { installGuideOpenAtom } from "@/features/onboarding/atoms/installGuideOpenAtom";
+import { useTour } from "@/features/onboarding/hooks/useTour";
+import { isStandalone } from "@/features/onboarding/lib/install";
 
 const DropdownLink = createLink(Dropdown.Item);
 
@@ -14,6 +30,10 @@ export function HeaderMenu() {
   const { t } = useTranslation();
   const { user } = useSession();
   const signOut = useSignOut();
+  const tour = useTour();
+  const openInstallGuide = useSetAtom(installGuideOpenAtom);
+  // Figma O13: phones also get "Add to home screen", unless already installed.
+  const canInstall = useMediaQuery("(max-width: 767px)") && !isStandalone();
 
   if (!user) {
     return (
@@ -52,7 +72,9 @@ export function HeaderMenu() {
         <Dropdown.Menu
           aria-label={t(($) => $.navigation.userActions)}
           onAction={(key) => {
-            if (key === "sign-out" && !signOut.isPending) signOut.mutate();
+            if (key === "install") openInstallGuide(true);
+            else if (key === "tour") tour.go("welcome");
+            else if (key === "sign-out" && !signOut.isPending) signOut.mutate();
           }}
         >
           <DropdownLink
@@ -63,6 +85,22 @@ export function HeaderMenu() {
             <Gear className="size-4" />
             <Label>{t(($) => $.navigation.settings)}</Label>
           </DropdownLink>
+          {canInstall ? (
+            <Dropdown.Item
+              id="install"
+              textValue={t(($) => $.onboarding.menu.install)}
+            >
+              <ArrowDownToSquare className="size-4" />
+              <Label>{t(($) => $.onboarding.menu.install)}</Label>
+            </Dropdown.Item>
+          ) : null}
+          <Dropdown.Item
+            id="tour"
+            textValue={t(($) => $.onboarding.menu.start)}
+          >
+            <Compass className="size-4" />
+            <Label>{t(($) => $.onboarding.menu.start)}</Label>
+          </Dropdown.Item>
           <Dropdown.Item
             id="sign-out"
             textValue={t(($) => $.auth.signOut)}

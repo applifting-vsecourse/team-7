@@ -21,6 +21,7 @@ import { MonthlyCalendar } from "@/features/events/components/MonthlyCalendar";
 import { ScheduleExerciseDialog } from "@/features/events/components/ScheduleExerciseDialog";
 import { WeeklyCalendar } from "@/features/events/components/WeeklyCalendar";
 import { periodTransition } from "@/features/events/lib/periodTransition";
+import { useTour } from "@/features/onboarding/hooks/useTour";
 
 // Invalid values fall back to the defaults instead of an error page.
 const calendarSearchSchema = z.object({
@@ -39,6 +40,9 @@ function CalendarPage() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const [scheduling, setScheduling] = useState(false);
+  const tour = useTour();
+  // The tour plans for the dog and discipline it just set up (O7).
+  const tourPlan = tour.step === "schedule" ? tour.data : undefined;
   const [today] = useState(() => new Date());
   const view = search.view ?? "week";
   const date = search.date ? parseISO(search.date) : today;
@@ -78,6 +82,7 @@ function CalendarPage() {
           <Button
             variant="primary"
             className="w-full shrink-0 md:w-auto"
+            data-tour="schedule"
             onPress={() => setScheduling(true)}
           >
             <Plus className="size-4 shrink-0" aria-hidden="true" />
@@ -106,6 +111,8 @@ function CalendarPage() {
       {scheduling && (
         <ScheduleExerciseDialog
           date={date}
+          initialDogId={tourPlan?.dogId ?? undefined}
+          initialDisciplineId={tourPlan?.disciplineId ?? undefined}
           onClose={() => setScheduling(false)}
         />
       )}

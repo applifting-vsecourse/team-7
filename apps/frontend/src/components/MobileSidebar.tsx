@@ -18,6 +18,7 @@ export function MobileSidebar({ children }: { children: ReactNode }) {
         variant="secondary"
         className="size-10 min-w-10 rounded-3xl"
         aria-label={t(($) => $.navigation.openMenu)}
+        data-tour="menu"
         aria-expanded={isOpen}
         aria-controls={isOpen ? "mobile-sidebar" : undefined}
       >

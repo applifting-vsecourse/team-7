@@ -22,6 +22,7 @@ function DogPage() {
   return (
     <Layout title={query.data?.name} sidebar={<Sidebar />}>
       <section
+        data-tour="dog-profile"
         aria-labelledby={query.data ? "dog-heading" : undefined}
         className="flex min-w-0 flex-1 flex-col gap-12 rounded-3xl bg-surface px-5 pt-4 pb-5 md:px-6 md:pt-5 md:pb-6"
       >

@@ -18,9 +18,13 @@ const state = vi.hoisted(() => ({
   user: null as { name: string } | null,
   isPending: false,
   mutate: vi.fn(),
+  startTour: vi.fn(),
 }));
 vi.mock("@/features/auth/hooks/useSession", () => ({
   useSession: () => ({ user: state.user }),
+}));
+vi.mock("@/features/onboarding/hooks/useTour", () => ({
+  useTour: () => ({ go: state.startTour }),
 }));
 vi.mock("@/features/auth/hooks/useSignOut", () => ({
   useSignOut: () => ({ isPending: state.isPending, mutate: state.mutate }),
@@ -81,7 +85,7 @@ describe("user menu and navigation", () => {
       expect(screen.queryByRole("menu")).not.toBeInTheDocument(),
     );
     await waitFor(() => expect(trigger).toHaveFocus());
-    await user.keyboard("{ArrowDown}{ArrowDown}{Enter}");
+    await user.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}{Enter}");
     await waitFor(() => expect(state.mutate).toHaveBeenCalledOnce());
   });
 
@@ -91,6 +95,18 @@ describe("user menu and navigation", () => {
       await screen.findByRole("button", { name: "User menu" }),
     );
     expect(await screen.findByText("Test Duck")).toBeInTheDocument();
+  });
+
+  it("starts the guide again from the user menu (O13)", async () => {
+    renderNavigation();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "User menu" }),
+    );
+    await userEvent.click(
+      await screen.findByRole("menuitem", { name: "Start the guide" }),
+    );
+    expect(state.startTour).toHaveBeenCalledWith("welcome");
+    expect(state.mutate).not.toHaveBeenCalled();
   });
 
   it("disables sign-out while the mutation is pending", async () => {
