@@ -7,6 +7,7 @@ import {
   IsSemVer,
   IsString,
   IsUrl,
+  ValidateIf,
 } from "class-validator";
 
 /**
@@ -112,6 +113,7 @@ export class Config {
   readonly smtpPassword?: string;
   @Env("SUPABASE_URL")
   @IsOptional()
+  @ValidateIf((_config, value) => value !== "")
   @IsUrl()
   readonly supabaseUrl?: string;
 
