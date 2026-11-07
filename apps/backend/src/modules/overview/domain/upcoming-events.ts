@@ -1,4 +1,4 @@
-import type { LocalCalendar } from "./local-calendar";
+import type { LocalCalendar } from "@/shared/domain/local-calendar";
 
 /**
  * The overview's list: every open training up to tomorrow, overdue ones

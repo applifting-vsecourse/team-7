@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { localCalendar } from "./local-calendar";
+import { localCalendar } from "@/shared/domain/local-calendar";
 import { trainingStats } from "./training-stats";
 
 const record = (

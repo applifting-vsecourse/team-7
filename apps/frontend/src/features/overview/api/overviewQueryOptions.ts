@@ -59,7 +59,7 @@ export const overviewQueryOptions = (
     queryFn: async ({ signal }) =>
       overviewSchema.parse(
         await api
-          .get("events/overview", {
+          .get("overview", {
             signal,
             searchParams: {
               timeZone,

@@ -57,7 +57,7 @@ test("a failed overview load shows an error with a retry", async ({
   const row = overview.neglectedRow(training.dog, training.discipline);
 
   await test.step("A server error", async () => {
-    const route = "**/api/events/overview?*";
+    const route = "**/api/overview?*";
     await page.route(route, (request) =>
       request.fulfill({ status: 500, json: { message: "Prepared failure" } }),
     );

@@ -1,4 +1,4 @@
-import { isThisWeek, type LocalCalendar } from "./local-calendar";
+import { isThisWeek, type LocalCalendar } from "@/shared/domain/local-calendar";
 
 export type DogDiscipline = {
   dog: { id: string; name: string; avatarVersion: string | null };

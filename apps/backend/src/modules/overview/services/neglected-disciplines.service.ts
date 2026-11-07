@@ -1,13 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@/core/prisma/prisma.service";
-import type { LocalCalendar } from "@/modules/events/domain/local-calendar";
 import {
   type DisciplineTraining,
   type DogDiscipline,
   rankNeglected,
   untrainedThisWeek,
-} from "@/modules/events/domain/neglected-disciplines";
+} from "@/modules/overview/domain/neglected-disciplines";
 import { plannableDogExercise } from "@/shared/domain/exercise-status";
+import type { LocalCalendar } from "@/shared/domain/local-calendar";
 
 /** In-progress disciplines a dog has no training for this week (#19). */
 @Injectable()
