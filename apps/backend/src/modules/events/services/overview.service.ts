@@ -100,7 +100,7 @@ export class OverviewService {
         where: {
           AND: [
             plannableDogExercise(userId),
-            { dogGoal: { dog: { archivedAt: null } } },
+            { dogGoal: { dog: { userId, archivedAt: null } } },
           ],
           ...(dogIds !== undefined && { dogId: { in: dogIds } }),
         },
@@ -177,29 +177,53 @@ export class OverviewService {
         ]),
       ),
     ].flatMap(([key, pair]) => (trainedThisWeek.has(key) ? [] : [pair]));
-    const neglected = (
-      await Promise.all(
-        untrained.map(async (pair) => {
-          const last = await this.prisma.scheduledExercise.findFirst({
-            where: {
-              dogId: pair.dog.id,
-              deletedAt: null,
-              completedAt: { not: null },
-              exercise: { goal: { disciplineId: pair.discipline.id } },
+
+    const lastTrained = new Map<string, Date>();
+
+    if (untrained.length) {
+      const latest = await this.prisma.scheduledExercise.findMany({
+        where: {
+          dogId: { in: [...new Set(untrained.map(({ dog }) => dog.id))] },
+          deletedAt: null,
+          completedAt: { not: null },
+          exercise: {
+            goal: {
+              disciplineId: {
+                in: [
+                  ...new Set(untrained.map(({ discipline }) => discipline.id)),
+                ],
+              },
             },
-            orderBy: { completedAt: "desc" },
-            select: { completedAt: true },
-          });
-          return { ...pair, lastTrainedAt: last?.completedAt ?? null };
-        }),
-      )
-    ).sort(
-      (a, b) =>
-        (a.lastTrainedAt?.getTime() ?? -Infinity) -
-          (b.lastTrainedAt?.getTime() ?? -Infinity) ||
-        a.dog.name.localeCompare(b.dog.name) ||
-        a.discipline.name.localeCompare(b.discipline.name),
-    );
+          },
+        },
+        distinct: ["dogId", "exerciseId"],
+        orderBy: { completedAt: "desc" },
+        select: {
+          dogId: true,
+          completedAt: true,
+          exercise: { select: { goal: { select: { disciplineId: true } } } },
+        },
+      });
+      for (const { dogId, completedAt, exercise } of latest) {
+        const key = `${dogId}:${exercise.goal.disciplineId}`;
+        const known = lastTrained.get(key);
+        if (completedAt && (!known || completedAt > known))
+          lastTrained.set(key, completedAt);
+      }
+    }
+    const neglected = untrained
+      .map((pair) => ({
+        ...pair,
+        lastTrainedAt:
+          lastTrained.get(`${pair.dog.id}:${pair.discipline.id}`) ?? null,
+      }))
+      .sort(
+        (a, b) =>
+          (a.lastTrainedAt?.getTime() ?? -Infinity) -
+            (b.lastTrainedAt?.getTime() ?? -Infinity) ||
+          a.dog.name.localeCompare(b.dog.name, "cs") ||
+          a.discipline.name.localeCompare(b.discipline.name, "cs"),
+      );
     return {
       today,
       tomorrow,

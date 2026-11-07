@@ -198,10 +198,16 @@ describe("overview", () => {
     const neglectedOf = async (
       records: ReturnType<typeof record>[],
       dogIds?: string[],
+      latest: {
+        dogId: string;
+        completedAt: Date;
+        exercise: { goal: { disciplineId: string } };
+      }[] = [],
     ) => {
       prisma.scheduledExercise.findMany
         .mockResolvedValueOnce(records as never)
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce(latest as never);
       return (await service.get("owner", { timeZone: "Europe/Prague", dogIds }))
         .neglected;
     };
@@ -211,26 +217,38 @@ describe("overview", () => {
         plannable("dog-a", "agility", "Bára"),
         plannable("dog-a", "agility", "Bára"),
       ] as never);
-      prisma.scheduledExercise.findFirst.mockResolvedValue({
-        completedAt: new Date("2026-10-02T08:00:00Z"),
-      } as never);
-      expect(await neglectedOf([])).toEqual([
+      expect(
+        await neglectedOf(
+          [],
+          undefined,
+          ["2026-09-12T08:00:00Z", "2026-10-02T08:00:00Z"].map((date) => ({
+            dogId: "dog-a",
+            completedAt: new Date(date),
+            exercise: { goal: { disciplineId: "agility" } },
+          })),
+        ),
+      ).toEqual([
         {
           dog: { id: "dog-a", name: "Bára", avatarVersion: null },
           discipline: { id: "agility", name: "agility" },
           lastTrainedAt: new Date("2026-10-02T08:00:00Z"),
         },
       ]);
-      expect(prisma.scheduledExercise.findFirst).toHaveBeenCalledOnce();
-      expect(prisma.scheduledExercise.findFirst.mock.calls[0]![0]).toEqual({
+      expect(prisma.scheduledExercise.findMany).toHaveBeenCalledTimes(3);
+      expect(prisma.scheduledExercise.findMany.mock.calls[2]![0]).toEqual({
         where: {
-          dogId: "dog-a",
+          dogId: { in: ["dog-a"] },
           deletedAt: null,
           completedAt: { not: null },
-          exercise: { goal: { disciplineId: "agility" } },
+          exercise: { goal: { disciplineId: { in: ["agility"] } } },
         },
+        distinct: ["dogId", "exerciseId"],
         orderBy: { completedAt: "desc" },
-        select: { completedAt: true },
+        select: {
+          dogId: true,
+          completedAt: true,
+          exercise: { select: { goal: { select: { disciplineId: true } } } },
+        },
       });
     });
 
@@ -259,7 +277,7 @@ describe("overview", () => {
         plannable("dog-a", "agility"),
       ] as never);
       expect(await neglectedOf([item])).toEqual([]);
-      expect(prisma.scheduledExercise.findFirst).not.toHaveBeenCalled();
+      expect(prisma.scheduledExercise.findMany).toHaveBeenCalledTimes(2);
     });
 
     it.each([
@@ -274,7 +292,6 @@ describe("overview", () => {
       prisma.dogExercise.findMany.mockResolvedValueOnce([
         plannable("dog-a", "agility"),
       ] as never);
-      prisma.scheduledExercise.findFirst.mockResolvedValue(null);
       expect(await neglectedOf([item])).toMatchObject([
         { dog: { id: "dog-a" }, discipline: { id: "agility" } },
       ]);
@@ -291,7 +308,7 @@ describe("overview", () => {
               goal: { discipline: { userId: "owner" } },
             },
           },
-          { dogGoal: { dog: { archivedAt: null } } },
+          { dogGoal: { dog: { userId: "owner", archivedAt: null } } },
         ],
         dogId: { in: ["dog-a"] },
       });
@@ -309,13 +326,15 @@ describe("overview", () => {
         recent: "2026-10-20T08:00:00Z",
         old: "2026-09-01T08:00:00Z",
       };
-      prisma.scheduledExercise.findFirst.mockImplementation((async (query: {
-        where: { dogId: string };
-      }) => {
-        const date = last[query.where.dogId];
-        return date ? { completedAt: new Date(date) } : null;
-      }) as never);
-      const neglected = await neglectedOf([]);
+      const neglected = await neglectedOf(
+        [],
+        undefined,
+        Object.entries(last).map(([dogId, date]) => ({
+          dogId,
+          completedAt: new Date(date),
+          exercise: { goal: { disciplineId: "agility" } },
+        })),
+      );
       expect(
         neglected.map((item) => `${item.dog.id}:${item.discipline.id}`),
       ).toEqual([
@@ -324,6 +343,20 @@ describe("overview", () => {
         "never-b:agility",
         "old:agility",
         "recent:agility",
+      ]);
+    });
+
+    it("sorts names in Czech order", async () => {
+      prisma.dogExercise.findMany.mockResolvedValueOnce([
+        plannable("ch", "agility", "Chlupáč"),
+        plannable("d", "agility", "Dita"),
+        plannable("c", "agility", "Cyril"),
+      ] as never);
+      const neglected = await neglectedOf([]);
+      expect(neglected.map((item) => item.dog.name)).toEqual([
+        "Cyril",
+        "Dita",
+        "Chlupáč",
       ]);
     });
   });
