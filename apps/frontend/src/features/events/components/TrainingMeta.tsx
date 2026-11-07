@@ -3,6 +3,8 @@ import { Calendar, Clock } from "@gravity-ui/icons";
 import { format, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
 
+import { cn } from "@/lib/utils";
+
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 
 /**
@@ -16,8 +18,13 @@ export function TrainingMeta({ event }: { event: ScheduledEvent }) {
   const date = parseISO(event.completedAt ?? event.startsAt);
 
   return (
-    // Metadata and dog side by side from sm up; on phones the dog wraps below.
-    <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-10">
+    // Trainer sessions keep the dog on its own row at every screen size (Figma L5).
+    <div
+      className={cn(
+        "flex flex-col gap-5",
+        event.kind !== "lesson" && "sm:flex-row sm:items-center sm:gap-10",
+      )}
+    >
       <div className="flex min-w-0 flex-col gap-1">
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-base leading-7 font-medium">
           <span className="flex items-center gap-2">
