@@ -43,6 +43,9 @@ describe("exercise video uploads and ownership", () => {
     } as Express.Multer.File;
     prisma.dog.findFirst.mockResolvedValue({ id: "dog" } as never);
     prisma.exercise.findFirst.mockResolvedValue({ id: "exercise" } as never);
+    prisma.dogExercise.findUnique.mockResolvedValue({
+      exerciseId: "exercise",
+    } as never);
     prisma.$transaction.mockImplementation((async (
       callback: (tx: PrismaService) => Promise<unknown>,
     ) => callback(prisma)) as never);
@@ -161,6 +164,48 @@ describe("exercise video uploads and ownership", () => {
     expect(prisma.$queryRaw).toHaveBeenCalled();
     expect(prisma.video.create).not.toHaveBeenCalled();
     expect(storage.upload).not.toHaveBeenCalled();
+  });
+
+  it("rejects an owned exercise not assigned to this dog before creating a job or storing the upload", async () => {
+    prisma.dogExercise.findUnique.mockResolvedValue(null);
+    await expect(
+      service.upload("user", "dog", "exercise", file),
+    ).rejects.toThrow("Exercise is not assigned to this dog");
+    expect(prisma.dogExercise.findUnique).toHaveBeenCalledWith({
+      where: { dogId_exerciseId: { dogId: "dog", exerciseId: "exercise" } },
+      select: { exerciseId: true },
+    });
+    expect(prisma.video.create).not.toHaveBeenCalled();
+    expect(storage.upload).not.toHaveBeenCalled();
+    await expect(readFile(file.path)).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("keeps historical videos readable and removable after the assignment is removed", async () => {
+    prisma.dogExercise.findUnique.mockResolvedValue(null);
+    prisma.video.findFirst.mockResolvedValue({
+      outputPath: "encoded/video.mp4",
+    } as never);
+    storage.signedUrl.mockResolvedValue("https://storage.example/signed");
+
+    await expect(service.list("user", "dog", "exercise")).resolves.toEqual([]);
+    await expect(
+      service.playback("user", "dog", "exercise", "video"),
+    ).resolves.toMatchObject({
+      url: "https://storage.example/signed",
+    });
+    await expect(
+      service.remove("user", "dog", "exercise", "video"),
+    ).resolves.toBeUndefined();
+    expect(prisma.video.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "video",
+        userId: "user",
+        dogId: "dog",
+        exerciseId: "exercise",
+        status: { not: "uploading" },
+      },
+      data: { status: "deleting" },
+    });
   });
 
   it("rejects a fourth video before storage upload and removes the temporary file", async () => {

@@ -65,6 +65,14 @@ export class VideosService {
       const path = randomUUID();
       const job = await this.prisma.$transaction(async (tx) => {
         await tx.$queryRaw`SELECT pg_advisory_xact_lock(${VIDEO_ADMISSION_LOCK})::text AS locked`;
+        // Only new uploads require assignment; historical videos remain
+        // accessible after the exercise is removed from the dog's plan.
+        const assignment = await tx.dogExercise.findUnique({
+          where: { dogId_exerciseId: { dogId, exerciseId } },
+          select: { exerciseId: true },
+        });
+        if (!assignment)
+          throw new BadRequestException("Exercise is not assigned to this dog");
         const count = await tx.video.count({
           where: { status: { in: ["uploading", "pending", "processing"] } },
         });
