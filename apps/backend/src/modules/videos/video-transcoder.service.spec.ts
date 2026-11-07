@@ -110,7 +110,12 @@ describe("memory-bounded video transcoder", () => {
         "+faststart",
       ]),
     );
-    expect(args[args.indexOf("-vf") + 1]).toContain("min(720,ih)");
+    const filter = args[args.indexOf("-vf") + 1];
+    expect(filter).toContain("w='min(iw,if(gte(iw,ih),1280,720))'");
+    expect(filter).toContain("h='min(ih,if(gte(iw,ih),720,1280))'");
+    expect(filter).toContain(
+      "force_original_aspect_ratio=decrease:force_divisible_by=2",
+    );
     child.emit("close", 0);
     await result;
   });

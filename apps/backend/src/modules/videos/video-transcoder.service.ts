@@ -88,7 +88,8 @@ export class VideoTranscoderService {
         "-filter_threads",
         "1",
         "-vf",
-        "scale=w='min(1280,iw)':h='min(720,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2,setsar=1",
+        // Match the bounds to the frame orientation after FFmpeg autorotation.
+        "scale=w='min(iw,if(gte(iw,ih),1280,720))':h='min(ih,if(gte(iw,ih),720,1280))':force_original_aspect_ratio=decrease:force_divisible_by=2,setsar=1",
         "-r",
         "30",
         "-c:v",
