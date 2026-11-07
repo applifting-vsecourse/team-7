@@ -233,6 +233,15 @@ model Verification {
   @@map("verification")
 }
 
+enum OnboardingStatus {
+  pending
+  active
+  dismissed
+  completed
+
+  @@map("onboarding_status")
+}
+
 model User {
   id            String       @id
   name          String
@@ -247,6 +256,12 @@ model User {
   dogs          Dog[]
   disciplines   Discipline[]
   role          UserRole     @default(user)
+  // First-login tour (#72). Users who existed before it count as completed.
+  onboardingStatus     OnboardingStatus @default(pending)
+  // The tour step to resume, e.g. "addDog"; the steps live in the frontend.
+  onboardingStep       String?
+  // The "Getting started" card on the overview, hidden by its close button.
+  onboardingCardHidden Boolean          @default(false)
 
   @@unique([email])
   @@map("user")
