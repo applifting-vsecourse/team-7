@@ -11,6 +11,7 @@ import { PrismaService } from "@/core/prisma/prisma.service";
 import { VideoStorageService } from "./video-storage.service";
 import {
   VIDEO_ADMISSION_LOCK,
+  VIDEO_LIMIT,
   VIDEO_MAX_BYTES,
   VIDEO_MIME_TYPES,
   VIDEO_QUEUE_LIMIT,
@@ -66,8 +67,20 @@ export class VideosService {
         });
         if (count >= VIDEO_QUEUE_LIMIT)
           throw new HttpException("Video queue is full; try again later", 429);
+        const videos = await tx.video.findMany({
+          where: { dogId, exerciseId, status: { not: "deleting" } },
+          select: { slot: true },
+        });
+        const slot = Array.from({ length: VIDEO_LIMIT }, (_, i) => i + 1).find(
+          (candidate) => !videos.some((video) => video.slot === candidate),
+        );
+        if (slot === undefined)
+          throw new BadRequestException(
+            `You can add at most ${VIDEO_LIMIT} videos per dog and exercise`,
+          );
         return tx.video.create({
           data: {
+            slot,
             userId,
             dogId,
             exerciseId,

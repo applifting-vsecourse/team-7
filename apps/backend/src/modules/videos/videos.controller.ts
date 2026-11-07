@@ -82,7 +82,7 @@ export class VideosController {
   @HttpCode(202)
   @ApiOperation({
     summary:
-      "Queue an exercise video (MP4/MOV/WebM, 30 MB, 60 seconds; validated asynchronously)",
+      "Queue an exercise video (max 3 per dog/exercise; MP4/MOV/WebM, 30 MB, 60 seconds; validated asynchronously)",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody({

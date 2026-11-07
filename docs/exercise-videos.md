@@ -54,6 +54,15 @@ as a full Buffer, and streamed to Supabase. At most two uploads run per backend
 process, and queue admission is serialized in PostgreSQL with a maximum of ten
 active jobs across instances (429 when full). Saturated upload slots return 503.
 
+Each dog/exercise pair can have at most **three videos** (400 when full).
+Uploading, queued, processing, completed and failed videos all occupy a slot;
+requesting deletion frees it immediately. Admission allocates a free slot under
+the existing transaction lock. A database check restricts slots to 1–3 and a
+partial unique index prevents duplicate slots for non-deleting videos, including
+concurrent database writes. The limit migration backfills existing slots and
+refuses to apply if any pair already has more than three non-deleting videos;
+remove excess videos through the API before retrying the migration.
+
 The worker probes the actual media, independently of the claimed MIME type. It
 rejects missing/invalid video, unknown/nonfinite duration, duration above 60
 seconds, and dimensions beyond 4K (8,294,400 pixels; neither side above 4096).

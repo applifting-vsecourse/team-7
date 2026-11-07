@@ -33,6 +33,7 @@ describe("exercise video uploads and ownership", () => {
       callback: (tx: PrismaService) => Promise<unknown>,
     ) => callback(prisma)) as never);
     prisma.video.count.mockResolvedValue(0);
+    prisma.video.findMany.mockResolvedValue([]);
     prisma.video.create.mockImplementation((async ({
       data,
     }: {
@@ -111,6 +112,48 @@ describe("exercise video uploads and ownership", () => {
     expect(prisma.video.create).not.toHaveBeenCalled();
     expect(storage.upload).not.toHaveBeenCalled();
   });
+
+  it("rejects a fourth video before storage upload and removes the temporary file", async () => {
+    prisma.video.findMany.mockResolvedValue([
+      { slot: 1 },
+      { slot: 2 },
+      { slot: 3 },
+    ] as never);
+    await expect(
+      service.upload("user", "dog", "exercise", file),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.video.findMany).toHaveBeenCalledWith({
+      where: {
+        dogId: "dog",
+        exerciseId: "exercise",
+        status: { not: "deleting" },
+      },
+      select: { slot: true },
+    });
+    expect(prisma.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
+      prisma.video.findMany.mock.invocationCallOrder[0],
+    );
+    expect(prisma.video.create).not.toHaveBeenCalled();
+    expect(storage.upload).not.toHaveBeenCalled();
+    await expect(readFile(file.path)).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it.each([
+    [[], 1],
+    [[1, 2], 3],
+    [[1, 3], 2],
+  ])(
+    "allocates a free slot with occupied slots %j",
+    async (slots, expected) => {
+      prisma.video.findMany.mockResolvedValue(
+        slots.map((slot) => ({ slot })) as never,
+      );
+      await service.upload("user", "dog", "exercise", file);
+      expect(prisma.video.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ slot: expected }),
+      });
+    },
+  );
 
   it("retains a failed job for retryable remote cleanup when storage fails", async () => {
     storage.upload.mockRejectedValue(new Error("storage unavailable"));

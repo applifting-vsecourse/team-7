@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 export const VIDEO_MAX_BYTES = 30 * 1024 * 1024;
 export const VIDEO_MAX_SECONDS = 60;
+export const VIDEO_LIMIT = 3;
 export const VIDEO_QUEUE_LIMIT = 10;
 export const VIDEO_UPLOAD_DIRECTORY = join(tmpdir(), "trainloop-video-uploads");
 export const VIDEO_JOB_DIRECTORY = join(tmpdir(), "trainloop-video-jobs");
