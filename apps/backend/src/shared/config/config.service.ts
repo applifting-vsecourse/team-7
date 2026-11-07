@@ -110,4 +110,17 @@ export class Config {
   @Env("SMTP_PASSWORD")
   @IsOptional()
   readonly smtpPassword?: string;
+  @Env("SUPABASE_URL")
+  @IsOptional()
+  @IsUrl()
+  readonly supabaseUrl?: string;
+
+  @Env("SUPABASE_SECRET_KEY")
+  @IsOptional()
+  @IsString()
+  readonly supabaseSecretKey?: string;
+
+  @Env("SUPABASE_VIDEO_BUCKET", { defaultValue: "exercise-videos" })
+  @IsString()
+  readonly supabaseVideoBucket!: string;
 }

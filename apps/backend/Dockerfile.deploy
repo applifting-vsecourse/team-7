@@ -47,7 +47,7 @@ RUN pnpm install --frozen-lockfile --prod --no-optional --filter backend
 # --- Runtime stage: production deps + compiled output, nothing else ---
 FROM node:24-alpine
 
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl ffmpeg
 RUN corepack enable
 
 WORKDIR /app
@@ -85,6 +85,15 @@ ENV SMTP_USERNAME=$SMTP_USERNAME
 
 ARG SMTP_PASSWORD=""
 ENV SMTP_PASSWORD=$SMTP_PASSWORD
+
+ARG SUPABASE_URL=""
+ENV SUPABASE_URL=$SUPABASE_URL
+
+ARG SUPABASE_SECRET_KEY=""
+ENV SUPABASE_SECRET_KEY=$SUPABASE_SECRET_KEY
+
+ARG SUPABASE_VIDEO_BUCKET="exercise-videos"
+ENV SUPABASE_VIDEO_BUCKET=$SUPABASE_VIDEO_BUCKET
 
 USER node
 WORKDIR /app/apps/backend

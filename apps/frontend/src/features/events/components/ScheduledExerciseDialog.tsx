@@ -42,6 +42,8 @@ import { useTranslation } from "react-i18next";
 import { translateMessage } from "@/i18n/messages";
 import { cn, transitionName } from "@/lib/utils";
 
+import { ExerciseVideos } from "@/features/videos/components/ExerciseVideos";
+
 import { useEventAction } from "../hooks/useEventAction";
 import { isDuplicateDayError } from "../hooks/useMoveEvent";
 import {
@@ -64,6 +66,8 @@ export function ScheduledExerciseDialog({
   const [mode, setMode] = useState<"result" | "schedule">("result");
   const action = useEventAction(event.id, onClose);
   const lesson = event.kind === "lesson";
+  const [videosBusy, setVideosBusy] = useState(false);
+  const busy = action.isPending || videosBusy;
   const completed = Boolean(event.completedAt);
   const overdue = isBefore(parseISO(event.startsAt), startOfDay(today));
   const result = useForm<EventResultValues>({
@@ -95,10 +99,10 @@ export function ScheduledExerciseDialog({
   return (
     <Modal.Backdrop
       isOpen
-      isDismissable={!action.isPending}
-      isKeyboardDismissDisabled={action.isPending}
+      isDismissable={!busy}
+      isKeyboardDismissDisabled={busy}
       onOpenChange={(open) => {
-        if (!open && !action.isPending) onClose();
+        if (!open && !busy) onClose();
       }}
     >
       <Modal.Container size="lg" scroll="outside" className="grow-from-trigger">
@@ -108,7 +112,7 @@ export function ScheduledExerciseDialog({
           style={transitionName("event", event.id)}
         >
           <Modal.CloseTrigger
-            isDisabled={action.isPending}
+            isDisabled={busy}
             aria-label={t(($) => $.training.cancel)}
           />
           <Modal.Header className="flex-row items-start justify-between gap-3 pr-8">
@@ -156,7 +160,7 @@ export function ScheduledExerciseDialog({
                 <Button
                   variant="tertiary"
                   isIconOnly
-                  isDisabled={action.isPending}
+                  isDisabled={busy}
                   aria-label={t(($) => $.training.menu)}
                 >
                   <EllipsisVertical className="size-4" aria-hidden="true" />
@@ -214,6 +218,10 @@ export function ScheduledExerciseDialog({
           <Form
             validationBehavior="aria"
             onSubmit={(formEvent) => {
+              if (busy) {
+                formEvent.preventDefault();
+                return;
+              }
               if (mode === "schedule") {
                 void schedule.handleSubmit((values) => {
                   const row = values.exercises[0]!;
@@ -240,7 +248,7 @@ export function ScheduledExerciseDialog({
                 <ScheduleFields
                   control={schedule.control}
                   index={0}
-                  isDisabled={action.isPending}
+                  isDisabled={busy}
                   minDate={format(today, "yyyy-MM-dd")}
                 />
               ) : (
@@ -255,7 +263,7 @@ export function ScheduledExerciseDialog({
                       render={({ field, fieldState }) => (
                         <RadioGroup
                           isRequired
-                          isDisabled={action.isPending}
+                          isDisabled={busy}
                           isInvalid={fieldState.invalid}
                           name={field.name}
                           value={String(field.value)}
@@ -320,12 +328,18 @@ export function ScheduledExerciseDialog({
                         </RadioGroup>
                       )}
                     />
+                    <ExerciseVideos
+                      dogId={event.dogId}
+                      exerciseId={event.exercise.id}
+                      isDisabled={action.isPending}
+                      onBusyChange={setVideosBusy}
+                    />
                     <Controller
                       control={result.control}
                       name="note"
                       render={({ field, fieldState }) => (
                         <TextField
-                          isDisabled={action.isPending}
+                          isDisabled={busy}
                           isInvalid={fieldState.invalid}
                           name={field.name}
                           value={field.value}
@@ -373,7 +387,7 @@ export function ScheduledExerciseDialog({
                     type="button"
                     variant="secondary"
                     className="flex-auto sm:flex-none"
-                    isDisabled={action.isPending}
+                    isDisabled={busy}
                     onPress={() => {
                       if (mode === "result") onClose();
                       else {
@@ -391,8 +405,7 @@ export function ScheduledExerciseDialog({
                     className="flex-auto sm:flex-none"
                     isPending={action.isPending}
                     isDisabled={
-                      action.isPending ||
-                      (mode === "result" && !lesson && !rating)
+                      busy || (mode === "result" && !lesson && !rating)
                     }
                   >
                     {mode === "schedule"
