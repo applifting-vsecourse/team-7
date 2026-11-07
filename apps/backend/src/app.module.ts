@@ -3,6 +3,7 @@ import { Module } from "@nestjs/common";
 import { DisciplinesModule } from "./modules/disciplines/disciplines.module";
 import { DogsModule } from "./modules/dogs/dogs.module";
 import { EventsModule } from "./modules/events/events.module";
+import { OverviewModule } from "./modules/overview/overview.module";
 import { WelcomeModule } from "./modules/welcome/welcome.module";
 import { AuthModule } from "./shared/auth/auth.module";
 import { Config } from "./shared/config/config.service";
@@ -13,6 +14,7 @@ const imports = [
   AuthModule,
   DisciplinesModule,
   DogsModule,
+  OverviewModule,
   WelcomeModule,
 ];
 

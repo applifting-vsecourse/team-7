@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { mockDeep } from "vitest-mock-extended";
 import { PrismaService } from "@/core/prisma/prisma.service";
-import { localCalendar } from "@/modules/events/domain/local-calendar";
+import { localCalendar } from "@/shared/domain/local-calendar";
 import { NeglectedDisciplinesService } from "./neglected-disciplines.service";
 
 const dog = { id: "dog-a", name: "Bára", avatarVersion: null };

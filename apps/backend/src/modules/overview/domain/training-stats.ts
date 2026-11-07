@@ -1,4 +1,8 @@
-import { isThisWeek, type LocalCalendar, shiftDay } from "./local-calendar";
+import {
+  isThisWeek,
+  type LocalCalendar,
+  shiftDay,
+} from "@/shared/domain/local-calendar";
 
 export type TrainingRecord = {
   startsAt: Date;
