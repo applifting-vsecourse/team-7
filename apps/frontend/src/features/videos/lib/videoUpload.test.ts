@@ -47,6 +47,41 @@ afterEach(() => {
 const clip = () => new File(["video"], "clip.mp4", { type: "video/mp4" });
 
 describe("video upload validation", () => {
+  it.each(["", "application/octet-stream"])(
+    "validates metadata for supported extensions with MIME %j",
+    async (type) => {
+      for (const name of ["clip.mp4", "clip.MOV", "clip.webm"]) {
+        await expect(
+          validateVideo(new File(["video"], name, { type })),
+        ).resolves.toBeUndefined();
+      }
+      expect(createUrl).toHaveBeenCalledTimes(3);
+    },
+  );
+  it.each(["", "application/octet-stream", "image/jpeg"])(
+    "rejects unsupported files with MIME %j before reading metadata",
+    async (type) => {
+      await expect(
+        validateVideo(new File(["image"], "photo.jpg", { type })),
+      ).rejects.toThrow("videos.invalid");
+      expect(createUrl).not.toHaveBeenCalled();
+    },
+  );
+  it("does not let a video extension override an explicit non-video MIME", async () => {
+    await expect(
+      validateVideo(new File(["image"], "clip.mov", { type: "image/jpeg" })),
+    ).rejects.toThrow("videos.invalid");
+    expect(createUrl).not.toHaveBeenCalled();
+  });
+  it("rejects undecodable videos with a generic MIME", async () => {
+    invalid = true;
+    await expect(
+      validateVideo(
+        new File(["broken"], "clip.mov", { type: "application/octet-stream" }),
+      ),
+    ).rejects.toThrow("videos.invalid");
+    expect(revoke).toHaveBeenCalled();
+  });
   it("rejects oversized files before creating a media URL", async () => {
     const file = clip();
     Object.defineProperty(file, "size", { value: VIDEO_MAX_BYTES + 1 });

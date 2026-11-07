@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { fileTypeFromFile } from "file-type";
 import type {} from "multer";
 import { randomUUID } from "node:crypto";
 import { rm } from "node:fs/promises";
@@ -51,14 +52,16 @@ export class VideosService {
     let jobId: string | undefined;
     try {
       this.storage.assertEnabled();
-      if (
-        !file.size ||
-        file.size > VIDEO_MAX_BYTES ||
-        !VIDEO_MIME_TYPES.includes(file.mimetype)
-      ) {
+      if (!file.size || file.size > VIDEO_MAX_BYTES) {
         throw new BadRequestException("Use MP4, MOV or WebM up to 30 MB");
       }
       await this.assertAccess(userId, dogId, exerciseId);
+      // Multipart MIME types and filenames are client-controlled. Detect the
+      // container from bytes; the worker still probes and decodes its contents.
+      const detected = await fileTypeFromFile(file.path);
+      if (!detected || !VIDEO_MIME_TYPES.includes(detected.mime)) {
+        throw new BadRequestException("Use MP4, MOV or WebM up to 30 MB");
+      }
       const path = randomUUID();
       const job = await this.prisma.$transaction(async (tx) => {
         await tx.$queryRaw`SELECT pg_advisory_xact_lock(${VIDEO_ADMISSION_LOCK})::text AS locked`;
@@ -94,7 +97,7 @@ export class VideosService {
       await this.storage.upload(
         job.filePath,
         file.path,
-        file.mimetype,
+        detected.mime,
         AbortSignal.timeout(30_000),
       );
       const result = await this.prisma.video.updateMany({

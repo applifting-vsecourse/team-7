@@ -13,6 +13,16 @@ import { VideoStorageService } from "./video-storage.service";
 import { VIDEO_MAX_BYTES, VIDEO_QUEUE_LIMIT } from "./videos.constants";
 import { VideosService } from "./videos.service";
 
+// Container signatures only: full media validity remains the worker's job.
+const mp4Header = Buffer.from(
+  "000000186674797069736f6d0000000069736f6d6d703432",
+  "hex",
+);
+const movHeader = Buffer.from(
+  "0000001466747970717420200000000071742020",
+  "hex",
+);
+
 // Use the same mocked client inside short admission transactions.
 describe("exercise video uploads and ownership", () => {
   const prisma = mockDeep<PrismaService>();
@@ -25,8 +35,12 @@ describe("exercise video uploads and ownership", () => {
     vi.resetAllMocks();
     directory = await mkdtemp(join(tmpdir(), "video-service-test-"));
     const path = join(directory, "upload");
-    await writeFile(path, "video");
-    file = { path, size: 5, mimetype: "video/mp4" } as Express.Multer.File;
+    await writeFile(path, mp4Header);
+    file = {
+      path,
+      size: mp4Header.length,
+      mimetype: "video/mp4",
+    } as Express.Multer.File;
     prisma.dog.findFirst.mockResolvedValue({ id: "dog" } as never);
     prisma.exercise.findFirst.mockResolvedValue({ id: "exercise" } as never);
     prisma.$transaction.mockImplementation((async (
@@ -90,18 +104,54 @@ describe("exercise video uploads and ownership", () => {
     },
   );
 
-  it("does not trust unsupported MIME types or accept a missing file", async () => {
+  it("does not accept a missing file", async () => {
     await expect(
       service.upload("user", "dog", "exercise"),
     ).rejects.toBeInstanceOf(BadRequestException);
-    await expect(
-      service.upload("user", "dog", "exercise", {
-        ...file,
-        mimetype: "image/png",
-      }),
-    ).rejects.toBeInstanceOf(BadRequestException);
     expect(prisma.video.create).not.toHaveBeenCalled();
   });
+
+  it.each(["", "application/octet-stream", "video/quicktime"])(
+    "accepts MOV bytes with declared MIME %j and stores the detected type",
+    async (mimetype) => {
+      await writeFile(file.path, movHeader);
+      await service.upload("user", "dog", "exercise", {
+        ...file,
+        mimetype,
+        originalname: "clip.MOV",
+        size: movHeader.length,
+      });
+      expect(storage.upload).toHaveBeenCalledWith(
+        expect.any(String),
+        file.path,
+        "video/quicktime",
+        expect.any(AbortSignal),
+      );
+    },
+  );
+
+  it.each([
+    Buffer.from("not a video"),
+    Buffer.from("GIF89a"),
+    Buffer.from("0000001866747970", "hex"),
+  ])(
+    "rejects unsupported or truncated bytes despite a video MIME and filename",
+    async (bytes) => {
+      await writeFile(file.path, bytes);
+      await expect(
+        service.upload("user", "dog", "exercise", {
+          ...file,
+          originalname: "clip.mp4",
+          size: bytes.length,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.video.create).not.toHaveBeenCalled();
+      expect(storage.upload).not.toHaveBeenCalled();
+      await expect(readFile(file.path)).rejects.toMatchObject({
+        code: "ENOENT",
+      });
+    },
+  );
 
   it("bounds the global queue while holding the admission lock", async () => {
     prisma.video.count.mockResolvedValue(VIDEO_QUEUE_LIMIT);

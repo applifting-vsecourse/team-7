@@ -5,7 +5,8 @@ import { messageSelectors } from "@/i18n/messages";
 export const VIDEO_MAX_BYTES = 30 * 1024 * 1024;
 export const VIDEO_MAX_SECONDS = 60;
 export const VIDEO_LIMIT = 3;
-export const VIDEO_ACCEPT = "video/*";
+export const VIDEO_ACCEPT =
+  "video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm";
 
 /** Read local metadata before any network upload, releasing the decoder and URL. */
 export async function validateVideo(file: File): Promise<void> {
@@ -14,7 +15,10 @@ export async function validateVideo(file: File): Promise<void> {
   }
   if (
     !["video/mp4", "video/quicktime", "video/webm"].includes(file.type) &&
-    !(file.type === "" && /\.(mp4|mov|webm)$/i.test(file.name))
+    !(
+      (file.type === "" || file.type === "application/octet-stream") &&
+      /\.(mp4|mov|webm)$/i.test(file.name)
+    )
   ) {
     throw new Error(keyFromSelector(messageSelectors.videoInvalid));
   }
