@@ -133,10 +133,13 @@ describe("scheduled exercise dialog", () => {
     );
     await screen.findByText("Uploading…");
     expect(state.validateVideo).toHaveBeenCalledWith(file);
-    expect(state.post).toHaveBeenCalledWith("dogs/dog-a/exercises/e1/videos", {
-      body: expect.any(FormData) as FormData,
-      timeout: 120_000,
-    });
+    expect(state.post).toHaveBeenCalledWith(
+      "dogs/dog-a/sessions/event-a/videos",
+      {
+        body: expect.any(FormData) as FormData,
+        timeout: 120_000,
+      },
+    );
     expect(complete).toBeDisabled();
     for (const cancel of screen.getAllByRole("button", { name: "Cancel" })) {
       expect(cancel).toBeDisabled();

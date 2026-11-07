@@ -20,12 +20,12 @@ import { validateVideo, VIDEO_ACCEPT, VIDEO_LIMIT } from "../lib/videoUpload";
 
 export function ExerciseVideos({
   dogId,
-  exerciseId,
+  sessionId,
   isDisabled = false,
   onBusyChange,
 }: {
   dogId: string;
-  exerciseId: string;
+  sessionId: string;
   isDisabled?: boolean;
   onBusyChange: (busy: boolean) => void;
 }) {
@@ -36,7 +36,7 @@ export function ExerciseVideos({
   const id = useId();
   const [phase, setPhase] = useState<"validating" | "uploading">("validating");
   const [playing, setPlaying] = useState<string | null>(null);
-  const options = videosQueryOptions(user?.id, dogId, exerciseId);
+  const options = videosQueryOptions(user?.id, dogId, sessionId);
   const videos = useQuery(options);
   const refresh = () =>
     client.invalidateQueries({ queryKey: options.queryKey });
@@ -49,14 +49,14 @@ export function ExerciseVideos({
       body.set("file", file);
       // Upload progress in ky requires streaming requests, which fail on local
       // HTTP/1.1 servers. Show an indeterminate state on every supported browser.
-      await api.post(videosPath(dogId, exerciseId), { body, timeout: 120_000 });
+      await api.post(videosPath(dogId, sessionId), { body, timeout: 120_000 });
     },
     onSettled: refresh,
   });
   const remove = useMutation({
     mutationFn: async (videoId: string) => {
       await api.delete(
-        `${videosPath(dogId, exerciseId)}/${encodeURIComponent(videoId)}`,
+        `${videosPath(dogId, sessionId)}/${encodeURIComponent(videoId)}`,
       );
     },
     onSuccess: refresh,
@@ -104,7 +104,7 @@ export function ExerciseVideos({
             number={index + 1}
             userId={user?.id}
             dogId={dogId}
-            exerciseId={exerciseId}
+            sessionId={sessionId}
             isDisabled={disabled}
             isRemoving={remove.isPending && remove.variables === video.id}
             onPlay={() => setPlaying(video.id)}
@@ -138,17 +138,19 @@ export function ExerciseVideos({
             }
           }}
         />
-        <Button
-          type="button"
-          variant="outline"
-          className="h-18 w-32 flex-col gap-1"
-          isDisabled={disabled || atLimit || !videos.isSuccess || !user}
-          aria-describedby={`${id}-hint`}
-          onPress={() => input.current?.click()}
-        >
-          <Video className="size-5" aria-hidden="true" />
-          {t(($) => $.videos.upload)}
-        </Button>
+        {!atLimit && (
+          <Button
+            type="button"
+            variant="outline"
+            className="h-18 w-32 flex-col gap-1"
+            isDisabled={disabled || !videos.isSuccess || !user}
+            aria-describedby={`${id}-hint`}
+            onPress={() => input.current?.click()}
+          >
+            <Video className="size-5" aria-hidden="true" />
+            {t(($) => $.videos.upload)}
+          </Button>
+        )}
       </div>
       <p id={`${id}-hint`} className="text-xs leading-5 text-muted">
         {atLimit ? t(($) => $.videos.limit) : t(($) => $.videos.hint)}
@@ -169,7 +171,7 @@ export function ExerciseVideos({
         <VideoPlayer
           userId={user?.id}
           dogId={dogId}
-          exerciseId={exerciseId}
+          sessionId={sessionId}
           videoId={playing}
           onClose={() => setPlaying(null)}
         />
@@ -183,7 +185,7 @@ function VideoTile({
   number,
   userId,
   dogId,
-  exerciseId,
+  sessionId,
   isDisabled,
   isRemoving,
   onPlay,
@@ -193,7 +195,7 @@ function VideoTile({
   number: number;
   userId: string | undefined;
   dogId: string;
-  exerciseId: string;
+  sessionId: string;
   isDisabled: boolean;
   isRemoving: boolean;
   onPlay: () => void;
@@ -203,7 +205,7 @@ function VideoTile({
   const completed = video.status === "completed";
   const failed = video.status === "failed";
   const playback = useQuery({
-    ...playbackQueryOptions(userId, dogId, exerciseId, video.id),
+    ...playbackQueryOptions(userId, dogId, sessionId, video.id),
     enabled: Boolean(userId) && completed,
   });
   const seconds = Math.floor(video.duration ?? 0);
@@ -279,20 +281,20 @@ function VideoTile({
 function VideoPlayer({
   userId,
   dogId,
-  exerciseId,
+  sessionId,
   videoId,
   onClose,
 }: {
   userId: string | undefined;
   dogId: string;
-  exerciseId: string;
+  sessionId: string;
   videoId: string;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
   const [mediaError, setMediaError] = useState(false);
   const playback = useQuery({
-    ...playbackQueryOptions(userId, dogId, exerciseId, videoId),
+    ...playbackQueryOptions(userId, dogId, sessionId, videoId),
     staleTime: 0,
   });
   return (

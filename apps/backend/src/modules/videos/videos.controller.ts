@@ -44,7 +44,7 @@ export class VideoOwnerGuard implements CanActivate {
     await this.videos.assertAccess(
       request.session.user.id,
       String(request.params.dogId),
-      String(request.params.exerciseId),
+      String(request.params.sessionId),
     );
     return true;
   }
@@ -70,11 +70,11 @@ export class VideoUploadInterceptor implements NestInterceptor {
   }
 }
 
-@ApiTags("exercise videos")
+@ApiTags("training session videos")
 @ApiCookieAuth()
 @ApiUnauthorizedResponse({ description: "Authentication required" })
 @UseGuards(AuthenticatedUserGuard, VideoOwnerGuard)
-@Controller("dogs/:dogId/exercises/:exerciseId/videos")
+@Controller("dogs/:dogId/sessions/:sessionId/videos")
 export class VideosController {
   constructor(private readonly videos: VideosService) {}
 
@@ -82,7 +82,7 @@ export class VideosController {
   @HttpCode(202)
   @ApiOperation({
     summary:
-      "Queue an exercise video (max 3 per dog/exercise; MP4/MOV/WebM, 30 MB, 60 seconds; validated asynchronously)",
+      "Queue a training session video (max 3 per training session; MP4/MOV/WebM, 30 MB, 60 seconds; validated asynchronously)",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody({
@@ -102,20 +102,22 @@ export class VideosController {
   upload(
     @User() user: Identity,
     @Param("dogId") dogId: string,
-    @Param("exerciseId") exerciseId: string,
+    @Param("sessionId") sessionId: string,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.videos.upload(user.id, dogId, exerciseId, file);
+    return this.videos.upload(user.id, dogId, sessionId, file);
   }
 
   @Get()
-  @ApiOperation({ summary: "List exercise video statuses (latest 100)" })
+  @ApiOperation({
+    summary: "List training session video statuses (latest 100)",
+  })
   list(
     @User() user: Identity,
     @Param("dogId") dogId: string,
-    @Param("exerciseId") exerciseId: string,
+    @Param("sessionId") sessionId: string,
   ) {
-    return this.videos.list(user.id, dogId, exerciseId);
+    return this.videos.list(user.id, dogId, sessionId);
   }
 
   @Get(":id/playback")
@@ -125,10 +127,10 @@ export class VideosController {
   playback(
     @User() user: Identity,
     @Param("dogId") dogId: string,
-    @Param("exerciseId") exerciseId: string,
+    @Param("sessionId") sessionId: string,
     @Param("id") id: string,
   ) {
-    return this.videos.playback(user.id, dogId, exerciseId, id);
+    return this.videos.playback(user.id, dogId, sessionId, id);
   }
 
   @Delete(":id")
@@ -139,9 +141,9 @@ export class VideosController {
   remove(
     @User() user: Identity,
     @Param("dogId") dogId: string,
-    @Param("exerciseId") exerciseId: string,
+    @Param("sessionId") sessionId: string,
     @Param("id") id: string,
   ) {
-    return this.videos.remove(user.id, dogId, exerciseId, id);
+    return this.videos.remove(user.id, dogId, sessionId, id);
   }
 }

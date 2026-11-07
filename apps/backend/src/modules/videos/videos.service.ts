@@ -25,27 +25,25 @@ export class VideosService {
     private readonly storage: VideoStorageService,
   ) {}
 
-  async assertAccess(
-    userId: string,
-    dogId: string,
-    exerciseId: string,
-  ): Promise<void> {
+  async assertAccess(userId: string, dogId: string, sessionId: string) {
     const dog = await this.prisma.dog.findFirst({
       where: { id: dogId, userId },
       select: { id: true },
     });
     if (!dog) throw new NotFoundException("Dog not found");
-    const exercise = await this.prisma.exercise.findFirst({
-      where: { id: exerciseId, goal: { discipline: { userId } } },
-      select: { id: true },
+    const session = await this.prisma.scheduledExercise.findFirst({
+      where: { id: sessionId, dogId, kind: "exercise", deletedAt: null },
+      select: { id: true, exerciseId: true },
     });
-    if (!exercise) throw new NotFoundException("Exercise not found");
+    if (!session?.exerciseId)
+      throw new NotFoundException("Training session not found");
+    return session;
   }
 
   async upload(
     userId: string,
     dogId: string,
-    exerciseId: string,
+    sessionId: string,
     file?: Express.Multer.File,
   ) {
     if (!file?.path) throw new BadRequestException("Video file is required");
@@ -55,7 +53,7 @@ export class VideosService {
       if (!file.size || file.size > VIDEO_MAX_BYTES) {
         throw new BadRequestException("Use MP4, MOV or WebM up to 30 MB");
       }
-      await this.assertAccess(userId, dogId, exerciseId);
+      await this.assertAccess(userId, dogId, sessionId);
       // Multipart MIME types and filenames are client-controlled. Detect the
       // container from bytes; the worker still probes and decodes its contents.
       const detected = await fileTypeFromFile(file.path);
@@ -65,21 +63,21 @@ export class VideosService {
       const path = randomUUID();
       const job = await this.prisma.$transaction(async (tx) => {
         await tx.$queryRaw`SELECT pg_advisory_xact_lock(${VIDEO_ADMISSION_LOCK})::text AS locked`;
-        // Only new uploads require assignment; historical videos remain
-        // accessible after the exercise is removed from the dog's plan.
-        const assignment = await tx.dogExercise.findUnique({
-          where: { dogId_exerciseId: { dogId, exerciseId } },
+        // Recheck the session inside admission; plan changes do not remove
+        // the ability to attach videos to a historical training session.
+        const session = await tx.scheduledExercise.findFirst({
+          where: { id: sessionId, dogId, kind: "exercise", deletedAt: null },
           select: { exerciseId: true },
         });
-        if (!assignment)
-          throw new BadRequestException("Exercise is not assigned to this dog");
+        if (!session?.exerciseId)
+          throw new NotFoundException("Training session not found");
         const count = await tx.video.count({
           where: { status: { in: ["uploading", "pending", "processing"] } },
         });
         if (count >= VIDEO_QUEUE_LIMIT)
           throw new HttpException("Video queue is full; try again later", 429);
         const videos = await tx.video.findMany({
-          where: { dogId, exerciseId, status: { not: "deleting" } },
+          where: { dogId, sessionId, status: { not: "deleting" } },
           select: { slot: true },
         });
         const slot = Array.from({ length: VIDEO_LIMIT }, (_, i) => i + 1).find(
@@ -87,14 +85,15 @@ export class VideosService {
         );
         if (slot === undefined)
           throw new BadRequestException(
-            `You can add at most ${VIDEO_LIMIT} videos per dog and exercise`,
+            `You can add at most ${VIDEO_LIMIT} videos per training session`,
           );
         return tx.video.create({
           data: {
             slot,
             userId,
             dogId,
-            exerciseId,
+            sessionId,
+            exerciseId: session.exerciseId,
             filePath: `raw/${path}`,
             outputPath: `encoded/${path}.mp4`,
             status: "uploading",
@@ -109,7 +108,7 @@ export class VideosService {
         AbortSignal.timeout(30_000),
       );
       const result = await this.prisma.video.updateMany({
-        where: { id: job.id, status: "uploading", dogId, exerciseId },
+        where: { id: job.id, status: "uploading", dogId, sessionId },
         data: { status: "pending" },
       });
       if (!result.count)
@@ -131,10 +130,10 @@ export class VideosService {
     }
   }
 
-  async list(userId: string, dogId: string, exerciseId: string) {
-    await this.assertAccess(userId, dogId, exerciseId);
+  async list(userId: string, dogId: string, sessionId: string) {
+    await this.assertAccess(userId, dogId, sessionId);
     return this.prisma.video.findMany({
-      where: { userId, dogId, exerciseId, status: { not: "deleting" } },
+      where: { userId, dogId, sessionId, status: { not: "deleting" } },
       select: {
         id: true,
         status: true,
@@ -148,15 +147,10 @@ export class VideosService {
     });
   }
 
-  async playback(
-    userId: string,
-    dogId: string,
-    exerciseId: string,
-    id: string,
-  ) {
-    await this.assertAccess(userId, dogId, exerciseId);
+  async playback(userId: string, dogId: string, sessionId: string, id: string) {
+    await this.assertAccess(userId, dogId, sessionId);
     const job = await this.prisma.video.findFirst({
-      where: { id, userId, dogId, exerciseId, status: "completed" },
+      where: { id, userId, dogId, sessionId, status: "completed" },
     });
     if (!job) throw new NotFoundException("Completed video not found");
     return {
@@ -168,12 +162,12 @@ export class VideosService {
   async remove(
     userId: string,
     dogId: string,
-    exerciseId: string,
+    sessionId: string,
     id: string,
   ): Promise<void> {
-    await this.assertAccess(userId, dogId, exerciseId);
+    await this.assertAccess(userId, dogId, sessionId);
     const result = await this.prisma.video.updateMany({
-      where: { id, userId, dogId, exerciseId, status: { not: "uploading" } },
+      where: { id, userId, dogId, sessionId, status: { not: "uploading" } },
       data: { status: "deleting" },
     });
     if (!result.count) throw new NotFoundException("Video not found");

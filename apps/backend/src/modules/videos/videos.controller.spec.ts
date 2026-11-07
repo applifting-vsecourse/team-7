@@ -58,7 +58,7 @@ describe("exercise video HTTP boundary", () => {
     app = module.createNestApplication();
     app.setGlobalPrefix("api");
     await app.listen(0, "127.0.0.1");
-    url = `${await app.getUrl()}/api/dogs/dog/exercises/exercise/videos`;
+    url = `${await app.getUrl()}/api/dogs/dog/sessions/session/videos`;
   });
   beforeEach(() => {
     vi.resetAllMocks();
@@ -71,7 +71,7 @@ describe("exercise video HTTP boundary", () => {
       expiresIn: 3600,
     });
     videos.upload.mockImplementation(
-      async (_user, _dog, _exercise, file?: Express.Multer.File) => {
+      async (_user, _dog, _session, file?: Express.Multer.File) => {
         if (file) await rm(file.path, { force: true });
         return { id: "video", status: "pending" };
       },
@@ -98,7 +98,7 @@ describe("exercise video HTTP boundary", () => {
     expect(videos.upload).toHaveBeenCalledWith(
       "user",
       "dog",
-      "exercise",
+      "session",
       expect.objectContaining({
         path: expect.any(String),
         size: 3,
@@ -120,7 +120,7 @@ describe("exercise video HTTP boundary", () => {
     expect(videos.upload).toHaveBeenCalledWith(
       "user",
       "dog",
-      "exercise",
+      "session",
       expect.objectContaining({ size: VIDEO_MAX_BYTES }),
     );
   });
@@ -156,12 +156,12 @@ describe("exercise video HTTP boundary", () => {
 
   it("lists jobs, signs playback, and queues deletion using session ownership", async () => {
     expect((await fetch(url)).status).toBe(200);
-    expect(videos.list).toHaveBeenCalledWith("user", "dog", "exercise");
+    expect(videos.list).toHaveBeenCalledWith("user", "dog", "session");
     expect((await fetch(`${url}/video/playback`)).status).toBe(200);
     expect(videos.playback).toHaveBeenCalledWith(
       "user",
       "dog",
-      "exercise",
+      "session",
       "video",
     );
     expect((await fetch(`${url}/video`, { method: "DELETE" })).status).toBe(
@@ -170,7 +170,7 @@ describe("exercise video HTTP boundary", () => {
     expect(videos.remove).toHaveBeenCalledWith(
       "user",
       "dog",
-      "exercise",
+      "session",
       "video",
     );
   });

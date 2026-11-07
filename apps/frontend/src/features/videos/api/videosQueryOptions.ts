@@ -19,20 +19,20 @@ export const videoSchema = z.object({
   updatedAt: z.string(),
 });
 export type ExerciseVideo = z.infer<typeof videoSchema>;
-export const videosPath = (dogId: string, exerciseId: string) =>
-  `dogs/${encodeURIComponent(dogId)}/exercises/${encodeURIComponent(exerciseId)}/videos`;
+export const videosPath = (dogId: string, sessionId: string) =>
+  `dogs/${encodeURIComponent(dogId)}/sessions/${encodeURIComponent(sessionId)}/videos`;
 export const videosQueryOptions = (
   userId: string | undefined,
   dogId: string,
-  exerciseId: string,
+  sessionId: string,
 ) =>
   queryOptions({
-    queryKey: ["exerciseVideos", userId, dogId, exerciseId],
+    queryKey: ["sessionVideos", userId, dogId, sessionId],
     enabled: Boolean(userId),
     queryFn: async ({ signal }) =>
       z
         .array(videoSchema)
-        .parse(await api.get(videosPath(dogId, exerciseId), { signal }).json()),
+        .parse(await api.get(videosPath(dogId, sessionId), { signal }).json()),
     refetchInterval: (query) =>
       query.state.data?.some((video) =>
         ["uploading", "pending", "processing"].includes(video.status),
@@ -44,11 +44,11 @@ export const videosQueryOptions = (
 export const playbackQueryOptions = (
   userId: string | undefined,
   dogId: string,
-  exerciseId: string,
+  sessionId: string,
   videoId: string,
 ) =>
   queryOptions({
-    queryKey: ["videoPlayback", userId, dogId, exerciseId, videoId],
+    queryKey: ["videoPlayback", userId, dogId, sessionId, videoId],
     enabled: Boolean(userId),
     queryFn: async ({ signal }) =>
       z
@@ -56,7 +56,7 @@ export const playbackQueryOptions = (
         .parse(
           await api
             .get(
-              `${videosPath(dogId, exerciseId)}/${encodeURIComponent(videoId)}/playback`,
+              `${videosPath(dogId, sessionId)}/${encodeURIComponent(videoId)}/playback`,
               { signal },
             )
             .json(),

@@ -15,7 +15,7 @@ import { videosQueryOptions } from "../api/videosQueryOptions";
 import { ExerciseVideos } from "./ExerciseVideos";
 
 const state = vi.hoisted(() => ({
-  list: vi.fn<() => Promise<ExerciseVideo[]>>(),
+  list: vi.fn<(path: string) => Promise<ExerciseVideo[]>>(),
   playback: vi.fn<() => Promise<{ url: string; expiresIn: number }>>(),
   post: vi.fn<
     (
@@ -32,7 +32,8 @@ vi.mock("@/features/auth/hooks/useSession", () => ({
 vi.mock("@/lib/api-client", () => ({
   api: {
     get: (path: string) => ({
-      json: () => (path.endsWith("playback") ? state.playback() : state.list()),
+      json: () =>
+        path.endsWith("playback") ? state.playback() : state.list(path),
     }),
     post: state.post,
     delete: state.remove,
@@ -60,11 +61,7 @@ function setup() {
   const busy = vi.fn();
   const view = render(
     <QueryClientProvider client={client}>
-      <ExerciseVideos
-        dogId="dog-a"
-        exerciseId="exercise-a"
-        onBusyChange={busy}
-      />
+      <ExerciseVideos dogId="dog-a" sessionId="session-a" onBusyChange={busy} />
     </QueryClientProvider>,
   );
   return { ...view, client, busy, user: userEvent.setup() };
@@ -93,6 +90,42 @@ afterEach(() => {
 });
 
 describe("exercise videos", () => {
+  it("keeps videos and upload capacity separate when switching training sessions", async () => {
+    state.list.mockImplementation(async (path) =>
+      path === "dogs/dog-a/sessions/session-a/videos"
+        ? [video("v1"), video("v2"), video("v3")]
+        : [],
+    );
+    const { rerender, client, busy } = setup();
+    await screen.findByText("You can add at most 3 videos.");
+    const showSession = (sessionId: string) =>
+      rerender(
+        <QueryClientProvider client={client}>
+          <ExerciseVideos
+            dogId="dog-a"
+            sessionId={sessionId}
+            onBusyChange={busy}
+          />
+        </QueryClientProvider>,
+      );
+    showSession("session-b");
+    await waitFor(() => expect(uploadButton()).toBeEnabled());
+    expect(
+      screen.queryByRole("button", { name: "Play video 1" }),
+    ).not.toBeInTheDocument();
+    expect(state.list).toHaveBeenCalledWith(
+      "dogs/dog-a/sessions/session-b/videos",
+    );
+    showSession("session-a");
+    await screen.findByText("You can add at most 3 videos.");
+    expect(
+      screen.getByRole("button", { name: "Play video 3" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Upload video" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("uploads multipart only after local validation and refreshes processing status", async () => {
     let finishValidation!: () => void;
     state.validate.mockImplementationOnce(
@@ -111,7 +144,7 @@ describe("exercise videos", () => {
     await screen.findByText("Processing…");
     expect(state.validate).toHaveBeenCalledWith(file);
     const [path, options] = state.post.mock.calls[0]!;
-    expect(path).toBe("dogs/dog-a/exercises/exercise-a/videos");
+    expect(path).toBe("dogs/dog-a/sessions/session-a/videos");
     expect(options.body.get("file")).toBe(file);
     expect(busy).toHaveBeenCalledWith(true);
     await waitFor(() => expect(busy).toHaveBeenLastCalledWith(false));
@@ -139,16 +172,18 @@ describe("exercise videos", () => {
     );
     expect(uploadButton()).toBeEnabled();
   });
-  it("enforces three videos and restores capacity after removing one", async () => {
+  it("hides upload at three videos and restores it after removing one", async () => {
     state.list.mockResolvedValue([video("v1"), video("v2"), video("v3")]);
     const { user } = setup();
     await screen.findByText("You can add at most 3 videos.");
-    expect(uploadButton()).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: "Upload video" }),
+    ).not.toBeInTheDocument();
     state.list.mockResolvedValue([video("v2"), video("v3")]);
     await user.click(screen.getByRole("button", { name: "Remove video 1" }));
     await waitFor(() => expect(uploadButton()).toBeEnabled());
     expect(state.remove).toHaveBeenCalledWith(
-      "dogs/dog-a/exercises/exercise-a/videos/v1",
+      "dogs/dog-a/sessions/session-a/videos/v1",
     );
   });
   it("opens playable video and recovers from a playback URL error", async () => {
@@ -199,7 +234,7 @@ describe("exercise videos", () => {
     const interval = videosQueryOptions(
       "user-a",
       "dog-a",
-      "exercise-a",
+      "session-a",
     ).refetchInterval;
     expect(typeof interval).toBe("function");
     if (typeof interval !== "function") {

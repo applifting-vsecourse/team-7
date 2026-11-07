@@ -330,7 +330,8 @@ export function ScheduledExerciseDialog({
                     />
                     <ExerciseVideos
                       dogId={event.dogId}
-                      exerciseId={event.exercise.id}
+                      key={event.id}
+                      sessionId={event.id}
                       isDisabled={action.isPending}
                       onBusyChange={setVideosBusy}
                     />
