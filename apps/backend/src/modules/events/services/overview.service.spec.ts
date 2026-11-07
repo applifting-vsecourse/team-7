@@ -1,36 +1,33 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { mockDeep } from "vitest-mock-extended";
 import { PrismaService } from "@/core/prisma/prisma.service";
+import { NeglectedDisciplinesService } from "./neglected-disciplines.service";
 import { OverviewService } from "./overview.service";
 
 const record = (
   startsAt: string,
   completedAt: string | null,
   rating: number | null = null,
-  dogId = "dog-a",
-  disciplineId = "agility",
 ) => ({
-  dogId,
+  dogId: "dog-a",
   startsAt: new Date(startsAt),
   completedAt: completedAt ? new Date(completedAt) : null,
   rating,
   durationMinutes: 20,
-  exercise: { goal: { disciplineId } },
+  exercise: { goal: { disciplineId: "agility" } },
 });
 
-const plannable = (dogId: string, disciplineId: string, dogName = dogId) => ({
-  dogGoal: {
-    dog: { id: dogId, name: dogName, avatarVersion: null },
-    goal: { discipline: { id: disciplineId, name: disciplineId } },
-  },
-});
-
+// Statistics, local days and the neglected warning are covered in `../domain`.
 describe("overview", () => {
   const prisma = mockDeep<PrismaService>();
-  const service = new OverviewService(prisma);
+  const neglected = mockDeep<NeglectedDisciplinesService>();
+  const service = new OverviewService(prisma, neglected);
   beforeEach(() => {
     vi.resetAllMocks();
+    prisma.scheduledExercise.findMany.mockResolvedValue([]);
     prisma.dogExercise.findMany.mockResolvedValue([]);
+    neglected.findPlannable.mockResolvedValue([]);
+    neglected.rank.mockResolvedValue([]);
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-25T23:30:00Z")); // Monday in Prague, DST has ended.
   });
@@ -66,18 +63,10 @@ describe("overview", () => {
       "done",
       "tomorrow",
     ]);
-    expect(result.stats).toEqual({
+    expect(result.stats).toMatchObject({
       weekStart: "2026-10-26",
-      weekEnd: "2026-11-01",
       completedExercises: 1,
       plannedExercises: 3,
-      trainingMinutes: 20,
-      streakDays: 2,
-      satisfaction: 5,
-      satisfactionHistory: [
-        { weekStart: "2026-10-19", rating: 3 },
-        { weekStart: "2026-10-26", rating: 5 },
-      ],
     });
     for (const [query] of prisma.scheduledExercise.findMany.mock.calls) {
       expect(query?.where).toMatchObject({
@@ -115,55 +104,17 @@ describe("overview", () => {
     );
   });
 
-  it("returns empty stats for no selected dogs without inventing ratings", async () => {
-    prisma.scheduledExercise.findMany.mockResolvedValue([]);
+  it("filters to no dogs when none are selected", async () => {
     const result = await service.get("owner", { timeZone: "UTC", dogIds: [] });
-    expect(result.stats).toMatchObject({
-      weekStart: "2026-10-19",
-      weekEnd: "2026-10-25",
-      plannedExercises: 0,
-      completedExercises: 0,
-      streakDays: 0,
-      trainingMinutes: 0,
-      satisfaction: null,
-      satisfactionHistory: [],
-    });
     expect(
       prisma.scheduledExercise.findMany.mock.calls[0]![0]?.where?.dogId,
     ).toEqual({ in: [] });
     expect(result.events).toEqual([]);
+    expect(neglected.findPlannable).toHaveBeenCalledWith("owner", []);
   });
 
-  it("keeps yesterday's streak active, breaks on missing days, and averages only rated completions", async () => {
-    vi.setSystemTime(new Date("2026-10-28T12:00:00Z"));
-    prisma.scheduledExercise.findMany
-      .mockResolvedValueOnce([
-        record("2026-10-27T09:00:00Z", "2026-10-27T09:00:00Z", 5),
-        record("2026-10-27T10:00:00Z", "2026-10-27T10:00:00Z", 3),
-        record("2026-10-26T09:00:00Z", "2026-10-26T09:00:00Z"),
-        record("2026-10-24T09:00:00Z", "2026-10-24T09:00:00Z", 1),
-      ] as never)
-      .mockResolvedValueOnce([]);
-    expect(
-      (await service.get("owner", { timeZone: "UTC" })).stats,
-    ).toMatchObject({
-      completedExercises: 3,
-      plannedExercises: 3,
-      streakDays: 2,
-      trainingMinutes: 60,
-      satisfaction: 4,
-    });
-  });
-  it("bounds history to 42 local days and retains the first chart week across time zones", async () => {
-    const boundary = record("2026-09-20T22:00:00Z", "2026-09-20T22:00:00Z", 5);
-    const outside = record("2026-09-20T21:59:59Z", "2026-09-20T21:59:59Z", 1);
-    prisma.scheduledExercise.findMany
-      .mockResolvedValueOnce([boundary, outside] as never)
-      .mockResolvedValueOnce([]);
-    const result = await service.get("owner", { timeZone: "Europe/Prague" });
-    expect(result.stats.satisfactionHistory).toEqual([
-      { weekStart: "2026-09-21", rating: 5 },
-    ]);
+  it("loads 42 local days of completions and this week's open trainings, padded for time zones", async () => {
+    await service.get("owner", { timeZone: "Europe/Prague" });
     const range = prisma.scheduledExercise.findMany.mock.calls[0]![0]?.where
       ?.OR as {
       completedAt: { gte: Date; lte: Date } | null;
@@ -179,185 +130,31 @@ describe("overview", () => {
     });
   });
 
-  it("does not load or count streak history beyond the statistics window", async () => {
-    const today = new Date("2026-10-26T12:00:00Z");
-    vi.setSystemTime(today);
-    const records = Array.from({ length: 60 }, (_, index) => {
-      const day = new Date(today.getTime() - index * 86400000).toISOString();
-      return record(day, day, 4);
+  it("ranks plannable disciplines against the week's records", async () => {
+    const records = [record("2026-10-27T08:00:00Z", null)];
+    const plannable = [
+      {
+        dog: { id: "dog-a", name: "Bára", avatarVersion: null },
+        discipline: { id: "agility", name: "Agility" },
+      },
+    ];
+    const ranked = [{ ...plannable[0]!, lastTrainedAt: null }];
+    prisma.scheduledExercise.findMany.mockResolvedValueOnce(records as never);
+    neglected.findPlannable.mockResolvedValue(plannable);
+    neglected.rank.mockResolvedValue(ranked);
+    const result = await service.get("owner", {
+      timeZone: "Europe/Prague",
+      dogIds: ["dog-a"],
     });
-    prisma.scheduledExercise.findMany
-      .mockResolvedValueOnce(records as never)
-      .mockResolvedValueOnce([]);
-    const result = await service.get("owner", { timeZone: "Europe/Prague" });
-    expect(result.stats.streakDays).toBe(42);
-  });
-
-  describe("neglected disciplines", () => {
-    // Monday 2026-10-26 00:30 in Prague; the week runs to Sunday 2026-11-01.
-    const neglectedOf = async (
-      records: ReturnType<typeof record>[],
-      dogIds?: string[],
-      latest: {
-        dogId: string;
-        completedAt: Date;
-        exercise: { goal: { disciplineId: string } };
-      }[] = [],
-    ) => {
-      prisma.scheduledExercise.findMany
-        .mockResolvedValueOnce(records as never)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce(latest as never);
-      return (await service.get("owner", { timeZone: "Europe/Prague", dogIds }))
-        .neglected;
-    };
-
-    it("lists an in-progress discipline with nothing in the week and loads its last completed training", async () => {
-      prisma.dogExercise.findMany.mockResolvedValueOnce([
-        plannable("dog-a", "agility", "Bára"),
-        plannable("dog-a", "agility", "Bára"),
-      ] as never);
-      expect(
-        await neglectedOf(
-          [],
-          undefined,
-          ["2026-09-12T08:00:00Z", "2026-10-02T08:00:00Z"].map((date) => ({
-            dogId: "dog-a",
-            completedAt: new Date(date),
-            exercise: { goal: { disciplineId: "agility" } },
-          })),
-        ),
-      ).toEqual([
-        {
-          dog: { id: "dog-a", name: "Bára", avatarVersion: null },
-          discipline: { id: "agility", name: "agility" },
-          lastTrainedAt: new Date("2026-10-02T08:00:00Z"),
-        },
-      ]);
-      expect(prisma.scheduledExercise.findMany).toHaveBeenCalledTimes(3);
-      expect(prisma.scheduledExercise.findMany.mock.calls[2]![0]).toEqual({
-        where: {
-          dogId: { in: ["dog-a"] },
-          deletedAt: null,
-          completedAt: { not: null },
-          exercise: { goal: { disciplineId: { in: ["agility"] } } },
-        },
-        distinct: ["dogId", "exerciseId"],
-        orderBy: { completedAt: "desc" },
-        select: {
-          dogId: true,
-          completedAt: true,
-          exercise: { select: { goal: { select: { disciplineId: true } } } },
-        },
-      });
-    });
-
-    it.each([
-      [
-        "a completed training",
-        record("2026-10-27T08:00:00Z", "2026-10-27T09:00:00Z"),
-      ],
-      ["a missed past training", record("2026-10-26T06:00:00Z", null)],
-      ["a future training", record("2026-10-31T08:00:00Z", null)],
-      ["a paused exercise's training", record("2026-10-30T08:00:00Z", null)],
-      [
-        "a training at Monday 00:00 local time",
-        record("2026-10-25T23:00:00Z", null),
-      ],
-      [
-        "a training at Sunday 23:59 local time",
-        record("2026-11-01T22:59:00Z", null),
-      ],
-      [
-        "a training completed this week but planned last week",
-        record("2026-10-24T08:00:00Z", "2026-10-25T23:10:00Z"),
-      ],
-    ])("does not list a discipline with %s", async (_, item) => {
-      prisma.dogExercise.findMany.mockResolvedValueOnce([
-        plannable("dog-a", "agility"),
-      ] as never);
-      expect(await neglectedOf([item])).toEqual([]);
-      expect(prisma.scheduledExercise.findMany).toHaveBeenCalledTimes(2);
-    });
-
-    it.each([
-      ["last week", record("2026-10-25T22:59:00Z", null)],
-      ["next week", record("2026-11-01T23:00:00Z", null)],
-      ["for another dog", record("2026-10-27T08:00:00Z", null, null, "dog-b")],
-      [
-        "in another discipline",
-        record("2026-10-27T08:00:00Z", null, null, "dog-a", "obedience"),
-      ],
-    ])("still lists a discipline with a training only %s", async (_, item) => {
-      prisma.dogExercise.findMany.mockResolvedValueOnce([
-        plannable("dog-a", "agility"),
-      ] as never);
-      expect(await neglectedOf([item])).toMatchObject([
-        { dog: { id: "dog-a" }, discipline: { id: "agility" } },
-      ]);
-    });
-
-    it("takes pairs only from plannable exercises of active dogs and respects the dog filter", async () => {
-      await neglectedOf([], ["dog-a"]);
-      expect(prisma.dogExercise.findMany.mock.calls[0]![0]?.where).toEqual({
-        AND: [
-          {
-            status: "in_progress",
-            dogGoal: {
-              status: "in_progress",
-              goal: { discipline: { userId: "owner" } },
-            },
-          },
-          { dogGoal: { dog: { userId: "owner", archivedAt: null } } },
-        ],
-        dogId: { in: ["dog-a"] },
-      });
-    });
-
-    it("sorts never trained first, then the oldest training, then by names", async () => {
-      prisma.dogExercise.findMany.mockResolvedValueOnce([
-        plannable("recent", "agility", "Cyril"),
-        plannable("old", "agility", "Alík"),
-        plannable("never-b", "agility", "Bára"),
-        plannable("never-a", "obedience", "Alík"),
-        plannable("never-a", "agility", "Alík"),
-      ] as never);
-      const last: Record<string, string> = {
-        recent: "2026-10-20T08:00:00Z",
-        old: "2026-09-01T08:00:00Z",
-      };
-      const neglected = await neglectedOf(
-        [],
-        undefined,
-        Object.entries(last).map(([dogId, date]) => ({
-          dogId,
-          completedAt: new Date(date),
-          exercise: { goal: { disciplineId: "agility" } },
-        })),
-      );
-      expect(
-        neglected.map((item) => `${item.dog.id}:${item.discipline.id}`),
-      ).toEqual([
-        "never-a:agility",
-        "never-a:obedience",
-        "never-b:agility",
-        "old:agility",
-        "recent:agility",
-      ]);
-    });
-
-    it("sorts names in Czech order", async () => {
-      prisma.dogExercise.findMany.mockResolvedValueOnce([
-        plannable("ch", "agility", "Chlupáč"),
-        plannable("d", "agility", "Dita"),
-        plannable("c", "agility", "Cyril"),
-      ] as never);
-      const neglected = await neglectedOf([]);
-      expect(neglected.map((item) => item.dog.name)).toEqual([
-        "Cyril",
-        "Dita",
-        "Chlupáč",
-      ]);
-    });
+    expect(neglected.findPlannable).toHaveBeenCalledWith("owner", ["dog-a"]);
+    expect(neglected.rank).toHaveBeenCalledWith(
+      plannable,
+      records,
+      expect.objectContaining({
+        weekStart: "2026-10-26",
+        weekEnd: "2026-11-01",
+      }),
+    );
+    expect(result.neglected).toBe(ranked);
   });
 });

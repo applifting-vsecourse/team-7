@@ -3,10 +3,11 @@ import { PrismaModule } from "@/core/prisma/prisma.module";
 import { AuthModule } from "@/shared/auth/auth.module";
 import { EventsController } from "./controllers/events.controller";
 import { EventsService } from "./services/events.service";
+import { NeglectedDisciplinesService } from "./services/neglected-disciplines.service";
 import { OverviewService } from "./services/overview.service";
 @Module({
   imports: [PrismaModule, AuthModule],
   controllers: [EventsController],
-  providers: [EventsService, OverviewService],
+  providers: [EventsService, OverviewService, NeglectedDisciplinesService],
 })
 export class EventsModule {}
