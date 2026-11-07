@@ -11,6 +11,7 @@ import userEvent from "@testing-library/user-event";
 import { createStore, Provider } from "jotai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { addDogDialogOpenAtom } from "@/features/dogs/atoms/addDogDialogOpenAtom";
 import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
 
 import { eventsKey } from "../api/eventsQueryOptions";
@@ -19,6 +20,7 @@ import { ScheduleExerciseDialog } from "./ScheduleExerciseDialog";
 const state = vi.hoisted(() => ({
   post: vi.fn(async () => ({})),
   extra: [] as unknown[],
+  dogs: null as unknown[] | null,
 }));
 vi.mock("@/features/auth/hooks/useSession", () => ({
   useSession: () => ({ user: { id: "user-a" } }),
@@ -31,10 +33,10 @@ vi.mock("@/lib/api-client", async () => {
       get: (path: string) => ({
         json: async () =>
           path === "dogs"
-            ? [
+            ? (state.dogs ?? [
                 { id: "dog-a", name: "Mája", breed: "Retriever" },
                 { id: "dog-b", name: "Quido" },
-              ]
+              ])
             : [
                 {
                   id: "e1",
@@ -67,6 +69,7 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   state.extra = [];
+  state.dogs = null;
 });
 
 function setup(
@@ -235,5 +238,46 @@ describe("exercise planning dialog", () => {
     expect(obedience).toHaveTextContent("Obedience");
     expect(obedience).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByText("Step 2 of 3 · Exercises")).toBeInTheDocument();
+  });
+});
+
+describe("lesson with a trainer (Figma L1–L3)", () => {
+  it("schedules a dog, date, start and length in two steps", async () => {
+    const { user, close, invalidate } = setup();
+    await user.click(screen.getByRole("tab", { name: "With a trainer" }));
+    expect(screen.getByText("Step 1 of 2 · Dog")).toBeInTheDocument();
+    await user.click(await screen.findByRole("radio", { name: /Mája/ }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    expect(screen.getByText("Step 2 of 2 · Time")).toBeInTheDocument();
+    expect(screen.queryByRole("tab")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Start")).toHaveValue("17:00");
+    await user.click(screen.getByRole("button", { name: "Schedule" }));
+    await waitFor(() => expect(close).toHaveBeenCalledOnce());
+    expect(state.post).toHaveBeenCalledWith("events/lessons", {
+      json: {
+        dogId: "dog-a",
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        startsAt: new Date("2099-10-25T17:00").toISOString(),
+        durationMinutes: 60,
+      },
+    });
+    expect(invalidate).toHaveBeenCalledWith({
+      queryKey: eventsKey("user-a"),
+    });
+  });
+  it("keeps the dog when switching back to an own exercise in three steps", async () => {
+    const { user } = setup();
+    await user.click(screen.getByRole("tab", { name: "With a trainer" }));
+    await user.click(await screen.findByRole("radio", { name: /Mája/ }));
+    await user.click(screen.getByRole("tab", { name: "Own" }));
+    expect(screen.getByText("Step 1 of 3 · Dog")).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /Mája/ })).toBeChecked();
+  });
+  it("offers to add a dog when there is none", async () => {
+    state.dogs = [];
+    const { user, close, store } = setup();
+    await user.click(await screen.findByRole("button", { name: "Add dog" }));
+    expect(close).toHaveBeenCalledOnce();
+    expect(store.get(addDogDialogOpenAtom)).toBe(true);
   });
 });

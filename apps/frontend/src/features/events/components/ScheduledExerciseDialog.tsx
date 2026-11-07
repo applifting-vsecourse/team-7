@@ -63,6 +63,7 @@ export function ScheduledExerciseDialog({
   const [today] = useState(() => new Date());
   const [mode, setMode] = useState<"result" | "schedule">("result");
   const action = useEventAction(event.id, onClose);
+  const lesson = event.kind === "lesson";
   const completed = Boolean(event.completedAt);
   const overdue = isBefore(parseISO(event.startsAt), startOfDay(today));
   const result = useForm<EventResultValues>({
@@ -74,7 +75,8 @@ export function ScheduledExerciseDialog({
     defaultValues: {
       exercises: [
         {
-          exerciseId: event.exercise.id,
+          // Only keys the form row; a lesson has no exercise and none is sent.
+          exerciseId: event.exercise?.id ?? event.id,
           date: format(parseISO(event.startsAt), "yyyy-MM-dd"),
           time: format(parseISO(event.startsAt), "HH:mm"),
           durationMinutes: event.durationMinutes,
@@ -112,7 +114,7 @@ export function ScheduledExerciseDialog({
           <Modal.Header className="flex-row items-start justify-between gap-3 pr-8">
             <div className="flex min-w-0 flex-1 flex-col gap-2">
               <Modal.Heading className="text-2xl font-semibold tracking-tight">
-                {event.exercise.name}
+                {event.exercise?.name ?? t(($) => $.lesson.title)}
               </Modal.Heading>
               {mode === "result" && (completed || overdue) && (
                 <div className="flex flex-wrap items-center gap-2">
@@ -130,7 +132,7 @@ export function ScheduledExerciseDialog({
                         : t(($) => $.training.unfinished)}
                     </Chip.Label>
                   </Chip>
-                  {completed && (
+                  {completed && event.exercise && (
                     <Link
                       to="/dogs/$dogId/exercises/$exerciseId"
                       params={{
@@ -222,6 +224,9 @@ export function ScheduledExerciseDialog({
                     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                   });
                 })(formEvent);
+              } else if (lesson) {
+                formEvent.preventDefault();
+                if (!completed) action.mutate({ type: "result" });
               } else if (mode === "result") {
                 void result.handleSubmit((values) =>
                   action.mutate({ type: "result", ...values }),
@@ -239,103 +244,109 @@ export function ScheduledExerciseDialog({
                   minDate={format(today, "yyyy-MM-dd")}
                 />
               ) : (
-                <>
-                  {event.exercise.procedure?.trim() && (
-                    <ExerciseProcedure text={event.exercise.procedure} />
-                  )}
-                  <Controller
-                    control={result.control}
-                    name="rating"
-                    render={({ field, fieldState }) => (
-                      <RadioGroup
-                        isRequired
-                        isDisabled={action.isPending}
-                        isInvalid={fieldState.invalid}
-                        name={field.name}
-                        value={String(field.value)}
-                        onChange={(value) => field.onChange(Number(value))}
-                        onBlur={field.onBlur}
-                        orientation="horizontal"
-                        // Label above the stars, as in Figma; the horizontal
-                        // orientation still drives arrow-key navigation.
-                        className="flex-col gap-2"
-                      >
-                        <Label>{t(($) => $.training.rating)}</Label>
-                        <div className="flex gap-1">
-                          {[1, 2, 3, 4, 5].map((value) => {
-                            const Icon = value <= field.value ? StarFill : Star;
-                            return (
-                              <Radio
-                                key={value}
-                                value={String(value)}
-                                aria-label={t(($) => $.training.star, {
-                                  count: value,
-                                })}
-                              >
-                                <Radio.Content>
-                                  <Radio.Control className="sr-only">
-                                    <Radio.Indicator />
-                                  </Radio.Control>
-                                  {/* Switching Star ↔ StarFill remounts the
+                event.exercise && (
+                  <>
+                    {event.exercise.procedure?.trim() && (
+                      <ExerciseProcedure text={event.exercise.procedure} />
+                    )}
+                    <Controller
+                      control={result.control}
+                      name="rating"
+                      render={({ field, fieldState }) => (
+                        <RadioGroup
+                          isRequired
+                          isDisabled={action.isPending}
+                          isInvalid={fieldState.invalid}
+                          name={field.name}
+                          value={String(field.value)}
+                          onChange={(value) => field.onChange(Number(value))}
+                          onBlur={field.onBlur}
+                          orientation="horizontal"
+                          // Label above the stars, as in Figma; the horizontal
+                          // orientation still drives arrow-key navigation.
+                          className="flex-col gap-2"
+                        >
+                          <Label>{t(($) => $.training.rating)}</Label>
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map((value) => {
+                              const Icon =
+                                value <= field.value ? StarFill : Star;
+                              return (
+                                <Radio
+                                  key={value}
+                                  value={String(value)}
+                                  aria-label={t(($) => $.training.star, {
+                                    count: value,
+                                  })}
+                                >
+                                  <Radio.Content>
+                                    <Radio.Control className="sr-only">
+                                      <Radio.Indicator />
+                                    </Radio.Control>
+                                    {/* Switching Star ↔ StarFill remounts the
                                       icon, so only stars that just changed
                                       animate: filled ones pop left to right,
                                       emptied ones deflate right to left. */}
-                                  <Icon
-                                    className={
-                                      value <= field.value
-                                        ? "size-6 animate-pop text-warning stagger-delay"
-                                        : value <= fillFrom
-                                          ? "size-6 animate-unpop text-muted stagger-delay"
-                                          : "size-6 text-muted"
-                                    }
-                                    style={
-                                      {
-                                        "--i":
-                                          value <= field.value
-                                            ? Math.max(0, value - fillFrom - 1)
-                                            : fillFrom - value,
-                                      } as CSSProperties
-                                    }
-                                    aria-hidden="true"
-                                  />
-                                </Radio.Content>
-                              </Radio>
-                            );
-                          })}
-                        </div>
-                        <FieldError>
-                          {fieldState.error &&
-                            translateMessage(t, fieldState.error.message!)}
-                        </FieldError>
-                      </RadioGroup>
-                    )}
-                  />
-                  <Controller
-                    control={result.control}
-                    name="note"
-                    render={({ field, fieldState }) => (
-                      <TextField
-                        isDisabled={action.isPending}
-                        isInvalid={fieldState.invalid}
-                        name={field.name}
-                        value={field.value}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                      >
-                        <Label>{t(($) => $.training.note)}</Label>
-                        <TextArea
-                          ref={field.ref}
-                          rows={4}
-                          placeholder={t(($) => $.training.notePlaceholder)}
-                        />
-                        <FieldError>
-                          {fieldState.error &&
-                            translateMessage(t, fieldState.error.message!)}
-                        </FieldError>
-                      </TextField>
-                    )}
-                  />
-                </>
+                                    <Icon
+                                      className={
+                                        value <= field.value
+                                          ? "size-6 animate-pop text-warning stagger-delay"
+                                          : value <= fillFrom
+                                            ? "size-6 animate-unpop text-muted stagger-delay"
+                                            : "size-6 text-muted"
+                                      }
+                                      style={
+                                        {
+                                          "--i":
+                                            value <= field.value
+                                              ? Math.max(
+                                                  0,
+                                                  value - fillFrom - 1,
+                                                )
+                                              : fillFrom - value,
+                                        } as CSSProperties
+                                      }
+                                      aria-hidden="true"
+                                    />
+                                  </Radio.Content>
+                                </Radio>
+                              );
+                            })}
+                          </div>
+                          <FieldError>
+                            {fieldState.error &&
+                              translateMessage(t, fieldState.error.message!)}
+                          </FieldError>
+                        </RadioGroup>
+                      )}
+                    />
+                    <Controller
+                      control={result.control}
+                      name="note"
+                      render={({ field, fieldState }) => (
+                        <TextField
+                          isDisabled={action.isPending}
+                          isInvalid={fieldState.invalid}
+                          name={field.name}
+                          value={field.value}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                        >
+                          <Label>{t(($) => $.training.note)}</Label>
+                          <TextArea
+                            ref={field.ref}
+                            rows={4}
+                            placeholder={t(($) => $.training.notePlaceholder)}
+                          />
+                          <FieldError>
+                            {fieldState.error &&
+                              translateMessage(t, fieldState.error.message!)}
+                          </FieldError>
+                        </TextField>
+                      )}
+                    />
+                  </>
+                )
               )}
               {action.isError && (
                 <p role="alert" className="text-sm text-danger">
@@ -346,35 +357,52 @@ export function ScheduledExerciseDialog({
               )}
             </Modal.Body>
             <Modal.Footer className="flex-wrap">
-              <Button
-                type="button"
-                variant="secondary"
-                className="flex-auto sm:flex-none"
-                isDisabled={action.isPending}
-                onPress={() => {
-                  if (mode === "result") onClose();
-                  else {
-                    action.reset();
-                    setMode("result");
-                  }
-                }}
-              >
-                {mode === "result"
-                  ? t(($) => $.training.cancel)
-                  : t(($) => $.training.back)}
-              </Button>
-              <Button
-                type="submit"
-                className="flex-auto sm:flex-none"
-                isPending={action.isPending}
-                isDisabled={action.isPending || (mode === "result" && !rating)}
-              >
-                {mode === "schedule"
-                  ? t(($) => $.training.move)
-                  : completed
-                    ? t(($) => $.training.save)
-                    : t(($) => $.training.complete)}
-              </Button>
+              {lesson && completed && mode === "result" ? (
+                // Figma L9: a completed lesson has nothing left to save.
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="flex-auto sm:flex-none"
+                  onPress={onClose}
+                >
+                  {t(($) => $.training.close)}
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="flex-auto sm:flex-none"
+                    isDisabled={action.isPending}
+                    onPress={() => {
+                      if (mode === "result") onClose();
+                      else {
+                        action.reset();
+                        setMode("result");
+                      }
+                    }}
+                  >
+                    {mode === "result"
+                      ? t(($) => $.training.cancel)
+                      : t(($) => $.training.back)}
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-auto sm:flex-none"
+                    isPending={action.isPending}
+                    isDisabled={
+                      action.isPending ||
+                      (mode === "result" && !lesson && !rating)
+                    }
+                  >
+                    {mode === "schedule"
+                      ? t(($) => $.training.move)
+                      : completed
+                        ? t(($) => $.training.save)
+                        : t(($) => $.training.complete)}
+                  </Button>
+                </>
+              )}
             </Modal.Footer>
           </Form>
         </Modal.Dialog>

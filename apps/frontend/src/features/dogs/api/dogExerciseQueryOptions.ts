@@ -13,7 +13,7 @@ import { dogProfileKey } from "./dogProfileQueryOptions";
 
 export const dogExerciseDetailSchema = z.object({
   dog: eventSchema.shape.dog.extend({ archivedAt: z.string().nullable() }),
-  exercise: eventSchema.shape.exercise.extend({
+  exercise: eventSchema.shape.exercise.unwrap().extend({
     assigned: z.boolean(),
     // Null once the exercise or its goal is unassigned from the dog.
     status: exerciseStatusSchema.nullable(),

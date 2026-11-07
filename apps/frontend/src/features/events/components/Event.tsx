@@ -7,6 +7,7 @@ import {
   CirclePause,
   Clock,
   Comment,
+  GraduationCap,
 } from "@gravity-ui/icons";
 import { Button, Separator } from "@heroui/react";
 import { useDrag } from "react-aria";
@@ -23,9 +24,11 @@ import { TrainingHistoryDialog } from "./TrainingHistoryDialog";
 export type EventProps = {
   scheduledEvent?: ScheduledEvent;
   historyOnly?: boolean;
+  /** Figma Event `Type`: a lesson with a trainer has no discipline or exercise. */
+  kind?: "exercise" | "lesson";
   dogName: string;
-  discipline: string;
-  exercise: string;
+  discipline?: string;
+  exercise?: string;
   /** Local wall-clock time in HH:mm format. */
   time: string;
   /** Optional ISO date (YYYY-MM-DD), shown for events from earlier days. */
@@ -53,6 +56,7 @@ const accents = {
 export function Event({
   scheduledEvent,
   historyOnly = false,
+  kind = "exercise",
   dogName,
   discipline,
   exercise,
@@ -66,6 +70,8 @@ export function Event({
 }: EventProps) {
   const { t, i18n } = useTranslation();
   const titleId = useId();
+  const isLesson = kind === "lesson";
+  const title = isLesson ? t(($) => $.lesson.title) : (exercise ?? "");
   const [isOpen, setIsOpen] = useState(false);
   // The tile grows into its dialog and shrinks back (view transition). It
   // carries the shared name only during the morph; a permanent name would
@@ -123,7 +129,7 @@ export function Event({
         ref={tileRef}
         {...dragProps}
         aria-labelledby={historyOnly ? undefined : titleId}
-        aria-label={historyOnly ? exercise : undefined}
+        aria-label={historyOnly ? title : undefined}
         className={cn(
           "relative flex w-full max-w-full min-w-0 interactive-lift cursor-pointer flex-col overflow-clip rounded-2xl py-2 pr-3 pl-4 text-foreground shadow-card md:self-stretch",
           backgrounds[state],
@@ -136,7 +142,7 @@ export function Event({
           <Button
             variant="ghost"
             className="absolute inset-0 z-10 h-full w-full bg-transparent"
-            aria-label={t(($) => $.training.open, { name: exercise })}
+            aria-label={t(($) => $.training.open, { name: title })}
             onPress={open}
           />
         )}
@@ -147,6 +153,28 @@ export function Event({
           )}
           aria-hidden="true"
         />
+        {isLesson && (
+          // Figma Event Type=Lesson (579:4096): a full-width band in the
+          // state colour carries a fixed title instead of the exercise name.
+          <>
+            <span
+              className={cn(
+                "absolute inset-x-0 top-0 h-9.5 state-colors",
+                accents[state],
+              )}
+              aria-hidden="true"
+            />
+            <div className="relative flex items-center gap-1.5 pb-3">
+              <GraduationCap className="size-3.5 shrink-0" aria-hidden="true" />
+              <Heading
+                id={titleId}
+                className="min-w-0 text-sm leading-6 font-medium tracking-tight wrap-break-word"
+              >
+                {title}
+              </Heading>
+            </div>
+          </>
+        )}
         <p
           className={cn(
             "flex items-center gap-1 text-xs leading-5",
@@ -227,16 +255,22 @@ export function Event({
             <p className="text-xs leading-5 font-medium text-muted">
               {dogName}
             </p>
-            <p className="text-xs leading-5 text-muted">{discipline}</p>
-            <Heading
-              id={titleId}
-              className={cn(
-                "text-sm leading-6 font-medium tracking-tight",
-                isCompleted && "text-muted",
-              )}
-            >
-              {exercise}
-            </Heading>
+            {!isLesson && (
+              <>
+                <p className="text-xs leading-5 wrap-break-word text-muted">
+                  {discipline}
+                </p>
+                <Heading
+                  id={titleId}
+                  className={cn(
+                    "text-sm leading-6 font-medium tracking-tight wrap-break-word",
+                    isCompleted && "text-muted",
+                  )}
+                >
+                  {exercise}
+                </Heading>
+              </>
+            )}
           </>
         )}
       </article>

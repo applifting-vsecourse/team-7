@@ -25,6 +25,7 @@ const event = (
   completedAt: string | null = null,
 ) => ({
   id,
+  kind: "exercise",
   dogId: "dog-a",
   startsAt,
   completedAt,

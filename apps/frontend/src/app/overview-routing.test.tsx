@@ -59,6 +59,7 @@ vi.mock("@/lib/api-client", () => ({
           return [
             {
               id: "planned-1",
+              kind: "exercise",
               dogId: dogs[0]!.id,
               startsAt: new Date().toISOString(),
               durationMinutes: 10,

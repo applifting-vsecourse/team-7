@@ -56,8 +56,9 @@ export function useCalendarEvents(
         id: event.id,
         scheduledEvent: event,
         dogName: event.dog.name,
-        discipline: event.exercise.goal.discipline.name,
-        exercise: event.exercise.name,
+        kind: event.kind,
+        discipline: event.exercise?.goal.discipline.name,
+        exercise: event.exercise?.name,
         time: format(date, "HH:mm"),
         durationMinutes: event.durationMinutes,
         state: event.completedAt

@@ -32,3 +32,5 @@ globalThis.ResizeObserver = class {
 };
 Element.prototype.scrollIntoView = vi.fn();
 window.scrollTo = vi.fn();
+// The Tabs indicator waits for running animations (Web Animations API).
+Element.prototype.getAnimations = () => [];

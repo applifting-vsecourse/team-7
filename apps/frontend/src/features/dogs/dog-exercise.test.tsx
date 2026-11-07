@@ -163,6 +163,7 @@ const training = (
   rating: number | null,
 ): ScheduledEvent => ({
   id,
+  kind: "exercise",
   dogId: dog.id,
   startsAt: date,
   completedAt: rating === null ? null : date,

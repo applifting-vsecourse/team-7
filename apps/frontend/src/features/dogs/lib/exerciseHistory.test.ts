@@ -9,6 +9,7 @@ const event = (
   rating: number | null = null,
 ): ScheduledEvent => ({
   id,
+  kind: "exercise",
   startsAt,
   rating,
   completedAt: rating === null ? null : startsAt,

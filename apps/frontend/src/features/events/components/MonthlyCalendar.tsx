@@ -140,7 +140,11 @@ export function MonthlyCalendar({
             const dayEvents = eventsOf(day);
             const isToday = isSameDay(day, today);
             const disciplines = [
-              ...new Set(dayEvents.map((event) => event.discipline)),
+              ...new Set(
+                dayEvents.map(
+                  (event) => event.discipline ?? t(($) => $.lesson.title),
+                ),
+              ),
             ];
             return (
               <li key={toIsoDate(day)} className="flex">

@@ -154,6 +154,9 @@
     "unfinished": "Unfinished",
     "dateAndTime": "{{date}} – {{time}}"
   },
+  "lesson": {
+    "title": "Session with a trainer"
+  },
   "overview": {
     "loading": "Loading overview…",
     "loadError": "Could not load the overview. Please try again.",
@@ -509,7 +512,14 @@
     "schedule": "Schedule {{count}} exercises",
     "success": "Exercises scheduled.",
     "error": "Could not schedule exercises. Please try again.",
-    "invalid": "Enter a valid date, time and duration (1–1440 minutes)."
+    "invalid": "Enter a valid date, time and duration (1–1440 minutes).",
+    "kind": "Session type",
+    "kindOwn": "Own",
+    "kindLesson": "With a trainer",
+    "lessonStepDog": "Step 1 of 2 · Dog",
+    "lessonStepTime": "Step 2 of 2 · Time",
+    "scheduleLesson": "Schedule",
+    "lessonSuccess": "Session with a trainer scheduled"
   },
   "exerciseDetail": {
     "history": "History",
@@ -563,7 +573,8 @@
     "noProcedure": "No instructions have been added to this exercise.",
     "procedure": "Exercise description",
     "showFullProcedure": "Show full description",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "close": "Close"
   },
   "status": {
     "paused": "Paused",

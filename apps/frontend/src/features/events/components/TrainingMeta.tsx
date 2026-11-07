@@ -46,20 +46,25 @@ export function TrainingMeta({ event }: { event: ScheduledEvent }) {
         {/* Labelled pairs ("Disciplína: Agility   Cíl: …"), separated by space
           like the date line: a bare "Agility › cíl" didn't say what the two
           names were. */}
-        <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm leading-6">
-          <div className="flex min-w-0 gap-1">
-            <dt className="shrink-0 text-muted">
-              {t(($) => $.training.disciplineLabel)}:
-            </dt>
-            <dd>{event.exercise.goal.discipline.name}</dd>
-          </div>
-          <div className="flex min-w-0 gap-1">
-            <dt className="shrink-0 text-muted">
-              {t(($) => $.training.goalLabel)}:
-            </dt>
-            <dd>{event.exercise.goal.name}</dd>
-          </div>
-        </dl>
+        {/* A lesson with a trainer has no place in the plan (Figma L5). */}
+        {event.exercise && (
+          <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm leading-6">
+            <div className="flex min-w-0 gap-1">
+              <dt className="shrink-0 text-muted">
+                {t(($) => $.training.disciplineLabel)}:
+              </dt>
+              <dd className="wrap-break-word">
+                {event.exercise.goal.discipline.name}
+              </dd>
+            </div>
+            <div className="flex min-w-0 gap-1">
+              <dt className="shrink-0 text-muted">
+                {t(($) => $.training.goalLabel)}:
+              </dt>
+              <dd className="wrap-break-word">{event.exercise.goal.name}</dd>
+            </div>
+          </dl>
+        )}
       </div>
       <div className="flex w-fit min-w-48 shrink-0 items-center gap-3 rounded-3xl bg-default px-3 py-1.5">
         <DogAvatar dog={event.dog} />

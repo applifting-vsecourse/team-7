@@ -6,6 +6,7 @@ import { Event } from "./Event";
 
 const scheduledEvent: ScheduledEvent = {
   id: "event-a",
+  kind: "exercise",
   dogId: "dog-a",
   startsAt: "2099-01-02T08:00:00Z",
   durationMinutes: 10,
@@ -72,4 +73,27 @@ describe("paused training", () => {
       expect(tile()).not.toHaveTextContent("Paused");
     },
   );
+});
+
+describe("lesson with a trainer (Figma Event Type=Lesson)", () => {
+  const lesson = { ...scheduledEvent, kind: "lesson" as const, exercise: null };
+  it("shows the fixed title, time and dog without a discipline", () => {
+    render(
+      <Event
+        {...props}
+        scheduledEvent={lesson}
+        kind="lesson"
+        discipline={undefined}
+        exercise={undefined}
+        isDraggable
+      />,
+    );
+    const article = screen.getByRole("article", {
+      name: "Session with a trainer",
+    });
+    expect(article).toHaveTextContent("Mája");
+    expect(article).toHaveTextContent("08:00 (10 min)");
+    expect(article).not.toHaveTextContent("Obedience");
+    expect(article).toHaveAttribute("draggable", "true");
+  });
 });

@@ -7,6 +7,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { api } from "@/lib/api-client";
 
+import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
+
 import { useCalendarEvents } from "./useCalendarEvents";
 
 vi.mock("@/lib/api-client", () => ({
@@ -46,5 +48,47 @@ describe("useCalendarEvents", () => {
     await waitFor(() => expect(api.get).toHaveBeenCalledTimes(5));
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(api.get).toHaveBeenCalledTimes(5);
+  });
+
+  it("maps a lesson with a trainer and filters it by the selected dogs", async () => {
+    const lesson = {
+      id: "lesson",
+      kind: "lesson",
+      dogId: "dog-a",
+      startsAt: "2026-11-03T16:00:00Z",
+      durationMinutes: 60,
+      rating: null,
+      note: null,
+      completedAt: null,
+      paused: false,
+      dog: { id: "dog-a", name: "Mája", avatarVersion: null },
+      exercise: null,
+    };
+    vi.mocked(api.get).mockReturnValue({
+      json: async () => [lesson, { ...lesson, id: "other", dogId: "dog-b" }],
+    } as never);
+    const store = createStore();
+    store.set(selectedDogIdsAtom, ["dog-a"]);
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <Provider store={store}>
+        <QueryClientProvider client={new QueryClient()}>
+          {children}
+        </QueryClientProvider>
+      </Provider>
+    );
+    const { result } = renderHook(() => useCalendarEvents(week(0), week(1)), {
+      wrapper,
+    });
+    await waitFor(() =>
+      expect(result.current.eventsOf(new Date(lesson.startsAt))).toEqual([
+        expect.objectContaining({
+          id: "lesson",
+          kind: "lesson",
+          dogName: "Mája",
+          discipline: undefined,
+          exercise: undefined,
+        }),
+      ]),
+    );
   });
 });
