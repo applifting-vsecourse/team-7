@@ -9,6 +9,7 @@ import { ROUTES } from "@/app/routes";
 import { useSession } from "@/features/auth/hooks/useSession";
 import { addDogDialogOpenAtom } from "@/features/dogs/atoms/addDogDialogOpenAtom";
 import { useAddDog } from "@/features/dogs/hooks/useAddDog";
+import { useTour } from "@/features/onboarding/hooks/useTour";
 
 import { AddDogForm } from "./AddDogForm";
 
@@ -23,6 +24,7 @@ export function AddDogButton() {
       variant="secondary"
       isDisabled={!user}
       className="h-9 w-full gap-2 rounded-3xl"
+      data-tour="add-dog"
       onPress={() => setIsOpen(true)}
     >
       <Plus className="size-4" aria-hidden="true" />
@@ -37,6 +39,7 @@ export function AddDogDialog() {
   const addDog = useAddDog(user?.id);
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useAtom(addDogDialogOpenAtom);
+  const tour = useTour();
 
   return (
     <Modal.Backdrop
@@ -68,6 +71,7 @@ export function AddDogDialog() {
                   to: ROUTES.dog,
                   params: { dogId: dog.id },
                 });
+                tour.complete("addDog");
               }}
             />
           ) : null}

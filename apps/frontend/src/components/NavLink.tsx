@@ -16,8 +16,11 @@ export function NavLink({
   to,
   icon: Icon,
   children,
+  tour,
 }: {
   to: LinkProps["to"];
+  /** Target of an onboarding tour step. */
+  tour?: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   children: ReactNode;
 }) {
@@ -26,6 +29,7 @@ export function NavLink({
     <Link
       to={to}
       onClick={() => setMobileSidebarOpen(false)}
+      data-tour={tour}
       activeProps={activeLink}
       className={buttonVariants({
         variant: "ghost",

@@ -7,6 +7,7 @@ import { api } from "@/lib/api-client";
 
 import { LibraryItemDialog } from "@/features/disciplines/components/LibraryItemDialog";
 import type { LibraryItemValues } from "@/features/disciplines/schemas/libraryItemSchema";
+import { useTour } from "@/features/onboarding/hooks/useTour";
 
 import { useDogProfileMutation } from "../hooks/useDogProfileMutation";
 
@@ -19,6 +20,7 @@ export function NewDogDisciplineDialog({
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const tour = useTour();
   const save = useDogProfileMutation((values: LibraryItemValues) =>
     api
       .post(`dogs/${encodeURIComponent(dog.id)}/disciplines`, {
@@ -57,6 +59,7 @@ export function NewDogDisciplineDialog({
       onSubmit={async (values) => {
         const discipline = await save.mutateAsync(values);
         onClose();
+        tour.complete("assignDiscipline");
         await navigate({
           to: "/dogs/$dogId/disciplines/$disciplineId",
           params: { dogId: dog.id, disciplineId: discipline.id },

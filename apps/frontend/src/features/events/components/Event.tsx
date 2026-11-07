@@ -128,6 +128,7 @@ export function Event({
       <article
         ref={tileRef}
         {...dragProps}
+        data-event-id={scheduledEvent?.id}
         aria-labelledby={historyOnly ? undefined : titleId}
         aria-label={historyOnly ? title : undefined}
         className={cn(

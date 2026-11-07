@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/Sidebar";
 
 import { requireVerifiedSession } from "@/features/auth/lib/require-session";
 import { DogFilter } from "@/features/dogs/components/DogFilter";
+import { GettingStartedCard } from "@/features/onboarding/components/GettingStartedCard";
 import { OverviewContent } from "@/features/overview/components/OverviewContent";
 
 export const Route = createFileRoute("/overview")({
@@ -36,6 +37,7 @@ function OverviewPage() {
           </h1>
         </div>
         <DogFilter />
+        <GettingStartedCard />
         <OverviewContent />
       </section>
     </Layout>

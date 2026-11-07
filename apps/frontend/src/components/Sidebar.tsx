@@ -27,7 +27,7 @@ export function Sidebar() {
           <NavLink to={ROUTES.overview} icon={Rectangles4}>
             {t(($) => $.navigation.overview)}
           </NavLink>
-          <NavLink to={ROUTES.calendar} icon={Calendar}>
+          <NavLink to={ROUTES.calendar} icon={Calendar} tour="nav-calendar">
             {t(($) => $.navigation.calendar)}
           </NavLink>
           <NavLink to={ROUTES.disciplines} icon={ChartLine}>

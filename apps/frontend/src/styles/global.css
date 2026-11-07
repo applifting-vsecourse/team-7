@@ -19,6 +19,8 @@
   --container-login-form: 400px;
   --container-login-block: 900px;
   --container-weekly-stats-min: 292px;
+  /* Figma "Coach Mark" bubble (onboarding tour) */
+  --container-coach-mark: 320px;
 
   /* Motion — decelerate when arriving, accelerate when leaving */
   --ease-enter: cubic-bezier(0.2, 0, 0, 1);
