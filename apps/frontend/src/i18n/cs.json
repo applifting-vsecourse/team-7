@@ -640,7 +640,7 @@
   "videos": {
     "title": "Videa",
     "upload": "Nahrát video",
-    "hint": "Až 3 videa · MP4, MOV nebo WebM · max. 30 MiB / 60 s. Videa se ukládají ihned a sdílí se mezi tréninky tohoto cvičení.",
+    "hint": "Až 3 videa. Formát MP4, MOV nebo WebM. Max velikost 30 MiB / 60 s.",
     "limit": "Můžete přidat nejvýš 3 videa.",
     "loading": "Načítání videí…",
     "loadError": "Videa se nepodařilo načíst.",
