@@ -1,5 +1,6 @@
 export const emailMessages = {
   cs: {
+    tagline: "Plánovač a tréninkový deník pro psa",
     dailyReminder: {
       subject: "Dnes máte naplánovaný trénink",
       heading: "Čas na dnešní trénink",
@@ -10,7 +11,6 @@ export const emailMessages = {
       encouragement: "Každý společný trénink je krok vpřed.",
       footer:
         "Tuto připomínku dostáváte, protože máte na dnešek naplánovaná cvičení v TrainLoop.",
-      tagline: "Plánovač a tréninkový deník pro psa",
     },
     fallbackLink:
       "Pokud tlačítko nefunguje, zkopírujte tento odkaz do prohlížeče:",
@@ -36,6 +36,7 @@ export const emailMessages = {
     },
   },
   en: {
+    tagline: "A planner and training journal for your dog",
     dailyReminder: {
       subject: "You have training planned for today",
       heading: "Time for today's training",
@@ -46,7 +47,6 @@ export const emailMessages = {
       encouragement: "Every training session together is a step forward.",
       footer:
         "You're receiving this reminder because you have exercises scheduled for today in TrainLoop.",
-      tagline: "A planner and training journal for your dog",
     },
     fallbackLink:
       "If the button doesn't work, copy and paste this link into your browser:",
