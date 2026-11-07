@@ -40,6 +40,7 @@ vi.mock("@/lib/api-client", () => ({
             today: "2026-10-25",
             tomorrow: "2026-10-26",
             events: [],
+            neglected: [],
             stats: {
               weekStart: "2026-10-19",
               weekEnd: "2026-10-25",

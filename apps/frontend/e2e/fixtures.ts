@@ -1,4 +1,9 @@
-import { expect, test as base, type Response } from "@playwright/test";
+import {
+  expect,
+  test as base,
+  type Page,
+  type Response,
+} from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import process from "node:process";
 
@@ -8,6 +13,7 @@ import { DisciplinePage } from "./pom/discipline.page";
 import { DogDisciplinePage } from "./pom/dog-discipline.page";
 import { DogPage } from "./pom/dog.page";
 import { LoginPage } from "./pom/login.page";
+import { OverviewPage } from "./pom/overview.page";
 
 export const credentials = {
   email: process.env.E2E_USER_EMAIL ?? "caffeinatedduck@example.com",
@@ -21,6 +27,7 @@ type Fixtures = {
   discipline: DisciplinePage;
   dogDiscipline: DogDisciplinePage;
   calendar: CalendarPage;
+  overview: OverviewPage;
   training: { dog: string; discipline: string; goal: string; exercise: string };
 };
 
@@ -42,6 +49,9 @@ export const test = base.extend<Fixtures>({
   },
   calendar: async ({ page }, provide) => {
     await provide(new CalendarPage(page));
+  },
+  overview: async ({ page }, provide) => {
+    await provide(new OverviewPage(page));
   },
   training: async ({ page, login, app }, provide) => {
     const suffix = randomUUID();
@@ -95,3 +105,27 @@ export const test = base.extend<Fixtures>({
 });
 
 export { expect };
+
+/** A new dog training a new discipline with one goal and one exercise. */
+export async function trainingPlan(
+  page: Page,
+  {
+    app,
+    dog,
+    discipline,
+  }: { app: AppPage; dog: DogPage; discipline: DisciplinePage },
+  names: { dog: string; discipline: string; goal: string; exercise: string },
+) {
+  await dog.create(names.dog);
+  const dogUrl = page.url();
+  await app.disciplinesLink.click();
+  await discipline.create(names.discipline, "Recall and focus training");
+  await discipline.createGoal(names.goal, "Three successful recalls in a row");
+  await discipline.createExercise(
+    names.goal,
+    names.exercise,
+    "Recall from play",
+  );
+  await discipline.assign(names.dog);
+  return dogUrl;
+}

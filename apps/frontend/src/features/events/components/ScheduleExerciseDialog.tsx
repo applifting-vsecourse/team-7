@@ -44,11 +44,14 @@ export function ScheduleExerciseDialog({
   onClose,
   initialDogId,
   initialExerciseId,
+  initialDisciplineId,
 }: {
   date: Date;
   onClose: () => void;
   initialDogId?: string;
   initialExerciseId?: string;
+  /** Listed first and the only one expanded (the overview's neglected warning). */
+  initialDisciplineId?: string;
 }) {
   const { t } = useTranslation();
   const { user } = useSession();
@@ -291,102 +294,115 @@ export function ScheduleExerciseDialog({
                           {t(($) => $.planning.noExercises)}
                         </p>
                       )}
-                      {[...groups].map(([id, group], index) => (
-                        <Disclosure key={id} defaultExpanded={index === 0}>
-                          <Disclosure.Heading>
-                            <Disclosure.Trigger className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-                              {group.name}
-                              <Disclosure.Indicator />
-                            </Disclosure.Trigger>
-                          </Disclosure.Heading>
-                          <Disclosure.Content>
-                            <div className="flex flex-col gap-2 pt-4">
-                              {[...group.goals].map(([goalId, goal]) => {
-                                const { items } = goal;
-                                const count = items.filter((item) =>
-                                  selected.includes(item.id),
-                                ).length;
-                                return (
-                                  <div
-                                    key={goalId}
-                                    className="flex flex-col gap-2 rounded-3xl bg-surface p-4 shadow-card"
-                                  >
-                                    {items.length ? (
-                                      <Checkbox
-                                        isSelected={count === items.length}
-                                        isIndeterminate={
-                                          count > 0 && count < items.length
-                                        }
-                                        onChange={(checked) =>
-                                          toggle(
-                                            items.map((item) => item.id),
-                                            checked,
-                                          )
-                                        }
-                                      >
-                                        <Checkbox.Content>
-                                          <Checkbox.Control>
-                                            <Checkbox.Indicator />
-                                          </Checkbox.Control>
-                                          <span className="font-semibold">
-                                            {goal.name}
-                                          </span>
-                                        </Checkbox.Content>
-                                      </Checkbox>
-                                    ) : (
-                                      // Every exercise is paused: nothing to select.
-                                      <span className="font-semibold">
-                                        {goal.name}
-                                      </span>
-                                    )}
-                                    <div className="flex flex-col gap-2 pl-8">
-                                      {items.map((item) => (
+                      {[...groups]
+                        .sort(
+                          ([a], [b]) =>
+                            Number(b === initialDisciplineId) -
+                            Number(a === initialDisciplineId),
+                        )
+                        .map(([id, group], index) => (
+                          <Disclosure
+                            key={id}
+                            defaultExpanded={
+                              initialDisciplineId
+                                ? id === initialDisciplineId
+                                : index === 0
+                            }
+                          >
+                            <Disclosure.Heading>
+                              <Disclosure.Trigger className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+                                {group.name}
+                                <Disclosure.Indicator />
+                              </Disclosure.Trigger>
+                            </Disclosure.Heading>
+                            <Disclosure.Content>
+                              <div className="flex flex-col gap-2 pt-4">
+                                {[...group.goals].map(([goalId, goal]) => {
+                                  const { items } = goal;
+                                  const count = items.filter((item) =>
+                                    selected.includes(item.id),
+                                  ).length;
+                                  return (
+                                    <div
+                                      key={goalId}
+                                      className="flex flex-col gap-2 rounded-3xl bg-surface p-4 shadow-card"
+                                    >
+                                      {items.length ? (
                                         <Checkbox
-                                          key={item.id}
-                                          isSelected={selected.includes(
-                                            item.id,
-                                          )}
+                                          isSelected={count === items.length}
+                                          isIndeterminate={
+                                            count > 0 && count < items.length
+                                          }
                                           onChange={(checked) =>
-                                            toggle([item.id], checked)
+                                            toggle(
+                                              items.map((item) => item.id),
+                                              checked,
+                                            )
                                           }
                                         >
                                           <Checkbox.Content>
                                             <Checkbox.Control>
                                               <Checkbox.Indicator />
                                             </Checkbox.Control>
-                                            <span className="text-sm">
-                                              {item.name}
+                                            <span className="font-semibold">
+                                              {goal.name}
                                             </span>
                                           </Checkbox.Content>
                                         </Checkbox>
-                                      ))}
-                                      {goal.paused.length > 0 && (
-                                        // Figma S8b 622:91637 "Show paused".
-                                        <PausedGroup
-                                          title={t(
-                                            ($) => $.status.pausedExercises,
-                                            { count: goal.paused.length },
-                                          )}
-                                          items={goal.paused}
-                                        />
+                                      ) : (
+                                        // Every exercise is paused: nothing to select.
+                                        <span className="font-semibold">
+                                          {goal.name}
+                                        </span>
                                       )}
+                                      <div className="flex flex-col gap-2 pl-8">
+                                        {items.map((item) => (
+                                          <Checkbox
+                                            key={item.id}
+                                            isSelected={selected.includes(
+                                              item.id,
+                                            )}
+                                            onChange={(checked) =>
+                                              toggle([item.id], checked)
+                                            }
+                                          >
+                                            <Checkbox.Content>
+                                              <Checkbox.Control>
+                                                <Checkbox.Indicator />
+                                              </Checkbox.Control>
+                                              <span className="text-sm">
+                                                {item.name}
+                                              </span>
+                                            </Checkbox.Content>
+                                          </Checkbox>
+                                        ))}
+                                        {goal.paused.length > 0 && (
+                                          // Figma S8b 622:91637 "Show paused".
+                                          <PausedGroup
+                                            title={t(
+                                              ($) => $.status.pausedExercises,
+                                              { count: goal.paused.length },
+                                            )}
+                                            items={goal.paused}
+                                          />
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
-                                );
-                              })}
-                              {group.pausedGoals.size > 0 && (
-                                // Figma S8 621:52343: below the goal cards.
-                                <PausedGroup
-                                  title={t(($) => $.status.pausedGoals, {
-                                    count: group.pausedGoals.size,
-                                  })}
-                                  items={[...group.pausedGoals]}
-                                />
-                              )}
-                            </div>
-                          </Disclosure.Content>
-                        </Disclosure>
-                      ))}
+                                  );
+                                })}
+                                {group.pausedGoals.size > 0 && (
+                                  // Figma S8 621:52343: below the goal cards.
+                                  <PausedGroup
+                                    title={t(($) => $.status.pausedGoals, {
+                                      count: group.pausedGoals.size,
+                                    })}
+                                    items={[...group.pausedGoals]}
+                                  />
+                                )}
+                              </div>
+                            </Disclosure.Content>
+                          </Disclosure>
+                        ))}
                     </>
                   ) : (
                     <div className="flex flex-col gap-8">

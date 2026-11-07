@@ -7,6 +7,7 @@ import {
 import { randomUUID } from "node:crypto";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { Prisma, type ScheduledExercise } from "@/generated/prisma/client";
+import { localDayOf } from "@/modules/events/domain/local-calendar";
 import { dogExerciseOrder } from "@/shared/domain/exercise-order";
 import {
   plannableDogExercise,
@@ -173,23 +174,9 @@ export class EventsService {
     });
   }
 
-  private dateKey(date: Date, timeZone: string) {
-    const parts = new Intl.DateTimeFormat("en", {
-      timeZone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).formatToParts(date);
-    return ["year", "month", "day"]
-      .map((part) => parts.find((item) => item.type === part)!.value)
-      .join("-");
-  }
-
   private validateDate(value: string, timeZone: string) {
-    if (
-      this.dateKey(new Date(value), timeZone) <
-      this.dateKey(new Date(), timeZone)
-    )
+    const dayOf = localDayOf(timeZone);
+    if (dayOf(new Date(value)) < dayOf(new Date()))
       throw new BadRequestException("Choose today or a future date");
   }
 
@@ -206,7 +193,8 @@ export class EventsService {
         throw new ConflictException("Completed exercises cannot be moved");
       // A move must not give the dog the same exercise twice on one day in the
       // handler's timezone. 26 hours either side covers DST days.
-      const day = this.dateKey(startsAt, input.timeZone);
+      const dayOf = localDayOf(input.timeZone);
+      const day = dayOf(startsAt);
       const window = 26 * 3600000;
       const sameExercise = await tx.scheduledExercise.findMany({
         where: {
@@ -221,11 +209,7 @@ export class EventsService {
         },
         select: { startsAt: true },
       });
-      if (
-        sameExercise.some(
-          (other) => this.dateKey(other.startsAt, input.timeZone) === day,
-        )
-      )
+      if (sameExercise.some((other) => dayOf(other.startsAt) === day))
         throw new ConflictException(
           "This dog already has this exercise scheduled on that day",
         );

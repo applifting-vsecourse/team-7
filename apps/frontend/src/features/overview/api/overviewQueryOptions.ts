@@ -27,7 +27,18 @@ export const overviewSchema = z.object({
   tomorrow: z.string(),
   stats: weeklyStatsSchema,
   events: z.array(eventSchema),
+  // In-progress disciplines with nothing planned this week (#19), never trained first.
+  neglected: z.array(
+    z.object({
+      dog: eventSchema.shape.dog,
+      discipline: z.object({ id: z.string(), name: z.string() }),
+      lastTrainedAt: z.string().nullable(),
+    }),
+  ),
 });
+export type NeglectedDiscipline = z.infer<
+  typeof overviewSchema
+>["neglected"][number];
 
 export function nextOverviewRefresh() {
   const now = new Date();
@@ -63,5 +74,8 @@ export const overviewQueryOptions = (
     // new one loads, so tiles, counters and bars animate to the new data
     // instead of the page dropping back to its loading state.
     placeholderData: keepPreviousData,
+    // Offline, TanStack would pause the request and keep showing the old data;
+    // fail instead so the overview shows its error and retry (#19 AC).
+    networkMode: "always",
   });
 };

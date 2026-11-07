@@ -17,4 +17,8 @@ describe("overview refresh", () => {
     vi.setSystemTime(new Date(2026, 9, 26, 0, 0, 1));
     expect(nextOverviewRefresh()).toBe(86400000);
   });
+
+  it("fails offline instead of pausing, so the error and retry show", () => {
+    expect(overviewQueryOptions("owner", null).networkMode).toBe("always");
+  });
 });

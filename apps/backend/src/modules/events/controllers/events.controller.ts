@@ -46,7 +46,7 @@ export class EventsController {
   @Get("overview")
   @ApiOperation({
     summary:
-      "Get weekly statistics, today, tomorrow and all overdue exercises for owned active dogs",
+      "Get weekly statistics, today, tomorrow, all overdue exercises and disciplines without training this week for owned active dogs",
   })
   getOverview(@User() user: Identity, @Query() query: OverviewQueryDto) {
     return this.overview.get(user.id, query);

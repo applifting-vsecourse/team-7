@@ -12,8 +12,8 @@ export async function seedEvents(prisma: PrismaService): Promise<void> {
           exercises: { some: { status: "in_progress" } },
         },
         orderBy: { createdAt: "asc" },
-        take: 1,
         select: {
+          goal: { select: { disciplineId: true } },
           exercises: {
             where: { status: "in_progress" },
             orderBy: dogExerciseOrder,
@@ -31,6 +31,28 @@ export async function seedEvents(prisma: PrismaService): Promise<void> {
   for (const dog of dogs) {
     const exercise = dog.goals[0]?.exercises[0];
     if (!exercise) continue;
+
+    // A discipline last trained before this week shows in the overview's
+    // neglected warning with its date (#19). Untouched ones show as never trained.
+    const lapsed = dog.goals.at(-1)!;
+    if (lapsed.goal.disciplineId !== dog.goals[0]!.goal.disciplineId) {
+      const completedAt = new Date();
+      completedAt.setDate(completedAt.getDate() - 10);
+      completedAt.setHours(18, 0, 0, 0);
+      await prisma.scheduledExercise.upsert({
+        where: { id: `seed-lapsed-${dog.id}` },
+        update: {},
+        create: {
+          id: `seed-lapsed-${dog.id}`,
+          dogId: dog.id,
+          exerciseId: lapsed.exercises[0]!.exerciseId,
+          startsAt: completedAt,
+          completedAt,
+          durationMinutes: 15,
+          rating: 3,
+        },
+      });
+    }
 
     // Stable IDs avoid duplicates and preserve edits, completion and deletion.
     await prisma.scheduledExercise.upsert({
