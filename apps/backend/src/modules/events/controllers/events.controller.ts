@@ -24,7 +24,7 @@ import {
 } from "./dto/event-action.dto";
 import { ListEventsDto } from "./dto/list-events.dto";
 import { OverviewQueryDto } from "./dto/overview-query.dto";
-import { ScheduleInputDto } from "./dto/schedule-input.dto";
+import { LessonInputDto, ScheduleInputDto } from "./dto/schedule-input.dto";
 
 @ApiTags("events")
 @ApiCookieAuth()
@@ -74,9 +74,18 @@ export class EventsController {
   schedule(@User() user: Identity, @Body() input: ScheduleInputDto) {
     return this.events.schedule(user.id, input);
   }
+  @Post("lessons")
+  @ApiOperation({
+    summary: "Schedule a lesson with a trainer for an owned active dog",
+  })
+  scheduleLesson(@User() user: Identity, @Body() input: LessonInputDto) {
+    return this.events.scheduleLesson(user.id, input);
+  }
+
   @Patch(":id/result")
   @ApiOperation({
-    summary: "Complete an owned exercise or edit its rating and note",
+    summary:
+      "Complete an owned exercise or lesson, or edit an exercise's rating and note",
   })
   complete(
     @User() user: Identity,

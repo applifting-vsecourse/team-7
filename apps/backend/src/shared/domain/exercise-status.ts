@@ -17,14 +17,16 @@ export const plannableDogExercise = (userId: string) =>
  * paused goal. They stay in the calendar and can still be completed or moved.
  */
 export async function withPaused<
-  T extends { dogId: string; exerciseId: string },
+  T extends { dogId: string; exerciseId: string | null },
 >(prisma: Prisma.TransactionClient, events: T[]) {
+  // Lessons with a trainer (#70) have no exercise and are never paused.
   const pairs = [
     ...new Map(
-      events.map(({ dogId, exerciseId }) => [
-        `${dogId}:${exerciseId}`,
-        { dogId, exerciseId },
-      ]),
+      events.flatMap(({ dogId, exerciseId }) =>
+        exerciseId
+          ? [[`${dogId}:${exerciseId}`, { dogId, exerciseId }] as const]
+          : [],
+      ),
     ).values(),
   ];
   const paused = pairs.length

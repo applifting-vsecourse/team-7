@@ -223,12 +223,22 @@ model DogDiscipline {
   @@map("dog_discipline")
 }
 
+// A lesson with a trainer (#70) is a personal record: a dog and a time only,
+// no exercise, rating or note. A database check keeps kind and exerciseId in step.
+enum ScheduledExerciseKind {
+  exercise
+  lesson
+
+  @@map("scheduled_exercise_kind")
+}
+
 model ScheduledExercise {
   id String @id @default(cuid())
+  kind ScheduledExerciseKind @default(exercise)
   dogId String
   dog Dog @relation(fields: [dogId], references: [id], onDelete: Cascade)
-  exerciseId String
-  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  exerciseId String?
+  exercise Exercise? @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
   startsAt DateTime
   durationMinutes Int
   rating Int?

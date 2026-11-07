@@ -134,6 +134,30 @@ export class EventsService {
       });
     });
   }
+  async scheduleLesson(
+    userId: string,
+    input: Omit<ScheduleInput, "exercises"> & {
+      startsAt: string;
+      durationMinutes: number;
+    },
+  ) {
+    this.validateDate(input.startsAt, input.timeZone);
+    const dog = await this.prisma.dog.findFirst({
+      where: { id: input.dogId, userId, archivedAt: null },
+      select: { id: true },
+    });
+    if (!dog) throw new NotFoundException("Dog not found");
+    return this.prisma.scheduledExercise.create({
+      data: {
+        kind: "lesson",
+        dogId: dog.id,
+        startsAt: new Date(input.startsAt),
+        durationMinutes: input.durationMinutes,
+      },
+      select: { id: true },
+    });
+  }
+
   private async owned(
     tx: Prisma.TransactionClient,
     userId: string,
@@ -154,14 +178,20 @@ export class EventsService {
   complete(
     userId: string,
     id: string,
-    result: { rating: number; note?: string },
+    result: { rating?: number; note?: string },
   ) {
     return this.prisma.$transaction(async (tx) => {
       const event = await this.owned(tx, userId, id);
+      const lesson = event.kind === "lesson";
+      // A lesson is only marked done; an exercise always carries its rating.
+      if (lesson && (result.rating !== undefined || result.note !== undefined))
+        throw new BadRequestException("A lesson has no rating or note");
+      if (!lesson && result.rating === undefined)
+        throw new BadRequestException("Rate the exercise from 1 to 5");
       return tx.scheduledExercise.update({
         where: { id },
         data: {
-          rating: result.rating,
+          rating: result.rating ?? null,
           note: result.note?.trim() || null,
           // Early completion belongs to today; overdue completion keeps its date.
           completedAt:
@@ -192,23 +222,27 @@ export class EventsService {
       if (event.completedAt)
         throw new ConflictException("Completed exercises cannot be moved");
       // A move must not give the dog the same exercise twice on one day in the
-      // handler's timezone. 26 hours either side covers DST days.
+      // handler's timezone. 26 hours either side covers DST days. Lessons have
+      // no exercise, so any number of them may share a day.
       const dayOf = localDayOf(input.timeZone);
       const day = dayOf(startsAt);
       const window = 26 * 3600000;
-      const sameExercise = await tx.scheduledExercise.findMany({
-        where: {
-          id: { not: id },
-          dogId: event.dogId,
-          exerciseId: event.exerciseId,
-          deletedAt: null,
-          startsAt: {
-            gt: new Date(startsAt.getTime() - window),
-            lt: new Date(startsAt.getTime() + window),
-          },
-        },
-        select: { startsAt: true },
-      });
+      const sameExercise =
+        event.kind === "lesson"
+          ? []
+          : await tx.scheduledExercise.findMany({
+              where: {
+                id: { not: id },
+                dogId: event.dogId,
+                exerciseId: event.exerciseId,
+                deletedAt: null,
+                startsAt: {
+                  gt: new Date(startsAt.getTime() - window),
+                  lt: new Date(startsAt.getTime() + window),
+                },
+              },
+              select: { startsAt: true },
+            });
       if (sameExercise.some((other) => dayOf(other.startsAt) === day))
         throw new ConflictException(
           "This dog already has this exercise scheduled on that day",

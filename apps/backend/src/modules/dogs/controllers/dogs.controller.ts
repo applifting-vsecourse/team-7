@@ -140,8 +140,9 @@ export class DogsController {
       exercises.map((exercise) => [exercise.id, exercise.goal.disciplineId]),
     );
     const ratings = new Map<string, { total: number; count: number }>();
+    // Lessons with a trainer (#70) have no exercise and no discipline.
     for (const exercise of recentRatings) {
-      const disciplineId = disciplineByExercise.get(exercise.exerciseId);
+      const disciplineId = disciplineByExercise.get(exercise.exerciseId ?? "");
       if (
         !disciplineId ||
         exercise._sum.rating === null ||
@@ -155,16 +156,16 @@ export class DogsController {
     }
     const lastTraining = new Map<string, Date>();
     const exerciseTraining = new Map<string, Map<string, Date>>();
-    for (const exercise of latestTrainings) {
-      const disciplineId = disciplineByExercise.get(exercise.exerciseId);
-      const completedAt = exercise._max.completedAt;
-      if (!disciplineId || !completedAt) continue;
+    for (const { exerciseId, _max } of latestTrainings) {
+      const disciplineId = disciplineByExercise.get(exerciseId ?? "");
+      const completedAt = _max.completedAt;
+      if (!exerciseId || !disciplineId || !completedAt) continue;
       const previous = lastTraining.get(disciplineId);
       if (!previous || completedAt > previous)
         lastTraining.set(disciplineId, completedAt);
       const dates =
         exerciseTraining.get(disciplineId) ?? new Map<string, Date>();
-      dates.set(exercise.exerciseId, completedAt);
+      dates.set(exerciseId, completedAt);
       exerciseTraining.set(disciplineId, dates);
     }
     return {
