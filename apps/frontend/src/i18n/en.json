@@ -627,7 +627,7 @@
   "videos": {
     "title": "Videos",
     "upload": "Upload video",
-    "hint": "Up to 3 videos · MP4, MOV or WebM · max. 30 MiB / 60 s. Videos are saved immediately and shared across sessions of this exercise.",
+    "hint": "Up to 3 videos. Format MP4, MOV or WebM. Max size 30 MiB / 60 s.",
     "limit": "You can add at most 3 videos.",
     "loading": "Loading videos…",
     "loadError": "Videos could not be loaded.",
