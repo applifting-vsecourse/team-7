@@ -8,6 +8,8 @@ type Tracked = {
   // Where the bubble is anchored: changes only once the target has settled
   // somewhere else, so a press, hover lift or slide-in doesn't re-create it.
   anchor: Box | null;
+  // The last target seen, kept across steps: the hole glides from it.
+  last: Box | null;
   missing: boolean;
   // A dialog is open (e.g. the one the action step started): the tour waits.
   modalOpen: boolean;
@@ -42,6 +44,7 @@ export function useTargetBox(selector: string | null, enabled: boolean) {
     selector: null,
     box: null,
     anchor: null,
+    last: null,
     missing: false,
     modalOpen: false,
     viewport: { width: 0, height: 0 },
@@ -92,17 +95,19 @@ export function useTargetBox(selector: string | null, enabled: boolean) {
         '.modal__backdrop:not([data-exiting="true"])',
       );
       const viewport = { width: innerWidth, height: innerHeight };
-      setTracked((prev) =>
-        prev.selector === selector &&
-        same(prev.box, box) &&
-        same(prev.anchor, anchor) &&
-        prev.missing === missing &&
-        prev.modalOpen === modalOpen &&
-        prev.viewport.width === viewport.width &&
-        prev.viewport.height === viewport.height
+      setTracked((prev) => {
+        const last = box ?? prev.last;
+        return prev.selector === selector &&
+          same(prev.box, box) &&
+          same(prev.anchor, anchor) &&
+          same(prev.last, last) &&
+          prev.missing === missing &&
+          prev.modalOpen === modalOpen &&
+          prev.viewport.width === viewport.width &&
+          prev.viewport.height === viewport.height
           ? prev
-          : { selector, box, anchor, missing, modalOpen, viewport },
-      );
+          : { selector, box, anchor, last, missing, modalOpen, viewport };
+      });
       frame = requestAnimationFrame(tick);
     };
     tick();
@@ -113,6 +118,7 @@ export function useTargetBox(selector: string | null, enabled: boolean) {
   return {
     box: current ? tracked.box : null,
     anchor: current ? tracked.anchor : null,
+    last: tracked.last,
     missing: current && tracked.missing,
     modalOpen: tracked.modalOpen,
     viewport: tracked.viewport,
