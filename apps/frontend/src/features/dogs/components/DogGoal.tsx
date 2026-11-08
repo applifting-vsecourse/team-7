@@ -248,6 +248,7 @@ export function DogGoal({
                   <Button
                     variant="outline"
                     size="sm"
+                    data-tour="add-exercise"
                     isDisabled={isPending}
                     onPress={onAddExercise}
                   >

@@ -22,6 +22,9 @@ const onboardingSchema = z.object({
   dogId: z.string().nullable(),
   disciplineId: z.string().nullable(),
   eventId: z.string().nullable(),
+  // The tour dog's goals and exercises: an own discipline starts empty.
+  hasGoal: z.boolean(),
+  hasExercise: z.boolean(),
 });
 export type Onboarding = z.infer<typeof onboardingSchema>;
 

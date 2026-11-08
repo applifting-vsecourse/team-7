@@ -277,6 +277,7 @@ export function DogDisciplineView({
           {!archived && (
             <Button
               variant="outline"
+              data-tour="add-goal"
               onPress={() => setCreating({ type: "goal" })}
             >
               <Plus className="size-4" aria-hidden="true" />

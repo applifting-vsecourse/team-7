@@ -703,6 +703,14 @@
           "add": "Zvolte Přidat na telefon.",
           "confirm": "Potvrďte Přidat."
         }
+      },
+      "ownGoal": {
+        "title": "Přidejte cíl a cvičení",
+        "body": "Vlastní disciplína je zatím prázdná. Založte první cíl tlačítkem Přidat cíl."
+      },
+      "ownExercise": {
+        "title": "Přidejte cvičení",
+        "body": "Cíl je založený. Přidejte k němu první cvičení, ať máte co naplánovat."
       }
     },
     "catalog": {

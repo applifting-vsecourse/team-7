@@ -12,6 +12,7 @@ import {
   eventsKey,
   planningExercisesKey,
 } from "@/features/events/api/eventsQueryOptions";
+import { onboardingKey } from "@/features/onboarding/api/onboardingQueryOptions";
 
 import { dogProfileKey } from "../api/dogProfileQueryOptions";
 import {
@@ -24,6 +25,8 @@ export function invalidateDog(client: QueryClient, userId?: string) {
   return Promise.all([
     client.invalidateQueries({ queryKey: dogProfileKey(userId) }),
     client.invalidateQueries({ queryKey: dogsQueryOptions(userId).queryKey }),
+    // The tour follows the dog's setup (e.g. the first exercise of an own discipline).
+    client.invalidateQueries({ queryKey: onboardingKey(userId) }),
   ]);
 }
 
