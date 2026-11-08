@@ -47,7 +47,7 @@ RUN pnpm install --frozen-lockfile --prod --no-optional --filter backend
 # --- Runtime stage: production deps + compiled output, nothing else ---
 FROM node:24-alpine
 
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl ffmpeg
 RUN corepack enable
 
 WORKDIR /app
