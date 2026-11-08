@@ -114,7 +114,13 @@ export function OnboardingTour() {
   // text before the next one comes in; when the tour ends, the dimming fades.
   const [shown, setShown] = useState<View | null>(null);
 
-  const step = tour.step ?? (installGuide ? "install" : null);
+  // The app's own pages only (not sign-in or the landing page).
+  const appPage = /^\/(overview|calendar|disciplines|dogs)(\/|$)/.test(
+    pathname,
+  );
+  const step = appPage
+    ? (tour.step ?? (installGuide ? "install" : null))
+    : null;
   const config = step ? STEPS[step] : null;
   // On phones a sidebar target is reached through the ☰ menu first (O2b).
   const viaMenu = isMobile && !!config?.inMenu && !menuOpen;
@@ -132,9 +138,10 @@ export function OnboardingTour() {
       : step === "event"
         ? null
         : (config?.target ?? null);
+  // Step 6 waits for the planned exercise's id (it's refetched after saving).
   const selector =
-    step === "event" && tour.data?.eventId
-      ? `[data-event-id="${tour.data.eventId}"]`
+    step === "event"
+      ? `[data-event-id="${tour.data?.eventId ?? "pending"}"]`
       : target && `[data-tour="${target}"]`;
   const {
     box,
@@ -281,6 +288,8 @@ export function OnboardingTour() {
     return () => removeEventListener("keydown", onKey, true);
   }, [step, modalOpen, leave]);
 
+  // Not measured yet: a hole at 0,0 would grow out of the corner.
+  if (step && viewport.width === 0) return null;
   if (!step || !config) {
     if (!shown) return null;
     // The tour has ended: the same dimming and bubble fade out, then go.
@@ -301,7 +310,9 @@ export function OnboardingTour() {
   // The dimming stays on screen the whole time (taking it away between steps
   // made the screen blink). Only the bubble and ring wait: for a dialog the
   // action opened, and for the next target unless it has gone missing.
-  const waiting = modalOpen || (!!selector && !anchorBox && !missing);
+  // One thing at a time: the last bubble leaves while the hole glides to the
+  // next target, and only once it's there do the ring and bubble come in.
+  const waiting = modalOpen || (!!selector && !missing && !glideDone);
   // Between steps the hole stays on the last target until the next one shows,
   // then glides there; without a target it closes into a point.
   const live =
