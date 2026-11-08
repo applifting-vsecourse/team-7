@@ -286,6 +286,16 @@
     animation: period-in var(--motion-slow) var(--ease-enter) both;
   }
 }
+/* The onboarding tour pages the calendar for the user (type `tour`): the
+   same slide, calmer, since they didn't ask for it. */
+:root:active-view-transition-type(tour) {
+  &::view-transition-old(period) {
+    animation-duration: var(--motion-base);
+  }
+  &::view-transition-new(period) {
+    animation-duration: calc(var(--motion-tour) * 1.5);
+  }
+}
 @keyframes period-out {
   to {
     opacity: 0;

@@ -129,7 +129,8 @@ export function useTargetBox(selector: string | null, enabled: boolean) {
         anchor = box;
       }
       if (!box) anchor = null;
-      const missing = !found && now - start > 600;
+      // Generous: a target can take a while (a page or week loading).
+      const missing = !found && now - start > 1500;
       const viewport = { width: innerWidth, height: innerHeight };
       setTracked((prev) => {
         const last = box ?? prev.last;

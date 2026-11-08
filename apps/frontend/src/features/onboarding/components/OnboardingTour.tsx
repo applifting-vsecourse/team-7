@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { dogsQueryOptions } from "@/features/dogs/api/dogsQueryOptions";
+import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
 
 import { installGuideOpenAtom } from "../atoms/installGuideOpenAtom";
 import { type Box, useTargetBox } from "../hooks/useTargetBox";
@@ -192,8 +193,27 @@ export function OnboardingTour() {
       to: ROUTES.calendar,
       search: (prev) => ({ ...prev, view: "week", date: eventDate }),
       replace: true,
+      // The calendar's own week slide, calmer for a move the user didn't make.
+      viewTransition: {
+        types: [
+          eventDate < format(shown, "yyyy-MM-dd") ? "back" : "forward",
+          "tour",
+        ],
+      },
     });
   }, [eventDate, pathname, search.view, search.date, navigate]);
+
+  // The tour's dog must not be filtered out of the calendar it plans in.
+  const [selectedDogs, setSelectedDogs] = useAtom(selectedDogIdsAtom);
+  useEffect(() => {
+    const planning =
+      tour.step === "schedule" ||
+      tour.step === "event" ||
+      tour.step === "views";
+    if (planning && dogId && selectedDogs && !selectedDogs.includes(dogId)) {
+      setSelectedDogs([...selectedDogs, dogId]);
+    }
+  }, [tour.step, dogId, selectedDogs, setSelectedDogs]);
 
   // Info and action steps happen on their own page; resuming opens it.
   useEffect(() => {
