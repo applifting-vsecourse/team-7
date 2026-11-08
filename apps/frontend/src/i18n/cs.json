@@ -636,5 +636,29 @@
     "saved": "Nastavení bylo uloženo.",
     "saveError": "Nastavení se nepodařilo uložit. Zkuste to znovu.",
     "invalid": "Vyberte, zda chcete dostávat e-mailová upozornění."
+  },
+  "videos": {
+    "title": "Videa",
+    "upload": "Nahrát video",
+    "hint": "Až 3 videa. Formát MP4, MOV nebo WebM. Max velikost 30 MiB / 60 s.",
+    "limit": "Můžete přidat nejvýš 3 videa.",
+    "loading": "Načítání videí…",
+    "loadError": "Videa se nepodařilo načíst.",
+    "retry": "Zkusit znovu",
+    "validating": "Kontrola videa…",
+    "uploading": "Nahrávání…",
+    "processing": "Zpracování…",
+    "failed": "Zpracování videa se nezdařilo. Odeberte ho a nahrajte znovu.",
+    "invalid": "Vyberte platné video ve formátu MP4, MOV nebo WebM.",
+    "tooLarge": "Video může mít nejvýš 30 MiB.",
+    "tooLong": "Video může být dlouhé nejvýš 60 sekund.",
+    "uploadError": "Video se nepodařilo nahrát. Zkuste to znovu.",
+    "remove": "Odebrat video {{number}}",
+    "removeError": "Video se nepodařilo odebrat. Zkuste to znovu.",
+    "play": "Přehrát video {{number}}",
+    "player": "Video ze cvičení",
+    "playbackError": "Video se nepodařilo přehrát.",
+    "close": "Zavřít video",
+    "shared": "Videa patří k tomuto psovi a cvičení."
   }
 }

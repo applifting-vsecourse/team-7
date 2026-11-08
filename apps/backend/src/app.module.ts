@@ -7,6 +7,7 @@ import { EventsModule } from "./modules/events/events.module";
 import { OverviewModule } from "./modules/overview/overview.module";
 import { RemindersModule } from "./modules/reminders/reminders.module";
 import { UsersModule } from "./modules/users/users.module";
+import { VideosModule } from "./modules/videos/videos.module";
 import { WelcomeModule } from "./modules/welcome/welcome.module";
 import { AuthModule } from "./shared/auth/auth.module";
 import { Config } from "./shared/config/config.service";
@@ -22,6 +23,7 @@ const imports = [
   RemindersModule,
   UsersModule,
   WelcomeModule,
+  VideosModule,
 ];
 
 @Module({

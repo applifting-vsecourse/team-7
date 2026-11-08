@@ -52,6 +52,7 @@ model Dog {
   scheduledExercises ScheduledExercise[]
   disciplines   DogDiscipline[]
   goals         DogGoal[]
+  videos        Video[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
 
@@ -103,6 +104,7 @@ model Exercise {
   position  Int           @default(0)
   scheduledExercises ScheduledExercise[]
   dogs      DogExercise[]
+  videos    Video[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @default(now()) @updatedAt
 
@@ -110,6 +112,45 @@ model Exercise {
   @@unique([id, goalId])
   @@index([goalId, position])
   @@map("exercise")
+}
+
+enum VideoStatus {
+  uploading
+  pending
+  processing
+  completed
+  failed
+  deleting
+
+  @@map("video_status")
+}
+
+// Keep jobs when their parent is deleted so the worker can remove bucket objects.
+model Video {
+  id           String         @id @default(cuid())
+  // DB check restricts slots to 1..3; a partial unique index reserves each slot
+  // per training session while status is not deleting (see video_sessions migration).
+  slot         Int
+  userId       String
+  dogId        String?
+  dog          Dog?           @relation(fields: [dogId], references: [id], onDelete: SetNull)
+  exerciseId   String?
+  exercise     Exercise?      @relation(fields: [exerciseId], references: [id], onDelete: SetNull)
+  sessionId    String?
+  session      ScheduledExercise? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  filePath     String         @unique @map("file_path")
+  outputPath   String         @unique @map("output_path")
+  status       VideoStatus    @default(pending)
+  rawDeletedAt DateTime?      @map("raw_deleted_at")
+  duration     Float?
+  error        String?
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @default(now()) @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@index([dogId, exerciseId, createdAt])
+  @@index([sessionId, createdAt])
+  @@map("video")
 }
 
 model DogGoal {
@@ -234,6 +275,7 @@ enum ScheduledExerciseKind {
 }
 
 model ScheduledExercise {
+  videos Video[]
   id String @id @default(cuid())
   kind ScheduledExerciseKind @default(exercise)
   dogId String
