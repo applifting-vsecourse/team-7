@@ -34,10 +34,8 @@ async function asTourUser(
     if (
       response.request().method() !== "POST" ||
       !response.ok() ||
-      // A dog, a copied catalog discipline or an own discipline.
-      !/\/api\/(dogs|dogs\/[^/]+\/disciplines|onboarding\/catalog\/[^/]+)$/.test(
-        pathname,
-      )
+      // A dog or an own discipline created by the test.
+      !/\/api\/(dogs|dogs\/[^/]+\/disciplines)$/.test(pathname)
     ) {
       return;
     }
@@ -69,7 +67,7 @@ async function asTourUser(
   }
 }
 
-test("the guide walks through a dog, a prefilled discipline and the first exercise", async ({
+test("the guide walks through a dog, a default discipline and the first exercise", async ({
   page,
   login,
   app,
@@ -131,7 +129,7 @@ test("the guide walks through a dog, a prefilled discipline and the first exerci
       await tour.button(profile, "Next").click();
     });
 
-    await test.step("Copy a prefilled discipline to the dog (O4, O5)", async () => {
+    await test.step("Assign a default discipline from the library (O4, O5)", async () => {
       await tour.expectBubble("Assign a discipline", "Step 3 of 7");
       expect(
         await page.evaluate(
@@ -142,9 +140,11 @@ test("the guide walks through a dog, a prefilled discipline and the first exerci
       await page
         .getByRole("button", { name: "Assign discipline", exact: true })
         .click();
-      const dialog = tour.catalogDialog;
+      const dialog = tour.disciplineDialog;
       await dialog
-        .getByRole("radio", { name: "Reliable recall", exact: true })
+        // Every account starts with the default disciplines; test accounts
+        // got the Czech ones.
+        .getByRole("radio", { name: "Spolehlivé přivolání", exact: true })
         .press("Space");
       await dialog
         .getByRole("button", { name: "Continue", exact: true })
@@ -163,7 +163,7 @@ test("the guide walks through a dog, a prefilled discipline and the first exerci
       await calendar.scheduleExercise.click();
       // The tour's dog and discipline are already selected.
       await calendar
-        .schedulingExercise("On name from the next room")
+        .schedulingExercise("Na jméno z vedlejší místnosti")
         .press("Space");
       await calendar.continueScheduling.click();
       await expect(calendar.date).not.toHaveValue("");
@@ -224,8 +224,8 @@ test("on a phone the menu closes once the guide moves to the dog's page", async 
     await page
       .getByRole("button", { name: "Assign discipline", exact: true })
       .click();
-    await expect(tour.catalogDialog).toBeVisible();
-    await tour.catalogDialog
+    await expect(tour.disciplineDialog).toBeVisible();
+    await tour.disciplineDialog
       .getByRole("button", { name: "Cancel", exact: true })
       .click();
   });
@@ -252,10 +252,10 @@ test("an own discipline asks for a goal and an exercise before the calendar", as
     await page
       .getByRole("button", { name: "Assign discipline", exact: true })
       .click();
-    await tour.catalogDialog
+    await tour.disciplineDialog
       .getByRole("radio", { name: "Your own discipline", exact: true })
       .press("Space");
-    await tour.catalogDialog
+    await tour.disciplineDialog
       .getByRole("button", { name: "Continue", exact: true })
       .click();
     const create = page.getByRole("dialog", {

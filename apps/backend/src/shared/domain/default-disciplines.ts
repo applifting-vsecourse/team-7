@@ -1,22 +1,25 @@
-// Prefilled disciplines offered by the first-login tour (#72, Figma "Spec ·
-// Onboarding"). Based on AKC Canine Good Citizen and common training
-// practice. Picking one copies it into the handler's library, so later edits
-// never change the catalog.
-export const CATALOG_LANGUAGES = ["cs", "en"] as const;
-export type CatalogLanguage = (typeof CATALOG_LANGUAGES)[number];
+import type { Prisma } from "@/generated/prisma/client";
 
-type Text = Record<CatalogLanguage, string>;
+// The disciplines every handler's library starts with (#72): goals and
+// exercises included, based on AKC Canine Good Citizen and common training
+// practice. They are ordinary library disciplines from then on: the handler
+// edits or deletes them, and the tour offers whatever the library holds.
+export const DEFAULT_DISCIPLINE_LANGUAGES = ["cs", "en"] as const;
+export type DefaultDisciplineLanguage =
+  (typeof DEFAULT_DISCIPLINE_LANGUAGES)[number];
+
+type Text = Record<DefaultDisciplineLanguage, string>;
 type Item = { name: Text };
-type CatalogGoal = Item & { exercises: Item[] };
-export type CatalogDiscipline = Item & { key: string; goals: CatalogGoal[] };
+type DefaultGoal = Item & { exercises: Item[] };
+export type DefaultDiscipline = Item & { key: string; goals: DefaultGoal[] };
 
 const item = (cs: string, en: string): Item => ({ name: { cs, en } });
-const goal = (cs: string, en: string, exercises: Item[]): CatalogGoal => ({
+const goal = (cs: string, en: string, exercises: Item[]): DefaultGoal => ({
   ...item(cs, en),
   exercises,
 });
 
-export const DISCIPLINE_CATALOG: CatalogDiscipline[] = [
+export const DEFAULT_DISCIPLINES: DefaultDiscipline[] = [
   {
     key: "obedience",
     ...item("Základy poslušnosti", "Obedience basics"),
@@ -118,3 +121,46 @@ export const DISCIPLINE_CATALOG: CatalogDiscipline[] = [
     ],
   },
 ];
+
+/** Adds the default disciplines to a new handler's library. */
+export async function createDefaultDisciplines(
+  db: Pick<Prisma.TransactionClient, "discipline">,
+  userId: string,
+  language: DefaultDisciplineLanguage,
+) {
+  for (const discipline of DEFAULT_DISCIPLINES) {
+    await db.discipline.create({
+      data: {
+        userId,
+        name: discipline.name[language],
+        goals: {
+          create: discipline.goals.map((goal) => ({
+            name: goal.name[language],
+            exercises: {
+              create: goal.exercises.map((exercise, position) => ({
+                name: exercise.name[language],
+                position,
+              })),
+            },
+          })),
+        },
+      },
+    });
+  }
+}
+
+/**
+ * The language a handler signed up in: the frontend passes its `lng` along in
+ * the callback URL (as for emails). Anything else gets Czech, the default.
+ */
+export function signUpLanguage(
+  callbackURL: unknown,
+): DefaultDisciplineLanguage {
+  if (typeof callbackURL !== "string") return "cs";
+  try {
+    const url = new URL(callbackURL, "http://localhost");
+    return url.searchParams.get("lng") === "en" ? "en" : "cs";
+  } catch {
+    return "cs";
+  }
+}

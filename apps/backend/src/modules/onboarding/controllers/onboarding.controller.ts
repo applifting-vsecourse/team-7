@@ -1,12 +1,8 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
-  NotFoundException,
-  Param,
   Patch,
-  Post,
   Query,
   UseGuards,
   UsePipes,
@@ -15,24 +11,15 @@ import {
 import {
   ApiBadRequestResponse,
   ApiCookieAuth,
-  ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { PrismaService } from "@/core/prisma/prisma.service";
-import { findActiveDog } from "@/modules/dogs/domain/owned-dog";
-import { DogSelectionService } from "@/modules/dogs/services/dog-selection.service";
-import { DISCIPLINE_CATALOG } from "@/modules/onboarding/domain/discipline-catalog";
 import { User } from "@/shared/auth/decorators/user.decorator";
 import { Identity } from "@/shared/auth/domain/identity";
 import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
-import {
-  CatalogCopyDto,
-  CatalogQueryDto,
-  OnboardingQueryDto,
-  OnboardingUpdateDto,
-} from "./dto/onboarding.dto";
+import { OnboardingQueryDto, OnboardingUpdateDto } from "./dto/onboarding.dto";
 
 const stateSelect = {
   onboardingStatus: true,
@@ -54,10 +41,7 @@ const stateSelect = {
   }),
 )
 export class OnboardingController {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly selections: DogSelectionService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   @Get()
   @ApiOperation({
@@ -140,83 +124,5 @@ export class OnboardingController {
       step: state.onboardingStep,
       cardHidden: state.onboardingCardHidden,
     };
-  }
-
-  @Get("catalog")
-  @ApiOperation({ summary: "Prefilled disciplines offered by the tour" })
-  catalog(@Query() { lng }: CatalogQueryDto) {
-    // Index-based ids keep the shape of a library discipline, so a selection
-    // looks like any other dog selection.
-    return DISCIPLINE_CATALOG.map((discipline) => ({
-      key: discipline.key,
-      name: discipline.name[lng],
-      goals: discipline.goals.map((goal, goalIndex) => ({
-        id: String(goalIndex),
-        name: goal.name[lng],
-        exercises: goal.exercises.map((exercise, index) => ({
-          id: `${goalIndex}.${index}`,
-          name: exercise.name[lng],
-        })),
-      })),
-    }));
-  }
-
-  @Post("catalog/:key")
-  @ApiOperation({
-    summary:
-      "Copy a prefilled discipline into the library and assign the selected goals to the dog",
-  })
-  @ApiNotFoundResponse({ description: "Dog or catalog discipline not found" })
-  copy(
-    @User() user: Identity,
-    @Param("key") key: string,
-    @Body() body: CatalogCopyDto,
-  ) {
-    const source = DISCIPLINE_CATALOG.find((item) => item.key === key);
-    if (!source) throw new NotFoundException("Catalog discipline not found");
-    if (!body.goals.length)
-      throw new BadRequestException("Select at least one goal");
-    const { lng } = body;
-    // One transaction: a failed save leaves no half-copied discipline.
-    return this.prisma.$transaction(async (tx) => {
-      await findActiveDog(tx, user.id, body.dogId);
-      const discipline = await tx.discipline.create({
-        data: { userId: user.id, name: source.name[lng] },
-      });
-      const ids = new Map<string, string>();
-      for (const [goalIndex, goal] of source.goals.entries()) {
-        const created = await tx.goal.create({
-          data: {
-            disciplineId: discipline.id,
-            name: goal.name[lng],
-            exercises: {
-              create: goal.exercises.map((exercise, position) => ({
-                name: exercise.name[lng],
-                position,
-              })),
-            },
-          },
-          include: { exercises: { orderBy: { position: "asc" } } },
-        });
-        ids.set(String(goalIndex), created.id);
-        created.exercises.forEach((exercise, index) =>
-          ids.set(`${goalIndex}.${index}`, exercise.id),
-        );
-      }
-      const map = (id: string) => {
-        const mapped = ids.get(id);
-        if (!mapped) throw new BadRequestException("Unknown catalog item");
-        return mapped;
-      };
-      await this.selections.replace(
-        tx,
-        { userId: user.id, dogId: body.dogId, disciplineId: discipline.id },
-        body.goals.map((goal) => ({
-          goalId: map(goal.goalId),
-          exerciseIds: goal.exerciseIds.map(map),
-        })),
-      );
-      return discipline;
-    });
   }
 }

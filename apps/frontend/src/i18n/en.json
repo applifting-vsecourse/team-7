@@ -713,12 +713,10 @@
         "body": "The goal is ready. Add its first exercise so there's something to plan."
       }
     },
-    "catalog": {
+    "disciplineDialog": {
       "intro": "Pick a ready-made discipline or create your own. You can edit goals and exercises at any time.",
-      "prefilled": "Ready-made · {{summary}}",
       "custom": "Your own discipline",
-      "customHint": "Start with an empty discipline and add goals yourself.",
-      "loadError": "The ready-made disciplines couldn't be loaded."
+      "customHint": "Start with an empty discipline and add goals yourself."
     },
     "card": {
       "title": "Getting started · {{count}} of 3 done",

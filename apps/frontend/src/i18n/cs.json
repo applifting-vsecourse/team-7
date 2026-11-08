@@ -713,12 +713,10 @@
         "body": "Cíl je založený. Přidejte k němu první cvičení, ať máte co naplánovat."
       }
     },
-    "catalog": {
+    "disciplineDialog": {
       "intro": "Vyberte připravenou disciplínu, nebo si založte vlastní. Cíle a cvičení si můžete kdykoli upravit.",
-      "prefilled": "Předvyplněná · {{summary}}",
       "custom": "Vlastní disciplína",
-      "customHint": "Začnete s prázdnou disciplínou a cíle si doplníte sami.",
-      "loadError": "Připravené disciplíny se nepodařilo načíst."
+      "customHint": "Začnete s prázdnou disciplínou a cíle si doplníte sami."
     },
     "card": {
       "title": "Začínáme · {{count}} ze 3 hotovo",
