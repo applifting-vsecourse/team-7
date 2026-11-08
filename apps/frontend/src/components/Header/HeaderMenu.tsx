@@ -1,12 +1,14 @@
-import { ArrowRightFromSquare } from "@gravity-ui/icons";
+import { ArrowRightFromSquare, Gear } from "@gravity-ui/icons";
 import { Avatar, Button, buttonVariants, Dropdown, Label } from "@heroui/react";
-import { Link } from "@tanstack/react-router";
+import { createLink, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes.ts";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { useSignOut } from "@/features/auth/hooks/useSignOut";
+
+const DropdownLink = createLink(Dropdown.Item);
 
 export function HeaderMenu() {
   const { t } = useTranslation();
@@ -49,10 +51,18 @@ export function HeaderMenu() {
         </div>
         <Dropdown.Menu
           aria-label={t(($) => $.navigation.userActions)}
-          onAction={() => {
-            if (!signOut.isPending) signOut.mutate();
+          onAction={(key) => {
+            if (key === "sign-out" && !signOut.isPending) signOut.mutate();
           }}
         >
+          <DropdownLink
+            id="settings"
+            to={ROUTES.settings}
+            textValue={t(($) => $.navigation.settings)}
+          >
+            <Gear className="size-4" />
+            <Label>{t(($) => $.navigation.settings)}</Label>
+          </DropdownLink>
           <Dropdown.Item
             id="sign-out"
             textValue={t(($) => $.auth.signOut)}

@@ -197,6 +197,7 @@ model User {
   name          String
   email         String
   emailVerified Boolean
+  emailNotificationsEnabled Boolean @default(true)
   image         String?      @db.Text
   createdAt     DateTime
   updatedAt     DateTime

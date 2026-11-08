@@ -15,6 +15,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OverviewRouteImport } from './routes/overview'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as DisciplinesIndexRouteImport } from './routes/disciplines/index'
@@ -52,6 +53,11 @@ const OverviewRoute = OverviewRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -104,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/overview': typeof OverviewRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/overview': typeof OverviewRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/overview': typeof OverviewRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/disciplines/$disciplineId': typeof DisciplinesDisciplineIdRoute
@@ -155,6 +164,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/overview'
     | '/reset-password'
+    | '/settings'
     | '/signup'
     | '/verify-email'
     | '/disciplines/$disciplineId'
@@ -171,6 +181,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/overview'
     | '/reset-password'
+    | '/settings'
     | '/signup'
     | '/verify-email'
     | '/disciplines/$disciplineId'
@@ -187,6 +198,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/overview'
     | '/reset-password'
+    | '/settings'
     | '/signup'
     | '/verify-email'
     | '/disciplines/$disciplineId'
@@ -204,6 +216,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OverviewRoute: typeof OverviewRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   DisciplinesDisciplineIdRoute: typeof DisciplinesDisciplineIdRoute
@@ -256,6 +269,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -324,6 +344,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OverviewRoute: OverviewRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   DisciplinesDisciplineIdRoute: DisciplinesDisciplineIdRoute,

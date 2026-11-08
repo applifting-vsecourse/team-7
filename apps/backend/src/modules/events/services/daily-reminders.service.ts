@@ -32,7 +32,10 @@ export class DailyRemindersService {
         kind: "exercise",
         completedAt: null,
         deletedAt: null,
-        dog: { archivedAt: null, user: { emailVerified: true } },
+        dog: {
+          archivedAt: null,
+          user: { emailVerified: true, emailNotificationsEnabled: true },
+        },
         // Pad UTC midnight to cover the whole local day, including DST changes.
         // Filter exact local dates below, as in the overview.
         startsAt: {

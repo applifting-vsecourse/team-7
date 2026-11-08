@@ -85,7 +85,8 @@
     "disciplines": "Disciplines",
     "myDogs": "My dogs",
     "addDog": "Add dog",
-    "archive": "Archive ({{count}})"
+    "archive": "Archive ({{count}})",
+    "settings": "Settings"
   },
   "dogs": {
     "all": "All",
@@ -623,5 +624,17 @@
       "goalPaused": "The goal {{goal}} is paused. To schedule this exercise, return the goal to in progress on the discipline page.",
       "goalCompleted": "The goal {{goal}} is completed. To schedule this exercise, return the goal to in progress on the discipline page."
     }
+  },
+  "settings": {
+    "notifications": "Email notifications",
+    "description": "Choose whether TrainLoop reminds you about scheduled training.",
+    "emailNotifications": "Receive email notifications",
+    "emailNotificationsDescription": "A daily reminder when you have exercises scheduled for today.",
+    "loading": "Loading settings…",
+    "loadError": "Could not load settings.",
+    "save": "Save changes",
+    "saved": "Settings saved.",
+    "saveError": "Could not save settings. Please try again.",
+    "invalid": "Choose whether to receive email notifications."
   }
 }
