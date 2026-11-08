@@ -5,8 +5,8 @@ import { emailMessages } from "@/core/email/messages";
 import { renderEmail } from "@/core/email/render";
 import { DailyReminder } from "@/core/email/templates/daily-reminder";
 import { PrismaService } from "@/core/prisma/prisma.service";
-import { dayMs, localCalendar } from "@/modules/events/domain/local-calendar";
 import { Config } from "@/shared/config/config.service";
+import { dayMs, localCalendar } from "@/shared/domain/local-calendar";
 
 const timeZone = "Europe/Prague";
 
