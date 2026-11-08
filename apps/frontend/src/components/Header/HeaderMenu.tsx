@@ -4,14 +4,7 @@ import {
   Compass,
   Gear,
 } from "@gravity-ui/icons";
-import {
-  Avatar,
-  Button,
-  buttonVariants,
-  Dropdown,
-  Label,
-  useMediaQuery,
-} from "@heroui/react";
+import { Avatar, Button, buttonVariants, Dropdown, Label } from "@heroui/react";
 import { createLink, Link } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
 import { useTranslation } from "react-i18next";
@@ -22,7 +15,7 @@ import { useSession } from "@/features/auth/hooks/useSession";
 import { useSignOut } from "@/features/auth/hooks/useSignOut";
 import { installGuideOpenAtom } from "@/features/onboarding/atoms/installGuideOpenAtom";
 import { useTour } from "@/features/onboarding/hooks/useTour";
-import { isStandalone } from "@/features/onboarding/lib/install";
+import { canAddToHomeScreen } from "@/features/onboarding/lib/install";
 
 const DropdownLink = createLink(Dropdown.Item);
 
@@ -32,8 +25,8 @@ export function HeaderMenu() {
   const signOut = useSignOut();
   const tour = useTour();
   const openInstallGuide = useSetAtom(installGuideOpenAtom);
-  // Figma O13: phones also get "Add to home screen", unless already installed.
-  const canInstall = useMediaQuery("(max-width: 767px)") && !isStandalone();
+  // Figma O13: phone browsers we have instructions for, unless already added.
+  const canInstall = canAddToHomeScreen();
 
   if (!user) {
     return (

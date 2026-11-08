@@ -22,7 +22,7 @@ import { dogsQueryOptions } from "@/features/dogs/api/dogsQueryOptions";
 import { installGuideOpenAtom } from "../atoms/installGuideOpenAtom";
 import { type Box, useTargetBox } from "../hooks/useTargetBox";
 import { useTour } from "../hooks/useTour";
-import { canPromptInstall, isIos, promptInstall } from "../lib/install";
+import { homeScreenBrowser } from "../lib/install";
 import { STEPS } from "../lib/steps";
 
 // Figma spotlight: the hole leaves 4px around the target, the accent ring
@@ -197,7 +197,7 @@ export function OnboardingTour() {
     </Button>
   );
 
-  const ios = isIos();
+  const browser = homeScreenBrowser();
   const dogName =
     dogs.data?.find((dog) => dog.id === (pageDogId ?? dogId))?.name ?? "";
   const touch = isMobile ? "bodyTouch" : "body";
@@ -240,21 +240,26 @@ export function OnboardingTour() {
                   body: t(($) => $.onboarding.steps.openCalendar[touch]),
                   footer: footer(),
                 }
-              : step === "install" && ios
+              : step === "install" && browser
                 ? {
-                    title: t(($) => $.onboarding.steps.installIos.title),
+                    title: t(($) => $.onboarding.steps.install.title),
                     body: (
                       <>
-                        {t(($) => $.onboarding.steps.installIos.body)}
+                        {t(($) => $.onboarding.steps.install.body)}
                         <ol className="list-decimal pl-5">
                           <li>
-                            {t(($) => $.onboarding.steps.installIos.share)}
+                            {t(
+                              ($) => $.onboarding.steps.install[browser].share,
+                            )}
                           </li>
                           <li>
-                            {t(($) => $.onboarding.steps.installIos.addToHome)}
+                            {t(($) => $.onboarding.steps.install[browser].add)}
                           </li>
                           <li>
-                            {t(($) => $.onboarding.steps.installIos.confirm)}
+                            {t(
+                              ($) =>
+                                $.onboarding.steps.install[browser].confirm,
+                            )}
                           </li>
                         </ol>
                       </>
@@ -265,39 +270,18 @@ export function OnboardingTour() {
                       </Button>,
                     ),
                   }
-                : step === "install"
-                  ? {
-                      title: t(($) => $.onboarding.steps.installAndroid.title),
-                      body: t(($) => $.onboarding.steps.installAndroid.body),
-                      footer: footer(
-                        canPromptInstall() ? (
-                          <Button
-                            size="sm"
-                            onPress={() =>
-                              void promptInstall().finally(closeInstall)
-                            }
-                          >
-                            {t(($) => $.onboarding.install)}
-                          </Button>
-                        ) : (
-                          <Button size="sm" onPress={closeInstall}>
-                            {t(($) => $.onboarding.done)}
-                          </Button>
-                        ),
-                      ),
-                    }
-                  : {
-                      // assignDiscipline, schedule, event, views
-                      title: t(($) => $.onboarding.steps[step].title),
-                      body: t(($) => $.onboarding.steps[step].body),
-                      footer: footer(config.action ? undefined : nextButton),
-                    }),
+                : {
+                    // assignDiscipline, schedule, event, views
+                    title: t(($) => $.onboarding.steps[step].title),
+                    body: t(($) => $.onboarding.steps[step].body),
+                    footer: footer(config.action ? undefined : nextButton),
+                  }),
   };
 
   // O3 highlights the whole page; its bubble sits in the middle (Placement None).
   const centred = !box || step === "dogProfile";
-  // iPhone: the arrow points down to Safari's Share button (O10); Android has
-  // the same bottom bubble without an arrow (O11).
+  // Bottom bubble (O10/O11). The arrow points down only where the button sits
+  // at the bottom centre: Safari's Share, Edge's ⋯. Chrome's is at the top.
   const bottom = step === "install";
   const placement: PopoverContentProps["placement"] = bottom
     ? "top"
@@ -362,7 +346,11 @@ export function OnboardingTour() {
               : "w-coach-mark max-w-[calc(100vw-2rem)]"
           }
         >
-          {(!centred || (bottom && ios)) && <Popover.Arrow />}
+          {(!centred ||
+            (bottom &&
+              (browser === "safari" || browser?.startsWith("edge")))) && (
+            <Popover.Arrow />
+          )}
           <CoachMark {...bubble} />
         </Popover.Content>
       </Popover>
