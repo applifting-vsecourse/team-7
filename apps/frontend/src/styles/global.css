@@ -289,6 +289,23 @@
     animation: period-in var(--motion-slow) var(--ease-enter) both;
   }
 }
+/* The tour's layers (dimming, ring, bubble) stay above the named elements of
+   a page or week change and show their live state: no crossfade of an old
+   snapshot, no morph. */
+::view-transition-group(tour-dim),
+::view-transition-group(tour-ring),
+::view-transition-group(tour-bubble),
+::view-transition-new(tour-dim),
+::view-transition-new(tour-ring),
+::view-transition-new(tour-bubble) {
+  animation: none;
+}
+::view-transition-old(tour-dim),
+::view-transition-old(tour-ring),
+::view-transition-old(tour-bubble) {
+  display: none;
+}
+
 /* The onboarding tour pages the calendar for the user (type `tour`): the
    same slide, calmer, since they didn't ask for it. */
 :root:active-view-transition-type(tour) {

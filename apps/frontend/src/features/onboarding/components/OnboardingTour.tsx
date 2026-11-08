@@ -23,7 +23,7 @@ import { useTranslation } from "react-i18next";
 
 import { mobileSidebarOpenAtom } from "@/app/atoms/mobileSidebarOpenAtom";
 import { ROUTES } from "@/app/routes";
-import { cn } from "@/lib/utils";
+import { cn, transitionName } from "@/lib/utils";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { dogsQueryOptions } from "@/features/dogs/api/dogsQueryOptions";
@@ -41,7 +41,10 @@ const HOLE = 4;
 const RING = 6;
 // React Aria puts its overlays (the mobile menu drawer, popovers) at z-index
 // 100000; the spotlight must cover an open menu and the bubble sits above it.
-const BUBBLE_LAYER = { zIndex: 100002 };
+// Named for view transitions too: elements the app names (the active menu
+// link, the calendar period) are drawn above the page while a page or week
+// changes, so the tour's own layers need names to stay on top of them.
+const BUBBLE_LAYER = { zIndex: 100002, ...transitionName("tour-bubble") };
 
 /** The tour's motion token in ms (0 when motion is reduced). */
 function tourDuration() {
@@ -535,7 +538,10 @@ export function OnboardingTour() {
             key={`${step}-${target}`}
             aria-hidden="true"
             className="pointer-events-none fixed z-100001 animate-spotlight rounded-xl border-2 border-accent"
-            style={place(grow(box, RING))}
+            style={{
+              ...place(grow(box, RING)),
+              ...transitionName("tour-ring"),
+            }}
           />
         )
       }
@@ -609,7 +615,7 @@ function TourLayer({
       <div
         aria-hidden="true"
         className={overlayClassName}
-        style={{ clipPath }}
+        style={{ clipPath, ...transitionName("tour-dim") }}
         onAnimationEnd={(event) => {
           if (event.target === event.currentTarget) onOverlayAnimationEnd?.();
         }}
