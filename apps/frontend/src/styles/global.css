@@ -37,6 +37,9 @@
   /* A tile acknowledges an achievement, e.g. a training marked completed. */
   --animate-celebrate: celebrate var(--motion-slow) var(--ease-enter);
   --animate-fade: fade var(--motion-draw) var(--ease-enter) backwards;
+  /* Onboarding tour (#72): the screen dims and the ring settles on its target. */
+  --animate-dim: fade var(--motion-tour) var(--ease-enter) backwards;
+  --animate-spotlight: spotlight var(--motion-tour) var(--ease-enter) backwards;
 
   @keyframes enter {
     from {
@@ -66,6 +69,12 @@
       opacity: 0;
     }
   }
+  @keyframes spotlight {
+    from {
+      opacity: 0;
+      scale: 1.12;
+    }
+  }
 }
 
 /* Motion durations: exits and hovers are short, entrances slightly longer. */
@@ -75,6 +84,7 @@
   --motion-slow: 400ms;
   --motion-stagger: 60ms;
   --motion-draw: 800ms; /* a chart line drawing itself */
+  --motion-tour: 500ms; /* the onboarding tour: a touch slower, so it reads */
   --period-shift: 3rem;
 }
 
@@ -87,6 +97,7 @@
     --motion-slow: 0ms;
     --motion-stagger: 0ms;
     --motion-draw: 0ms;
+    --motion-tour: 0ms;
   }
 }
 [data-reduce-motion="true"] {
@@ -95,6 +106,7 @@
   --motion-slow: 0ms;
   --motion-stagger: 0ms;
   --motion-draw: 0ms;
+  --motion-tour: 0ms;
 }
 
 /* Hover lift for clickable cards and card-like options. */
@@ -218,6 +230,11 @@
 }
 
 /* Content dimmed while newer data loads. */
+/* The tour's spotlight hole glides from one target to the next. */
+@utility tour-hole {
+  transition: clip-path var(--motion-tour) var(--ease-enter);
+}
+
 @utility state-dim {
   @apply transition-opacity duration-(--motion-base) ease-enter;
 }
@@ -344,6 +361,13 @@
 }
 
 @layer components {
+  /* The tour's Coach Mark keeps the kit's popover entrance, a touch slower
+     (--motion-tour) so each step reads; the kit's 150ms is meant for menus. */
+  .popover.coach-mark[data-entering="true"] {
+    animation-duration: var(--motion-tour);
+    animation-timing-function: var(--ease-enter);
+  }
+
   /* Breadcrumbs stay on one line: items shrink and long names end in an
      ellipsis instead of overflowing the page (the kit makes items shrink-0). */
   .breadcrumbs {

@@ -49,7 +49,8 @@ const place = (box: Box) => ({
 
 /** The backdrop with a rounded hole: clicks outside it do nothing. */
 function holePath({ x, y, width: w, height: h }: Box, vw: number, vh: number) {
-  const r = 10;
+  // Same commands for every hole (even a closed one) so it can glide.
+  const r = Math.min(10, w / 2, h / 2);
   return `path(evenodd, "M0 0H${vw}V${vh}H0Z M${x + r} ${y}H${x + w - r}A${r} ${r} 0 0 1 ${x + w} ${y + r}V${y + h - r}A${r} ${r} 0 0 1 ${x + w - r} ${y + h}H${x + r}A${r} ${r} 0 0 1 ${x} ${y + h - r}V${y + r}A${r} ${r} 0 0 1 ${x + r} ${y}Z")`;
 }
 
@@ -103,6 +104,7 @@ export function OnboardingTour() {
   const {
     box,
     anchor: anchorBox,
+    last,
     missing,
     modalOpen,
     viewport,
@@ -190,7 +192,15 @@ export function OnboardingTour() {
   // made the screen blink). Only the bubble and ring wait: for a dialog the
   // action opened, and for the next target unless it has gone missing.
   const waiting = modalOpen || (!!selector && !anchorBox && !missing);
-  const hole = !modalOpen && box;
+  // Between steps the hole stays on the last target until the next one shows,
+  // then glides there; without a target it closes into a point.
+  const live = box ?? (selector && !missing ? last : null);
+  const centre = last
+    ? { x: last.x + last.width / 2, y: last.y + last.height / 2 }
+    : { x: viewport.width / 2, y: viewport.height / 2 };
+  const hole = live
+    ? grow(live, HOLE)
+    : { x: centre.x, y: centre.y, width: 0, height: 0 };
 
   const position = tour.steps.indexOf(step) + 1;
   const label =
@@ -360,21 +370,21 @@ export function OnboardingTour() {
       <div
         aria-hidden="true"
         className={cn(
-          "fixed inset-0 touch-none bg-backdrop",
+          "fixed inset-0 animate-dim touch-none bg-backdrop tour-hole",
           // Under an open dialog, above everything (the phone menu) otherwise.
           modalOpen ? "z-99999" : "z-100001",
         )}
         style={{
-          clipPath: hole
-            ? holePath(grow(hole, HOLE), viewport.width, viewport.height)
-            : undefined,
+          clipPath: holePath(hole, viewport.width, viewport.height),
         }}
       />
-      {hole && !waiting && (
+      {box && !waiting && (
         <div
+          // Each new target gets its ring settling onto it.
+          key={`${step}-${target}`}
           aria-hidden="true"
-          className="pointer-events-none fixed z-100001 rounded-xl border-2 border-accent"
-          style={place(grow(hole, RING))}
+          className="pointer-events-none fixed z-100001 animate-spotlight rounded-xl border-2 border-accent"
+          style={place(grow(box, RING))}
         />
       )}
       <div
@@ -399,8 +409,8 @@ export function OnboardingTour() {
             offset={centred && !bottom ? 0 : 12}
             className={
               centred && !bottom
-                ? "w-coach-mark max-w-[calc(100vw-2rem)] -translate-y-1/2"
-                : "w-coach-mark max-w-[calc(100vw-2rem)]"
+                ? "coach-mark w-coach-mark max-w-[calc(100vw-2rem)] -translate-y-1/2"
+                : "coach-mark w-coach-mark max-w-[calc(100vw-2rem)]"
             }
           >
             {(!centred ||
