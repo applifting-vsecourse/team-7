@@ -12,9 +12,62 @@ describe("daily exercise reminders", () => {
   const email = mock<EmailService>();
   const config = mock<Config>({ frontendUrl: "https://trainloop.example" });
   const service = new DailyRemindersService(prisma, email, config);
-  const exercise = (startsAt: string, userId = "owner") => ({
+  const exercise = (
+    startsAt: string,
+    userId = "owner",
+    dogName = "Bára",
+    exerciseName = "Přivolání",
+  ) => ({
+    id: `${userId}-${dogName}-${startsAt}`,
     startsAt: new Date(startsAt),
-    dog: { user: { id: userId, email: `${userId}@example.com` } },
+    exercise: { name: exerciseName },
+    dog: {
+      id: `${userId}-${dogName}`,
+      name: dogName,
+      user: { id: userId, email: `${userId}@example.com` },
+    },
+  });
+
+  it("lists each owner's dogs with only their exercises for today and escapes names", async () => {
+    prisma.scheduledExercise.findMany.mockResolvedValue([
+      exercise("2026-11-07T08:00:00Z", "owner", "Bára", "Přivolání"),
+      exercise("2026-11-07T09:00:00Z", "owner", "Bára", "Odložení"),
+      exercise(
+        "2026-11-07T10:00:00Z",
+        "owner",
+        "Rex <Junior>",
+        "Sedni & čekej",
+      ),
+      exercise("2026-11-07T11:00:00Z", "other", "Max", "Slalom"),
+      exercise("2026-11-08T08:00:00Z", "owner", "Bára", "Zítřejší cvičení"),
+    ] as never);
+
+    await service.sendDailyReminders();
+
+    const ownerHtml = email.sendEmail.mock.calls.find(
+      ([to]) => to === "owner@example.com",
+    )![2];
+    expect(ownerHtml).toContain("Bára");
+    expect(ownerHtml).toContain("Přivolání");
+    expect(ownerHtml).toContain("Odložení");
+    expect(ownerHtml).toContain("Rex &lt;Junior&gt;");
+    expect(ownerHtml).toContain("Sedni &amp; čekej");
+    expect(ownerHtml).not.toContain("Max");
+    expect(ownerHtml).not.toContain("Slalom");
+    expect(ownerHtml).not.toContain("Zítřejší cvičení");
+    expect(ownerHtml.indexOf("Bára")).toBeLessThan(
+      ownerHtml.indexOf("Přivolání"),
+    );
+    expect(ownerHtml.indexOf("Odložení")).toBeLessThan(
+      ownerHtml.indexOf("Rex &lt;Junior&gt;"),
+    );
+    const otherHtml = email.sendEmail.mock.calls.find(
+      ([to]) => to === "other@example.com",
+    )![2];
+    expect(otherHtml).toContain("Max");
+    expect(otherHtml).toContain("Slalom");
+    expect(otherHtml).not.toContain("Bára");
+    expect(otherHtml).not.toContain("Přivolání");
   });
 
   beforeEach(() => {

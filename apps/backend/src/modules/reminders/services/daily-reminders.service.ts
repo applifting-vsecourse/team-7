@@ -3,7 +3,10 @@ import { Cron } from "@nestjs/schedule";
 import { EmailService } from "@/core/email/interfaces/email-service.interface";
 import { emailMessages } from "@/core/email/messages";
 import { renderEmail } from "@/core/email/render";
-import { DailyReminder } from "@/core/email/templates/daily-reminder";
+import {
+  DailyReminder,
+  type DailyReminderDog,
+} from "@/core/email/templates/daily-reminder";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { Config } from "@/shared/config/config.service";
 import { dayMs, localCalendar } from "@/shared/domain/local-calendar";
@@ -44,15 +47,44 @@ export class DailyRemindersService {
         },
       },
       select: {
+        id: true,
         startsAt: true,
-        dog: { select: { user: { select: { id: true, email: true } } } },
+        exercise: { select: { name: true } },
+        dog: {
+          select: {
+            id: true,
+            name: true,
+            user: { select: { id: true, email: true } },
+          },
+        },
       },
+      orderBy: [{ startsAt: "asc" }, { id: "asc" }],
     });
-    const recipients = new Map<string, string>();
+    const recipients = new Map<
+      string,
+      { email: string; dogs: Map<string, DailyReminderDog> }
+    >();
     for (const exercise of exercises) {
-      if (calendar.dayOf(exercise.startsAt) === calendar.today) {
-        recipients.set(exercise.dog.user.id, exercise.dog.user.email);
+      if (
+        calendar.dayOf(exercise.startsAt) !== calendar.today ||
+        !exercise.exercise
+      )
+        continue;
+      const { dog } = exercise;
+      let recipient = recipients.get(dog.user.id);
+      if (!recipient) {
+        recipient = { email: dog.user.email, dogs: new Map() };
+        recipients.set(dog.user.id, recipient);
       }
+      let reminderDog = recipient.dogs.get(dog.id);
+      if (!reminderDog) {
+        reminderDog = { id: dog.id, name: dog.name, exercises: [] };
+        recipient.dogs.set(dog.id, reminderDog);
+      }
+      reminderDog.exercises.push({
+        id: exercise.id,
+        name: exercise.exercise.name,
+      });
     }
     if (recipients.size === 0) return;
 
@@ -60,14 +92,15 @@ export class DailyRemindersService {
     const language = "cs";
     const url = new URL("/overview", this.config.frontendUrl);
     url.searchParams.set("lng", language);
-    const html = await renderEmail(DailyReminder, {
-      url: url.toString(),
-      language,
-    });
-    for (const [userId, to] of recipients) {
+    for (const [userId, recipient] of recipients) {
       try {
+        const html = await renderEmail(DailyReminder, {
+          url: url.toString(),
+          language,
+          dogs: [...recipient.dogs.values()],
+        });
         await this.email.sendEmail(
-          to,
+          recipient.email,
           emailMessages[language].dailyReminder.subject,
           html,
         );
