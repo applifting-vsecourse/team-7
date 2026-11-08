@@ -46,6 +46,17 @@ export class CalendarPage {
     });
   }
 
+  get nextWeek() {
+    return this.page.getByRole("button", { name: "Next week", exact: true });
+  }
+
+  /** A day column of the weekly calendar, found by its ISO date. */
+  day(date: string) {
+    return this.page
+      .getByRole("region")
+      .filter({ has: this.page.locator(`time[datetime="${date}"]`) });
+  }
+
   schedulingDog(name: string) {
     return this.scheduleDialog.getByRole("radio", { name });
   }
@@ -122,6 +133,23 @@ export class CalendarPage {
       .click();
     await expect(this.scheduleDialog).toBeHidden();
     await expect(this.lesson(dog)).toBeVisible();
+  }
+
+  async reschedule(name: string, date: string, time: string) {
+    const dialog = this.trainingDialog(name);
+    await this.openTraining(name).click();
+    await dialog
+      .getByRole("button", { name: "Training actions", exact: true })
+      .click();
+    await this.page
+      .getByRole("menuitem", { name: "Reschedule", exact: true })
+      .click();
+    await dialog.getByLabel("Date", { exact: true }).fill(date);
+    await dialog.getByLabel("Start", { exact: true }).fill(time);
+    await dialog
+      .getByRole("button", { name: "Reschedule", exact: true })
+      .click();
+    await expect(dialog).toBeHidden();
   }
 
   async plan(dog: string, exercise: string) {
