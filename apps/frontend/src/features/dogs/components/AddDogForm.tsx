@@ -118,8 +118,6 @@ export function AddDogForm({
                   fullWidth
                 >
                   <Label>{t(($) => $.dogs.name)}</Label>
-                  {/* The dialog opens on request, so focus the field for immediate typing. */}
-                  {/* oxlint-disable jsx-a11y/no-autofocus */}
                   <Input
                     ref={ref}
                     autoComplete="off"
