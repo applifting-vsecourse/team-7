@@ -29,6 +29,9 @@ import { STEPS } from "../lib/steps";
 // sits 2px further out.
 const HOLE = 4;
 const RING = 6;
+// React Aria puts its overlays (the mobile menu drawer, popovers) at z-index
+// 100000; the spotlight must cover an open menu and the bubble sits above it.
+const BUBBLE_LAYER = { zIndex: 100002 };
 
 const grow = (box: Box, by: number): Box => ({
   x: box.x - by,
@@ -321,7 +324,7 @@ export function OnboardingTour() {
     <>
       <div
         aria-hidden="true"
-        className="fixed inset-0 z-60 touch-none bg-backdrop"
+        className="fixed inset-0 z-100001 touch-none bg-backdrop"
         style={{
           clipPath: box
             ? holePath(grow(box, HOLE), viewport.width, viewport.height)
@@ -331,7 +334,7 @@ export function OnboardingTour() {
       {box && (
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed z-60 rounded-xl border-2 border-accent"
+          className="pointer-events-none fixed z-100001 rounded-xl border-2 border-accent"
           style={place(grow(box, RING))}
         />
       )}
@@ -341,24 +344,28 @@ export function OnboardingTour() {
         className="pointer-events-none fixed"
         style={anchor}
       />
-      <Popover.Content
-        // Re-placed when the target moves; the popover doesn't follow it.
-        key={`${step}-${target}-${anchor.left}-${anchor.top}-${anchor.width}`}
-        triggerRef={anchorRef}
-        isOpen
-        isNonModal
-        placement={placement}
-        shouldFlip={!centred}
-        offset={centred && !bottom ? 0 : 12}
-        className={
-          centred && !bottom
-            ? "z-70 w-coach-mark max-w-[calc(100vw-2rem)] -translate-y-1/2"
-            : "z-70 w-coach-mark max-w-[calc(100vw-2rem)]"
-        }
-      >
-        {(!centred || (bottom && ios)) && <Popover.Arrow />}
-        <CoachMark {...bubble} />
-      </Popover.Content>
+      {/* The root supplies the kit's popover classes (surface, padding, arrow). */}
+      <Popover isOpen>
+        <Popover.Content
+          // Re-placed when the target moves; the popover doesn't follow it.
+          key={`${step}-${target}-${anchor.left}-${anchor.top}-${anchor.width}`}
+          triggerRef={anchorRef}
+          isOpen
+          isNonModal
+          style={BUBBLE_LAYER}
+          placement={placement}
+          shouldFlip={!centred}
+          offset={centred && !bottom ? 0 : 12}
+          className={
+            centred && !bottom
+              ? "w-coach-mark max-w-[calc(100vw-2rem)] -translate-y-1/2"
+              : "w-coach-mark max-w-[calc(100vw-2rem)]"
+          }
+        >
+          {(!centred || (bottom && ios)) && <Popover.Arrow />}
+          <CoachMark {...bubble} />
+        </Popover.Content>
+      </Popover>
     </>,
     document.body,
   );
