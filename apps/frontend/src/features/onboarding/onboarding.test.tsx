@@ -5,6 +5,8 @@ import userEvent from "@testing-library/user-event";
 import { createStore, Provider } from "jotai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { mobileSidebarOpenAtom } from "@/app/atoms/mobileSidebarOpenAtom";
+
 import type { DogProfile } from "@/features/dogs/api/dogProfileQueryOptions";
 
 import { CatalogDisciplineDialog } from "./components/CatalogDisciplineDialog";
@@ -76,12 +78,12 @@ const onboarding = (patch: Partial<Onboarding> = {}): Onboarding => ({
   ...patch,
 });
 
-function renderUi(ui: React.ReactNode) {
+function renderUi(ui: React.ReactNode, store = createStore()) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
   render(
-    <Provider store={createStore()}>
+    <Provider store={store}>
       <QueryClientProvider client={client}>{ui}</QueryClientProvider>
     </Provider>,
   );
@@ -164,6 +166,25 @@ describe("onboarding tour", () => {
     expect(
       await screen.findByRole("heading", { name: "Add a dog" }),
     ).toBeInTheDocument();
+  });
+
+  it("closes the phone menu once the next step is on the page", async () => {
+    state.onboarding = onboarding({ status: "active", step: "dogProfile" });
+    const store = createStore();
+    store.set(mobileSidebarOpenAtom, true);
+    renderUi(<OnboardingTour />, store);
+
+    await waitFor(() => expect(store.get(mobileSidebarOpenAtom)).toBe(false));
+  });
+
+  it("keeps the phone menu open while its item is the target", async () => {
+    state.onboarding = onboarding({ status: "active", step: "addDog" });
+    const store = createStore();
+    store.set(mobileSidebarOpenAtom, true);
+    renderUi(<OnboardingTour />, store);
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+    expect(store.get(mobileSidebarOpenAtom)).toBe(true);
   });
 
   it("moves on once the calendar is open", async () => {

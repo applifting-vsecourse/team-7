@@ -1,3 +1,6 @@
+import type { AppPage } from "./pom/app.page";
+import type { LoginPage } from "./pom/login.page";
+import type { Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import process from "node:process";
 
@@ -13,6 +16,58 @@ const credentials = {
 
 const finished = { status: "completed", step: null };
 
+// Both tests change the same user's tour, so they run one after the other.
+test.describe.configure({ mode: "serial" });
+
+/**
+ * Signs in the tour user, runs the test and removes the dog and the copied
+ * discipline it created, leaving the tour finished.
+ */
+async function asTourUser(
+  { page, login, app }: { page: Page; login: LoginPage; app: AppPage },
+  dogName: string,
+  run: () => Promise<void>,
+) {
+  const cleanup: string[] = [];
+  page.on("response", async (response) => {
+    const { pathname } = new URL(response.url());
+    if (
+      response.request().method() !== "POST" ||
+      !response.ok() ||
+      !/\/api\/(dogs|onboarding\/catalog\/[^/]+)$/.test(pathname)
+    ) {
+      return;
+    }
+    const { id, name } = (await response.json()) as {
+      id: string;
+      name: string;
+    };
+    if (pathname.endsWith("/dogs") && name !== dogName) return;
+    cleanup.push(
+      pathname.endsWith("/dogs")
+        ? `${response.url()}/${id}`
+        : response
+            .url()
+            .replace(/onboarding\/catalog\/[^/]+$/, `disciplines/${id}`),
+    );
+  });
+  try {
+    await login.signIn(credentials.email, credentials.password);
+    await expect(page).toHaveURL(/\/(overview|dogs|calendar)/);
+    // A run that failed mid-tour leaves it running for this user.
+    await page.request.patch("/api/onboarding", { data: finished });
+    await page.goto("/overview?lng=en");
+    await expect(app.overviewHeading).toBeVisible();
+    await run();
+  } finally {
+    await page.request.patch("/api/onboarding", { data: finished });
+    for (const url of cleanup.reverse()) {
+      const response = await page.request.delete(url);
+      expect(response.ok(), `Cleanup failed: ${url}`).toBeTruthy();
+    }
+  }
+}
+
 test("the guide walks through a dog, a prefilled discipline and the first exercise", async ({
   page,
   login,
@@ -24,37 +79,7 @@ test("the guide walks through a dog, a prefilled discipline and the first exerci
   test.setTimeout(90_000);
   const tour = new OnboardingPage(page);
   const dogName = `E2E tour dog ${randomUUID()}`;
-  const cleanup: string[] = [];
-  page.on("response", async (response) => {
-    const { pathname } = new URL(response.url());
-    if (
-      response.request().method() === "POST" &&
-      response.ok() &&
-      /\/api\/(dogs|onboarding\/catalog\/[^/]+)$/.test(pathname)
-    ) {
-      const { id, name } = (await response.json()) as {
-        id: string;
-        name: string;
-      };
-      if (pathname.endsWith("/dogs") && name !== dogName) return;
-      cleanup.push(
-        pathname.endsWith("/dogs")
-          ? `${response.url()}/${id}`
-          : response
-              .url()
-              .replace(/onboarding\/catalog\/[^/]+$/, `disciplines/${id}`),
-      );
-    }
-  });
-
-  try {
-    await login.signIn(credentials.email, credentials.password);
-    await expect(page).toHaveURL(/\/(overview|dogs|calendar)/);
-    // A run that failed mid-tour leaves it running for this user.
-    await page.request.patch("/api/onboarding", { data: finished });
-    await page.goto("/overview?lng=en");
-    await expect(app.overviewHeading).toBeVisible();
-
+  await asTourUser({ page, login, app }, dogName, async () => {
     await test.step("Start the guide from the user menu (O13, O1)", async () => {
       await app.userMenu.click();
       await tour.startItem.click();
@@ -125,11 +150,47 @@ test("the guide walks through a dog, a prefilled discipline and the first exerci
       await expect(calendar.weeklyHeading).toBeVisible();
       await expect(tour.bubble("Day, week, month")).toHaveCount(0);
     });
-  } finally {
-    await page.request.patch("/api/onboarding", { data: finished });
-    for (const url of cleanup.reverse()) {
-      const response = await page.request.delete(url);
-      expect(response.ok(), `Cleanup failed: ${url}`).toBeTruthy();
-    }
-  }
+  });
+});
+
+test("on a phone the menu closes once the guide moves to the dog's page", async ({
+  page,
+  login,
+  app,
+  dog,
+}) => {
+  test.setTimeout(60_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const tour = new OnboardingPage(page);
+  const dogName = `E2E tour dog ${randomUUID()}`;
+  const menu = page.getByRole("dialog", {
+    name: "Main navigation",
+    exact: true,
+  });
+  await asTourUser({ page, login, app }, dogName, async () => {
+    await app.userMenu.click();
+    await tour.startItem.click();
+    const welcome = await tour.expectBubble("Welcome to TrainLoop", "Guide");
+    await tour.button(welcome, "Start").click();
+
+    // O2 → O2b: the ☰ first, then Add dog inside the open menu.
+    await tour.expectBubble("Open the menu", "Step 1 of 7");
+    await page.getByRole("button", { name: "Open menu", exact: true }).click();
+    await expect(menu).toBeVisible();
+    await tour.expectBubble("Add a dog", "Step 1 of 7");
+    await dog.create(dogName);
+
+    // O3 → O4 happen on the dog's page, so the menu must not cover it.
+    const profile = await tour.expectBubble(`${dogName} is in`, "Step 2 of 7");
+    await expect(menu).toBeHidden();
+    await tour.button(profile, "Next").click();
+    await tour.expectBubble("Assign a discipline", "Step 3 of 7");
+    await page
+      .getByRole("button", { name: "Assign discipline", exact: true })
+      .click();
+    await expect(tour.catalogDialog).toBeVisible();
+    await tour.catalogDialog
+      .getByRole("button", { name: "Cancel", exact: true })
+      .click();
+  });
 });

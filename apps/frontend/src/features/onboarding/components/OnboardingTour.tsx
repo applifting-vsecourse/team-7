@@ -9,7 +9,7 @@ import {
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom } from "jotai";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
@@ -69,7 +69,7 @@ export function OnboardingTour() {
   const { t } = useTranslation();
   const tour = useTour();
   const isMobile = useMediaQuery("(max-width: 767px)");
-  const menuOpen = useAtomValue(mobileSidebarOpenAtom);
+  const [menuOpen, setMenuOpen] = useAtom(mobileSidebarOpenAtom);
   const [installGuide, setInstallGuide] = useAtom(installGuideOpenAtom);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
@@ -112,6 +112,12 @@ export function OnboardingTour() {
         : { to: ROUTES.dog, params: { dogId: dogId! } },
     );
   }, [tour.step, page, pathname, tour.isFetching, navigate, dogId]);
+
+  // The phone menu stays open after its action (e.g. adding a dog from it);
+  // a step whose target is on the page closes it so it doesn't cover it.
+  useEffect(() => {
+    if (tour.step && !STEPS[tour.step].inMenu && menuOpen) setMenuOpen(false);
+  }, [tour.step, menuOpen, setMenuOpen]);
 
   // Resumed on a device without that step (install is phone-only).
   useEffect(() => {
