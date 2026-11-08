@@ -69,7 +69,6 @@ function SettingsForm({
       form.reset(saved);
       const options = userSettingsQueryOptions(userId);
       client.setQueryData(options.queryKey, saved);
-      await client.invalidateQueries({ queryKey: options.queryKey });
       toast.success(t(($) => $.settings.saved));
     },
   });

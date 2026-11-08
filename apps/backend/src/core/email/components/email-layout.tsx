@@ -24,6 +24,7 @@ interface EmailLayoutProps {
   button: string;
   url: string;
   footer: string;
+  unsubscribeUrl?: string;
   label?: string;
   encouragement?: string;
   children?: React.ReactNode;
@@ -37,6 +38,7 @@ export const EmailLayout = ({
   button,
   url,
   footer,
+  unsubscribeUrl,
   label,
   encouragement,
   children,
@@ -101,6 +103,13 @@ export const EmailLayout = ({
             )}
             <Hr style={styles.divider} />
             <Text style={styles.footer}>{footer}</Text>
+            {unsubscribeUrl && (
+              <Text style={styles.footer}>
+                <Link href={unsubscribeUrl} style={styles.fallbackLink}>
+                  {emailMessages[language].unsubscribe}
+                </Link>
+              </Text>
+            )}
             <Text style={styles.fallback}>
               {emailMessages[language].fallbackLink}
               <br />
