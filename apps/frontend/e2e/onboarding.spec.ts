@@ -223,9 +223,14 @@ test("on a phone the menu closes once the guide moves to the dog's page", async 
     await expect(menu).toBeHidden();
     await tour.button(profile, "Next").click();
     await tour.expectBubble("Assign a discipline", "Step 3 of 7");
-    await page
-      .getByRole("button", { name: "Assign discipline", exact: true })
-      .click();
+    // Scrolled away, the guide brings its target back on screen.
+    const assign = page.getByRole("button", {
+      name: "Assign discipline",
+      exact: true,
+    });
+    await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+    await expect(assign).toBeInViewport();
+    await assign.click();
     await expect(tour.disciplineDialog).toBeVisible();
     await tour.disciplineDialog
       .getByRole("button", { name: "Cancel", exact: true })
