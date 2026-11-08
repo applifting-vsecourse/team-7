@@ -71,7 +71,7 @@ export class OnboardingController {
             where: { deletedAt: null, kind: "exercise" },
             orderBy: { createdAt: "desc" },
             take: 1,
-            select: { id: true },
+            select: { id: true, startsAt: true },
           },
           _count: { select: { goals: true } },
         },
@@ -102,6 +102,8 @@ export class OnboardingController {
       dogId: dog?.id ?? null,
       disciplineId: dog?.disciplines[0]?.disciplineId ?? null,
       eventId: dog?.scheduledExercises[0]?.id ?? null,
+      // The calendar opens on this event's week (it may be planned later).
+      eventStartsAt: dog?.scheduledExercises[0]?.startsAt ?? null,
       hasGoal: (dog?._count.goals ?? 0) > 0,
       hasExercise: exercises > 0,
     };

@@ -16,6 +16,7 @@ import {
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { format, isSameWeek, parseISO } from "date-fns";
 import { useAtom } from "jotai";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
@@ -101,6 +102,9 @@ export function OnboardingTour() {
   const [menuOpen, setMenuOpen] = useAtom(mobileSidebarOpenAtom);
   const [installGuide, setInstallGuide] = useAtom(installGuideOpenAtom);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const search = useRouterState({
+    select: (s) => s.location.search as { view?: string; date?: string },
+  });
   const navigate = useNavigate();
   const { user } = useSession();
   const dogs = useQuery(dogsQueryOptions(user?.id));
@@ -168,6 +172,28 @@ export function OnboardingTour() {
       : config?.page === "dog" && dogId && !pageDogId
         ? `/dogs/${dogId}`
         : null;
+
+  // Step 6 highlights the planned exercise, which may be in another week:
+  // the calendar moves to that week (week view) so its tile is on screen.
+  const eventDate =
+    tour.step === "event" && tour.data?.eventStartsAt
+      ? format(parseISO(tour.data.eventStartsAt), "yyyy-MM-dd")
+      : null;
+  useEffect(() => {
+    if (!eventDate || pathname !== ROUTES.calendar) return;
+    const shown = search.date ? parseISO(search.date) : new Date();
+    if (
+      (search.view ?? "week") === "week" &&
+      isSameWeek(shown, parseISO(eventDate), { weekStartsOn: 1 })
+    ) {
+      return;
+    }
+    void navigate({
+      to: ROUTES.calendar,
+      search: (prev) => ({ ...prev, view: "week", date: eventDate }),
+      replace: true,
+    });
+  }, [eventDate, pathname, search.view, search.date, navigate]);
 
   // Info and action steps happen on their own page; resuming opens it.
   useEffect(() => {

@@ -167,9 +167,19 @@ test("the guide walks through a dog, a default discipline and the first exercise
         .press("Space");
       await calendar.continueScheduling.click();
       await expect(calendar.date).not.toHaveValue("");
+      // Next week: the guide has to move the calendar to find the exercise.
+      const nextWeek = new Date();
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      const date = [
+        nextWeek.getFullYear(),
+        String(nextWeek.getMonth() + 1).padStart(2, "0"),
+        String(nextWeek.getDate()).padStart(2, "0"),
+      ].join("-");
+      await calendar.date.fill(date);
       await calendar.start.fill("12:00");
       await calendar.schedule.click();
       await expect(calendar.scheduleDialog).toBeHidden();
+      await expect(page).toHaveURL(new RegExp(`date=${date}`));
     });
 
     await test.step("Finish in the weekly calendar (O8, O9)", async () => {
@@ -177,6 +187,10 @@ test("the guide walks through a dog, a default discipline and the first exercise
         "Exercises are planned",
         "Step 6 of 7",
       );
+      // The highlighted tile is the planned exercise, on screen.
+      await expect(
+        page.getByRole("article", { name: "Na jméno z vedlejší místnosti" }),
+      ).toBeInViewport();
       await tour.button(event, "Next").click();
       const views = await tour.expectBubble("Day, week, month", "Step 7 of 7");
       await tour.button(views, "Finish").click();
