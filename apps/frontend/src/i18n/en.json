@@ -635,7 +635,6 @@
     "finish": "Finish",
     "later": "Later",
     "done": "Done",
-    "install": "Install",
     "close": "Close the guide",
     "steps": {
       "welcome": {
@@ -676,16 +675,34 @@
         "title": "Day, week, month",
         "body": "Switch the calendar view here. Done, your first week is planned!"
       },
-      "installIos": {
+      "install": {
         "title": "Add TrainLoop to your home screen",
-        "body": "Open it at training with one tap, like an app.",
-        "share": "At the bottom of Safari, tap Share (the square with an arrow).",
-        "addToHome": "Choose Add to Home Screen.",
-        "confirm": "Confirm with Add."
-      },
-      "installAndroid": {
-        "title": "Install TrainLoop",
-        "body": "Open it at training with one tap, like an app. Tap Install, or open ⋮ at the top right in Chrome and choose Add to Home screen."
+        "body": "Then open it at training with one tap, right from your phone's home screen.",
+        "safari": {
+          "share": "At the bottom of Safari, tap Share (the square with an arrow).",
+          "add": "Choose Add to Home Screen.",
+          "confirm": "Confirm with Add."
+        },
+        "chromeIos": {
+          "share": "In Chrome, tap Share (the square with an arrow) on the right of the address bar.",
+          "add": "Choose Add to Home Screen.",
+          "confirm": "Confirm with Add."
+        },
+        "edgeIos": {
+          "share": "In Edge, tap ⋯ at the bottom and choose Share.",
+          "add": "Choose Add to Home Screen.",
+          "confirm": "Confirm with Add."
+        },
+        "chromeAndroid": {
+          "share": "In Chrome, tap ⋮ at the top right.",
+          "add": "Choose Add to Home screen.",
+          "confirm": "Confirm with Add."
+        },
+        "edgeAndroid": {
+          "share": "In Edge, tap ⋯ at the bottom.",
+          "add": "Choose Add to phone.",
+          "confirm": "Confirm with Add."
+        }
       }
     },
     "catalog": {
@@ -708,7 +725,8 @@
     "menu": {
       "start": "Start the guide",
       "install": "Add to home screen"
-    }
+    },
+    "addToHome": "Add to home screen"
   },
   "settings": {
     "notifications": "Email notifications",

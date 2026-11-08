@@ -635,7 +635,6 @@
     "finish": "Dokončit",
     "later": "Později",
     "done": "Hotovo",
-    "install": "Nainstalovat",
     "close": "Ukončit průvodce",
     "steps": {
       "welcome": {
@@ -676,16 +675,34 @@
         "title": "Den, týden, měsíc",
         "body": "Tady přepnete pohled kalendáře. Hotovo, první týden je naplánovaný!"
       },
-      "installIos": {
+      "install": {
         "title": "Přidejte si TrainLoop na plochu",
-        "body": "Na tréninku ho otevřete jedním klepnutím, jako aplikaci.",
-        "share": "Dole v Safari klepněte na Sdílet (čtvereček se šipkou).",
-        "addToHome": "Zvolte Přidat na plochu.",
-        "confirm": "Potvrďte Přidat."
-      },
-      "installAndroid": {
-        "title": "Nainstalujte si TrainLoop",
-        "body": "Na tréninku ho otevřete jedním klepnutím, jako aplikaci. Klepněte na Nainstalovat, nebo v Chromu otevřete ⋮ vpravo nahoře a zvolte Přidat na plochu."
+        "body": "Na tréninku ho pak otevřete jedním klepnutím přímo z plochy telefonu.",
+        "safari": {
+          "share": "Dole v Safari klepněte na Sdílet (čtvereček se šipkou).",
+          "add": "Zvolte Přidat na plochu.",
+          "confirm": "Potvrďte Přidat."
+        },
+        "chromeIos": {
+          "share": "V Chromu klepněte vpravo v adresním řádku na Sdílet (čtvereček se šipkou).",
+          "add": "Zvolte Přidat na plochu.",
+          "confirm": "Potvrďte Přidat."
+        },
+        "edgeIos": {
+          "share": "V Edgi klepněte dole na ⋯ a zvolte Sdílet.",
+          "add": "Zvolte Přidat na plochu.",
+          "confirm": "Potvrďte Přidat."
+        },
+        "chromeAndroid": {
+          "share": "V Chromu klepněte vpravo nahoře na ⋮.",
+          "add": "Zvolte Přidat na plochu.",
+          "confirm": "Potvrďte Přidat."
+        },
+        "edgeAndroid": {
+          "share": "V Edgi klepněte dole na ⋯.",
+          "add": "Zvolte Přidat na telefon.",
+          "confirm": "Potvrďte Přidat."
+        }
       }
     },
     "catalog": {
@@ -708,7 +725,8 @@
     "menu": {
       "start": "Spustit průvodce",
       "install": "Přidat na plochu"
-    }
+    },
+    "addToHome": "Přidat na plochu"
   },
   "settings": {
     "notifications": "E-mailová upozornění",

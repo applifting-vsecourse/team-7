@@ -1,4 +1,3 @@
-import { useMediaQuery } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api } from "@/lib/api-client";
@@ -10,7 +9,7 @@ import {
   onboardingKey,
   onboardingQueryOptions,
 } from "../api/onboardingQueryOptions";
-import { isStandalone } from "../lib/install";
+import { canAddToHomeScreen } from "../lib/install";
 import { STEP_IDS, type StepId, tourSteps } from "../lib/steps";
 
 type Patch = Partial<Pick<Onboarding, "status" | "step" | "cardHidden">>;
@@ -21,7 +20,6 @@ export function useTour() {
   const client = useQueryClient();
   const key = onboardingKey(user?.id);
   const query = useQuery(onboardingQueryOptions(user?.id));
-  const isMobile = useMediaQuery("(max-width: 767px)");
   const update = useMutation({
     mutationFn: (patch: Patch) => api.patch("onboarding", { json: patch }),
     // The tour moves at once; a failed save is corrected by the refetch.
@@ -42,7 +40,7 @@ export function useTour() {
       : data?.status === "pending" && !data.hasDog
         ? "welcome"
         : null;
-  const steps = tourSteps(isMobile && !isStandalone());
+  const steps = tourSteps(canAddToHomeScreen());
 
   const go = (next: StepId) => update.mutate({ status: "active", step: next });
   const finish = () => update.mutate({ status: "completed", step: null });
