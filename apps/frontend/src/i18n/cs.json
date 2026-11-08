@@ -85,7 +85,8 @@
     "disciplines": "Disciplíny",
     "myDogs": "Moji psi",
     "addDog": "Přidat psa",
-    "archive": "Archiv ({{count}})"
+    "archive": "Archiv ({{count}})",
+    "settings": "Nastavení"
   },
   "dogs": {
     "all": "Všichni",
@@ -623,5 +624,17 @@
       "goalPaused": "Cíl {{goal}} je pozastavený. Aby šlo cvičení naplánovat, vraťte cíl do rozpracovaných v detailu disciplíny.",
       "goalCompleted": "Cíl {{goal}} je splněný. Aby šlo cvičení naplánovat, vraťte cíl do rozpracovaných v detailu disciplíny."
     }
+  },
+  "settings": {
+    "notifications": "E-mailová upozornění",
+    "description": "Vyberte si, zda vám má TrainLoop připomínat naplánovaný trénink.",
+    "emailNotifications": "Dostávat e-mailová upozornění",
+    "emailNotificationsDescription": "Denní připomínka, pokud máte na dnešek naplánovaná cvičení.",
+    "loading": "Načítání nastavení…",
+    "loadError": "Nastavení se nepodařilo načíst.",
+    "save": "Uložit změny",
+    "saved": "Nastavení bylo uloženo.",
+    "saveError": "Nastavení se nepodařilo uložit. Zkuste to znovu.",
+    "invalid": "Vyberte, zda chcete dostávat e-mailová upozornění."
   }
 }

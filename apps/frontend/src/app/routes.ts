@@ -7,6 +7,7 @@ export const ROUTES = {
   verifyEmail: "/verify-email",
   overview: "/overview",
   calendar: "/calendar",
+  settings: "/settings",
   disciplines: "/disciplines",
   discipline: "/disciplines/$disciplineId",
   dog: "/dogs/$dogId",

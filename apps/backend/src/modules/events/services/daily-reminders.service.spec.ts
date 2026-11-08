@@ -54,7 +54,10 @@ describe("daily exercise reminders", () => {
           kind: "exercise",
           completedAt: null,
           deletedAt: null,
-          dog: { archivedAt: null, user: { emailVerified: true } },
+          dog: {
+            archivedAt: null,
+            user: { emailVerified: true, emailNotificationsEnabled: true },
+          },
         }),
       }),
     );
