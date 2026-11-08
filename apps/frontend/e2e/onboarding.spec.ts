@@ -187,10 +187,26 @@ test("the guide walks through a dog, a default discipline and the first exercise
         "Exercises are planned",
         "Step 6 of 7",
       );
-      // The highlighted tile is the planned exercise, on screen.
-      await expect(
-        page.getByRole("article", { name: "Na jméno z vedlejší místnosti" }),
-      ).toBeInViewport();
+      // The highlighted tile is the planned exercise, on screen and ringed.
+      const tile = page.getByRole("article", {
+        name: "Na jméno z vedlejší místnosti",
+      });
+      await expect(tile).toBeInViewport();
+      const ring = page.locator(".animate-spotlight");
+      await expect(ring).toBeVisible();
+      // The ring settles 6px around the tile (after its own animation).
+      await expect
+        .poll(async () => {
+          const [tileBox, ringBox] = await Promise.all([
+            tile.boundingBox(),
+            ring.boundingBox(),
+          ]);
+          return Math.max(
+            Math.abs(ringBox!.x - (tileBox!.x - 6)),
+            Math.abs(ringBox!.y - (tileBox!.y - 6)),
+          );
+        })
+        .toBeLessThan(3);
       await tour.button(event, "Next").click();
       const views = await tour.expectBubble("Day, week, month", "Step 7 of 7");
       await tour.button(views, "Finish").click();

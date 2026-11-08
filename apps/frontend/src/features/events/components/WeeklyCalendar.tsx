@@ -55,6 +55,16 @@ export function WeeklyCalendar({ viewSwitcher, date }: WeeklyCalendarProps) {
   const [week, setWeek] = useState(() =>
     startOfWeek(date ?? new Date(), { weekStartsOn: 1 }),
   );
+  // A new week in the URL (e.g. the guide showing a planned exercise) opens
+  // it within the navigation's view transition; browsing stays local.
+  const urlWeek = date
+    ? format(startOfWeek(date, { weekStartsOn: 1 }), "yyyy-MM-dd")
+    : "";
+  const [shownUrlWeek, setShownUrlWeek] = useState(urlWeek);
+  if (urlWeek !== shownUrlWeek) {
+    setShownUrlWeek(urlWeek);
+    if (date) setWeek(startOfWeek(date, { weekStartsOn: 1 }));
+  }
   const { query, eventsOf } = useCalendarEvents(week, addDays(week, 7), [
     [addDays(week, -7), week],
     [addDays(week, 7), addDays(week, 14)],

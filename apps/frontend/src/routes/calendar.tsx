@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Calendar as CalendarIcon, Plus } from "@gravity-ui/icons";
 import { Button } from "@heroui/react";
 import { createFileRoute } from "@tanstack/react-router";
-import { format, parseISO, startOfWeek } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
@@ -106,10 +106,7 @@ function CalendarPage() {
           />
         ) : (
           <WeeklyCalendar
-            // A new week in the URL (e.g. the guide showing a planned
-            // exercise) opens it; browsing weeks stays inside the view.
-            key={format(startOfWeek(date, { weekStartsOn: 1 }), "yyyy-MM-dd")}
-            date={date}
+            date={search.date ? date : undefined}
             viewSwitcher={headingSwitcher}
           />
         )}
