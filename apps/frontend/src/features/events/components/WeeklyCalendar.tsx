@@ -41,9 +41,11 @@ import { Event } from "./Event";
 type WeeklyCalendarProps = {
   /** The day / week / month switcher shown in the heading. */
   viewSwitcher: ReactNode;
+  /** A day of the week to open on (the `date` search param); today by default. */
+  date?: Date;
 };
 
-export function WeeklyCalendar({ viewSwitcher }: WeeklyCalendarProps) {
+export function WeeklyCalendar({ viewSwitcher, date }: WeeklyCalendarProps) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const headingId = useId();
@@ -51,7 +53,7 @@ export function WeeklyCalendar({ viewSwitcher }: WeeklyCalendarProps) {
   const todayRef = useRef<HTMLElement>(null);
   const [today] = useState(() => new Date());
   const [week, setWeek] = useState(() =>
-    startOfWeek(new Date(), { weekStartsOn: 1 }),
+    startOfWeek(date ?? new Date(), { weekStartsOn: 1 }),
   );
   const { query, eventsOf } = useCalendarEvents(week, addDays(week, 7), [
     [addDays(week, -7), week],

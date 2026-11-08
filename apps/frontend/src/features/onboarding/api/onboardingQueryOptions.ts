@@ -22,6 +22,8 @@ const onboardingSchema = z.object({
   dogId: z.string().nullable(),
   disciplineId: z.string().nullable(),
   eventId: z.string().nullable(),
+  // Its start: the calendar opens on that week (it may be planned later).
+  eventStartsAt: z.string().nullable(),
   // The tour dog's goals and exercises: an own discipline starts empty.
   hasGoal: z.boolean(),
   hasExercise: z.boolean(),

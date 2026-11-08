@@ -107,6 +107,7 @@ describe("/api/onboarding", () => {
       dogId: "dog-a",
       disciplineId: "disc-a",
       eventId: null,
+      eventStartsAt: null,
       hasGoal: true,
       hasExercise: false,
     });

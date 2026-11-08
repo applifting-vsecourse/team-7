@@ -16,6 +16,7 @@ import { OnboardingTour } from "./components/OnboardingTour";
 const state = vi.hoisted(() => ({
   onboarding: null as unknown,
   pathname: "/overview",
+  search: {} as Record<string, string>,
   navigate: vi.fn(),
   patch: vi.fn(),
   put: vi.fn(),
@@ -30,8 +31,11 @@ vi.mock("@tanstack/react-router", () => ({
   useRouterState: ({
     select,
   }: {
-    select: (s: { location: { pathname: string } }) => string;
-  }) => select({ location: { pathname: state.pathname } }),
+    select: (s: {
+      location: { pathname: string; search: Record<string, string> };
+    }) => unknown;
+  }) =>
+    select({ location: { pathname: state.pathname, search: state.search } }),
 }));
 // The library holds whatever the handler has, the defaults included (#72).
 const recall = {
@@ -84,6 +88,7 @@ const onboarding = (patch: Partial<Onboarding> = {}): Onboarding => ({
   dogId: null,
   disciplineId: null,
   eventId: null,
+  eventStartsAt: null,
   hasGoal: false,
   hasExercise: false,
   ...patch,
@@ -104,6 +109,7 @@ function renderUi(ui: React.ReactNode, store = createStore()) {
 beforeEach(() => {
   vi.clearAllMocks();
   state.pathname = "/overview";
+  state.search = {};
 });
 
 describe("onboarding tour", () => {
@@ -240,6 +246,43 @@ describe("onboarding tour", () => {
         json: { status: "active", step: "openCalendar" },
       }),
     );
+  });
+
+  it("opens the week of an exercise planned for later (step 6)", async () => {
+    state.onboarding = onboarding({
+      status: "active",
+      step: "event",
+      eventId: "event-1",
+      eventStartsAt: "2026-11-18T16:00:00.000Z",
+    });
+    state.pathname = "/calendar";
+    state.search = { view: "week", date: "2026-11-08" };
+    renderUi(<OnboardingTour />);
+
+    await waitFor(() => expect(state.navigate).toHaveBeenCalled());
+    const { search } = state.navigate.mock.calls[0]![0] as {
+      search: (prev: Record<string, string>) => Record<string, string>;
+    };
+    expect(search({ lng: "en", view: "month" })).toEqual({
+      lng: "en",
+      view: "week",
+      date: "2026-11-18",
+    });
+  });
+
+  it("stays on the week that already shows the exercise", async () => {
+    state.onboarding = onboarding({
+      status: "active",
+      step: "event",
+      eventId: "event-1",
+      eventStartsAt: "2026-11-18T16:00:00.000Z",
+    });
+    state.pathname = "/calendar";
+    state.search = { view: "week", date: "2026-11-16" };
+    renderUi(<OnboardingTour />);
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+    expect(state.navigate).not.toHaveBeenCalled();
   });
 
   it("moves on once the calendar is open", async () => {
