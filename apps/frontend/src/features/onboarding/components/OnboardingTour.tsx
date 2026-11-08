@@ -81,11 +81,20 @@ export function OnboardingTour() {
   const config = step ? STEPS[step] : null;
   // On phones a sidebar target is reached through the ☰ menu first (O2b).
   const viaMenu = isMobile && !!config?.inMenu && !menuOpen;
+  // An own discipline (O5 "Vlastní disciplína") opens empty on its detail:
+  // step 3 goes on there until the dog has a goal with an exercise.
+  const ownDiscipline =
+    step === "assignDiscipline" &&
+    /^\/dogs\/[^/]+\/disciplines\/[^/]+$/.test(pathname);
   const target = viaMenu
     ? "menu"
-    : step === "event"
-      ? null
-      : (config?.target ?? null);
+    : ownDiscipline
+      ? tour.data?.hasGoal
+        ? "add-exercise"
+        : "add-goal"
+      : step === "event"
+        ? null
+        : (config?.target ?? null);
   const selector =
     step === "event" && tour.data?.eventId
       ? `[data-event-id="${tour.data.eventId}"]`
@@ -95,7 +104,7 @@ export function OnboardingTour() {
   const dogId = tour.data?.dogId;
   // A dog page stays as it is: right after adding a dog, the tour's dog is
   // still being refetched, while the page already shows the new one.
-  const pageDogId = /^\/dogs\/(?!archive$)([^/]+)$/.exec(pathname)?.[1];
+  const pageDogId = /^\/dogs\/(?!archive(?:\/|$))([^/]+)/.exec(pathname)?.[1];
   const page =
     config?.page === "calendar"
       ? ROUTES.calendar
@@ -118,6 +127,11 @@ export function OnboardingTour() {
   useEffect(() => {
     if (tour.step && !STEPS[tour.step].inMenu && menuOpen) setMenuOpen(false);
   }, [tour.step, menuOpen, setMenuOpen]);
+
+  // The own discipline's first exercise completes step 3.
+  useEffect(() => {
+    if (ownDiscipline && tour.data?.hasExercise) tour.next();
+  }, [ownDiscipline, tour]);
 
   // Resumed on a device without that step (install is phone-only).
   useEffect(() => {
@@ -184,7 +198,7 @@ export function OnboardingTour() {
         : t(($) => $.onboarding.skip)}
     </Button>
   );
-  const back = config.back && tour.step && (
+  const back = config.back && tour.step && !ownDiscipline && (
     <Button size="sm" variant="secondary" onPress={() => tour.go(config.back!)}>
       {t(($) => $.onboarding.back)}
     </Button>
@@ -240,48 +254,65 @@ export function OnboardingTour() {
                 body: t(($) => $.onboarding.steps.dogProfile.body),
                 footer: footer(nextButton),
               }
-            : step === "openCalendar"
+            : ownDiscipline
               ? {
-                  title: t(($) => $.onboarding.steps.openCalendar.title),
-                  body: t(($) => $.onboarding.steps.openCalendar[touch]),
+                  title: t(($) =>
+                    tour.data?.hasGoal
+                      ? $.onboarding.steps.ownExercise.title
+                      : $.onboarding.steps.ownGoal.title,
+                  ),
+                  body: t(($) =>
+                    tour.data?.hasGoal
+                      ? $.onboarding.steps.ownExercise.body
+                      : $.onboarding.steps.ownGoal.body,
+                  ),
                   footer: footer(),
                 }
-              : step === "install" && browser
+              : step === "openCalendar"
                 ? {
-                    title: t(($) => $.onboarding.steps.install.title),
-                    body: (
-                      <>
-                        {t(($) => $.onboarding.steps.install.body)}
-                        <ol className="list-decimal pl-5">
-                          <li>
-                            {t(
-                              ($) => $.onboarding.steps.install[browser].share,
-                            )}
-                          </li>
-                          <li>
-                            {t(($) => $.onboarding.steps.install[browser].add)}
-                          </li>
-                          <li>
-                            {t(
-                              ($) =>
-                                $.onboarding.steps.install[browser].confirm,
-                            )}
-                          </li>
-                        </ol>
-                      </>
-                    ),
-                    footer: footer(
-                      <Button size="sm" onPress={closeInstall}>
-                        {t(($) => $.onboarding.done)}
-                      </Button>,
-                    ),
+                    title: t(($) => $.onboarding.steps.openCalendar.title),
+                    body: t(($) => $.onboarding.steps.openCalendar[touch]),
+                    footer: footer(),
                   }
-                : {
-                    // assignDiscipline, schedule, event, views
-                    title: t(($) => $.onboarding.steps[step].title),
-                    body: t(($) => $.onboarding.steps[step].body),
-                    footer: footer(config.action ? undefined : nextButton),
-                  }),
+                : step === "install" && browser
+                  ? {
+                      title: t(($) => $.onboarding.steps.install.title),
+                      body: (
+                        <>
+                          {t(($) => $.onboarding.steps.install.body)}
+                          <ol className="list-decimal pl-5">
+                            <li>
+                              {t(
+                                ($) =>
+                                  $.onboarding.steps.install[browser].share,
+                              )}
+                            </li>
+                            <li>
+                              {t(
+                                ($) => $.onboarding.steps.install[browser].add,
+                              )}
+                            </li>
+                            <li>
+                              {t(
+                                ($) =>
+                                  $.onboarding.steps.install[browser].confirm,
+                              )}
+                            </li>
+                          </ol>
+                        </>
+                      ),
+                      footer: footer(
+                        <Button size="sm" onPress={closeInstall}>
+                          {t(($) => $.onboarding.done)}
+                        </Button>,
+                      ),
+                    }
+                  : {
+                      // assignDiscipline, schedule, event, views
+                      title: t(($) => $.onboarding.steps[step].title),
+                      body: t(($) => $.onboarding.steps[step].body),
+                      footer: footer(config.action ? undefined : nextButton),
+                    }),
   };
 
   // O3 highlights the whole page; its bubble sits in the middle (Placement None).
@@ -293,7 +324,11 @@ export function OnboardingTour() {
     ? "top"
     : centred
       ? "bottom"
-      : (isMobile && config.mobilePlacement) || config.placement;
+      : ownDiscipline
+        ? target === "add-goal"
+          ? "bottom end"
+          : "bottom"
+        : (isMobile && config.mobilePlacement) || config.placement;
   const anchor = bottom
     ? {
         left: viewport.width / 2,

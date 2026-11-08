@@ -29,6 +29,7 @@ describe("/api/onboarding", () => {
   const prisma = {
     user: { findUniqueOrThrow: vi.fn(), update: vi.fn() },
     dog: { findFirst: vi.fn() },
+    dogExercise: { count: vi.fn() },
     dogDiscipline: { count: vi.fn() },
     scheduledExercise: { count: vi.fn() },
     discipline: { create: vi.fn() },
@@ -104,7 +105,9 @@ describe("/api/onboarding", () => {
       id: "dog-a",
       disciplines: [{ disciplineId: "disc-a" }],
       scheduledExercises: [],
+      _count: { goals: 1 },
     });
+    prisma.dogExercise.count.mockResolvedValue(0);
     prisma.dogDiscipline.count.mockResolvedValue(1);
     prisma.scheduledExercise.count.mockResolvedValue(0);
 
@@ -120,6 +123,8 @@ describe("/api/onboarding", () => {
       dogId: "dog-a",
       disciplineId: "disc-a",
       eventId: null,
+      hasGoal: true,
+      hasExercise: false,
     });
     expect(prisma.scheduledExercise.count).toHaveBeenCalledWith({
       where: {

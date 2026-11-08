@@ -703,6 +703,14 @@
           "add": "Choose Add to phone.",
           "confirm": "Confirm with Add."
         }
+      },
+      "ownGoal": {
+        "title": "Add a goal and an exercise",
+        "body": "Your own discipline is empty so far. Create its first goal with Add goal."
+      },
+      "ownExercise": {
+        "title": "Add an exercise",
+        "body": "The goal is ready. Add its first exercise so there's something to plan."
       }
     },
     "catalog": {

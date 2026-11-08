@@ -75,6 +75,8 @@ const onboarding = (patch: Partial<Onboarding> = {}): Onboarding => ({
   dogId: null,
   disciplineId: null,
   eventId: null,
+  hasGoal: false,
+  hasExercise: false,
   ...patch,
 });
 
@@ -185,6 +187,50 @@ describe("onboarding tour", () => {
     await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
 
     expect(store.get(mobileSidebarOpenAtom)).toBe(true);
+  });
+
+  it("asks for a goal on an own discipline instead of moving on", async () => {
+    state.onboarding = onboarding({
+      status: "active",
+      step: "assignDiscipline",
+    });
+    state.pathname = "/dogs/dog-1/disciplines/own";
+    const target = document.createElement("button");
+    target.dataset.tour = "add-goal";
+    target.getBoundingClientRect = () =>
+      ({ x: 900, y: 300, width: 120, height: 36 }) as DOMRect;
+    document.body.append(target);
+    renderUi(<OnboardingTour />);
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Add a goal and an exercise",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Step 3 of 7")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Back" }),
+    ).not.toBeInTheDocument();
+    expect(state.patch).not.toHaveBeenCalled();
+    expect(state.navigate).not.toHaveBeenCalled();
+    target.remove();
+  });
+
+  it("continues once the own discipline has its first exercise", async () => {
+    state.onboarding = onboarding({
+      status: "active",
+      step: "assignDiscipline",
+      hasGoal: true,
+      hasExercise: true,
+    });
+    state.pathname = "/dogs/dog-1/disciplines/own";
+    renderUi(<OnboardingTour />);
+
+    await waitFor(() =>
+      expect(state.patch).toHaveBeenCalledWith("onboarding", {
+        json: { status: "active", step: "openCalendar" },
+      }),
+    );
   });
 
   it("moves on once the calendar is open", async () => {

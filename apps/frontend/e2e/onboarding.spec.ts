@@ -34,7 +34,10 @@ async function asTourUser(
     if (
       response.request().method() !== "POST" ||
       !response.ok() ||
-      !/\/api\/(dogs|onboarding\/catalog\/[^/]+)$/.test(pathname)
+      // A dog, a copied catalog discipline or an own discipline.
+      !/\/api\/(dogs|dogs\/[^/]+\/disciplines|onboarding\/catalog\/[^/]+)$/.test(
+        pathname,
+      )
     ) {
       return;
     }
@@ -42,13 +45,11 @@ async function asTourUser(
       id: string;
       name: string;
     };
-    if (pathname.endsWith("/dogs") && name !== dogName) return;
+    if (pathname.endsWith("/api/dogs") && name !== dogName) return;
     cleanup.push(
-      pathname.endsWith("/dogs")
+      pathname.endsWith("/api/dogs")
         ? `${response.url()}/${id}`
-        : response
-            .url()
-            .replace(/onboarding\/catalog\/[^/]+$/, `disciplines/${id}`),
+        : new URL(`/api/disciplines/${id}`, response.url()).href,
     );
   });
   try {
@@ -192,5 +193,68 @@ test("on a phone the menu closes once the guide moves to the dog's page", async 
     await tour.catalogDialog
       .getByRole("button", { name: "Cancel", exact: true })
       .click();
+  });
+});
+
+test("an own discipline asks for a goal and an exercise before the calendar", async ({
+  page,
+  login,
+  app,
+  dog,
+}) => {
+  test.setTimeout(60_000);
+  const tour = new OnboardingPage(page);
+  const dogName = `E2E tour dog ${randomUUID()}`;
+  await asTourUser({ page, login, app }, dogName, async () => {
+    await app.userMenu.click();
+    await tour.startItem.click();
+    const welcome = await tour.expectBubble("Welcome to TrainLoop", "Guide");
+    await tour.button(welcome, "Start").click();
+    await dog.create(dogName);
+    const profile = await tour.expectBubble(`${dogName} is in`, "Step 2 of 7");
+    await tour.button(profile, "Next").click();
+
+    await page
+      .getByRole("button", { name: "Assign discipline", exact: true })
+      .click();
+    await tour.catalogDialog
+      .getByRole("radio", { name: "Your own discipline", exact: true })
+      .press("Space");
+    await tour.catalogDialog
+      .getByRole("button", { name: "Continue", exact: true })
+      .click();
+    const create = page.getByRole("dialog", {
+      name: `New discipline for ${dogName}`,
+    });
+    await create
+      .getByRole("textbox", { name: /^Name/ })
+      .fill(`E2E own discipline ${randomUUID()}`);
+    await create
+      .getByRole("button", { name: "Create and add goals", exact: true })
+      .click();
+
+    // Still step 3 on the empty discipline: first a goal…
+    await tour.expectBubble("Add a goal and an exercise", "Step 3 of 7");
+    await page.getByRole("button", { name: "Add goal", exact: true }).click();
+    const goal = page.getByRole("dialog", { name: "New goal", exact: true });
+    await goal.getByRole("textbox", { name: /^Goal name/ }).fill("Recall");
+    await goal.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(goal).toBeHidden();
+
+    // …then its first exercise, after which the guide moves on.
+    await tour.expectBubble("Add an exercise", "Step 3 of 7");
+    await page
+      .getByRole("button", { name: "Add exercise", exact: true })
+      .click();
+    const exercise = page.getByRole("dialog", {
+      name: "New exercise",
+      exact: true,
+    });
+    await exercise
+      .getByRole("textbox", { name: /^Exercise name/ })
+      .fill("Recall from 5 m");
+    await exercise.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(exercise).toBeHidden();
+    await tour.expectBubble("Discipline assigned", "Step 4 of 7");
   });
 });

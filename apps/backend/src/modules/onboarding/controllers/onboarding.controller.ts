@@ -89,6 +89,7 @@ export class OnboardingController {
             take: 1,
             select: { id: true },
           },
+          _count: { select: { goals: true } },
         },
       }),
       this.prisma.dogDiscipline.count({ where: { dog: activeDog } }),
@@ -103,6 +104,10 @@ export class OnboardingController {
         },
       }),
     ]);
+    // An own discipline starts empty; the tour waits for its first exercise.
+    const exercises = dog
+      ? await this.prisma.dogExercise.count({ where: { dogId: dog.id } })
+      : 0;
     return {
       status: state.onboardingStatus,
       step: state.onboardingStep,
@@ -113,6 +118,8 @@ export class OnboardingController {
       dogId: dog?.id ?? null,
       disciplineId: dog?.disciplines[0]?.disciplineId ?? null,
       eventId: dog?.scheduledExercises[0]?.id ?? null,
+      hasGoal: (dog?._count.goals ?? 0) > 0,
+      hasExercise: exercises > 0,
     };
   }
 
