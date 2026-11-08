@@ -1,6 +1,7 @@
 export const emailMessages = {
   cs: {
     tagline: "Plánovač a tréninkový deník pro psa",
+    unsubscribe: "Odhlásit e-mailové připomínky",
     dailyReminder: {
       subject: "Dnes máte naplánovaný trénink",
       heading: "Čas na dnešní trénink",
@@ -37,6 +38,7 @@ export const emailMessages = {
   },
   en: {
     tagline: "A planner and training journal for your dog",
+    unsubscribe: "Unsubscribe from email reminders",
     dailyReminder: {
       subject: "You have training planned for today",
       heading: "Time for today's training",

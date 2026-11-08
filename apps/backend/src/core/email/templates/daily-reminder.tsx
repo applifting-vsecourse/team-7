@@ -21,6 +21,8 @@ export const DailyReminder = ({
   language = "cs",
 }: DailyReminderProps): React.JSX.Element => {
   const content = emailMessages[language].dailyReminder;
+  const settingsUrl = new URL("/settings", url);
+  settingsUrl.searchParams.set("lng", language);
   return (
     <EmailLayout
       language={language}
@@ -32,6 +34,7 @@ export const DailyReminder = ({
       url={url}
       encouragement={content.encouragement}
       footer={content.footer}
+      unsubscribeUrl={settingsUrl.toString()}
     >
       {dogs.map((dog) => (
         <Section key={dog.id} style={{ paddingTop: 24 }}>
