@@ -41,6 +41,14 @@ const RING = 6;
 // 100000; the spotlight must cover an open menu and the bubble sits above it.
 const BUBBLE_LAYER = { zIndex: 100002 };
 
+/** The tour's motion token in ms (0 when motion is reduced). */
+function tourDuration() {
+  const value = getComputedStyle(document.documentElement)
+    .getPropertyValue("--motion-tour")
+    .trim();
+  return Number.parseFloat(value) * (value.endsWith("ms") ? 1 : 1000) || 0;
+}
+
 const grow = (box: Box, by: number): Box => ({
   x: box.x - by,
   y: box.y - by,
@@ -127,10 +135,28 @@ export function OnboardingTour() {
     box,
     anchor: anchorBox,
     last,
+    settled,
     missing,
     modalOpen,
     viewport,
   } = useTargetBox(selector, !!step);
+  // A new step's hole glides (CSS transition) from the old target to where
+  // the new one comes to rest after scrolling into view. Once it's there the
+  // hole follows the target on every frame, so it never trails a scroll.
+  const [glide, setGlide] = useState({ selector, done: false });
+  if (glide.selector !== selector) setGlide({ selector, done: false });
+  const glideDone = glide.selector === selector && glide.done;
+  useEffect(() => {
+    if (!anchorBox || glideDone) return;
+    const timer = setTimeout(
+      () =>
+        setGlide((current) =>
+          current.selector === selector ? { selector, done: true } : current,
+        ),
+      tourDuration(),
+    );
+    return () => clearTimeout(timer);
+  }, [anchorBox, glideDone, selector]);
 
   const dogId = tour.data?.dogId;
   // A dog page stays as it is: right after adding a dog, the tour's dog is
@@ -232,7 +258,12 @@ export function OnboardingTour() {
   const waiting = modalOpen || (!!selector && !anchorBox && !missing);
   // Between steps the hole stays on the last target until the next one shows,
   // then glides there; without a target it closes into a point.
-  const live = box ?? (selector && !missing ? last : null);
+  const live =
+    !selector || missing
+      ? null
+      : glideDone
+        ? (box ?? last)
+        : (anchorBox ?? settled ?? box);
   const centre = last
     ? { x: last.x + last.width / 2, y: last.y + last.height / 2 }
     : { x: viewport.width / 2, y: viewport.height / 2 };
@@ -433,7 +464,8 @@ export function OnboardingTour() {
   return createPortal(
     <TourLayer
       overlayClassName={cn(
-        "fixed inset-0 animate-dim touch-none bg-backdrop tour-hole",
+        "fixed inset-0 animate-dim touch-none bg-backdrop",
+        !glideDone && "tour-hole",
         // Under an open dialog, above everything (the phone menu) otherwise.
         modalOpen ? "z-99999" : "z-100001",
       )}
