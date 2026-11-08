@@ -1,5 +1,17 @@
 export const emailMessages = {
   cs: {
+    dailyReminder: {
+      subject: "Dnes máte naplánovaný trénink",
+      heading: "Čas na dnešní trénink",
+      description:
+        "Na dnešek máte v TrainLoop naplánovaná cvičení. Otevřete si přehled a podívejte se na svůj plán.",
+      link: "Zobrazit dnešní plán",
+      label: "Váš dnešní trénink",
+      encouragement: "Každý společný trénink je krok vpřed.",
+      footer:
+        "Tuto připomínku dostáváte, protože máte na dnešek naplánovaná cvičení v TrainLoop.",
+      tagline: "Plánovač a tréninkový deník pro psa",
+    },
     fallbackLink:
       "Pokud tlačítko nefunguje, zkopírujte tento odkaz do prohlížeče:",
     resetPassword: {
@@ -24,6 +36,18 @@ export const emailMessages = {
     },
   },
   en: {
+    dailyReminder: {
+      subject: "You have training planned for today",
+      heading: "Time for today's training",
+      description:
+        "You have exercises scheduled for today in TrainLoop. Open your overview to see your plan.",
+      link: "View today's plan",
+      label: "Your training today",
+      encouragement: "Every training session together is a step forward.",
+      footer:
+        "You're receiving this reminder because you have exercises scheduled for today in TrainLoop.",
+      tagline: "A planner and training journal for your dog",
+    },
     fallbackLink:
       "If the button doesn't work, copy and paste this link into your browser:",
     resetPassword: {
