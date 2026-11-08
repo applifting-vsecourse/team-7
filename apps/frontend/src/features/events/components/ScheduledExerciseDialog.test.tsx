@@ -13,6 +13,8 @@ import userEvent from "@testing-library/user-event";
 import { HTTPError } from "ky";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type * as VideoUpload from "@/features/videos/lib/videoUpload";
+
 import { ScheduledExerciseDialog } from "./ScheduledExerciseDialog";
 
 vi.mock("@tanstack/react-router", () => ({
@@ -40,12 +42,18 @@ const state = vi.hoisted(() => ({
     async () => ({}),
   ),
   remove: vi.fn(async () => ({ token: "undo-token" })),
+  validateVideo: vi.fn<(file: File) => Promise<void>>(async () => {}),
 }));
 vi.mock("@/features/auth/hooks/useSession", () => ({
   useSession: () => ({ user: { id: "user-a" } }),
 }));
+vi.mock("@/features/videos/lib/videoUpload", async (importOriginal) => ({
+  ...(await importOriginal<typeof VideoUpload>()),
+  validateVideo: state.validateVideo,
+}));
 vi.mock("@/lib/api-client", () => ({
   api: {
+    get: () => ({ json: async () => [] }),
     patch: state.patch,
     post: (path: string, options?: unknown) =>
       path.endsWith("reopen")
@@ -90,6 +98,7 @@ function setup(value = event) {
 }
 beforeEach(() => {
   vi.clearAllMocks();
+  state.post.mockReset().mockResolvedValue({});
   toast.clear();
 });
 afterEach(() => {
@@ -99,6 +108,51 @@ afterEach(() => {
 });
 
 describe("scheduled exercise dialog", () => {
+  it("uploads a video before completion and prevents closing or submitting during upload", async () => {
+    let finishUpload!: () => void;
+    state.post.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finishUpload = resolve;
+        }),
+    );
+    const { user, close } = setup();
+    await user.click(screen.getByRole("radio", { name: "4 out of 5 stars" }));
+    const complete = screen.getByRole("button", { name: "Mark as completed" });
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Upload video" }),
+      ).toBeEnabled(),
+    );
+    const file = new File(["video"], "clip.mp4", { type: "video/mp4" });
+    fireEvent.change(
+      screen.getByLabelText("Upload video", { selector: "input" }),
+      {
+        target: { files: [file] },
+      },
+    );
+    await screen.findByText("Uploading…");
+    expect(state.validateVideo).toHaveBeenCalledWith(file);
+    expect(state.post).toHaveBeenCalledWith("dogs/dog-a/exercises/e1/videos", {
+      body: expect.any(FormData) as FormData,
+      timeout: 120_000,
+    });
+    expect(complete).toBeDisabled();
+    for (const cancel of screen.getAllByRole("button", { name: "Cancel" })) {
+      expect(cancel).toBeDisabled();
+    }
+    await user.keyboard("{Escape}");
+    fireEvent.submit(complete.closest("form")!);
+    expect(close).not.toHaveBeenCalled();
+    expect(state.patch).not.toHaveBeenCalled();
+    finishUpload();
+    await waitFor(() => expect(complete).toBeEnabled());
+    await user.click(complete);
+    await waitFor(() => expect(close).toHaveBeenCalledOnce());
+    expect(state.patch).toHaveBeenCalledWith("events/event-a/result", {
+      json: { rating: 4, note: "" },
+    });
+  });
   it("requires a rating, saves the note and completes the exercise", async () => {
     const { user, close } = setup();
     expect(
@@ -120,6 +174,9 @@ describe("scheduled exercise dialog", () => {
     await user.click(
       await screen.findByRole("menuitem", { name: "Reschedule" }),
     );
+    expect(
+      screen.queryByRole("region", { name: "Videos" }),
+    ).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Date"), {
       target: { value: "2000-01-01" },
     });
@@ -129,6 +186,7 @@ describe("scheduled exercise dialog", () => {
     ).toBeInTheDocument();
     expect(state.patch).not.toHaveBeenCalled();
     await user.click(screen.getByRole("button", { name: "Back" }));
+    expect(screen.getByRole("region", { name: "Videos" })).toBeInTheDocument();
     expect(screen.getByLabelText("Note")).toHaveValue("Keep draft");
     expect(
       screen.getByRole("radio", { name: "3 out of 5 stars" }),

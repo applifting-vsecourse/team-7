@@ -15,6 +15,9 @@ exercise's discipline must belong to the authenticated, verified handler.
    `SUPABASE_VIDEO_BUCKET` in the backend environment. Keep the secret API key
    server-side. Without these settings uploads return 503 and the worker is off;
    other app features continue working.
+   `SUPABASE_URL` must be the project root, e.g. `https://<project-ref>.supabase.co`,
+   without `/rest/v1` or `/storage/v1`. The service appends `/storage/v1` itself;
+   using the REST API URL produces 404 responses.
    Use an `sb_secret_...` key from Supabase Settings → API Keys. Storage requests
    send it in the `apikey` header, without an `Authorization: Bearer` header.
 4. Ensure `ffmpeg` (with libx264/AAC) and `ffprobe` are on PATH for native local

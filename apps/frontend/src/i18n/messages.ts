@@ -5,7 +5,9 @@ export type TranslationSelector = (resources: typeof en) => string;
 
 // Zod and Error carry strings; derive their keys from checked selectors.
 export const messageSelectors = {
-  settingsInvalid: ($) => $.settings.invalid,
+  videoInvalid: ($) => $.videos.invalid,
+  videoTooLarge: ($) => $.videos.tooLarge,
+  videoTooLong: ($) => $.videos.tooLong,
   trainingRating: ($) => $.training.ratingRequired,
   trainingNote: ($) => $.training.noteTooLong,
   trainingFutureDate: ($) => $.training.futureDate,
