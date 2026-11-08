@@ -39,6 +39,8 @@
   --animate-fade: fade var(--motion-draw) var(--ease-enter) backwards;
   /* Onboarding tour (#72): the screen dims and the ring settles on its target. */
   --animate-dim: fade var(--motion-tour) var(--ease-enter) backwards;
+  /* …and clears when the tour ends. */
+  --animate-undim: unfade var(--motion-tour) var(--ease-exit) forwards;
   --animate-spotlight: spotlight var(--motion-tour) var(--ease-enter) backwards;
 
   @keyframes enter {
@@ -66,6 +68,12 @@
   }
   @keyframes fade {
     from {
+      opacity: 0;
+    }
+  }
+  /* Its own name: reversing `fade` on the same element wouldn't restart it. */
+  @keyframes unfade {
+    to {
       opacity: 0;
     }
   }
@@ -366,6 +374,12 @@
   .popover.coach-mark[data-entering="true"] {
     animation-duration: var(--motion-tour);
     animation-timing-function: var(--ease-enter);
+  }
+  /* Between steps the last bubble leaves before the next one comes in. */
+  .popover.coach-mark[data-exiting="true"],
+  .popover.coach-mark[data-exiting="true"][data-placement] {
+    animation-duration: var(--motion-base);
+    animation-timing-function: var(--ease-exit);
   }
 
   /* Breadcrumbs stay on one line: items shrink and long names end in an

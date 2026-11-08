@@ -181,6 +181,8 @@ test("the guide walks through a dog, a default discipline and the first exercise
       const views = await tour.expectBubble("Day, week, month", "Step 7 of 7");
       await tour.button(views, "Finish").click();
       await expect(views).toBeHidden();
+      // The dimming fades out and is removed; nothing is left over the app.
+      await expect(page.locator(".bg-backdrop")).toHaveCount(0);
       await expect(calendar.weeklyHeading).toBeVisible();
       await page.reload();
       await expect(calendar.weeklyHeading).toBeVisible();
