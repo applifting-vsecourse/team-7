@@ -10,7 +10,6 @@ import {
   vi,
 } from "vitest";
 import { PrismaService } from "@/core/prisma/prisma.service";
-import { DogSelectionService } from "@/modules/dogs/services/dog-selection.service";
 import { getSessionFromRequest } from "@/shared/auth/utils/get-session-from-request";
 import { OnboardingController } from "./onboarding.controller";
 
@@ -32,18 +31,14 @@ describe("/api/onboarding", () => {
     dogExercise: { count: vi.fn() },
     dogDiscipline: { count: vi.fn() },
     scheduledExercise: { count: vi.fn() },
-    discipline: { create: vi.fn() },
-    goal: { create: vi.fn() },
     $transaction: (action: (tx: unknown) => unknown) => action(prisma),
   };
-  const replace = vi.fn();
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
       controllers: [OnboardingController],
       providers: [
         { provide: PrismaService, useValue: prisma },
-        { provide: DogSelectionService, useValue: { replace } },
         { provide: "BetterAuth", useValue: {} },
       ],
     }).compile();
@@ -63,19 +58,8 @@ describe("/api/onboarding", () => {
       archivedAt: null,
       disciplines: [],
       scheduledExercises: [],
+      _count: { goals: 0 },
     });
-    prisma.discipline.create.mockResolvedValue({ id: "disc-1" });
-    prisma.goal.create.mockImplementation(
-      ({ data }: { data: { exercises: { create: unknown[] } } }) => {
-        const id = `goal-${prisma.goal.create.mock.calls.length}`;
-        return Promise.resolve({
-          id,
-          exercises: data.exercises.create.map((_, index) => ({
-            id: `${id}-ex-${index}`,
-          })),
-        });
-      },
-    );
   });
 
   afterAll(async () => {
@@ -166,75 +150,5 @@ describe("/api/onboarding", () => {
   it("rejects an unknown status", async () => {
     const response = await send("PATCH", "", { status: "done" });
     expect(response.status).toBe(400);
-  });
-
-  it("lists the catalog in the requested language", async () => {
-    const en = await (await send("GET", "/catalog?lng=en")).json();
-    const cs = await (await send("GET", "/catalog?lng=cs")).json();
-
-    expect(en).toHaveLength(5);
-    expect(cs[0].name).toBe("Základy poslušnosti");
-    expect(en[0]).toMatchObject({
-      key: "obedience",
-      name: "Obedience basics",
-      goals: [
-        {
-          id: "0",
-          name: "Loose-leash walking",
-          exercises: [{ id: "0.0", name: "Attention on name" }, {}, {}],
-        },
-        {},
-        {},
-      ],
-    });
-  });
-
-  it("copies a catalog discipline into the library and assigns the selection", async () => {
-    const response = await send("POST", "/catalog/recall", {
-      dogId: "dog-a",
-      lng: "cs",
-      goals: [{ goalId: "1", exerciseIds: ["1.1"] }],
-    });
-
-    expect(response.status).toBe(201);
-    expect(prisma.discipline.create).toHaveBeenCalledWith({
-      data: { userId: "user-a", name: "Spolehlivé přivolání" },
-    });
-    expect(prisma.goal.create).toHaveBeenCalledTimes(3);
-    expect(replace).toHaveBeenCalledWith(
-      prisma,
-      { userId: "user-a", dogId: "dog-a", disciplineId: "disc-1" },
-      [{ goalId: "goal-2", exerciseIds: ["goal-2-ex-1"] }],
-    );
-  });
-
-  it("rejects an unknown catalog discipline or item", async () => {
-    const unknownKey = await send("POST", "/catalog/flyball", {
-      dogId: "dog-a",
-      lng: "cs",
-      goals: [{ goalId: "0", exerciseIds: [] }],
-    });
-    const unknownItem = await send("POST", "/catalog/recall", {
-      dogId: "dog-a",
-      lng: "cs",
-      goals: [{ goalId: "9", exerciseIds: [] }],
-    });
-
-    expect(unknownKey.status).toBe(404);
-    expect(unknownItem.status).toBe(400);
-    expect(replace).not.toHaveBeenCalled();
-  });
-
-  it("does not copy for another user's dog", async () => {
-    prisma.dog.findFirst.mockResolvedValue(null);
-
-    const response = await send("POST", "/catalog/recall", {
-      dogId: "dog-b",
-      lng: "cs",
-      goals: [{ goalId: "0", exerciseIds: [] }],
-    });
-
-    expect(response.status).toBe(404);
-    expect(prisma.discipline.create).not.toHaveBeenCalled();
   });
 });

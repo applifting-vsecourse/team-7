@@ -19,6 +19,7 @@ import {
   disciplineQueryOptions,
   disciplinesQueryOptions,
 } from "@/features/disciplines/api/disciplinesQueryOptions";
+import { useTour } from "@/features/onboarding/hooks/useTour";
 
 import {
   dogDisciplinePath,
@@ -29,27 +30,45 @@ import { useDogProfileMutation } from "../hooks/useDogProfileMutation";
 import { GoalPicker } from "./GoalPicker";
 import { QueryFeedback } from "./QueryFeedback";
 
+const CUSTOM = "custom";
+
 export function AssignDisciplineDialog({
   dog,
   onClose,
+  onCustom,
 }: {
   dog: DogProfile;
   onClose: () => void;
+  /**
+   * The tour's variant (Figma O5): the library plus "Your own discipline",
+   * which hands over to the new-discipline dialog.
+   */
+  onCustom?: () => void;
 }) {
   const { t } = useTranslation();
   const { user } = useSession();
   const summary = useGoalsSummary();
   const [step, setStep] = useState(1);
-  const [disciplineId, setDisciplineId] = useState("");
+  const tour = useTour();
+  const [picked, setPicked] = useState("");
   const [selection, setSelection] = useState<GoalSelection[]>([]);
   const library = useQuery(disciplinesQueryOptions(user?.id));
-  const detail = useQuery(disciplineQueryOptions(user?.id, disciplineId));
   const available =
     library.data?.filter(
       (item) =>
         item.goalCount > 0 &&
         !dog.disciplines.some((assigned) => assigned.id === item.id),
     ) ?? [];
+  // The tour starts with the first option picked, as in Figma O5.
+  const disciplineId =
+    picked ||
+    (onCustom && library.isSuccess ? (available[0]?.id ?? CUSTOM) : "");
+  const detail = useQuery(
+    disciplineQueryOptions(
+      user?.id,
+      disciplineId === CUSTOM ? "" : disciplineId,
+    ),
+  );
   const save = useDogProfileMutation(async () => {
     await api.put(`${dogDisciplinePath(dog.id, disciplineId)}/selection`, {
       json: { goals: selection },
@@ -91,16 +110,18 @@ export function AssignDisciplineDialog({
               </div>
             </div>
             <p className="text-sm leading-6">
-              {step === 1
-                ? t(($) => $.dogProfile.chooseDiscipline, { name: dog.name })
-                : t(($) => $.dogProfile.chooseGoals, { name: dog.name })}
+              {step === 2
+                ? t(($) => $.dogProfile.chooseGoals, { name: dog.name })
+                : onCustom
+                  ? t(($) => $.onboarding.disciplineDialog.intro)
+                  : t(($) => $.dogProfile.chooseDiscipline, { name: dog.name })}
             </p>
             {step === 1 ? (
               <>
                 <QueryFeedback query={library} />
                 {library.isSuccess && (
                   <>
-                    {available.length === 0 ? (
+                    {available.length === 0 && !onCustom ? (
                       <Alert status="accent">
                         <Alert.Indicator />
                         <Alert.Content>
@@ -114,7 +135,7 @@ export function AssignDisciplineDialog({
                         aria-label={t(($) => $.navigation.disciplines)}
                         value={disciplineId}
                         onChange={(value) => {
-                          setDisciplineId(value);
+                          setPicked(value);
                           setSelection([]);
                         }}
                       >
@@ -129,16 +150,29 @@ export function AssignDisciplineDialog({
                             )}
                           />
                         ))}
+                        {onCustom && (
+                          <DisciplineRadio
+                            value={CUSTOM}
+                            name={t(
+                              ($) => $.onboarding.disciplineDialog.custom,
+                            )}
+                            description={t(
+                              ($) => $.onboarding.disciplineDialog.customHint,
+                            )}
+                          />
+                        )}
                       </RadioGroup>
                     )}
-                    <Alert status="accent">
-                      <Alert.Indicator />
-                      <Alert.Content>
-                        <Alert.Title>
-                          {t(($) => $.dogProfile.libraryNotice)}
-                        </Alert.Title>
-                      </Alert.Content>
-                    </Alert>
+                    {!onCustom && (
+                      <Alert status="accent">
+                        <Alert.Indicator />
+                        <Alert.Content>
+                          <Alert.Title>
+                            {t(($) => $.dogProfile.libraryNotice)}
+                          </Alert.Title>
+                        </Alert.Content>
+                      </Alert>
+                    )}
                   </>
                 )}
               </>
@@ -220,13 +254,15 @@ export function AssignDisciplineDialog({
               className="flex-auto sm:flex-none"
               onPress={async () => {
                 if (step === 1) {
-                  setStep(2);
+                  if (disciplineId === CUSTOM) onCustom?.();
+                  else setStep(2);
                   return;
                 }
                 try {
                   await save.mutateAsync();
                   toast.success(t(($) => $.dogProfile.assignedToast));
                   onClose();
+                  tour.complete("assignDiscipline");
                 } catch {
                   /* Error stays in the dialog for retry. */
                 }

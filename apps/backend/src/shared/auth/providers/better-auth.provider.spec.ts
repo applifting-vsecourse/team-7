@@ -128,3 +128,51 @@ describe("auth email callbacks", () => {
     },
   );
 });
+
+describe("new accounts", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const createUserHook = (prisma: PrismaService) => {
+    (betterAuthProvider as FactoryProvider).useFactory(
+      prisma,
+      mock<Config>({
+        frontendUrl: "http://localhost:3050",
+        additionalFrontendOrigins: "",
+        backendUrl: "http://localhost:4050",
+      }),
+      mock<EmailService>(),
+    );
+    const options = vi.mocked(betterAuth).mock.calls[0]![0]!;
+    return options.databaseHooks!.user!.create!.after!;
+  };
+  const user = {
+    id: "user-new",
+    name: "Jana",
+    email: "jana@example.com",
+    emailVerified: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  it("start with the default disciplines in the language they signed up in", async () => {
+    const create = vi.fn();
+    const after = createUserHook({ discipline: { create } } as never);
+
+    await after(user, {
+      body: { callbackURL: "http://localhost:3050/overview?lng=en" },
+    } as never);
+
+    expect(create).toHaveBeenCalledTimes(5);
+    expect(create.mock.calls[0]![0].data).toMatchObject({
+      userId: "user-new",
+      name: "Obedience basics",
+    });
+  });
+
+  it("keep a working account when the defaults fail", async () => {
+    const create = vi.fn().mockRejectedValue(new Error("db down"));
+    const after = createUserHook({ discipline: { create } } as never);
+
+    await expect(after(user, null)).resolves.toBeUndefined();
+  });
+});

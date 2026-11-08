@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-/** The first-login tour (#72): its Coach Mark bubbles and the catalog dialog. */
+/** The first-login tour (#72): its Coach Mark bubbles and the discipline dialog. */
 export class OnboardingPage {
   constructor(readonly page: Page) {}
 
@@ -10,7 +10,8 @@ export class OnboardingPage {
       exact: true,
     });
   }
-  get catalogDialog() {
+  /** O5: assign a discipline from the library, or your own. */
+  get disciplineDialog() {
     return this.page.getByRole("dialog", {
       name: "Assign discipline",
       exact: true,

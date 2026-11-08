@@ -1,4 +1,4 @@
-import { Inject, Provider } from "@nestjs/common";
+import { Inject, Logger, Provider } from "@nestjs/common";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { EmailService } from "@/core/email/interfaces/email-service.interface";
@@ -10,6 +10,10 @@ import { PrismaService } from "@/core/prisma/prisma.service";
 import { betterAuthCoreConfig } from "@/shared/auth/config/better-auth.config";
 import { Config } from "@/shared/config/config.service";
 import { frontendOrigins } from "@/shared/config/frontend-origins";
+import {
+  createDefaultDisciplines,
+  signUpLanguage,
+} from "@/shared/domain/default-disciplines";
 
 const createAuth = (
   prismaService: PrismaService,
@@ -64,6 +68,29 @@ const createAuth = (
       },
     },
     trustedOrigins: frontendOrigins(config),
+    // Every new account starts with the default disciplines (#72), in the
+    // language it signed up in. A failure leaves the account usable.
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (user, context) => {
+            const body = context?.body as { callbackURL?: unknown } | undefined;
+            try {
+              await createDefaultDisciplines(
+                prismaService,
+                user.id,
+                signUpLanguage(body?.callbackURL),
+              );
+            } catch (error) {
+              new Logger("BetterAuth").error(
+                `Default disciplines for user ${user.id} failed`,
+                error,
+              );
+            }
+          },
+        },
+      },
+    },
     // Google is enabled only when configured, so dev and CI run without it.
     socialProviders:
       config.googleClientId && config.googleClientSecret

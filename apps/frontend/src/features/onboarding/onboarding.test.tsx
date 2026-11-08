@@ -8,8 +8,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mobileSidebarOpenAtom } from "@/app/atoms/mobileSidebarOpenAtom";
 
 import type { DogProfile } from "@/features/dogs/api/dogProfileQueryOptions";
+import { AssignDisciplineDialog } from "@/features/dogs/components/AssignDisciplineDialog";
 
-import { CatalogDisciplineDialog } from "./components/CatalogDisciplineDialog";
 import { GettingStartedCard } from "./components/GettingStartedCard";
 import { OnboardingTour } from "./components/OnboardingTour";
 
@@ -18,7 +18,8 @@ const state = vi.hoisted(() => ({
   pathname: "/overview",
   navigate: vi.fn(),
   patch: vi.fn(),
-  post: vi.fn(),
+  put: vi.fn(),
+  library: [] as unknown[],
 }));
 
 vi.mock("@/features/auth/hooks/useSession", () => ({
@@ -32,6 +33,24 @@ vi.mock("@tanstack/react-router", () => ({
     select: (s: { location: { pathname: string } }) => string;
   }) => select({ location: { pathname: state.pathname } }),
 }));
+// The library holds whatever the handler has, the defaults included (#72).
+const recall = {
+  id: "recall",
+  name: "Reliable recall",
+  description: null,
+  goals: [
+    {
+      id: "home",
+      name: "Recall at home",
+      criterion: null,
+      exercises: [
+        { id: "on-name", name: "On name", procedure: null, dogCount: 0 },
+      ],
+      dogs: [],
+    },
+  ],
+  dogs: [],
+};
 vi.mock("@/lib/api-client", () => ({
   api: {
     get: (path: string) => ({
@@ -40,26 +59,16 @@ vi.mock("@/lib/api-client", () => ({
           ? state.onboarding
           : path === "dogs"
             ? [{ id: "dog-1", name: "Bára" }]
-            : [
-                {
-                  key: "recall",
-                  name: "Reliable recall",
-                  goals: [
-                    {
-                      id: "0",
-                      name: "Recall at home",
-                      exercises: [{ id: "0.0", name: "On name" }],
-                    },
-                  ],
-                },
-              ],
+            : path === "disciplines"
+              ? state.library
+              : recall,
     }),
     patch: (path: string, options: unknown) => {
       state.patch(path, options);
       return Promise.resolve();
     },
-    post: (path: string, options: unknown) => {
-      state.post(path, options);
+    put: (path: string, options: unknown) => {
+      state.put(path, options);
       return Promise.resolve();
     },
   },
@@ -286,58 +295,74 @@ describe("getting started card", () => {
   });
 });
 
-describe("prefilled discipline dialog", () => {
-  const dog = { id: "dog-1", name: "Bára" } as DogProfile;
+describe("discipline dialog in the guide (O5)", () => {
+  const dog = {
+    id: "dog-1",
+    name: "Bára",
+    disciplines: [],
+  } as unknown as DogProfile;
+  const summary = {
+    id: "recall",
+    name: "Reliable recall",
+    description: null,
+    goalCount: 1,
+    exerciseCount: 1,
+    dogs: [],
+  };
 
-  it("copies the chosen discipline with the selected goals", async () => {
+  it("offers the library, assigns the chosen discipline and moves the guide on", async () => {
     state.onboarding = onboarding({
       status: "active",
       step: "assignDiscipline",
     });
+    state.library = [summary];
     const onClose = vi.fn();
     const user = renderUi(
-      <CatalogDisciplineDialog
-        dog={dog}
-        onClose={onClose}
-        onCustom={vi.fn()}
-      />,
+      <AssignDisciplineDialog dog={dog} onClose={onClose} onCustom={vi.fn()} />,
     );
 
-    await user.click(
+    // The first discipline starts picked, as in Figma O5.
+    expect(
       await screen.findByRole("radio", { name: "Reliable recall" }),
-    );
-    expect(screen.getByText("Ready-made · 1 goal · 1 exercise")).toBeVisible();
+    ).toBeChecked();
+    expect(
+      screen.getByRole("radio", { name: "Your own discipline" }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Continue" }));
-    await user.click(screen.getByRole("button", { name: "Select all" }));
+    await user.click(await screen.findByRole("button", { name: "Select all" }));
     await user.click(screen.getByRole("button", { name: /Assign/ }));
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect(state.post).toHaveBeenCalledWith("onboarding/catalog/recall", {
-      json: {
-        dogId: "dog-1",
-        lng: "en",
-        goals: [{ goalId: "0", exerciseIds: ["0.0"] }],
-      },
-    });
+    // An assignment of the library discipline, never a copy.
+    expect(state.put).toHaveBeenCalledWith(
+      "dogs/dog-1/disciplines/recall/selection",
+      { json: { goals: [{ goalId: "home", exerciseIds: ["on-name"] }] } },
+    );
+    await waitFor(() =>
+      expect(state.patch).toHaveBeenCalledWith("onboarding", {
+        json: { status: "active", step: "openCalendar" },
+      }),
+    );
   });
 
-  it("hands over to the new discipline dialog for your own discipline", async () => {
+  it("offers only your own discipline when the library is empty", async () => {
     state.onboarding = onboarding();
+    state.library = [];
     const onCustom = vi.fn();
     const user = renderUi(
-      <CatalogDisciplineDialog
+      <AssignDisciplineDialog
         dog={dog}
         onClose={vi.fn()}
         onCustom={onCustom}
       />,
     );
 
-    await user.click(
+    expect(
       await screen.findByRole("radio", { name: "Your own discipline" }),
-    );
+    ).toBeChecked();
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
     expect(onCustom).toHaveBeenCalled();
-    expect(state.post).not.toHaveBeenCalled();
+    expect(state.put).not.toHaveBeenCalled();
   });
 });
