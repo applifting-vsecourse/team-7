@@ -8,6 +8,8 @@ import {
 } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { OnboardingTour } from "@/features/onboarding/components/OnboardingTour";
+
 import "@/styles/global.css";
 
 export const Route = createRootRouteWithContext<{
@@ -28,6 +30,9 @@ function RootComponent() {
   return (
     <I18nProvider locale={i18n.resolvedLanguage}>
       <Outlet />
+      {/* Above the pages, so the tour (and its spotlight) carries on across
+          the navigations it leads the user through. */}
+      <OnboardingTour />
       <Toast.Provider placement="top" />
     </I18nProvider>
   );

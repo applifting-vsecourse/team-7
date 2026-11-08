@@ -62,7 +62,16 @@ export function useTour() {
     hideCard: () => update.mutate({ cardHidden: true }),
     /** A dialog reports its saved action; only the current step moves on. */
     complete: (from: StepId) => {
-      if (step === from) next();
+      if (step !== from) return;
+      // The exercise just planned is fetched anew; until then the tour mustn't
+      // point at an older one (or at nothing).
+      if (from === "schedule") {
+        client.setQueryData<Onboarding>(
+          key,
+          (old) => old && { ...old, eventId: null, eventStartsAt: null },
+        );
+      }
+      next();
     },
     /** "Continue the tour" (O12): the first item not done yet. */
     resume: () =>

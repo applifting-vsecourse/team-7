@@ -7,7 +7,6 @@ import { Seo } from "@/components/Seo";
 import { cn } from "@/lib/utils";
 
 import { AddDogDialog } from "@/features/dogs/components/AddDogDialog";
-import { OnboardingTour } from "@/features/onboarding/components/OnboardingTour";
 
 export type AppLayoutProps = {
   // Document title; omit it when a nested route sets its own.
@@ -74,7 +73,6 @@ export default function Layout({
       </div>
       {/* Outside the sidebar, so switching to the mobile drawer keeps it open. */}
       {sidebar ? <AddDogDialog /> : null}
-      {sidebar ? <OnboardingTour /> : null}
     </>
   );
 }

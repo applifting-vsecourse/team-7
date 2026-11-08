@@ -25,6 +25,9 @@
   /* Motion — decelerate when arriving, accelerate when leaving */
   --ease-enter: cubic-bezier(0.2, 0, 0, 1);
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  /* Moving from one place to another: eases in and out, so a long move
+     (the tour's spotlight between targets) doesn't start with a jolt. */
+  --ease-move: cubic-bezier(0.4, 0, 0.2, 1);
   /* Overshoots slightly before settling; only for small celebratory pops. */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   /* `backwards` hides staggered items during their delay without holding the
@@ -240,7 +243,7 @@
 /* Content dimmed while newer data loads. */
 /* The tour's spotlight hole glides from one target to the next. */
 @utility tour-hole {
-  transition: clip-path var(--motion-tour) var(--ease-enter);
+  transition: clip-path var(--motion-tour) var(--ease-move);
 }
 
 @utility state-dim {
