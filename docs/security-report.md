@@ -28,7 +28,7 @@ Tento PR povyšuje zranitelné verze přes `pnpm.overrides` v `package.json`. Po
 | `postcss` 8.4.31        | 4 (2× high)  | `better-auth` → volitelný peer `next`, aplikace ho nespouští | → 8.5.32 |
 | `brace-expansion` 5.0.9 | 1 medium     | ESLint plugin, jen vývojový nástroj                          | → 5.0.12 |
 
-Po změně prošly lint, type-check, build obou aplikací a všech 13 e2e testů.
+Po změně prošly lint, type-check, build obou aplikací a všech 14 e2e testů.
 
 **Zůstávají 3 upozornění:**
 
@@ -54,7 +54,10 @@ Po změně prošly lint, type-check, build obou aplikací a všech 13 e2e testů
 - **Výsledek: všech 51 vrátilo 404.** Data uživatele A zůstala beze změny.
 - Seznamy uživatele B (`/dogs`, `/dogs/archived`, `/disciplines`, `/events`, `/overview`, `/users/me/settings`) neobsahují žádné ID uživatele A.
 
-**Automatické testy:** unit testy controllerů kontrolují přístup k cizím datům u disciplín, cílů, přiřazení disciplíny psovi, psů a videí (`disciplines.controller.spec.ts`, `dog-selection.controller.spec.ts`, `dogs.controller.spec.ts`, `videos.service.spec.ts`). U tréninků (`events`) takový test chybí. Chybí i test se dvěma skutečnými uživateli, který by výše popsané ověření opakoval při každé změně (viz bod 6).
+**Automatické testy:**
+
+- **E2e test `apps/frontend/e2e/data-isolation.spec.ts`** opakuje ověření při každé změně v CI. Uživatel A si přes API založí psa, disciplínu s cílem a cvičením a lekci s trenérem. Uživatel B pak zkusí 23 requestů na čtení, úpravy a mazání a všechny musí vrátit 404. Test dál kontroluje, že seznamy uživatele B neobsahují data A a že data A zůstala beze změny. Když izolace selže, test spadne a u každého requestu vypíše, co prošlo (např. `GET dogs/… Expected: 404, Received: 200`).
+- Unit testy controllerů kontrolují přístup k cizím datům u disciplín, cílů, přiřazení disciplíny psovi, psů a videí (`disciplines.controller.spec.ts`, `dog-selection.controller.spec.ts`, `dogs.controller.spec.ts`, `videos.service.spec.ts`). U tréninků (`events.service.spec.ts`) zatím chybí. Pokrývá je jen e2e test výše.
 
 ## 4. Přihlášení a session
 
@@ -75,7 +78,7 @@ Po změně prošly lint, type-check, build obou aplikací a všech 13 e2e testů
 ## 6. Co zbývá
 
 1. Přesunout secrets z Docker image do proměnných prostředí v Coolify (bod 5).
-2. Přidat automatický test se dvěma uživateli, který při každé změně ověří izolaci dat (bod 3), a doplnit unit testy pro tréninky.
+2. Doplnit unit testy přístupu k cizím tréninkům v `events.service.spec.ts` (bod 3).
 3. Aktualizovat `react-email`, až vyjde verze s `glob` 14, a uzavřít zbylé upozornění.
 4. Ověřit v Settings → Code security, že jsou zapnuté Dependabot security updates.
 5. Na stagingu ověřit, že session cookie má příznak `Secure`.
