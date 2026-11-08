@@ -140,10 +140,27 @@ describe("exercise video HTTP boundary", () => {
     expect(videos.remove).not.toHaveBeenCalled();
   });
 
-  it("checks ownership before accepting a multipart body", async () => {
+  it.each([
+    ["GET", ""],
+    ["POST", ""],
+    ["GET", "/video/playback"],
+    ["DELETE", "/video"],
+  ])("checks ownership before handling %s %s", async (method, suffix) => {
     videos.assertAccess.mockRejectedValue(new NotFoundException());
-    expect((await upload()).status).toBe(404);
+    const response =
+      method === "POST"
+        ? await upload()
+        : await fetch(`${url}${suffix}`, { method });
+    expect(response.status).toBe(404);
+    expect(videos.assertAccess).toHaveBeenCalledExactlyOnceWith(
+      "user",
+      "dog",
+      "session",
+    );
     expect(videos.upload).not.toHaveBeenCalled();
+    expect(videos.list).not.toHaveBeenCalled();
+    expect(videos.playback).not.toHaveBeenCalled();
+    expect(videos.remove).not.toHaveBeenCalled();
   });
 
   it("refuses uploads before writing a file if storage is disabled", async () => {

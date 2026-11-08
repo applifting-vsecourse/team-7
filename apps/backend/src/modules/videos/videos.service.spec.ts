@@ -167,12 +167,7 @@ describe("training session video uploads and ownership", () => {
   });
 
   it("rejects a session removed during upload admission", async () => {
-    prisma.scheduledExercise.findFirst
-      .mockResolvedValueOnce({
-        id: "session",
-        exerciseId: "exercise",
-      } as never)
-      .mockResolvedValueOnce(null);
+    prisma.scheduledExercise.findFirst.mockResolvedValueOnce(null);
     await expect(
       service.upload("user", "dog", "session", file),
     ).rejects.toThrow("Training session not found");
@@ -316,7 +311,7 @@ describe("training session video uploads and ownership", () => {
   it("rejects another owner's dog before accessing any video", async () => {
     prisma.dog.findFirst.mockResolvedValue(null);
     await expect(
-      service.list("attacker", "dog", "session"),
+      service.assertAccess("attacker", "dog", "session"),
     ).rejects.toBeInstanceOf(NotFoundException);
     expect(prisma.dog.findFirst).toHaveBeenCalledWith({
       where: { id: "dog", userId: "attacker" },
@@ -329,7 +324,7 @@ describe("training session video uploads and ownership", () => {
   it("rejects a missing, deleted, lesson, or foreign-dog session", async () => {
     prisma.scheduledExercise.findFirst.mockResolvedValue(null);
     await expect(
-      service.remove("user", "dog", "foreign", "video"),
+      service.assertAccess("user", "dog", "foreign"),
     ).rejects.toBeInstanceOf(NotFoundException);
     expect(prisma.scheduledExercise.findFirst).toHaveBeenCalledWith({
       where: { id: "foreign", dogId: "dog", kind: "exercise", deletedAt: null },

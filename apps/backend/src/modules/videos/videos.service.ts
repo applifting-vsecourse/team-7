@@ -18,6 +18,8 @@ import {
   VIDEO_QUEUE_LIMIT,
 } from "./videos.constants";
 
+// VideoOwnerGuard validates access before these operations, including before
+// Multer accepts an upload body.
 @Injectable()
 export class VideosService {
   constructor(
@@ -53,7 +55,6 @@ export class VideosService {
       if (!file.size || file.size > VIDEO_MAX_BYTES) {
         throw new BadRequestException("Use MP4, MOV or WebM up to 30 MB");
       }
-      await this.assertAccess(userId, dogId, sessionId);
       // Multipart MIME types and filenames are client-controlled. Detect the
       // container from bytes; the worker still probes and decodes its contents.
       const detected = await fileTypeFromFile(file.path);
@@ -131,7 +132,6 @@ export class VideosService {
   }
 
   async list(userId: string, dogId: string, sessionId: string) {
-    await this.assertAccess(userId, dogId, sessionId);
     return this.prisma.video.findMany({
       where: { userId, dogId, sessionId, status: { not: "deleting" } },
       select: {
@@ -148,7 +148,6 @@ export class VideosService {
   }
 
   async playback(userId: string, dogId: string, sessionId: string, id: string) {
-    await this.assertAccess(userId, dogId, sessionId);
     const job = await this.prisma.video.findFirst({
       where: { id, userId, dogId, sessionId, status: "completed" },
     });
@@ -165,7 +164,6 @@ export class VideosService {
     sessionId: string,
     id: string,
   ): Promise<void> {
-    await this.assertAccess(userId, dogId, sessionId);
     const result = await this.prisma.video.updateMany({
       where: { id, userId, dogId, sessionId, status: { not: "uploading" } },
       data: { status: "deleting" },

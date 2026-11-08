@@ -12,6 +12,7 @@ export const messageSelectors = {
   trainingNote: ($) => $.training.noteTooLong,
   trainingFutureDate: ($) => $.training.futureDate,
   scheduleInvalid: ($) => $.planning.invalid,
+  settingsInvalid: ($) => $.settings.invalid,
   emailRequired: ($) => $.validation.email.required,
   emailInvalid: ($) => $.validation.email.invalid,
   passwordRequired: ($) => $.validation.password.required,
