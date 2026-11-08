@@ -26,6 +26,7 @@ interface EmailLayoutProps {
   footer: string;
   label?: string;
   encouragement?: string;
+  children?: React.ReactNode;
 }
 
 export const EmailLayout = ({
@@ -38,6 +39,7 @@ export const EmailLayout = ({
   footer,
   label,
   encouragement,
+  children,
 }: EmailLayoutProps): React.JSX.Element => {
   return (
     <Html lang={language}>
@@ -88,6 +90,7 @@ export const EmailLayout = ({
               {heading}
             </Heading>
             <Text style={styles.description}>{description}</Text>
+            {children}
             <Section style={styles.action}>
               <Button className="email-button" href={url} style={styles.button}>
                 {button}
