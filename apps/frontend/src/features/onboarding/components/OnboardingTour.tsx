@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 
 import { mobileSidebarOpenAtom } from "@/app/atoms/mobileSidebarOpenAtom";
 import { ROUTES } from "@/app/routes";
+import { cn } from "@/lib/utils";
 
 import { useSession } from "@/features/auth/hooks/useSession";
 import { dogsQueryOptions } from "@/features/dogs/api/dogsQueryOptions";
@@ -99,7 +100,13 @@ export function OnboardingTour() {
     step === "event" && tour.data?.eventId
       ? `[data-event-id="${tour.data.eventId}"]`
       : target && `[data-tour="${target}"]`;
-  const { box, missing, modalOpen, viewport } = useTargetBox(selector, !!step);
+  const {
+    box,
+    anchor: anchorBox,
+    missing,
+    modalOpen,
+    viewport,
+  } = useTargetBox(selector, !!step);
 
   const dogId = tour.data?.dogId;
   // A dog page stays as it is: right after adding a dog, the tour's dog is
@@ -178,9 +185,12 @@ export function OnboardingTour() {
     return () => removeEventListener("keydown", onKey, true);
   }, [step, modalOpen, leave]);
 
-  if (!step || !config || modalOpen) return null;
-  // Wait for the target unless it has gone missing (then centre the bubble).
-  if (selector && !box && !missing) return null;
+  if (!step || !config) return null;
+  // The dimming stays on screen the whole time (taking it away between steps
+  // made the screen blink). Only the bubble and ring wait: for a dialog the
+  // action opened, and for the next target unless it has gone missing.
+  const waiting = modalOpen || (!!selector && !anchorBox && !missing);
+  const hole = !modalOpen && box;
 
   const position = tour.steps.indexOf(step) + 1;
   const label =
@@ -316,7 +326,7 @@ export function OnboardingTour() {
   };
 
   // O3 highlights the whole page; its bubble sits in the middle (Placement None).
-  const centred = !box || step === "dogProfile";
+  const centred = !anchorBox || step === "dogProfile";
   // Bottom bubble (O10/O11). The arrow points down only where the button sits
   // at the bottom centre: Safari's Share, Edge's ⋯. Chrome's is at the top.
   const bottom = step === "install";
@@ -343,24 +353,28 @@ export function OnboardingTour() {
           width: 0,
           height: 0,
         }
-      : place(grow(box, HOLE));
+      : place(grow(anchorBox, HOLE));
 
   return createPortal(
     <>
       <div
         aria-hidden="true"
-        className="fixed inset-0 z-100001 touch-none bg-backdrop"
+        className={cn(
+          "fixed inset-0 touch-none bg-backdrop",
+          // Under an open dialog, above everything (the phone menu) otherwise.
+          modalOpen ? "z-99999" : "z-100001",
+        )}
         style={{
-          clipPath: box
-            ? holePath(grow(box, HOLE), viewport.width, viewport.height)
+          clipPath: hole
+            ? holePath(grow(hole, HOLE), viewport.width, viewport.height)
             : undefined,
         }}
       />
-      {box && (
+      {hole && !waiting && (
         <div
           aria-hidden="true"
           className="pointer-events-none fixed z-100001 rounded-xl border-2 border-accent"
-          style={place(grow(box, RING))}
+          style={place(grow(hole, RING))}
         />
       )}
       <div
@@ -370,31 +384,34 @@ export function OnboardingTour() {
         style={anchor}
       />
       {/* The root supplies the kit's popover classes (surface, padding, arrow). */}
-      <Popover isOpen>
-        <Popover.Content
-          // Re-placed when the target moves; the popover doesn't follow it.
-          key={`${step}-${target}-${anchor.left}-${anchor.top}-${anchor.width}`}
-          triggerRef={anchorRef}
-          isOpen
-          isNonModal
-          style={BUBBLE_LAYER}
-          placement={placement}
-          shouldFlip={!centred}
-          offset={centred && !bottom ? 0 : 12}
-          className={
-            centred && !bottom
-              ? "w-coach-mark max-w-[calc(100vw-2rem)] -translate-y-1/2"
-              : "w-coach-mark max-w-[calc(100vw-2rem)]"
-          }
-        >
-          {(!centred ||
-            (bottom &&
-              (browser === "safari" || browser?.startsWith("edge")))) && (
-            <Popover.Arrow />
-          )}
-          <CoachMark {...bubble} />
-        </Popover.Content>
-      </Popover>
+      {!waiting && (
+        <Popover isOpen>
+          <Popover.Content
+            // Re-placed only when the target has settled elsewhere (see
+            // useTargetBox); the spotlight follows it on every frame.
+            key={`${step}-${target}-${anchor.left}-${anchor.top}-${anchor.width}`}
+            triggerRef={anchorRef}
+            isOpen
+            isNonModal
+            style={BUBBLE_LAYER}
+            placement={placement}
+            shouldFlip={!centred}
+            offset={centred && !bottom ? 0 : 12}
+            className={
+              centred && !bottom
+                ? "w-coach-mark max-w-[calc(100vw-2rem)] -translate-y-1/2"
+                : "w-coach-mark max-w-[calc(100vw-2rem)]"
+            }
+          >
+            {(!centred ||
+              (bottom &&
+                (browser === "safari" || browser?.startsWith("edge")))) && (
+              <Popover.Arrow />
+            )}
+            <CoachMark {...bubble} />
+          </Popover.Content>
+        </Popover>
+      )}
     </>,
     document.body,
   );
