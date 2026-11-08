@@ -92,6 +92,21 @@ test("the guide walks through a dog, a prefilled discipline and the first exerci
       const addDog = await tour.expectBubble("Add a dog", "Step 1 of 7");
       // An action step has no Next: the user uses the highlighted element.
       await expect(tour.button(addDog, "Next")).toHaveCount(0);
+      // Pressing the highlighted button shrinks it a little; the bubble must
+      // stay put instead of being re-created (it flickered).
+      const bubble = await addDog.elementHandle();
+      await dog.addDog.hover();
+      await page.mouse.down();
+      await page.waitForTimeout(300);
+      expect(await bubble!.evaluate((element) => element.isConnected)).toBe(
+        true,
+      );
+      await page.mouse.up();
+      await expect(dog.dialog).toBeVisible();
+      await dog.dialog
+        .getByRole("button", { name: "Cancel", exact: true })
+        .click();
+      await expect(tour.bubble("Add a dog")).toBeVisible();
       await dog.create(dogName);
       // The next step confirms the action instead of a toast.
       await expect(page.getByText(`${dogName} was added`)).toHaveCount(0);
@@ -99,11 +114,31 @@ test("the guide walks through a dog, a prefilled discipline and the first exerci
         `${dogName} is in`,
         "Step 2 of 7",
       );
+      // The dimming stays between steps; removing it made the screen blink.
+      await page.evaluate(() => {
+        const w = window as Window & { overlayRemovals?: number };
+        w.overlayRemovals = 0;
+        new MutationObserver((records) => {
+          for (const record of records) {
+            for (const node of record.removedNodes) {
+              if (node instanceof HTMLElement && node.matches(".bg-backdrop")) {
+                w.overlayRemovals! += 1;
+              }
+            }
+          }
+        }).observe(document.body, { childList: true });
+      });
       await tour.button(profile, "Next").click();
     });
 
     await test.step("Copy a prefilled discipline to the dog (O4, O5)", async () => {
       await tour.expectBubble("Assign a discipline", "Step 3 of 7");
+      expect(
+        await page.evaluate(
+          () =>
+            (window as Window & { overlayRemovals?: number }).overlayRemovals,
+        ),
+      ).toBe(0);
       await page
         .getByRole("button", { name: "Assign discipline", exact: true })
         .click();
