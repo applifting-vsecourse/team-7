@@ -7,7 +7,7 @@
     "@tanstack/eslint-plugin-router"
   ],
   "options": { "typeAware": true },
-  "settings": { "react": { "version": "19.2" } },
+  "settings": { "react": { "version": "19.3" } },
   "ignorePatterns": [
     ".claude/**",
     ".opencode/**",
