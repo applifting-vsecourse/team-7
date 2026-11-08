@@ -1,4 +1,11 @@
-import { type ReactNode, useEffect, useRef } from "react";
+import {
+  type CSSProperties,
+  type ReactNode,
+  type RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Button,
   CloseButton,
@@ -54,6 +61,18 @@ function holePath({ x, y, width: w, height: h }: Box, vw: number, vh: number) {
   return `path(evenodd, "M0 0H${vw}V${vh}H0Z M${x + r} ${y}H${x + w - r}A${r} ${r} 0 0 1 ${x + w} ${y + r}V${y + h - r}A${r} ${r} 0 0 1 ${x + w - r} ${y + h}H${x + r}A${r} ${r} 0 0 1 ${x} ${y + h - r}V${y + r}A${r} ${r} 0 0 1 ${x + r} ${y}Z")`;
 }
 
+/** What a Coach Mark shows and where; kept so the last one can animate out. */
+type View = {
+  key: string;
+  bubble: Bubble;
+  anchor: CSSProperties;
+  placement: PopoverContentProps["placement"];
+  centred: boolean;
+  bottom: boolean;
+  arrow: boolean;
+  clipPath: string;
+};
+
 type Bubble = {
   label: string;
   title: string;
@@ -78,6 +97,9 @@ export function OnboardingTour() {
   const { user } = useSession();
   const dogs = useQuery(dogsQueryOptions(user?.id));
   const anchorRef = useRef<HTMLDivElement>(null);
+  // The Coach Mark on screen. Between steps it animates out with its own
+  // text before the next one comes in; when the tour ends, the dimming fades.
+  const [shown, setShown] = useState<View | null>(null);
 
   const step = tour.step ?? (installGuide ? "install" : null);
   const config = step ? STEPS[step] : null;
@@ -187,7 +209,23 @@ export function OnboardingTour() {
     return () => removeEventListener("keydown", onKey, true);
   }, [step, modalOpen, leave]);
 
-  if (!step || !config) return null;
+  if (!step || !config) {
+    if (!shown) return null;
+    // The tour has ended: the same dimming and bubble fade out, then go.
+    return createPortal(
+      <TourLayer
+        overlayClassName="pointer-events-none fixed inset-0 z-100001 animate-undim bg-backdrop"
+        clipPath={shown.clipPath}
+        // Also fires for a zero-length animation (reduced motion).
+        onOverlayAnimationEnd={() => setShown(null)}
+        anchorRef={anchorRef}
+        anchorStyle={shown.anchor}
+        popover={shown}
+        isOpen={false}
+      />,
+      document.body,
+    );
+  }
   // The dimming stays on screen the whole time (taking it away between steps
   // made the screen blink). Only the bubble and ring wait: for a dialog the
   // action opened, and for the next target unless it has gone missing.
@@ -364,66 +402,145 @@ export function OnboardingTour() {
           height: 0,
         }
       : place(grow(anchorBox, HOLE));
+  const clipPath = holePath(hole, viewport.width, viewport.height);
+  const view: View = {
+    // Re-placed only when the target has settled elsewhere (see
+    // useTargetBox); the spotlight follows it on every frame.
+    key: `${step}-${target}-${anchor.left}-${anchor.top}-${anchor.width}`,
+    bubble,
+    anchor,
+    placement,
+    centred,
+    bottom,
+    arrow:
+      !centred ||
+      (bottom &&
+        (browser === "safari" || browser?.startsWith("edge") === true)),
+    clipPath,
+  };
+  if (
+    !waiting &&
+    (shown?.key !== view.key ||
+      shown.bubble.title !== view.bubble.title ||
+      shown.bubble.label !== view.bubble.label ||
+      shown.clipPath !== view.clipPath)
+  ) {
+    setShown(view);
+  }
+  // While the next step's target settles, the last bubble animates out.
+  const popover = waiting ? shown : view;
 
   return createPortal(
+    <TourLayer
+      overlayClassName={cn(
+        "fixed inset-0 animate-dim touch-none bg-backdrop tour-hole",
+        // Under an open dialog, above everything (the phone menu) otherwise.
+        modalOpen ? "z-99999" : "z-100001",
+      )}
+      clipPath={clipPath}
+      ring={
+        box &&
+        !waiting && (
+          <div
+            // Each new target gets its ring settling onto it.
+            key={`${step}-${target}`}
+            aria-hidden="true"
+            className="pointer-events-none fixed z-100001 animate-spotlight rounded-xl border-2 border-accent"
+            style={place(grow(box, RING))}
+          />
+        )
+      }
+      anchorRef={anchorRef}
+      anchorStyle={popover?.anchor ?? anchor}
+      popover={popover}
+      isOpen={!waiting}
+    />,
+    document.body,
+  );
+}
+
+function CoachMarkPopover({
+  view,
+  isOpen,
+  triggerRef,
+}: {
+  view: View;
+  isOpen: boolean;
+  triggerRef: RefObject<HTMLDivElement | null>;
+}) {
+  return (
+    // The root supplies the kit's popover classes (surface, padding, arrow);
+    // closing it plays the kit's exit animation.
+    <Popover isOpen={isOpen}>
+      <Popover.Content
+        triggerRef={triggerRef}
+        isOpen={isOpen}
+        isNonModal
+        style={BUBBLE_LAYER}
+        placement={view.placement}
+        shouldFlip={!view.centred}
+        offset={view.centred && !view.bottom ? 0 : 12}
+        className={cn(
+          "coach-mark w-coach-mark max-w-[calc(100vw-2rem)]",
+          view.centred && !view.bottom && "-translate-y-1/2",
+        )}
+      >
+        {view.arrow && <Popover.Arrow />}
+        <CoachMark {...view.bubble} />
+      </Popover.Content>
+    </Popover>
+  );
+}
+
+/**
+ * The dimming with its hole, the ring and the bubble. Both a running and an
+ * ending tour render through it, so the same elements animate out.
+ */
+function TourLayer({
+  overlayClassName,
+  clipPath,
+  onOverlayAnimationEnd,
+  ring,
+  anchorRef,
+  anchorStyle,
+  popover,
+  isOpen,
+}: {
+  overlayClassName: string;
+  clipPath: string;
+  onOverlayAnimationEnd?: () => void;
+  ring?: ReactNode;
+  anchorRef: RefObject<HTMLDivElement | null>;
+  anchorStyle: CSSProperties;
+  popover: View | null;
+  isOpen: boolean;
+}) {
+  return (
     <>
       <div
         aria-hidden="true"
-        className={cn(
-          "fixed inset-0 animate-dim touch-none bg-backdrop tour-hole",
-          // Under an open dialog, above everything (the phone menu) otherwise.
-          modalOpen ? "z-99999" : "z-100001",
-        )}
-        style={{
-          clipPath: holePath(hole, viewport.width, viewport.height),
+        className={overlayClassName}
+        style={{ clipPath }}
+        onAnimationEnd={(event) => {
+          if (event.target === event.currentTarget) onOverlayAnimationEnd?.();
         }}
       />
-      {box && !waiting && (
-        <div
-          // Each new target gets its ring settling onto it.
-          key={`${step}-${target}`}
-          aria-hidden="true"
-          className="pointer-events-none fixed z-100001 animate-spotlight rounded-xl border-2 border-accent"
-          style={place(grow(box, RING))}
-        />
-      )}
+      {ring}
       <div
         ref={anchorRef}
         aria-hidden="true"
         className="pointer-events-none fixed"
-        style={anchor}
+        style={anchorStyle}
       />
-      {/* The root supplies the kit's popover classes (surface, padding, arrow). */}
-      {!waiting && (
-        <Popover isOpen>
-          <Popover.Content
-            // Re-placed only when the target has settled elsewhere (see
-            // useTargetBox); the spotlight follows it on every frame.
-            key={`${step}-${target}-${anchor.left}-${anchor.top}-${anchor.width}`}
-            triggerRef={anchorRef}
-            isOpen
-            isNonModal
-            style={BUBBLE_LAYER}
-            placement={placement}
-            shouldFlip={!centred}
-            offset={centred && !bottom ? 0 : 12}
-            className={
-              centred && !bottom
-                ? "coach-mark w-coach-mark max-w-[calc(100vw-2rem)] -translate-y-1/2"
-                : "coach-mark w-coach-mark max-w-[calc(100vw-2rem)]"
-            }
-          >
-            {(!centred ||
-              (bottom &&
-                (browser === "safari" || browser?.startsWith("edge")))) && (
-              <Popover.Arrow />
-            )}
-            <CoachMark {...bubble} />
-          </Popover.Content>
-        </Popover>
+      {popover && (
+        <CoachMarkPopover
+          key={popover.key}
+          view={popover}
+          isOpen={isOpen}
+          triggerRef={anchorRef}
+        />
       )}
-    </>,
-    document.body,
+    </>
   );
 }
 
