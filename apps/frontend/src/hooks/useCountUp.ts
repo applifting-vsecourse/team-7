@@ -16,15 +16,17 @@ export function useCountUp(target: number) {
     const from = shown.current;
     const duration = motionSeconds("--motion-draw") * 1000;
     // A frame's timestamp can predate this effect, so time starts at the first.
-    let start: number | undefined;
-    let frame = requestAnimationFrame(function tick(now) {
-      start ??= now;
-      const progress = duration ? Math.min(1, (now - start) / duration) : 1;
+    const animation: { start?: number; frame: number } = { frame: 0 };
+    animation.frame = requestAnimationFrame(function tick(now) {
+      animation.start ??= now;
+      const progress = duration
+        ? Math.min(1, (now - animation.start) / duration)
+        : 1;
       shown.current = from + (target - from) * (1 - (1 - progress) ** 3);
       setValue(shown.current);
-      if (progress < 1) frame = requestAnimationFrame(tick);
+      if (progress < 1) animation.frame = requestAnimationFrame(tick);
     });
-    return () => cancelAnimationFrame(frame);
+    return () => cancelAnimationFrame(animation.frame);
   }, [target]);
 
   return value;
