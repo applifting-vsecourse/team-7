@@ -54,6 +54,9 @@ jobs:
             SMTP_SECURE=${{ secrets.SMTP_SECURE || 'true' }}
             SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}
             SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+            SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+            SUPABASE_SECRET_KEY=${{ secrets.SUPABASE_SECRET_KEY }}
+            SUPABASE_VIDEO_BUCKET=${{ secrets.SUPABASE_VIDEO_BUCKET || 'exercise-videos' }}
           tags: ${{ env.REGISTRY }}/${{ steps.slug.outputs.slug }}-backend:latest
       - name: Build & push frontend
         uses: docker/build-push-action@v6

@@ -47,8 +47,13 @@ function renderNavigation(initialEntry = "/") {
     path: "/login",
     component: () => <p>Login destination</p>,
   });
+  const settings = createRoute({
+    getParentRoute: () => root,
+    path: "/settings",
+    component: () => <p>Settings destination</p>,
+  });
   const router = createRouter({
-    routeTree: root.addChildren([home, login]),
+    routeTree: root.addChildren([home, login, settings]),
     history: createMemoryHistory({ initialEntries: [initialEntry] }),
   });
   render(<RouterProvider router={router} />);
@@ -64,32 +69,36 @@ describe("user menu and navigation", () => {
 
   it("opens by keyboard, dismisses with Escape, returns focus, and signs out", async () => {
     const user = userEvent.setup();
-    render(<HeaderMenu />);
-    const trigger = screen.getByRole("button", { name: "User menu" });
+    renderNavigation();
+    const trigger = await screen.findByRole("button", { name: "User menu" });
     act(() => trigger.focus());
     await user.keyboard("{ArrowDown}");
     expect(
-      await screen.findByRole("menuitem", { name: "Sign out" }),
+      await screen.findByRole("menuitem", { name: "Settings" }),
     ).toHaveFocus();
     await user.keyboard("{Escape}");
     await waitFor(() =>
       expect(screen.queryByRole("menu")).not.toBeInTheDocument(),
     );
     await waitFor(() => expect(trigger).toHaveFocus());
-    await user.keyboard("{ArrowDown}{Enter}");
+    await user.keyboard("{ArrowDown}{ArrowDown}{Enter}");
     await waitFor(() => expect(state.mutate).toHaveBeenCalledOnce());
   });
 
   it("shows the account name in the user menu", async () => {
-    render(<HeaderMenu />);
-    await userEvent.click(screen.getByRole("button", { name: "User menu" }));
+    renderNavigation();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "User menu" }),
+    );
     expect(await screen.findByText("Test Duck")).toBeInTheDocument();
   });
 
   it("disables sign-out while the mutation is pending", async () => {
     state.isPending = true;
-    render(<HeaderMenu />);
-    await userEvent.click(screen.getByRole("button", { name: "User menu" }));
+    renderNavigation();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "User menu" }),
+    );
     const item = await screen.findByRole("menuitem", { name: "Sign out" });
     expect(item).toHaveAttribute("aria-disabled", "true");
     await userEvent.click(item);
@@ -111,6 +120,27 @@ describe("user menu and navigation", () => {
     await userEvent.click(signIn);
     expect(await screen.findByText("Login destination")).toBeInTheDocument();
   });
+
+  it.each(["cs", "en"])(
+    "opens settings as an anchor and retains %s without signing out",
+    async (language) => {
+      const router = renderNavigation(`/?lng=${language}`);
+      await userEvent.click(
+        await screen.findByRole("button", { name: "User menu" }),
+      );
+      const settings = await screen.findByRole("menuitem", {
+        name: "Settings",
+      });
+      expect(settings.tagName).toBe("A");
+      expect(settings).toHaveAttribute("href", `/settings?lng=${language}`);
+      await userEvent.click(settings);
+      expect(
+        await screen.findByText("Settings destination"),
+      ).toBeInTheDocument();
+      expect(router.state.location.search).toEqual({ lng: language });
+      expect(state.mutate).not.toHaveBeenCalled();
+    },
+  );
 
   it.each(["cs", "en"])(
     "keeps the %s URL language preference through internal links",

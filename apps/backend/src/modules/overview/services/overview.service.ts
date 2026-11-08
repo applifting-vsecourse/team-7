@@ -1,14 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@/core/prisma/prisma.service";
+import { trainingStats } from "@/modules/overview/domain/training-stats";
+import { upcomingEvents } from "@/modules/overview/domain/upcoming-events";
+import { withPaused } from "@/shared/domain/exercise-status";
 import {
   dayMs,
   type LocalCalendar,
   localCalendar,
   shiftDay,
-} from "@/modules/events/domain/local-calendar";
-import { trainingStats } from "@/modules/events/domain/training-stats";
-import { upcomingEvents } from "@/modules/events/domain/upcoming-events";
-import { withPaused } from "@/shared/domain/exercise-status";
+} from "@/shared/domain/local-calendar";
 import { NeglectedDisciplinesService } from "./neglected-disciplines.service";
 
 type Scope = { userId: string; dogIds?: string[] };

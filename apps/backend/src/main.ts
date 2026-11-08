@@ -17,6 +17,8 @@ async function main(): Promise<void> {
   // Create NestJS application instance
   const app = await NestFactory.create(AppModule, { bufferLogs: false });
 
+  app.enableShutdownHooks();
+
   // Get configuration service
   const config = app.get(Config);
 

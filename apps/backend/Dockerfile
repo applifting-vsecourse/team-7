@@ -3,7 +3,7 @@ FROM node:24-alpine
 
 USER root
 
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl ffmpeg
 RUN corepack enable
 
 

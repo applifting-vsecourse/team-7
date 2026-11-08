@@ -35,7 +35,7 @@ vi.mock("@/lib/api-client", () => ({
   api: {
     get: vi.fn((path: string) => ({
       json: async () => {
-        if (path === "events/overview") {
+        if (path === "overview") {
           return {
             today: "2026-10-25",
             tomorrow: "2026-10-26",

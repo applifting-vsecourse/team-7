@@ -11,6 +11,7 @@ jobs:
     timeout-minutes: 20
     env:
       DATABASE_URL: postgresql://quacker:quacker@localhost:5433/quacker
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
     services:
       postgres:
         image: postgres:17-alpine

@@ -29,6 +29,7 @@ Product background (lean canvas, interview notes, costs) lives in `Docs/` on the
 - Node.js 24 — the version in [`.nvmrc`](.nvmrc). With nvm or fnm, `nvm use` picks it up from anywhere in the repo (they search parent directories), and every `package.json` declares it too, so pnpm warns if you are on an older one.
 - pnpm — `corepack enable` picks the version from `package.json`
 - Docker (for the database)
+- FFmpeg (including `ffprobe`) on your PATH for local video processing, with H.264 (`libx264`) and AAC support. On macOS, install it with `brew install ffmpeg`; on Ubuntu/Debian, use `sudo apt install ffmpeg`.
 
 ## Quick start
 
@@ -50,6 +51,8 @@ pnpm dev
 The ports are deliberately odd — 3050, 4050, and Postgres on 5433 rather than the usual 3000, 4000 and 5432 — so the stack doesn't fight whatever else you have running. They're pinned rather than auto-incremented: the API only accepts requests from the frontend's exact origin, so a port that silently moved would surface as an unexplained CORS error.
 
 Verification/reset emails are printed to the backend terminal (console mailer) unless you configure Resend or SMTP in `apps/backend/.env`.
+
+Exercise videos also require Supabase Storage credentials in `apps/backend/.env`; see [video setup](docs/exercise-videos.md#setup). `pnpm dev` does not install FFmpeg. Without it, uploads can succeed but video processing fails.
 
 ### Your `.env` files are yours to maintain
 

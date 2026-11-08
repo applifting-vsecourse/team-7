@@ -114,7 +114,7 @@ describe("overview backend data", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("1 h 20 min")).toBeInTheDocument();
     expect(api.get).toHaveBeenCalledWith(
-      "events/overview",
+      "overview",
       expect.objectContaining({
         searchParams: {
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -140,7 +140,7 @@ describe("overview backend data", () => {
     );
     expect(screen.getByText("No ratings yet")).toBeInTheDocument();
     expect(api.get).toHaveBeenLastCalledWith(
-      "events/overview",
+      "overview",
       expect.objectContaining({
         searchParams: {
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -151,7 +151,7 @@ describe("overview backend data", () => {
     act(() => store.set(selectedDogIdsAtom, []));
     await waitFor(() =>
       expect(api.get).toHaveBeenLastCalledWith(
-        "events/overview",
+        "overview",
         expect.objectContaining({
           searchParams: {
             timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
