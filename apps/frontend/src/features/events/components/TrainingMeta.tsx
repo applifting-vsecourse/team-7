@@ -22,7 +22,8 @@ export function TrainingMeta({ event }: { event: ScheduledEvent }) {
     <div
       className={cn(
         "flex flex-col gap-5",
-        event.kind !== "lesson" && "sm:flex-row sm:items-center sm:gap-10",
+        event.kind !== "lesson" &&
+          "sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-10",
       )}
     >
       <div className="flex min-w-0 flex-col gap-1">
@@ -60,22 +61,20 @@ export function TrainingMeta({ event }: { event: ScheduledEvent }) {
               <dt className="shrink-0 text-muted">
                 {t(($) => $.training.disciplineLabel)}:
               </dt>
-              <dd className="wrap-break-word">
-                {event.exercise.goal.discipline.name}
-              </dd>
+              <dd>{event.exercise.goal.discipline.name}</dd>
             </div>
             <div className="flex min-w-0 gap-1">
               <dt className="shrink-0 text-muted">
                 {t(($) => $.training.goalLabel)}:
               </dt>
-              <dd className="wrap-break-word">{event.exercise.goal.name}</dd>
+              <dd>{event.exercise.goal.name}</dd>
             </div>
           </dl>
         )}
       </div>
-      <div className="flex w-fit min-w-48 shrink-0 items-center gap-3 rounded-3xl bg-default px-3 py-1.5">
+      <div className="flex w-fit max-w-full min-w-48 items-center gap-3 rounded-3xl bg-default px-3 py-1.5">
         <DogAvatar dog={event.dog} />
-        <span className="text-sm font-medium">{event.dog.name}</span>
+        <span className="min-w-0 text-sm font-medium">{event.dog.name}</span>
       </div>
     </div>
   );
