@@ -130,7 +130,7 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
   const remove = useMutation({
     mutationFn: () => api.delete(`${path}/${encodeURIComponent(exercise.id)}`),
     onSuccess: async () => {
-      let undoPending = false;
+      const undo = { pending: false };
       const toastId = toast.success(
         t(($) => $.exerciseDetail.removed),
         {
@@ -140,8 +140,8 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
             variant: "ghost",
             onPress: () => {
               void (async () => {
-                if (undoPending) return;
-                undoPending = true;
+                if (undo.pending) return;
+                undo.pending = true;
                 try {
                   await api.post(path, { json: { exerciseId: exercise.id } });
                   await refresh();
@@ -150,7 +150,7 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
                 } catch {
                   toast.danger(t(($) => $.training.undoError));
                 } finally {
-                  undoPending = false;
+                  undo.pending = false;
                 }
               })();
             },
