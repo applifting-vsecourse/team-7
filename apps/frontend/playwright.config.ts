@@ -9,7 +9,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Locally the browsers share the machine with both dev servers and Docker:
+  // half the cores (the default) ran out of memory and timed out sign-ins.
+  workers: process.env.CI ? 1 : 4,
   reporter: [
     [process.env.CI ? "github" : "list"],
     ["html", { outputFolder: `${root}/playwright-report`, open: "never" }],
@@ -18,6 +20,8 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:3050",
     reducedMotion: "reduce",
+    // "Today" is the same locally and in CI (UTC): plans default to today.
+    timezoneId: "Europe/Prague",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },

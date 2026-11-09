@@ -16,8 +16,19 @@ const credentials = {
 
 const finished = { status: "completed", step: null };
 
-// Both tests change the same user's tour, so they run one after the other.
+// The tests change the same user's tour, so they run one after the other.
+// Only within one run of this file: --repeat-each runs copies side by side.
 test.describe.configure({ mode: "serial" });
+
+/** Ends the tour (also one a failed run left running), or fails loudly. */
+async function finishTour(page: Page) {
+  const response = await page.request.patch("/api/onboarding", {
+    data: finished,
+  });
+  expect(response.ok(), `Ending the tour failed (${response.status()})`).toBe(
+    true,
+  );
+}
 
 /**
  * Signs in the tour user, runs the test and removes the dog and the copied
@@ -53,13 +64,23 @@ async function asTourUser(
   try {
     await login.signIn(credentials.email, credentials.password);
     await expect(page).toHaveURL(/\/(overview|dogs|calendar)/);
-    // A run that failed mid-tour leaves it running for this user.
-    await page.request.patch("/api/onboarding", { data: finished });
+    await finishTour(page);
+    // The tour assigns a default discipline (added by a migration and to
+    // every new account): an old database without it can't run this spec.
+    const library = (await (
+      await page.request.get("/api/disciplines")
+    ).json()) as {
+      name: string;
+    }[];
+    expect(
+      library.map(({ name }) => name),
+      "Default disciplines missing: run `pnpm backend prisma:migrations:run`",
+    ).toContain("Spolehlivé přivolání");
     await page.goto("/overview?lng=en");
     await expect(app.overviewHeading).toBeVisible();
     await run();
   } finally {
-    await page.request.patch("/api/onboarding", { data: finished });
+    await finishTour(page);
     for (const url of cleanup.reverse()) {
       const response = await page.request.delete(url);
       expect(response.ok(), `Cleanup failed: ${url}`).toBeTruthy();
@@ -95,6 +116,7 @@ test("the guide walks through a dog, a default discipline and the first exercise
       const bubble = await addDog.elementHandle();
       await dog.addDog.hover();
       await page.mouse.down();
+      // A fixed wait on purpose: nothing to wait for, only a re-render to rule out.
       await page.waitForTimeout(300);
       expect(await bubble!.evaluate((element) => element.isConnected)).toBe(
         true,
@@ -106,12 +128,13 @@ test("the guide walks through a dog, a default discipline and the first exercise
         .click();
       await expect(tour.bubble("Add a dog")).toBeVisible();
       await dog.create(dogName);
-      // The next step confirms the action instead of a toast.
-      await expect(page.getByText(`${dogName} was added`)).toHaveCount(0);
       const profile = await tour.expectBubble(
         `${dogName} is in`,
         "Step 2 of 7",
       );
+      // The next step confirms the action instead of a toast (checked once
+      // the step is there: the toast would have come with the saved dog).
+      await expect(page.getByText(`${dogName} was added`)).toHaveCount(0);
       // The dimming stays between steps; removing it made the screen blink.
       await page.evaluate(() => {
         const w = window as Window & { overlayRemovals?: number };
