@@ -50,11 +50,15 @@ export class CalendarPage {
     return this.page.getByRole("button", { name: "Next week", exact: true });
   }
 
-  /** A day column of the weekly calendar, found by its ISO date. */
+  /**
+   * A day column of the weekly calendar, found by its ISO date. By its name:
+   * the calendar's own regions contain every day of the week too.
+   */
   day(date: string) {
-    return this.page
-      .getByRole("region")
-      .filter({ has: this.page.locator(`time[datetime="${date}"]`) });
+    const name = new Intl.DateTimeFormat("en", { dateStyle: "full" }).format(
+      new Date(`${date}T12:00`),
+    );
+    return this.page.getByRole("region", { name, exact: true });
   }
 
   schedulingDog(name: string) {
