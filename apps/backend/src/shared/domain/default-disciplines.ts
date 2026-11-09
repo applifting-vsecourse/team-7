@@ -122,31 +122,33 @@ export const DEFAULT_DISCIPLINES: DefaultDiscipline[] = [
   },
 ];
 
-/** Adds the default disciplines to a new handler's library. */
+/** Adds the default disciplines to a new handler's library (run it in a transaction). */
 export async function createDefaultDisciplines(
   db: Pick<Prisma.TransactionClient, "discipline">,
   userId: string,
   language: DefaultDisciplineLanguage,
 ) {
-  for (const discipline of DEFAULT_DISCIPLINES) {
-    await db.discipline.create({
-      data: {
-        userId,
-        name: discipline.name[language],
-        goals: {
-          create: discipline.goals.map((goal) => ({
-            name: goal.name[language],
-            exercises: {
-              create: goal.exercises.map((exercise, position) => ({
-                name: exercise.name[language],
-                position,
-              })),
-            },
-          })),
+  await Promise.all(
+    DEFAULT_DISCIPLINES.map((discipline) =>
+      db.discipline.create({
+        data: {
+          userId,
+          name: discipline.name[language],
+          goals: {
+            create: discipline.goals.map((goal) => ({
+              name: goal.name[language],
+              exercises: {
+                create: goal.exercises.map((exercise, position) => ({
+                  name: exercise.name[language],
+                  position,
+                })),
+              },
+            })),
+          },
         },
-      },
-    });
-  }
+      }),
+    ),
+  );
 }
 
 /**

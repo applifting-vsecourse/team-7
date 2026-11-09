@@ -1,5 +1,6 @@
 import { type FactoryProvider } from "@nestjs/common";
 import { betterAuth } from "better-auth";
+import { getOAuthState } from "better-auth/api";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { EmailService } from "@/core/email/interfaces/email-service.interface";
@@ -12,6 +13,7 @@ import { Config } from "@/shared/config/config.service";
 import { betterAuthProvider } from "./better-auth.provider";
 
 vi.mock("better-auth", () => ({ betterAuth: vi.fn() }));
+vi.mock("better-auth/api", () => ({ getOAuthState: vi.fn() }));
 vi.mock("@/core/email/render", () => ({
   renderEmail: vi.fn().mockResolvedValue("<p>email</p>"),
 }));
@@ -154,9 +156,16 @@ describe("new accounts", () => {
     updatedAt: new Date(),
   };
 
+  const fakePrisma = (create: ReturnType<typeof vi.fn>) => {
+    const tx = { discipline: { create } };
+    return {
+      $transaction: (run: (client: typeof tx) => unknown) => run(tx),
+    } as never as PrismaService;
+  };
+
   it("start with the default disciplines in the language they signed up in", async () => {
     const create = vi.fn();
-    const after = createUserHook({ discipline: { create } } as never);
+    const after = createUserHook(fakePrisma(create));
 
     await after(user, {
       body: { callbackURL: "http://localhost:3050/overview?lng=en" },
@@ -169,9 +178,24 @@ describe("new accounts", () => {
     });
   });
 
+  it("signing up with Google get the language from the OAuth state", async () => {
+    // The account is created in the provider's callback, which has no body.
+    vi.mocked(getOAuthState).mockResolvedValue({
+      callbackURL: "http://localhost:3050/overview?lng=en",
+    } as never);
+    const create = vi.fn();
+    const after = createUserHook(fakePrisma(create));
+
+    await after(user, { query: { state: "s" } } as never);
+
+    expect(create.mock.calls[0]![0].data).toMatchObject({
+      name: "Obedience basics",
+    });
+  });
+
   it("keep a working account when the defaults fail", async () => {
     const create = vi.fn().mockRejectedValue(new Error("db down"));
-    const after = createUserHook({ discipline: { create } } as never);
+    const after = createUserHook(fakePrisma(create));
 
     await expect(after(user, null)).resolves.toBeUndefined();
   });

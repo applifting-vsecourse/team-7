@@ -3,6 +3,7 @@ import {
   type ReactNode,
   type RefObject,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
 } from "react";
@@ -23,6 +24,7 @@ import { useTranslation } from "react-i18next";
 
 import { mobileSidebarOpenAtom } from "@/app/atoms/mobileSidebarOpenAtom";
 import { ROUTES } from "@/app/routes";
+import { motionSeconds } from "@/lib/motion";
 import { cn, transitionName } from "@/lib/utils";
 
 import { useSession } from "@/features/auth/hooks/useSession";
@@ -45,14 +47,6 @@ const RING = 6;
 // link, the calendar period) are drawn above the page while a page or week
 // changes, so the tour's own layers need names to stay on top of them.
 const BUBBLE_LAYER = { zIndex: 100002, ...transitionName("tour-bubble") };
-
-/** The tour's motion token in ms (0 when motion is reduced). */
-function tourDuration() {
-  const value = getComputedStyle(document.documentElement)
-    .getPropertyValue("--motion-tour")
-    .trim();
-  return Number.parseFloat(value) * (value.endsWith("ms") ? 1 : 1000) || 0;
-}
 
 const grow = (box: Box, by: number): Box => ({
   x: box.x - by,
@@ -128,10 +122,12 @@ export function OnboardingTour() {
   // On phones a sidebar target is reached through the ☰ menu first (O2b).
   const viaMenu = isMobile && !!config?.inMenu && !menuOpen;
   // An own discipline (O5 "Vlastní disciplína") opens empty on its detail:
-  // step 3 goes on there until the dog has a goal with an exercise.
+  // step 3 goes on there until it has a goal with an exercise. Only the
+  // discipline just assigned: the tour's goal and exercise counts are its own.
   const ownDiscipline =
     step === "assignDiscipline" &&
-    /^\/dogs\/[^/]+\/disciplines\/[^/]+$/.test(pathname);
+    !!tour.data?.disciplineId &&
+    pathname.endsWith(`/disciplines/${tour.data.disciplineId}`);
   const target = viaMenu
     ? "menu"
     : ownDiscipline
@@ -168,7 +164,7 @@ export function OnboardingTour() {
         setGlide((current) =>
           current.selector === selector ? { selector, done: true } : current,
         ),
-      tourDuration(),
+      motionSeconds("--motion-tour") * 1000,
     );
     return () => clearTimeout(timer);
   }, [anchorBox, glideDone, selector]);
@@ -241,43 +237,54 @@ export function OnboardingTour() {
     if (tour.step && !STEPS[tour.step].inMenu && menuOpen) setMenuOpen(false);
   }, [tour.step, menuOpen, setMenuOpen]);
 
+  // The effects below move the tour only when what they watch changes: the
+  // `tour` object is new on every render and would send the same move again.
+  const next = useEffectEvent(() => tour.next());
+  const finish = useEffectEvent(() => tour.finish());
+
   // The own discipline's first exercise completes step 3.
+  const ownDone = ownDiscipline && !!tour.data?.hasExercise;
   useEffect(() => {
-    if (ownDiscipline && tour.data?.hasExercise) tour.next();
-  }, [ownDiscipline, tour]);
+    if (ownDone) next();
+  }, [ownDone]);
 
   // Resumed on a device without that step (install is phone-only).
+  const unavailable =
+    !!tour.step && tour.step !== "welcome" && !tour.steps.includes(tour.step);
   useEffect(() => {
-    if (
-      tour.step &&
-      tour.step !== "welcome" &&
-      !tour.steps.includes(tour.step)
-    ) {
-      tour.finish();
-    }
-  }, [tour]);
+    if (unavailable) finish();
+  }, [unavailable]);
 
   // "Open the calendar" is done once the calendar is open.
+  const calendarOpened =
+    tour.step === "openCalendar" && pathname === ROUTES.calendar;
   useEffect(() => {
-    if (tour.step === "openCalendar" && pathname === ROUTES.calendar) {
-      tour.next();
-    }
-  }, [tour, pathname]);
+    if (calendarOpened) next();
+  }, [calendarOpened]);
 
-  // The next step confirms an action instead of a toast (spec).
+  // The next step confirms an action instead of a success toast (spec);
+  // errors still show.
   useEffect(() => {
     if (!tour.step) return;
     const queue = toast.getQueue();
     const clear = () => {
-      if (queue.visibleToasts.length) toast.clear();
+      for (const item of queue.visibleToasts) {
+        if (item.content.variant === "success") toast.close(item.key);
+      }
     };
     clear();
     return queue.subscribe(clear);
   }, [tour.step]);
 
+  // The tour has its own install step: the user menu's guide (O13) only
+  // shows outside it, and isn't left pending for after it.
+  useEffect(() => {
+    if (tour.step && installGuide) setInstallGuide(false);
+  }, [tour.step, installGuide, setInstallGuide]);
+
   const closeInstall = () => {
     if (tour.step) tour.finish();
-    else setInstallGuide(false);
+    setInstallGuide(false);
   };
   const leave = step === "install" ? closeInstall : tour.leave;
 

@@ -10,6 +10,7 @@ import {
   vi,
 } from "vitest";
 import { PrismaService } from "@/core/prisma/prisma.service";
+import { OnboardingService } from "@/modules/onboarding/services/onboarding.service";
 import { getSessionFromRequest } from "@/shared/auth/utils/get-session-from-request";
 import { OnboardingController } from "./onboarding.controller";
 
@@ -28,8 +29,8 @@ describe("/api/onboarding", () => {
   const prisma = {
     user: { findUniqueOrThrow: vi.fn(), update: vi.fn() },
     dog: { findFirst: vi.fn() },
+    dogGoal: { count: vi.fn() },
     dogExercise: { count: vi.fn() },
-    dogDiscipline: { count: vi.fn() },
     scheduledExercise: { count: vi.fn() },
     $transaction: (action: (tx: unknown) => unknown) => action(prisma),
   };
@@ -38,6 +39,7 @@ describe("/api/onboarding", () => {
     const module = await Test.createTestingModule({
       controllers: [OnboardingController],
       providers: [
+        OnboardingService,
         { provide: PrismaService, useValue: prisma },
         { provide: "BetterAuth", useValue: {} },
       ],
@@ -55,10 +57,8 @@ describe("/api/onboarding", () => {
     } as NonNullable<Awaited<ReturnType<typeof getSessionFromRequest>>>);
     prisma.dog.findFirst.mockResolvedValue({
       id: "dog-a",
-      archivedAt: null,
       disciplines: [],
       scheduledExercises: [],
-      _count: { goals: 0 },
     });
   });
 
@@ -89,10 +89,9 @@ describe("/api/onboarding", () => {
       id: "dog-a",
       disciplines: [{ disciplineId: "disc-a" }],
       scheduledExercises: [],
-      _count: { goals: 1 },
     });
+    prisma.dogGoal.count.mockResolvedValue(1);
     prisma.dogExercise.count.mockResolvedValue(0);
-    prisma.dogDiscipline.count.mockResolvedValue(1);
     prisma.scheduledExercise.count.mockResolvedValue(0);
 
     const response = await send("GET", "?weekStart=2026-11-02T00:00:00.000Z");
@@ -121,6 +120,31 @@ describe("/api/onboarding", () => {
         },
       },
     });
+    // Goals and exercises count for the discipline being set up only.
+    expect(prisma.dogGoal.count).toHaveBeenCalledWith({
+      where: { dogId: "dog-a", goal: { disciplineId: "disc-a" } },
+    });
+    expect(prisma.dogExercise.count).toHaveBeenCalledWith({
+      where: { dogId: "dog-a", dogGoal: { goal: { disciplineId: "disc-a" } } },
+    });
+  });
+
+  it("counts no discipline when only an older dog has one", async () => {
+    prisma.user.findUniqueOrThrow.mockResolvedValue({
+      onboardingStatus: "active",
+      onboardingStep: "assignDiscipline",
+      onboardingCardHidden: false,
+    });
+    prisma.scheduledExercise.count.mockResolvedValue(0);
+
+    const response = await send("GET", "?weekStart=2026-11-02T00:00:00.000Z");
+
+    expect(await response.json()).toMatchObject({
+      hasDiscipline: false,
+      hasGoal: false,
+      hasExercise: false,
+    });
+    expect(prisma.dogGoal.count).not.toHaveBeenCalled();
   });
 
   it("updates only the signed-in user's tour", async () => {

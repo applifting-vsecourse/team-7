@@ -1,4 +1,5 @@
 import type { Onboarding } from "./api/onboardingQueryOptions";
+import { toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -204,10 +205,29 @@ describe("onboarding tour", () => {
     expect(store.get(mobileSidebarOpenAtom)).toBe(true);
   });
 
+  it("replaces success toasts but keeps errors", async () => {
+    state.onboarding = onboarding({ status: "active", step: "dogProfile" });
+    state.pathname = "/dogs/dog-1";
+    const close = vi.spyOn(toast, "close");
+    renderUi(<OnboardingTour />);
+
+    let success = "";
+    act(() => {
+      success = toast.success("Saved");
+      toast.danger("Failed");
+    });
+
+    await waitFor(() => expect(close).toHaveBeenCalledWith(success));
+    expect(close).toHaveBeenCalledTimes(1);
+    act(() => toast.clear());
+    close.mockRestore();
+  });
+
   it("asks for a goal on an own discipline instead of moving on", async () => {
     state.onboarding = onboarding({
       status: "active",
       step: "assignDiscipline",
+      disciplineId: "own",
     });
     state.pathname = "/dogs/dog-1/disciplines/own";
     const target = document.createElement("button");
@@ -235,6 +255,7 @@ describe("onboarding tour", () => {
     state.onboarding = onboarding({
       status: "active",
       step: "assignDiscipline",
+      disciplineId: "own",
       hasGoal: true,
       hasExercise: true,
     });
