@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { motionSeconds } from "@/lib/motion";
+
 export type Box = { x: number; y: number; width: number; height: number };
 
 type Tracked = {
@@ -43,12 +45,7 @@ const BOTTOM_MARGIN = 16;
 
 /** Smooth unless motion is reduced (the tour token is then 0ms). */
 const scrollBehavior = (): ScrollBehavior =>
-  getComputedStyle(document.documentElement)
-    .getPropertyValue("--motion-tour")
-    .trim()
-    .startsWith("0")
-    ? "auto"
-    : "smooth";
+  motionSeconds("--motion-tour") === 0 ? "auto" : "smooth";
 
 /**
  * Follows the highlighted element on screen (it moves with layout, the

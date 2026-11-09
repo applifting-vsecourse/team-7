@@ -1,6 +1,7 @@
 import { Inject, Logger, Provider } from "@nestjs/common";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { getOAuthState } from "better-auth/api";
 import { EmailService } from "@/core/email/interfaces/email-service.interface";
 import { emailLanguageFromUrl, emailMessages } from "@/core/email/messages";
 import { renderEmail } from "@/core/email/render";
@@ -14,6 +15,13 @@ import {
   createDefaultDisciplines,
   signUpLanguage,
 } from "@/shared/domain/default-disciplines";
+
+/** The callback URL kept in the OAuth state (null outside an OAuth flow). */
+const oauthCallbackURL = () =>
+  getOAuthState().then(
+    (state) => state?.callbackURL,
+    () => null,
+  );
 
 const createAuth = (
   prismaService: PrismaService,
@@ -76,10 +84,14 @@ const createAuth = (
           after: async (user, context) => {
             const body = context?.body as { callbackURL?: unknown } | undefined;
             try {
-              await createDefaultDisciplines(
-                prismaService,
-                user.id,
-                signUpLanguage(body?.callbackURL),
+              // A Google account is created in the provider's callback, which
+              // has no body: the callback URL comes from the OAuth state.
+              const language = signUpLanguage(
+                body?.callbackURL ?? (await oauthCallbackURL()),
+              );
+              // All or nothing, so a failure never leaves half a library.
+              await prismaService.$transaction((tx) =>
+                createDefaultDisciplines(tx, user.id, language),
               );
             } catch (error) {
               new Logger("BetterAuth").error(

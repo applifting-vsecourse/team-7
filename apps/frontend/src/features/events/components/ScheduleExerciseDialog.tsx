@@ -128,6 +128,7 @@ export function ScheduleExerciseDialog({
       await queryClient.invalidateQueries({ queryKey: eventsKey(user?.id) });
       toast.success(t(($) => $.planning.lessonSuccess));
       onClose();
+      tour.complete("schedule");
     },
   });
   const isPending = save.isPending || saveLesson.isPending;
