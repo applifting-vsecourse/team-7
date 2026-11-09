@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@/core/prisma/prisma.service";
+import type { Prisma } from "@/generated/prisma/client";
 import { trainingStats } from "@/modules/overview/domain/training-stats";
 import { upcomingEvents } from "@/modules/overview/domain/upcoming-events";
 import { withPaused } from "@/shared/domain/exercise-status";
@@ -26,21 +27,30 @@ export class OverviewService {
   ) {
     const calendar = localCalendar(new Date(), timeZone);
     const scope = { userId, dogIds };
-    const [records, candidates, plannable] = await Promise.all([
-      this.findRecords(scope, calendar),
-      this.findCandidates(scope, calendar),
-      this.neglected.findPlannable(userId, dogIds),
-    ]);
-    return {
-      today: calendar.today,
-      tomorrow: calendar.tomorrow,
-      stats: trainingStats(records, calendar),
-      events: await withPaused(
-        this.prisma,
-        upcomingEvents(candidates, calendar),
-      ),
-      neglected: await this.neglected.rank(plannable, records, calendar),
-    };
+    // One snapshot: a dog deleted meanwhile (e.g. in another tab) would
+    // otherwise vanish between the queries and fail its required relations.
+    return this.prisma.$transaction(
+      async (tx) => {
+        const [records, candidates, plannable] = await Promise.all([
+          this.findRecords(tx, scope, calendar),
+          this.findCandidates(tx, scope, calendar),
+          this.neglected.findPlannable(userId, dogIds, tx),
+        ]);
+        return {
+          today: calendar.today,
+          tomorrow: calendar.tomorrow,
+          stats: trainingStats(records, calendar),
+          events: await withPaused(tx, upcomingEvents(candidates, calendar)),
+          neglected: await this.neglected.rank(
+            plannable,
+            records,
+            calendar,
+            tx,
+          ),
+        };
+      },
+      { isolationLevel: "RepeatableRead" },
+    );
   }
 
   private where({ userId, dogIds }: Scope) {
@@ -53,6 +63,7 @@ export class OverviewService {
 
   /** Completions in the 42-day statistics window and open trainings this week. */
   private findRecords(
+    db: Prisma.TransactionClient,
     scope: Scope,
     { now, streakStart, weekStart }: LocalCalendar,
   ) {
@@ -60,7 +71,7 @@ export class OverviewService {
     const historyFrom = new Date(Date.parse(streakStart) - dayMs);
     const weekFrom = new Date(Date.parse(weekStart) - dayMs);
     const weekTo = new Date(Date.parse(shiftDay(weekStart, 7)) + dayMs);
-    return this.prisma.scheduledExercise.findMany({
+    return db.scheduledExercise.findMany({
       where: {
         ...this.where(scope),
         OR: [
@@ -80,8 +91,12 @@ export class OverviewService {
   }
 
   /** Trainings that may fall in the today/tomorrow list, overdue ones included. */
-  private findCandidates(scope: Scope, { now }: LocalCalendar) {
-    return this.prisma.scheduledExercise.findMany({
+  private findCandidates(
+    db: Prisma.TransactionClient,
+    scope: Scope,
+    { now }: LocalCalendar,
+  ) {
+    return db.scheduledExercise.findMany({
       where: {
         ...this.where(scope),
         // A wide upper bound covers both local days even across a 25-hour DST day.

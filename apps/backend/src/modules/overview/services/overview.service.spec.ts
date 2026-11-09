@@ -24,6 +24,10 @@ describe("overview", () => {
   const service = new OverviewService(prisma, neglected);
   beforeEach(() => {
     vi.resetAllMocks();
+    // One read snapshot: every query runs in the same transaction.
+    prisma.$transaction.mockImplementation(
+      (run) => (run as (tx: typeof prisma) => unknown)(prisma) as never,
+    );
     prisma.scheduledExercise.findMany.mockResolvedValue([]);
     prisma.dogExercise.findMany.mockResolvedValue([]);
     neglected.findPlannable.mockResolvedValue([]);
@@ -32,6 +36,13 @@ describe("overview", () => {
     vi.setSystemTime(new Date("2026-10-25T23:30:00Z")); // Monday in Prague, DST has ended.
   });
   afterEach(() => vi.useRealTimers());
+
+  it("reads everything from one snapshot", async () => {
+    await service.get("owner", { timeZone: "Europe/Prague" });
+    expect(prisma.$transaction).toHaveBeenCalledWith(expect.any(Function), {
+      isolationLevel: "RepeatableRead",
+    });
+  });
 
   it("groups local days, includes old overdue events, and excludes completed history from the lists", async () => {
     const old = { id: "old", ...record("2026-01-01T09:00:00Z", null) };
@@ -110,7 +121,7 @@ describe("overview", () => {
       prisma.scheduledExercise.findMany.mock.calls[0]![0]?.where?.dogId,
     ).toEqual({ in: [] });
     expect(result.events).toEqual([]);
-    expect(neglected.findPlannable).toHaveBeenCalledWith("owner", []);
+    expect(neglected.findPlannable).toHaveBeenCalledWith("owner", [], prisma);
   });
 
   it("loads 42 local days of completions and this week's open trainings, padded for time zones", async () => {
@@ -146,7 +157,11 @@ describe("overview", () => {
       timeZone: "Europe/Prague",
       dogIds: ["dog-a"],
     });
-    expect(neglected.findPlannable).toHaveBeenCalledWith("owner", ["dog-a"]);
+    expect(neglected.findPlannable).toHaveBeenCalledWith(
+      "owner",
+      ["dog-a"],
+      prisma,
+    );
     expect(neglected.rank).toHaveBeenCalledWith(
       plannable,
       records,
@@ -154,6 +169,7 @@ describe("overview", () => {
         weekStart: "2026-10-26",
         weekEnd: "2026-11-01",
       }),
+      prisma,
     );
     expect(result.neglected).toBe(ranked);
   });

@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@/core/prisma/prisma.service";
+import type { Prisma } from "@/generated/prisma/client";
 import {
   type DisciplineTraining,
   type DogDiscipline,
@@ -18,8 +19,9 @@ export class NeglectedDisciplinesService {
   async findPlannable(
     userId: string,
     dogIds?: string[],
+    db: Prisma.TransactionClient = this.prisma,
   ): Promise<DogDiscipline[]> {
-    const exercises = await this.prisma.dogExercise.findMany({
+    const exercises = await db.dogExercise.findMany({
       where: {
         AND: [
           plannableDogExercise(userId),
@@ -52,11 +54,12 @@ export class NeglectedDisciplinesService {
     plannable: DogDiscipline[],
     trainings: DisciplineTraining[],
     calendar: LocalCalendar,
+    db: Prisma.TransactionClient = this.prisma,
   ) {
     const untrained = untrainedThisWeek(plannable, trainings, calendar);
     if (!untrained.length) return [];
     // One query for every pair; `distinct` keeps one row per exercise.
-    const completions = await this.prisma.scheduledExercise.findMany({
+    const completions = await db.scheduledExercise.findMany({
       where: {
         dogId: { in: [...new Set(untrained.map(({ dog }) => dog.id))] },
         deletedAt: null,
