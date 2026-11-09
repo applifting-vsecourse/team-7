@@ -119,8 +119,10 @@ const disciplines: DisciplineSeed[] = [
 ];
 
 export async function seedDisciplines(prisma: PrismaService): Promise<void> {
+  // Every account also starts with the default disciplines (#72), so the
+  // sample library is recognised by its first discipline, not by any.
   const usersWithoutDisciplines = await prisma.user.findMany({
-    where: { disciplines: { none: {} } },
+    where: { disciplines: { none: { name: disciplines[0]!.name } } },
     select: { id: true, dogs: { select: { id: true } } },
   });
 
