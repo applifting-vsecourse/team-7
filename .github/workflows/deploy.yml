@@ -1,19 +1,45 @@
 name: Build & Deploy
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch: {}
+permissions:
+  contents: read
+  actions: read
 env:
   COURSE_DOMAIN: vsepractical.applifting.dev
   REGISTRY: registry.vsepractical.applifting.dev
 jobs:
   build-and-deploy:
+    if: >-
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository) ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     env:
+      DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
       COOLIFY_WEBHOOK: ${{ secrets.COOLIFY_WEBHOOK }}
       COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
     steps:
+      - name: Require successful CI for deployment commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CONCLUSION=$(gh api --method GET \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs" \
+            -f head_sha="$DEPLOY_SHA" -f branch=main -f event=push -f per_page=1 \
+            --jq '.workflow_runs[0] | if .status == "completed" then .conclusion else .status end')
+          if [ "$CONCLUSION" != "success" ]; then
+            echo "::error::CI must have succeeded for $DEPLOY_SHA (current result: $CONCLUSION)."
+            exit 1
+          fi
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
       - name: Determine slug
         id: slug
         run: |
