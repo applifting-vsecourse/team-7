@@ -1,6 +1,10 @@
 import type { Onboarding } from "./api/onboardingQueryOptions";
 import { toast } from "@heroui/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createStore, Provider } from "jotai";
@@ -13,6 +17,7 @@ import { AssignDisciplineDialog } from "@/features/dogs/components/AssignDiscipl
 
 import { GettingStartedCard } from "./components/GettingStartedCard";
 import { OnboardingTour } from "./components/OnboardingTour";
+import { useTour } from "./hooks/useTour";
 
 const state = vi.hoisted(() => ({
   onboarding: null as unknown,
@@ -22,6 +27,7 @@ const state = vi.hoisted(() => ({
   patch: vi.fn(),
   put: vi.fn(),
   library: [] as unknown[],
+  patchResult: undefined as Promise<void> | undefined,
 }));
 
 vi.mock("@/features/auth/hooks/useSession", () => ({
@@ -70,7 +76,7 @@ vi.mock("@/lib/api-client", () => ({
     }),
     patch: (path: string, options: unknown) => {
       state.patch(path, options);
-      return Promise.resolve();
+      return state.patchResult ?? Promise.resolve();
     },
     put: (path: string, options: unknown) => {
       state.put(path, options);
@@ -109,6 +115,7 @@ function renderUi(ui: React.ReactNode, store = createStore()) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  state.patchResult = undefined;
   state.pathname = "/overview";
   state.search = {};
 });
@@ -316,6 +323,40 @@ describe("onboarding tour", () => {
         json: { status: "active", step: "schedule" },
       }),
     );
+  });
+});
+
+describe("tour state", () => {
+  function Probe() {
+    const tour = useTour();
+    const client = useQueryClient();
+    return (
+      <>
+        <p>{tour.step}</p>
+        <button onClick={() => tour.go("dogProfile")}>go</button>
+        <button onClick={() => void client.invalidateQueries()}>refetch</button>
+      </>
+    );
+  }
+
+  it("keeps a move while a refetch from before it brings back the old step", async () => {
+    state.onboarding = onboarding({ status: "active", step: "addDog" });
+    let saved = () => {};
+    state.patchResult = new Promise<void>((resolve) => (saved = resolve));
+    const user = renderUi(<Probe />);
+    expect(await screen.findByText("addDog")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "go" }));
+    expect(await screen.findByText("dogProfile")).toBeInTheDocument();
+    // The server hasn't stored the move yet and still answers addDog.
+    await user.click(screen.getByRole("button", { name: "refetch" }));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(screen.getByText("dogProfile")).toBeInTheDocument();
+
+    state.onboarding = onboarding({ status: "active", step: "dogProfile" });
+    act(() => saved());
+    await waitFor(() => expect(state.patch).toHaveBeenCalledTimes(1));
+    expect(screen.getByText("dogProfile")).toBeInTheDocument();
   });
 });
 

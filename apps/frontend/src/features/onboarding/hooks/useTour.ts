@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useMutationState,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import { api } from "@/lib/api-client";
 
@@ -20,18 +25,34 @@ export function useTour() {
   const client = useQueryClient();
   const key = onboardingKey(user?.id);
   const query = useQuery(onboardingQueryOptions(user?.id));
+  const mutationKey = [...key, "update"];
+  const save = (patch: Patch) =>
+    client.setQueryData<Onboarding>(key, (old) => old && { ...old, ...patch });
   const update = useMutation({
+    mutationKey,
     mutationFn: (patch: Patch) => api.patch("onboarding", { json: patch }),
     // The tour moves at once; a failed save is corrected by the refetch.
-    onMutate: (patch) =>
-      client.setQueryData<Onboarding>(
-        key,
-        (old) => old && { ...old, ...patch },
-      ),
+    onMutate: async (patch) => {
+      await client.cancelQueries({ queryKey: key });
+      save(patch);
+    },
+    // A refetch started before the save (e.g. after adding a dog) may have
+    // brought back the old step meanwhile.
+    onSuccess: (_, patch) => save(patch),
     onSettled: () => client.invalidateQueries({ queryKey: key }),
   });
+  // Moves not saved yet win over whatever the server answered before them.
+  const pending = useMutationState({
+    filters: { mutationKey, status: "pending" },
+    select: (mutation) => mutation.state.variables as Patch,
+  });
 
-  const data = query.data;
+  const data =
+    query.data &&
+    pending.reduce<Onboarding>(
+      (merged, patch) => ({ ...merged, ...patch }),
+      query.data,
+    );
   const saved = STEP_IDS.find((id) => id === data?.step);
   // A new user without a dog gets the welcome once; leaving it is remembered.
   const step: StepId | null =
