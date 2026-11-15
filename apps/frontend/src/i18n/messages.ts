@@ -33,6 +33,7 @@ export const messageSelectors = {
   resetFailed: ($) => $.auth.errors.reset,
   newPasswordFailed: ($) => $.auth.errors.newPassword,
   changePasswordFailed: ($) => $.settings.passwordError,
+  profileUpdateFailed: ($) => $.settings.profileError,
   currentPasswordInvalid: ($) => $.settings.currentPasswordInvalid,
   resetLinkInvalid: ($) => $.auth.errors.resetLinkInvalid,
   googleSignInFailed: ($) => $.auth.errors.google,
