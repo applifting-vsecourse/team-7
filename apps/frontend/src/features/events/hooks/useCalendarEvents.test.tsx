@@ -61,6 +61,7 @@ describe("useCalendarEvents", () => {
       note: null,
       completedAt: null,
       paused: false,
+      hasVideo: false,
       dog: { id: "dog-a", name: "Mája", avatarVersion: null },
       exercise: null,
     };

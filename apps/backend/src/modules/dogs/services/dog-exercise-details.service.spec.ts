@@ -10,6 +10,7 @@ describe("dog exercise details", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     prisma.dogExercise.findMany.mockResolvedValue([]);
+    prisma.video.findMany.mockResolvedValue([]);
   });
   it("rejects another handler's dog before reading training history", async () => {
     prisma.dog.findFirst.mockResolvedValue(null);
@@ -54,7 +55,10 @@ describe("dog exercise details", () => {
     prisma.dog.findFirst.mockResolvedValue(dog as never);
     prisma.exercise.findFirst.mockResolvedValue(exercise as never);
     prisma.scheduledExercise.findMany.mockResolvedValue([
-      { id: "result-a", rating: 4 },
+      { id: "result-a", dogId: "dog-a", rating: 4 },
+    ] as never);
+    prisma.video.findMany.mockResolvedValue([
+      { sessionId: "result-a", dogId: "dog-a" },
     ] as never);
     const result = await service.get("user-a", "dog-a", "e1");
     expect(result.exercise).toMatchObject({
@@ -63,7 +67,13 @@ describe("dog exercise details", () => {
       goalStatus: null,
     });
     expect(result.events).toEqual([
-      { id: "result-a", rating: 4, paused: false },
+      {
+        id: "result-a",
+        dogId: "dog-a",
+        rating: 4,
+        paused: false,
+        hasVideo: true,
+      },
     ]);
     expect(prisma.scheduledExercise.findMany).toHaveBeenCalledWith(
       expect.objectContaining({

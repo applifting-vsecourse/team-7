@@ -210,6 +210,7 @@ describe("dog profile", () => {
       note: null,
       completedAt: null,
       paused: false,
+      hasVideo: false,
       dog: { id: "dog-1", name: "Mája", avatarVersion: null },
       exercise: {
         id: "e1",

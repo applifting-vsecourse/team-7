@@ -3,7 +3,7 @@ import { PrismaService } from "@/core/prisma/prisma.service";
 import type { Prisma } from "@/generated/prisma/client";
 import { trainingStats } from "@/modules/overview/domain/training-stats";
 import { upcomingEvents } from "@/modules/overview/domain/upcoming-events";
-import { withPaused } from "@/shared/domain/exercise-status";
+import { withEventFlags } from "@/shared/domain/event-videos";
 import {
   dayMs,
   type LocalCalendar,
@@ -40,7 +40,11 @@ export class OverviewService {
           today: calendar.today,
           tomorrow: calendar.tomorrow,
           stats: trainingStats(records, calendar),
-          events: await withPaused(tx, upcomingEvents(candidates, calendar)),
+          events: await withEventFlags(
+            tx,
+            userId,
+            upcomingEvents(candidates, calendar),
+          ),
           neglected: await this.neglected.rank(
             plannable,
             records,

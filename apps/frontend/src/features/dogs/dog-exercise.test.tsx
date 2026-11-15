@@ -168,6 +168,7 @@ const training = (
   startsAt: date,
   completedAt: rating === null ? null : date,
   paused: false,
+  hasVideo: false,
   durationMinutes: 15,
   rating,
   note: rating ? "Good work" : null,

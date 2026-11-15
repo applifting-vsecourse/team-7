@@ -9,7 +9,15 @@ import {
   waitFor,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockInstance,
+  vi,
+} from "vitest";
 
 import { videosQueryOptions } from "../api/videosQueryOptions";
 import { ExerciseVideos } from "./ExerciseVideos";
@@ -54,14 +62,19 @@ const video = (
   createdAt: "2026-11-06T10:00:00Z",
   updatedAt: "2026-11-06T10:00:00Z",
 });
-function setup() {
+function setup(tileHasVideo = false) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   const busy = vi.fn();
   const view = render(
     <QueryClientProvider client={client}>
-      <ExerciseVideos dogId="dog-a" sessionId="session-a" onBusyChange={busy} />
+      <ExerciseVideos
+        dogId="dog-a"
+        sessionId="session-a"
+        tileHasVideo={tileHasVideo}
+        onBusyChange={busy}
+      />
     </QueryClientProvider>,
   );
   return { ...view, client, busy, user: userEvent.setup() };
@@ -104,6 +117,7 @@ describe("exercise videos", () => {
           <ExerciseVideos
             dogId="dog-a"
             sessionId={sessionId}
+            tileHasVideo={false}
             onBusyChange={busy}
           />
         </QueryClientProvider>,
@@ -148,6 +162,114 @@ describe("exercise videos", () => {
     expect(options.body.get("file")).toBe(file);
     expect(busy).toHaveBeenCalledWith(true);
     await waitFor(() => expect(busy).toHaveBeenLastCalledWith(false));
+  });
+  it("only plays videos in training history", async () => {
+    state.list.mockResolvedValue([video("v1"), video("v2", "failed")]);
+    render(
+      <QueryClientProvider
+        client={
+          new QueryClient({ defaultOptions: { queries: { retry: false } } })
+        }
+      >
+        <ExerciseVideos
+          dogId="dog-a"
+          sessionId="session-a"
+          tileHasVideo
+          readOnly
+        />
+      </QueryClientProvider>,
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Play video 1" }),
+      ).toBeEnabled(),
+    );
+    expect(screen.queryByRole("button", { name: "Play video 2" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Remove video/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Upload video" })).toBeNull();
+    expect(screen.queryByLabelText("Upload video")).toBeNull();
+  });
+  describe("keeping the calendar tile's Video indicator in step", () => {
+    const spies = new WeakMap<
+      QueryClient,
+      MockInstance<QueryClient["invalidateQueries"]>
+    >();
+    const spy = (client: QueryClient) => {
+      spies.set(client, vi.spyOn(client, "invalidateQueries"));
+      return client;
+    };
+    const tileRefreshes = (client: QueryClient) =>
+      spies
+        .get(client)!
+        .mock.calls.filter(([filters]) =>
+          ["events", "dogProfiles"].includes(String(filters?.queryKey?.[0])),
+        ).length;
+
+    it("leaves the tiles alone while they agree with the list", async () => {
+      state.list.mockResolvedValue([video("v1")]);
+      const { client } = setup(true);
+      spy(client);
+      await screen.findByRole("button", { name: "Play video 1" });
+      await client.invalidateQueries({ queryKey: ["sessionVideos"] });
+      expect(tileRefreshes(client)).toBe(0);
+    });
+
+    it("refreshes them after an upload, and stops once the tile caught up", async () => {
+      const { container, client, rerender, busy } = setup();
+      spy(client);
+      await waitFor(() => expect(uploadButton()).toBeEnabled());
+      state.list.mockResolvedValue([video("v1", "pending")]);
+      selectFile(container);
+      await screen.findByText("Processing…");
+      await waitFor(() => expect(tileRefreshes(client)).toBe(2));
+      rerender(
+        <QueryClientProvider client={client}>
+          <ExerciseVideos
+            dogId="dog-a"
+            sessionId="session-a"
+            tileHasVideo
+            onBusyChange={busy}
+          />
+        </QueryClientProvider>,
+      );
+      await client.invalidateQueries({ queryKey: ["sessionVideos"] });
+      expect(tileRefreshes(client)).toBe(2);
+    });
+
+    it("refreshes them when processing failed while the dialog was closed", async () => {
+      state.list.mockResolvedValue([video("v1", "failed")]);
+      const client = spy(
+        new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+      );
+      render(
+        <QueryClientProvider client={client}>
+          <ExerciseVideos
+            dogId="dog-a"
+            sessionId="session-a"
+            tileHasVideo
+            onBusyChange={vi.fn()}
+          />
+        </QueryClientProvider>,
+      );
+      await screen.findByText(
+        "Video processing failed. Remove it and upload again.",
+      );
+      await waitFor(() => expect(tileRefreshes(client)).toBe(2));
+    });
+
+    it("refreshes them after the last video is removed", async () => {
+      state.list.mockResolvedValue([video("v1")]);
+      const { client, user } = setup(true);
+      spy(client);
+      await waitFor(() =>
+        expect(
+          screen.getByRole("button", { name: "Remove video 1" }),
+        ).toBeEnabled(),
+      );
+      state.list.mockResolvedValue([]);
+      await user.click(screen.getByRole("button", { name: "Remove video 1" }));
+      await waitFor(() => expect(tileRefreshes(client)).toBe(2));
+    });
   });
   it("does not upload rejected local files and permits selecting the same file again", async () => {
     state.validate.mockRejectedValueOnce(new Error("videos.tooLong"));

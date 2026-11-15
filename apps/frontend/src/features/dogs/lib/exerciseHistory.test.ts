@@ -14,6 +14,7 @@ const event = (
   rating,
   completedAt: rating === null ? null : startsAt,
   paused: false,
+  hasVideo: false,
   dogId: "dog-a",
   durationMinutes: 10,
   note: null,

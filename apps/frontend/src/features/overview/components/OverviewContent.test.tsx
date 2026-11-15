@@ -30,6 +30,7 @@ const event = (
   startsAt,
   completedAt,
   paused: false,
+  hasVideo: false,
   durationMinutes: 20,
   rating: completedAt ? 4 : null,
   note: null,

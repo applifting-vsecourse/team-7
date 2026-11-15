@@ -14,6 +14,7 @@ const scheduledEvent: ScheduledEvent = {
   note: null,
   completedAt: null,
   paused: false,
+  hasVideo: false,
   dog: { id: "dog-a", name: "Mája", avatarVersion: null },
   exercise: {
     id: "e1",
@@ -96,4 +97,60 @@ describe("lesson with a trainer (Figma Event Type=Lesson)", () => {
     expect(article).not.toHaveTextContent("Obedience");
     expect(article).toHaveAttribute("draggable", "true");
   });
+});
+
+describe("done training result (Figma Event Show rating / note / video)", () => {
+  const done = {
+    ...scheduledEvent,
+    completedAt: "2099-01-02T08:30:00Z",
+    rating: 4,
+    note: "Great focus",
+    hasVideo: true,
+  };
+
+  it.each([false, true])(
+    "shows the rating, a note and a video on a completed tile (history: %s)",
+    (historyOnly) => {
+      render(
+        <Event
+          {...props}
+          scheduledEvent={done}
+          state="completed"
+          historyOnly={historyOnly}
+        />,
+      );
+      expect(
+        screen.getByRole("img", { name: "4 out of 5 stars" }),
+      ).toBeVisible();
+      expect(tile()).toHaveTextContent("Note");
+      expect(tile()).toHaveTextContent("Video");
+      expect(tile()).not.toHaveTextContent("Great focus");
+    },
+  );
+
+  it("leaves out what the training doesn't have", () => {
+    render(
+      <Event
+        {...props}
+        scheduledEvent={{ ...done, note: null, hasVideo: false }}
+        state="completed"
+      />,
+    );
+    expect(tile()).not.toHaveTextContent("Note");
+    expect(tile()).not.toHaveTextContent("Video");
+  });
+
+  it.each(["upcoming", "unfinished"] as const)(
+    "shows no video indicator on an %s training",
+    (state) => {
+      render(
+        <Event
+          {...props}
+          scheduledEvent={{ ...scheduledEvent, hasVideo: true }}
+          state={state}
+        />,
+      );
+      expect(tile()).not.toHaveTextContent("Video");
+    },
+  );
 });

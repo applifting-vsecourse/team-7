@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "@/core/prisma/prisma.service";
-import { withPaused } from "@/shared/domain/exercise-status";
+import { withEventFlags } from "@/shared/domain/event-videos";
 
 @Injectable()
 export class DogExerciseDetailsService {
@@ -65,7 +65,7 @@ export class DogExerciseDetailsService {
         status: assignment?.status ?? null,
         goalStatus: assignment?.dogGoal.status ?? null,
       },
-      events: await withPaused(this.prisma, events),
+      events: await withEventFlags(this.prisma, userId, events),
     };
   }
 }
