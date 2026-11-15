@@ -11,19 +11,15 @@ import {
   toast,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import type { z } from "zod";
 
 import { translateMessage } from "@/i18n/messages";
 
-import {
-  authSessionQueryOptions,
-  type SessionUser,
-  type Session,
-} from "@/features/auth/api/authSessionQueryOptions";
-import { authClient } from "@/features/auth/lib/auth-client";
+import { type SessionUser } from "@/features/auth/api/authSessionQueryOptions";
+import { useUpdateProfile } from "@/features/auth/hooks/useUpdateProfile";
+import { usePendingEmailChange } from "@/features/settings/hooks/usePendingEmailChange";
 import { profileSchema } from "@/features/settings/schemas/accountSettingsSchema";
 
 import { SettingsError } from "./SettingsError";
@@ -37,15 +33,18 @@ export function ProfileSettings({
   hasPassword: boolean;
 }) {
   const { t, i18n } = useTranslation();
-  const client = useQueryClient();
+  const updateProfile = useUpdateProfile(user.id);
+  const { query: pendingQuery, cancel } = usePendingEmailChange(user.id);
   const [failed, setFailed] = useState(false);
-  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const pending = pendingQuery.data?.pendingEmailChange;
+  const pendingEmail = pending?.email;
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     values: { name: user.name, email: user.email },
     resetOptions: { keepDirtyValues: true },
   });
-  const isPending = form.formState.isSubmitting;
+  const isPending =
+    form.formState.isSubmitting || updateProfile.isPending || cancel.isPending;
   return (
     <Form
       aria-labelledby="profile-heading"
@@ -54,42 +53,25 @@ export function ProfileSettings({
       onSubmit={form.handleSubmit(async (values) => {
         setFailed(false);
         try {
-          const nameResult = await authClient.updateUser({ name: values.name });
-          if (nameResult.error) {
-            setFailed(true);
-            return;
-          }
-          // Persist the successful name even if sending the email link fails.
-          client.setQueryData<Session>(
-            authSessionQueryOptions().queryKey,
-            (previous) =>
-              previous
-                ? { ...previous, user: { ...previous.user, name: values.name } }
-                : previous,
-          );
-          if (
-            hasPassword &&
-            values.email.toLowerCase() !== user.email.toLowerCase()
-          ) {
-            const callback = new URL("/settings", window.location.origin);
-            callback.searchParams.set("lng", i18n.resolvedLanguage ?? "cs");
-            const result = await authClient.changeEmail({
-              newEmail: values.email,
-              callbackURL: callback.href,
-            });
-            if (result.error) {
-              setFailed(true);
-              return;
-            }
-            setPendingEmail(values.email);
+          const callback = new URL("/settings", window.location.origin);
+          callback.searchParams.set("lng", i18n.resolvedLanguage ?? "cs");
+          const result = await updateProfile.mutateAsync({
+            name: values.name,
+            newEmail:
+              hasPassword &&
+              values.email.toLowerCase() !== user.email.toLowerCase()
+                ? values.email
+                : undefined,
+            callbackURL: callback.href,
+          });
+          if (result.requestedEmail) {
             toast.success(
-              t(($) => $.settings.emailSent, { email: values.email }),
+              t(($) => $.settings.emailSent, { email: result.requestedEmail }),
             );
           } else {
             toast.success(t(($) => $.settings.profileSaved));
           }
           form.reset({ name: values.name, email: user.email });
-          await client.invalidateQueries(authSessionQueryOptions());
         } catch {
           setFailed(true);
         }
@@ -136,8 +118,25 @@ export function ProfileSettings({
             )}
           />
         ))}
-        {pendingEmail && pendingEmail !== user.email && (
-          <Alert status="accent" role="status">
+        {pendingQuery.isError && (
+          <div className="flex flex-col items-start gap-3">
+            <SettingsError>
+              {t(($) => $.settings.emailPendingLoadError)}
+            </SettingsError>
+            <Button
+              variant="secondary"
+              onPress={() => void pendingQuery.refetch()}
+            >
+              {t(($) => $.dogs.retry)}
+            </Button>
+          </div>
+        )}
+        {pending && pendingEmail !== user.email && (
+          <Alert
+            status="accent"
+            role="status"
+            className="flex-wrap sm:flex-nowrap"
+          >
             <Alert.Indicator />
             <Alert.Content>
               <Alert.Title>
@@ -147,9 +146,28 @@ export function ProfileSettings({
                 {t(($) => $.settings.emailPendingDescription)}
               </Alert.Description>
             </Alert.Content>
+            <Button
+              type="button"
+              variant="secondary"
+              isPending={cancel.isPending}
+              isDisabled={isPending}
+              onPress={() =>
+                cancel.mutate(pending.id, {
+                  onSuccess: () =>
+                    toast.success(t(($) => $.settings.emailChangeCancelled)),
+                })
+              }
+            >
+              {t(($) => $.settings.cancelEmailChange)}
+            </Button>
           </Alert>
         )}
       </div>
+      {cancel.isError && (
+        <SettingsError>
+          {t(($) => $.settings.emailChangeCancelError)}
+        </SettingsError>
+      )}
       {failed && (
         <SettingsError>{t(($) => $.settings.profileError)}</SettingsError>
       )}

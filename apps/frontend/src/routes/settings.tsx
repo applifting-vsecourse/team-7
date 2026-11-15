@@ -1,6 +1,9 @@
+import { useEffect } from "react";
 import { Gear } from "@gravity-ui/icons";
-import { createFileRoute } from "@tanstack/react-router";
+import { toast } from "@heroui/react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 
 import Layout from "@/components/Layout";
 import { Sidebar } from "@/components/Sidebar";
@@ -9,6 +12,9 @@ import { requireVerifiedSession } from "@/features/auth/lib/require-session";
 import { AccountSettings } from "@/features/settings/components/AccountSettings";
 
 export const Route = createFileRoute("/settings")({
+  validateSearch: z.object({
+    emailChange: z.enum(["confirmed", "invalid"]).optional(),
+  }),
   beforeLoad: requireVerifiedSession,
   component: SettingsPage,
 });
@@ -16,6 +22,19 @@ export const Route = createFileRoute("/settings")({
 function SettingsPage() {
   const { t } = useTranslation();
   const { userId } = Route.useRouteContext();
+  const { emailChange } = Route.useSearch();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!emailChange) return;
+    if (emailChange === "confirmed") {
+      toast.success(t(($) => $.settings.emailChangeConfirmed));
+    } else toast.danger(t(($) => $.settings.emailChangeInvalid));
+    void navigate({
+      to: "/settings",
+      search: (previous) => ({ ...previous, emailChange: undefined }),
+      replace: true,
+    });
+  }, [emailChange, navigate, t]);
   return (
     <Layout title={t(($) => $.navigation.settings)} sidebar={<Sidebar />}>
       <section

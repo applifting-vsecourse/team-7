@@ -4,6 +4,7 @@ import { ConsoleMailerAdapterFactory } from "@/core/email/adapters/console-maile
 import { EmailModule } from "@/core/email/email.module";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { betterAuthProvider } from "@/shared/auth/providers/better-auth.provider";
+import { EmailChangeService } from "@/shared/auth/services/email-change.service";
 import { Config } from "@/shared/config/config.service";
 import { SeedService } from "./seed.service";
 
@@ -17,6 +18,12 @@ import { SeedService } from "./seed.service";
       inject: [Config],
     }),
   ],
-  providers: [Config, PrismaService, betterAuthProvider, SeedService],
+  providers: [
+    Config,
+    PrismaService,
+    EmailChangeService,
+    betterAuthProvider,
+    SeedService,
+  ],
 })
 export class SeedModule {}

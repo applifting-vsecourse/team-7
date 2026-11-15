@@ -14,6 +14,9 @@ const mocks = vi.hoisted(() => ({
   deleteUser: vi.fn(),
   signOut: vi.fn(),
   navigate: vi.fn(),
+  cancelEmailChange: vi.fn(),
+  pending: null as { id: string; email: string; expiresAt: string } | null,
+  pendingLoadError: false,
 }));
 vi.mock("@/features/auth/lib/auth-client", () => ({ authClient: mocks }));
 vi.mock("@tanstack/react-router", async (original) => ({
@@ -22,11 +25,20 @@ vi.mock("@tanstack/react-router", async (original) => ({
 }));
 vi.mock("@/lib/api-client", () => ({
   api: {
+    delete: async (path: string) => {
+      await mocks.cancelEmailChange(path);
+      mocks.pending = null;
+    },
     get: (path: string) => ({
-      json: async () =>
-        path.endsWith("summary")
+      json: async () => {
+        if (path.endsWith("email-change")) {
+          if (mocks.pendingLoadError) throw new Error("offline");
+          return { pendingEmailChange: mocks.pending };
+        }
+        return path.endsWith("summary")
           ? { dogs: 4, disciplines: 5, exercises: 126, videos: 7 }
-          : { emailNotificationsEnabled: true },
+          : { emailNotificationsEnabled: true };
+      },
     }),
   },
 }));
@@ -46,6 +58,8 @@ function setup() {
 describe("account settings", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mocks.pending = null;
+    mocks.pendingLoadError = false;
     mocks.getSession.mockResolvedValue({
       data: {
         user: {
@@ -68,6 +82,16 @@ describe("account settings", () => {
     ]) {
       method.mockResolvedValue({ data: { status: true } });
     }
+    mocks.changeEmail.mockImplementation(
+      ({ newEmail }: { newEmail: string }) => {
+        mocks.pending = {
+          id: "a".repeat(32),
+          email: newEmail,
+          expiresAt: new Date(Date.now() + 3600_000).toISOString(),
+        };
+        return Promise.resolve({ data: { status: true } });
+      },
+    );
   });
 
   it("saves a profile and requests verification of a new email", async () => {
@@ -88,6 +112,60 @@ describe("account settings", () => {
     });
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Awaiting confirmation: nova@example.com",
+    );
+  });
+
+  it("restores a pending change after revisiting and cancels it without submitting the profile", async () => {
+    mocks.pending = {
+      id: "a".repeat(32),
+      email: "new@example.com",
+      expiresAt: new Date(Date.now() + 3600_000).toISOString(),
+    };
+    const first = setup();
+    expect(
+      await screen.findByText("Awaiting confirmation: new@example.com"),
+    ).toBeInTheDocument();
+    first.unmount();
+    const second = setup();
+    await second.user.click(
+      await screen.findByRole("button", { name: "Cancel change" }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole("status")).not.toBeInTheDocument(),
+    );
+    expect(mocks.cancelEmailChange).toHaveBeenCalledWith(
+      `users/me/settings/email-change/${"a".repeat(32)}`,
+    );
+    expect(mocks.updateUser).not.toHaveBeenCalled();
+    expect(screen.getByRole("textbox", { name: "Email" })).toHaveValue(
+      "jana@example.com",
+    );
+    second.unmount();
+    setup();
+    await screen.findByRole("textbox", { name: "Name" });
+    expect(
+      screen.queryByText("Awaiting confirmation: new@example.com"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps a failed cancellation visible and allows retry", async () => {
+    mocks.pending = {
+      id: "a".repeat(32),
+      email: "new@example.com",
+      expiresAt: new Date(Date.now() + 3600_000).toISOString(),
+    };
+    mocks.cancelEmailChange.mockRejectedValueOnce(new Error("offline"));
+    const { user } = setup();
+    await user.click(
+      await screen.findByRole("button", { name: "Cancel change" }),
+    );
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Could not cancel this email change.",
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("new@example.com");
+    await user.click(screen.getByRole("button", { name: "Cancel change" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("status")).not.toBeInTheDocument(),
     );
   });
 
