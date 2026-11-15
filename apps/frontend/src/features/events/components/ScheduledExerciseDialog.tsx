@@ -332,6 +332,7 @@ export function ScheduledExerciseDialog({
                       dogId={event.dogId}
                       key={event.id}
                       sessionId={event.id}
+                      tileHasVideo={event.hasVideo}
                       isDisabled={action.isPending}
                       onBusyChange={setVideosBusy}
                     />

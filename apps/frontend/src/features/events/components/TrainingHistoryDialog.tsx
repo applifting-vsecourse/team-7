@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 
 import { transitionName } from "@/lib/utils";
 
+import { ExerciseVideos } from "@/features/videos/components/ExerciseVideos";
+
 import { RatingStars } from "./RatingStars";
 import { TrainingMeta } from "./TrainingMeta";
 
@@ -60,6 +62,15 @@ export function TrainingHistoryDialog({
                 {event.note || t(($) => $.exerciseDetail.noNote)}
               </p>
             </div>
+            {/* Figma V7: a history tile showing "Video" opens its player here. */}
+            {event.completedAt && event.hasVideo && (
+              <ExerciseVideos
+                dogId={event.dogId}
+                sessionId={event.id}
+                tileHasVideo={event.hasVideo}
+                readOnly
+              />
+            )}
           </Modal.Body>
         </Modal.Dialog>
       </Modal.Container>

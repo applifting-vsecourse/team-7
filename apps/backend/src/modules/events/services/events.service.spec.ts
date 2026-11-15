@@ -26,6 +26,7 @@ describe("exercise scheduling", () => {
     prisma.dog.findFirst.mockResolvedValue({ id: "dog-a" } as never);
     prisma.dogExercise.count.mockResolvedValue(1);
     prisma.dogExercise.findMany.mockResolvedValue([]);
+    prisma.video.findMany.mockResolvedValue([]);
     prisma.scheduledExercise.findMany.mockResolvedValue([]);
     prisma.scheduledExercise.createMany.mockResolvedValue({ count: 1 });
   });
@@ -139,6 +140,24 @@ describe("exercise scheduling", () => {
     ).resolves.toEqual([
       expect.objectContaining({ id: "a", rating: 4, note: "ok", paused: true }),
       expect.objectContaining({ id: "b", paused: false }),
+    ]);
+  });
+  it("marks trainings that have a video", async () => {
+    prisma.scheduledExercise.findMany.mockResolvedValue([
+      { id: "a", dogId: "dog-a", exerciseId: "e1" },
+      { id: "b", dogId: "dog-a", exerciseId: "e1" },
+    ] as never);
+    prisma.video.findMany.mockResolvedValue([
+      { sessionId: "b", dogId: "dog-a" },
+    ] as never);
+    await expect(
+      service.list("user-a", {
+        from: "2026-10-01T00:00:00Z",
+        to: "2026-11-01T00:00:00Z",
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({ id: "a", hasVideo: false }),
+      expect.objectContaining({ id: "b", hasVideo: true }),
     ]);
   });
   it("lists lessons with a trainer as never paused without looking them up", async () => {

@@ -8,6 +8,7 @@ import {
   Clock,
   Comment,
   GraduationCap,
+  Video,
 } from "@gravity-ui/icons";
 import { Button, Separator } from "@heroui/react";
 import { useDrag } from "react-aria";
@@ -123,6 +124,30 @@ export function Event({
     ],
   });
 
+  // Figma Event `Show rating` / `Show note` / `Show video`: what a done
+  // training holds, so a handler sees it without opening the tile.
+  const result = isCompleted && scheduledEvent && (
+    <>
+      {scheduledEvent.rating != null && (
+        <div className="pt-1">
+          <RatingStars rating={scheduledEvent.rating} small />
+        </div>
+      )}
+      {scheduledEvent.note && (
+        <p className="flex items-center gap-1 pt-1 text-xs leading-5 text-muted">
+          <Comment className="size-3 shrink-0" aria-hidden="true" />
+          {t(($) => $.training.note)}
+        </p>
+      )}
+      {scheduledEvent.hasVideo && (
+        <p className="flex items-center gap-1 pt-1 text-xs leading-5 text-muted">
+          <Video className="size-3 shrink-0" aria-hidden="true" />
+          {t(($) => $.events.video)}
+        </p>
+      )}
+    </>
+  );
+
   return (
     <>
       <article
@@ -237,17 +262,7 @@ export function Event({
           </p>
         )}
         {historyOnly ? (
-          <>
-            {scheduledEvent?.rating != null && (
-              <RatingStars rating={scheduledEvent.rating} small />
-            )}
-            {scheduledEvent?.note && (
-              <p className="flex items-center gap-1 text-xs text-muted">
-                <Comment className="size-3" aria-hidden="true" />
-                {t(($) => $.training.note)}
-              </p>
-            )}
-          </>
+          result
         ) : (
           <>
             <div className="flex h-3 items-center">
@@ -272,6 +287,7 @@ export function Event({
                 </Heading>
               </>
             )}
+            {result}
           </>
         )}
       </article>

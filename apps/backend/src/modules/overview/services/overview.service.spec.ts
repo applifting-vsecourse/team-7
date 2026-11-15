@@ -30,6 +30,7 @@ describe("overview", () => {
     );
     prisma.scheduledExercise.findMany.mockResolvedValue([]);
     prisma.dogExercise.findMany.mockResolvedValue([]);
+    prisma.video.findMany.mockResolvedValue([]);
     neglected.findPlannable.mockResolvedValue([]);
     neglected.rank.mockResolvedValue([]);
     vi.useFakeTimers();
@@ -192,5 +193,30 @@ describe("overview", () => {
     ]);
     // Lessons have no exercise to look up as paused.
     expect(prisma.dogExercise.findMany).not.toHaveBeenCalled();
+  });
+
+  it("marks a training of the owner's dog that has a video", async () => {
+    vi.setSystemTime(new Date("2026-10-28T12:00:00Z"));
+    const training = {
+      id: "training",
+      ...record("2026-10-28T08:00:00Z", "2026-10-28T08:30:00Z", 4),
+      kind: "exercise",
+      exerciseId: "e1",
+    };
+    prisma.scheduledExercise.findMany
+      .mockResolvedValueOnce([training] as never)
+      .mockResolvedValueOnce([training] as never);
+    prisma.video.findMany.mockResolvedValue([
+      { sessionId: "training", dogId: "dog-a" },
+    ] as never);
+    const overview = await service.get("owner", { timeZone: "UTC" });
+    expect(overview.events).toEqual([
+      expect.objectContaining({ id: "training", hasVideo: true }),
+    ]);
+    expect(prisma.video.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ userId: "owner" }),
+      }),
+    );
   });
 });

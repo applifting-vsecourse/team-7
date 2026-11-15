@@ -31,6 +31,8 @@ export const eventSchema = z.object({
   completedAt: z.string().nullable(),
   // The exercise or its goal is paused for this dog.
   paused: z.boolean(),
+  // At least one video that plays or is still processing.
+  hasVideo: z.boolean(),
   dog: z.object({
     id: z.string(),
     name: z.string(),

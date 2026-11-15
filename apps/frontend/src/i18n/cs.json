@@ -153,7 +153,8 @@
     "upcoming": "Naplánováno",
     "completed": "Hotovo",
     "unfinished": "Nesplněno",
-    "dateAndTime": "{{date}} – {{time}}"
+    "dateAndTime": "{{date}} – {{time}}",
+    "video": "Video"
   },
   "lesson": {
     "title": "Cvičení s trenérem"

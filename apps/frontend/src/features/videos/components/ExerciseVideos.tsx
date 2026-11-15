@@ -9,6 +9,8 @@ import { translateMessage } from "@/i18n/messages";
 import { api } from "@/lib/api-client";
 
 import { useSession } from "@/features/auth/hooks/useSession";
+import { dogProfileKey } from "@/features/dogs/api/dogProfileQueryOptions";
+import { eventsKey } from "@/features/events/api/eventsQueryOptions";
 
 import {
   type ExerciseVideo,
@@ -21,13 +23,19 @@ import { validateVideo, VIDEO_ACCEPT, VIDEO_LIMIT } from "../lib/videoUpload";
 export function ExerciseVideos({
   dogId,
   sessionId,
+  tileHasVideo,
+  readOnly = false,
   isDisabled = false,
   onBusyChange,
 }: {
   dogId: string;
   sessionId: string;
+  /** What the calendar tile currently shows (`ScheduledEvent.hasVideo`). */
+  tileHasVideo: boolean;
+  /** Training history: play only, no uploading or removing. */
+  readOnly?: boolean;
   isDisabled?: boolean;
-  onBusyChange: (busy: boolean) => void;
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const { t } = useTranslation();
   const { user } = useSession();
@@ -61,15 +69,35 @@ export function ExerciseVideos({
     },
     onSuccess: refresh,
   });
+  // Tiles show whether a training has a video. Refresh them whenever this
+  // list disagrees: after an upload or removal, when processing fails, or when
+  // it failed while the dialog was closed.
+  const hasVideo = videos.data?.some(
+    (video) => !["failed", "deleting"].includes(video.status),
+  );
+  // Cached data shown while the list refetches may be older than the tile.
+  const isFresh = videos.isFetchedAfterMount && !videos.isFetching;
+  useEffect(() => {
+    if (!isFresh || hasVideo === undefined || hasVideo === tileHasVideo) return;
+    void client.invalidateQueries({ queryKey: eventsKey(user?.id) });
+    void client.invalidateQueries({ queryKey: dogProfileKey(user?.id) });
+  }, [client, hasVideo, isFresh, tileHasVideo, user?.id]);
   const busy = upload.isPending || remove.isPending;
   useEffect(() => {
-    onBusyChange(busy);
-    return () => onBusyChange(false);
+    onBusyChange?.(busy);
+    return () => onBusyChange?.(false);
   }, [busy, onBusyChange]);
+  // History has nothing to do about a failed upload, so it lists none.
   const items =
-    videos.data?.filter((video) => video.status !== "deleting") ?? [];
+    videos.data?.filter(
+      (video) =>
+        video.status !== "deleting" && !(readOnly && video.status === "failed"),
+    ) ?? [];
   const atLimit = items.length >= VIDEO_LIMIT;
   const disabled = isDisabled || busy;
+  // History can't add videos, so an empty list (its only video failed while
+  // the tile still said "Video") has nothing to show until the tile refreshes.
+  if (readOnly && videos.isSuccess && items.length === 0) return null;
   return (
     <section aria-labelledby={`${id}-heading`} className="flex flex-col gap-2">
       <h3 id={`${id}-heading`} className="text-sm font-medium">
@@ -108,7 +136,7 @@ export function ExerciseVideos({
             isDisabled={disabled}
             isRemoving={remove.isPending && remove.variables === video.id}
             onPlay={() => setPlaying(video.id)}
-            onRemove={() => remove.mutate(video.id)}
+            onRemove={readOnly ? undefined : () => remove.mutate(video.id)}
           />
         ))}
         {upload.isPending && (
@@ -122,23 +150,25 @@ export function ExerciseVideos({
               : t(($) => $.videos.uploading)}
           </div>
         )}
-        <input
-          ref={input}
-          id={id}
-          type="file"
-          accept={VIDEO_ACCEPT}
-          className="hidden"
-          aria-label={t(($) => $.videos.upload)}
-          disabled={disabled || atLimit || !videos.isSuccess || !user}
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            event.target.value = "";
-            if (file && !disabled && !atLimit && videos.isSuccess) {
-              upload.mutate(file);
-            }
-          }}
-        />
-        {!atLimit && (
+        {!readOnly && (
+          <input
+            ref={input}
+            id={id}
+            type="file"
+            accept={VIDEO_ACCEPT}
+            className="hidden"
+            aria-label={t(($) => $.videos.upload)}
+            disabled={disabled || atLimit || !videos.isSuccess || !user}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+              if (file && !disabled && !atLimit && videos.isSuccess) {
+                upload.mutate(file);
+              }
+            }}
+          />
+        )}
+        {!readOnly && !atLimit && (
           <Button
             type="button"
             variant="outline"
@@ -152,9 +182,11 @@ export function ExerciseVideos({
           </Button>
         )}
       </div>
-      <p id={`${id}-hint`} className="text-xs leading-5 text-muted">
-        {atLimit ? t(($) => $.videos.limit) : t(($) => $.videos.hint)}
-      </p>
+      {!readOnly && (
+        <p id={`${id}-hint`} className="text-xs leading-5 text-muted">
+          {atLimit ? t(($) => $.videos.limit) : t(($) => $.videos.hint)}
+        </p>
+      )}
       {upload.isError && (
         <p role="alert" className="text-sm text-danger">
           {upload.error.message.startsWith("videos.")
@@ -199,7 +231,7 @@ function VideoTile({
   isDisabled: boolean;
   isRemoving: boolean;
   onPlay: () => void;
-  onRemove: () => void;
+  onRemove?: () => void;
 }) {
   const { t } = useTranslation();
   const completed = video.status === "completed";
@@ -246,19 +278,21 @@ function VideoTile({
             </span>
           )}
         </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          isIconOnly
-          className="absolute top-1 right-1 size-6 min-w-6"
-          aria-label={t(($) => $.videos.remove, { number })}
-          isDisabled={isDisabled}
-          isPending={isRemoving}
-          onPress={onRemove}
-        >
-          <Xmark className="size-4" aria-hidden="true" />
-        </Button>
+        {onRemove && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            isIconOnly
+            className="absolute top-1 right-1 size-6 min-w-6"
+            aria-label={t(($) => $.videos.remove, { number })}
+            isDisabled={isDisabled}
+            isPending={isRemoving}
+            onPress={onRemove}
+          >
+            <Xmark className="size-4" aria-hidden="true" />
+          </Button>
+        )}
       </div>
       {!completed && (
         <p

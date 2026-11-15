@@ -72,6 +72,7 @@ const event: ScheduledEvent = {
   note: null,
   completedAt: null,
   paused: false,
+  hasVideo: false,
   dog: { id: "dog-a", name: "Mája", avatarVersion: null },
   exercise: {
     id: "e1",

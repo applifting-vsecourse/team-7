@@ -7,11 +7,9 @@ import {
 import { randomUUID } from "node:crypto";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { Prisma, type ScheduledExercise } from "@/generated/prisma/client";
+import { withEventFlags } from "@/shared/domain/event-videos";
 import { dogExerciseOrder } from "@/shared/domain/exercise-order";
-import {
-  plannableDogExercise,
-  withPaused,
-} from "@/shared/domain/exercise-status";
+import { plannableDogExercise } from "@/shared/domain/exercise-status";
 import { localDayOf } from "@/shared/domain/local-calendar";
 export type ScheduleInput = {
   dogId: string;
@@ -101,7 +99,7 @@ export class EventsService {
         },
         orderBy: [{ startsAt: "asc" }, { id: "asc" }],
       })
-      .then((events) => withPaused(this.prisma, events));
+      .then((events) => withEventFlags(this.prisma, userId, events));
   }
 
   async schedule(userId: string, input: ScheduleInput) {
