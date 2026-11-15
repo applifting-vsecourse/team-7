@@ -24,6 +24,8 @@ import {
   type UserSettings,
 } from "@/features/settings/schemas/userSettingsSchema";
 
+import { SettingsSectionHeader } from "./SettingsSectionHeader";
+
 export function SettingsContent({ userId }: { userId: string }) {
   const { t } = useTranslation();
   const query = useQuery(userSettingsQueryOptions(userId));
@@ -77,20 +79,16 @@ function SettingsForm({
     <Form
       aria-labelledby="notifications-heading"
       validationBehavior="aria"
-      className="flex max-w-xl flex-col items-start gap-6"
+      className="flex w-full flex-col items-start gap-6"
       onSubmit={form.handleSubmit((values) => {
         if (!isPending) mutation.mutate(values);
       })}
     >
-      <div className="flex flex-col gap-2">
-        <h2
-          id="notifications-heading"
-          className="text-xl font-semibold tracking-tight"
-        >
-          {t(($) => $.settings.notifications)}
-        </h2>
-        <p className="text-sm text-muted">{t(($) => $.settings.description)}</p>
-      </div>
+      <SettingsSectionHeader
+        id="notifications-heading"
+        title={t(($) => $.settings.notifications)}
+        description={t(($) => $.settings.description)}
+      />
       <Controller
         control={form.control}
         name="emailNotificationsEnabled"
@@ -99,7 +97,10 @@ function SettingsForm({
             name={field.name}
             inputRef={field.ref}
             isSelected={field.value}
-            onChange={field.onChange}
+            onChange={(enabled) => {
+              field.onChange(enabled);
+              void form.handleSubmit((values) => mutation.mutate(values))();
+            }}
             onBlur={field.onBlur}
             isInvalid={fieldState.invalid}
             isDisabled={isPending}
@@ -129,9 +130,16 @@ function SettingsForm({
           </Alert.Content>
         </Alert>
       )}
-      <Button type="submit" isPending={isPending} isDisabled={isPending}>
-        {t(($) => $.settings.save)}
-      </Button>
+      {mutation.isError && (
+        <Button
+          type="submit"
+          variant="secondary"
+          isPending={isPending}
+          isDisabled={isPending}
+        >
+          {t(($) => $.dogs.retry)}
+        </Button>
+      )}
     </Form>
   );
 }

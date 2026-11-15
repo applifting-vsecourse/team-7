@@ -27,6 +27,11 @@ describe("user settings API", () => {
   let url: string;
   const prisma = {
     user: { findUnique: vi.fn(), updateManyAndReturn: vi.fn() },
+    dog: { count: vi.fn() },
+    discipline: { count: vi.fn() },
+    scheduledExercise: { count: vi.fn() },
+    video: { count: vi.fn() },
+    $transaction: vi.fn(),
   };
   const getSession = vi.mocked(getSessionFromRequest);
 
@@ -65,6 +70,40 @@ describe("user settings API", () => {
       body: JSON.stringify(body),
     });
   }
+
+  it("counts only the session user's data, including archived dogs", async () => {
+    prisma.dog.count.mockResolvedValue(4);
+    prisma.discipline.count.mockResolvedValue(5);
+    prisma.scheduledExercise.count.mockResolvedValue(126);
+    prisma.video.count.mockResolvedValue(7);
+    prisma.$transaction.mockImplementation((queries) => Promise.all(queries));
+    const response = await fetch(`${url}/summary?userId=someone-else`);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      dogs: 4,
+      disciplines: 5,
+      exercises: 126,
+      videos: 7,
+    });
+    expect(prisma.dog.count).toHaveBeenCalledWith({
+      where: { userId: "owner" },
+    });
+    expect(prisma.discipline.count).toHaveBeenCalledWith({
+      where: { userId: "owner" },
+    });
+    expect(prisma.scheduledExercise.count).toHaveBeenCalledWith({
+      where: { dog: { userId: "owner" }, deletedAt: null },
+    });
+    expect(prisma.video.count).toHaveBeenCalledWith({
+      where: { userId: "owner", status: { not: "deleting" } },
+    });
+  });
+
+  it("requires authentication for the deletion summary", async () => {
+    getSession.mockResolvedValue(null);
+    expect((await fetch(`${url}/summary`)).status).toBe(401);
+    expect(prisma.dog.count).not.toHaveBeenCalled();
+  });
 
   it("reads only the current user's preference", async () => {
     const response = await fetch(`${url}?userId=someone-else`);
