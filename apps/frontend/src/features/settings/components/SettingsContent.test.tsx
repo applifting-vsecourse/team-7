@@ -60,19 +60,12 @@ describe("email notification settings", () => {
     });
     expect(checkbox).toBeChecked();
     await first.user.click(checkbox);
-    await first.user.click(
-      screen.getByRole("button", { name: "Save changes" }),
-    );
     await waitFor(() =>
       expect(state.save).toHaveBeenCalledWith("users/me/settings", {
         json: { emailNotificationsEnabled: false },
       }),
     );
-    await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: "Save changes" }),
-      ).toBeEnabled(),
-    );
+    await waitFor(() => expect(checkbox).toBeEnabled());
     expect(checkbox).not.toBeChecked();
     first.unmount();
 
@@ -82,9 +75,6 @@ describe("email notification settings", () => {
     });
     expect(savedCheckbox).not.toBeChecked();
     await second.user.click(savedCheckbox);
-    await second.user.click(
-      screen.getByRole("button", { name: "Save changes" }),
-    );
     await waitFor(() =>
       expect(state.save).toHaveBeenLastCalledWith("users/me/settings", {
         json: { emailNotificationsEnabled: true },
@@ -92,15 +82,17 @@ describe("email notification settings", () => {
     );
   });
 
-  it("keeps unsaved edits when a background refetch arrives", async () => {
+  it("keeps failed edits when a background refetch arrives", async () => {
+    state.saveError = true;
     const { user, client } = setup();
     const checkbox = await screen.findByRole("checkbox", {
       name: "Receive email notifications",
     });
     await user.click(checkbox);
+    await screen.findByRole("alert");
     await client.invalidateQueries({ queryKey: ["userSettings", "owner"] });
     expect(checkbox).not.toBeChecked();
-    expect(state.save).not.toHaveBeenCalled();
+    expect(state.enabled).toBe(true);
   });
 
   it("shows load failures and retries", async () => {
@@ -125,14 +117,13 @@ describe("email notification settings", () => {
       name: "Receive email notifications",
     });
     await user.click(checkbox);
-    await user.click(screen.getByRole("button", { name: "Save changes" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Could not save settings.",
     );
     expect(checkbox).not.toBeChecked();
     expect(state.enabled).toBe(true);
     state.saveError = false;
-    await user.click(screen.getByRole("button", { name: "Save changes" }));
+    await user.click(screen.getByRole("button", { name: "Try again" }));
     await waitFor(() => expect(state.enabled).toBe(false));
     await waitFor(() =>
       expect(screen.queryByRole("alert")).not.toBeInTheDocument(),
