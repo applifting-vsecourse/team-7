@@ -6,11 +6,29 @@ on:
     branches: [main]
 
 jobs:
-  verify:
+  setup:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      playwright-image: ${{ steps.playwright.outputs.image }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Determine Playwright image
+        id: playwright
+        run: |
+          version=$(jq -er '.devDependencies["@playwright/test"]' package.json)
+          echo "image=mcr.microsoft.com/playwright:v${version}-noble" >> "$GITHUB_OUTPUT"
+
+  verify:
+    needs: setup
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.setup.outputs.playwright-image }}
+      options: --init --ipc=host
     timeout-minutes: 20
     env:
-      DATABASE_URL: postgresql://quacker:quacker@localhost:5433/quacker
+      DATABASE_URL: postgresql://quacker:quacker@postgres:5432/quacker
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
     services:
       postgres:
@@ -19,8 +37,6 @@ jobs:
           POSTGRES_USER: quacker
           POSTGRES_PASSWORD: quacker
           POSTGRES_DB: quacker
-        ports:
-          - 5433:5432
         options: >-
           --health-cmd "pg_isready -U quacker -d quacker"
           --health-interval 5s
@@ -67,9 +83,6 @@ jobs:
         run: |
           pnpm backend migrate
           pnpm backend seed
-
-      - name: Install Playwright Chromium
-        run: pnpm exec playwright install --with-deps chromium
 
       - name: End-to-end tests
         run: pnpm test:e2e
