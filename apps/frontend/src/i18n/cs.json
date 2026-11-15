@@ -786,7 +786,13 @@
     "cancel": "Zrušit",
     "accountsError": "Údaje účtu se nepodařilo načíst. Zkuste to znovu.",
     "summaryLoading": "Načítání dat účtu…",
-    "summaryError": "Data ke smazání se nepodařilo načíst."
+    "summaryError": "Data ke smazání se nepodařilo načíst.",
+    "cancelEmailChange": "Zrušit změnu",
+    "emailChangeCancelled": "Změna e-mailu byla zrušena.",
+    "emailChangeCancelError": "Změnu e-mailu se nepodařilo zrušit. Možná už byla potvrzena nebo nahrazena novou žádostí.",
+    "emailPendingLoadError": "Čekající změnu e-mailu se nepodařilo načíst.",
+    "emailChangeInvalid": "Platnost odkazu pro změnu e-mailu vypršela, změna byla zrušena nebo už byl odkaz použit.",
+    "emailChangeConfirmed": "E-mail byl změněn."
   },
   "videos": {
     "title": "Videa",

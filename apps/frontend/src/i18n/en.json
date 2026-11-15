@@ -786,7 +786,13 @@
     "cancel": "Cancel",
     "accountsError": "Could not load your account. Please try again.",
     "summaryLoading": "Loading account data…",
-    "summaryError": "Could not load the data to be deleted."
+    "summaryError": "Could not load the data to be deleted.",
+    "cancelEmailChange": "Cancel change",
+    "emailChangeCancelled": "Email change cancelled.",
+    "emailChangeCancelError": "Could not cancel this email change. It may already have been confirmed or replaced.",
+    "emailPendingLoadError": "Could not load the pending email change.",
+    "emailChangeInvalid": "This email change link has expired, been cancelled, or already been used.",
+    "emailChangeConfirmed": "Your email has been changed."
   },
   "videos": {
     "title": "Videos",
