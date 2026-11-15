@@ -8,6 +8,21 @@ const select = { emailNotificationsEnabled: true } as const;
 export class UserSettingsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async summary(userId: string) {
+    const [dogs, disciplines, exercises, videos] =
+      await this.prisma.$transaction([
+        this.prisma.dog.count({ where: { userId } }),
+        this.prisma.discipline.count({ where: { userId } }),
+        this.prisma.scheduledExercise.count({
+          where: { dog: { userId }, deletedAt: null },
+        }),
+        this.prisma.video.count({
+          where: { userId, status: { not: "deleting" } },
+        }),
+      ]);
+    return { dogs, disciplines, exercises, videos };
+  }
+
   async get(userId: string): Promise<UserSettings> {
     const settings = await this.prisma.user.findUnique({
       where: { id: userId },

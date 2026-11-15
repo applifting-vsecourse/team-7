@@ -66,6 +66,7 @@ const createAuth = (
       },
     },
     user: {
+      ...betterAuthCoreConfig.user,
       additionalFields: {
         role: {
           type: "string",
