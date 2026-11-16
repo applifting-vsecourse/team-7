@@ -16,6 +16,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
+import { PasswordInput } from "@/components/PasswordInput";
 import {
   messageSelectors,
   translateMessage,
@@ -23,8 +24,6 @@ import {
 } from "@/i18n/messages";
 
 import { passwordWithConfirmationSchema } from "@/features/auth/lib/password-schema";
-
-import { PasswordInput } from "./PasswordInput";
 
 const schema = passwordWithConfirmationSchema.safeExtend({
   email: z

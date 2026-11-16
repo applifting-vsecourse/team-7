@@ -15,13 +15,12 @@ import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { type z } from "zod";
 
+import { PasswordInput } from "@/components/PasswordInput";
 import { messageSelectors, translateMessage } from "@/i18n/messages";
 
 import { authClient } from "@/features/auth/lib/auth-client";
 import { authErrorMessage } from "@/features/auth/lib/auth-error";
 import { passwordWithConfirmationSchema } from "@/features/auth/lib/password-schema";
-
-import { PasswordInput } from "./PasswordInput";
 
 const schema = passwordWithConfirmationSchema;
 
