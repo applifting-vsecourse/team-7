@@ -4,7 +4,6 @@ import {
   Description,
   FieldError,
   Form,
-  Input,
   Label,
   TextField,
   toast,
@@ -15,6 +14,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import type { z } from "zod";
 
+import { PasswordInput } from "@/components/PasswordInput";
 import { messageSelectors, translateMessage } from "@/i18n/messages";
 
 import { useChangePassword } from "@/features/auth/hooks/useChangePassword";
@@ -96,15 +96,13 @@ export function PasswordSettings() {
             render={({ field: { ref, ...field }, fieldState }) => (
               <TextField
                 {...field}
-                type="password"
                 fullWidth
                 isDisabled={isPending}
                 isInvalid={fieldState.invalid}
               >
                 <Label>{label}</Label>
-                <Input
+                <PasswordInput
                   ref={ref}
-                  variant="secondary"
                   autoComplete={
                     name === "currentPassword"
                       ? "current-password"
