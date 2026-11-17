@@ -13,7 +13,15 @@ import {
   within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from "vitest";
 
 import { ThemeController } from "@/hooks/useTheme";
 import { routeTree } from "@/routeTree.gen";
@@ -274,6 +282,12 @@ describe("dog exercise detail page", () => {
     ).not.toBeInTheDocument();
   });
   it("charts only completed sessions and includes overdue sessions in history", async () => {
+    // The average covers the last 30 days, so pin today next to the fixtures.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-21T12:00:00Z"));
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
     state.events = [
       training("t1", "2026-10-18T08:00:00Z", 3),
       training("t2", "2026-10-19T08:00:00Z", null),
