@@ -31,6 +31,18 @@ vi.mock("@/lib/api-client", () => ({
     },
     get: (path: string) => ({
       json: async () => {
+        if (path.endsWith("subscription")) {
+          return {
+            status: "free",
+            trialEndsAt: null,
+            paidUntil: null,
+            retryAt: null,
+            trialUsed: false,
+            cardLast4: "4242",
+            dogs: 1,
+            goals: 2,
+          };
+        }
         if (path.endsWith("email-change")) {
           if (mocks.pendingLoadError) throw new Error("offline");
           return { pendingEmailChange: mocks.pending };
