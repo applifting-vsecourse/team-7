@@ -10,6 +10,12 @@ export const emailMessages = {
       disclaimer:
         "Pokud jste o změnu nežádali, přihlaste se původním e-mailem, zrušte změnu v nastavení a změňte heslo.",
     },
+    trialEnding: {
+      subject: "Zkušební doba Plus končí zítra",
+      description:
+        "Zaplaťte, ať vám zůstanou všichni psi, videa a statistiky. Jinak přejdete na verzi Zdarma. Nic se nesmaže.",
+      button: "Zaplatit Plus",
+    },
     tagline: "Plánovač a tréninkový deník pro psa",
     unsubscribe: "Odhlásit e-mailové připomínky",
     dailyReminder: {
@@ -56,6 +62,12 @@ export const emailMessages = {
       button: "Review account",
       disclaimer:
         "If you did not request this change, sign in with your original email, cancel the change in settings, and change your password.",
+    },
+    trialEnding: {
+      subject: "Your Plus trial ends tomorrow",
+      description:
+        "Pay to keep all your dogs, videos and statistics. Otherwise you will switch to Free. Nothing will be deleted.",
+      button: "Pay for Plus",
     },
     tagline: "A planner and training journal for your dog",
     unsubscribe: "Unsubscribe from email reminders",

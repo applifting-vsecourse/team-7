@@ -19,6 +19,8 @@ import {
   vi,
 } from "vitest";
 
+import { createPlusSubscription } from "@/test/fixtures/subscription";
+
 import { videosQueryOptions } from "../api/videosQueryOptions";
 import { ExerciseVideos } from "./ExerciseVideos";
 
@@ -41,7 +43,11 @@ vi.mock("@/lib/api-client", () => ({
   api: {
     get: (path: string) => ({
       json: () =>
-        path.endsWith("playback") ? state.playback() : state.list(path),
+        path === "users/me/subscription"
+          ? Promise.resolve(createPlusSubscription())
+          : path.endsWith("playback")
+            ? state.playback()
+            : state.list(path),
     }),
     post: state.post,
     delete: state.remove,
@@ -66,6 +72,7 @@ function setup(tileHasVideo = false) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
+  client.setQueryData(["subscription", "user-a"], createPlusSubscription());
   const busy = vi.fn();
   const view = render(
     <QueryClientProvider client={client}>

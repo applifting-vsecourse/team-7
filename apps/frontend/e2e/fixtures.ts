@@ -14,6 +14,7 @@ import { DogDisciplinePage } from "./pom/dog-discipline.page";
 import { DogPage } from "./pom/dog.page";
 import { LoginPage } from "./pom/login.page";
 import { OverviewPage } from "./pom/overview.page";
+import { ensurePlus } from "./subscription";
 
 export const credentials = {
   email: process.env.E2E_USER_EMAIL ?? "caffeinatedduck@example.com",
@@ -86,6 +87,10 @@ export const test = base.extend<Fixtures>({
     try {
       await login.signIn(credentials.email, credentials.password);
       await expect(app.overviewHeading).toBeVisible();
+      if (await ensurePlus(page.request)) {
+        await page.reload();
+        await expect(app.overviewHeading).toBeVisible();
+      }
       await provide(names);
     } finally {
       page.off("response", capture);

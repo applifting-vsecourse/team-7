@@ -21,6 +21,10 @@ import { disciplineQueryOptions } from "@/features/disciplines/api/disciplinesQu
 import { DeleteDialog } from "@/features/disciplines/components/DeleteDialog";
 import { LibraryItemDialog } from "@/features/disciplines/components/LibraryItemDialog";
 import type { LibraryItemValues } from "@/features/disciplines/schemas/libraryItemSchema";
+import {
+  useSubscription,
+  usePlusOffer,
+} from "@/features/subscription/hooks/useSubscription";
 
 import {
   dogDisciplinePath,
@@ -45,6 +49,12 @@ export function DogDisciplineView({
   const { t } = useTranslation();
   const { user } = useSession();
   const navigate = useNavigate();
+  const subscription = useSubscription();
+  const offer = usePlusOffer();
+  const limited =
+    !!subscription.data &&
+    !subscription.data.isPlus &&
+    subscription.data.goals >= 2;
   const library = useQuery(disciplineQueryOptions(user?.id, disciplineId));
   const selection = useQuery(
     dogSelectionQueryOptions(user?.id, dog.id, disciplineId),
@@ -138,7 +148,11 @@ export function DogDisciplineView({
       assignment={assignments.find((item) => item.goalId === goal.id)}
       lastTrainingByExercise={lastTrainingByExercise}
       isPending={mutate.isPending || setStatus.isPending}
-      onAction={(action) => mutate.mutate(action)}
+      onAction={(action) => {
+        if (action.type === "assignGoal" && limited) {
+          offer({ reason: "goals", onSuccess: () => mutate.mutate(action) });
+        } else mutate.mutate(action);
+      }}
       onStatus={(status) =>
         setStatus.mutate({
           kind: "goal",
@@ -278,7 +292,14 @@ export function DogDisciplineView({
             <Button
               variant="outline"
               data-tour="add-goal"
-              onPress={() => setCreating({ type: "goal" })}
+              onPress={() => {
+                if (limited) {
+                  offer({
+                    reason: "goals",
+                    onSuccess: () => setCreating({ type: "goal" }),
+                  });
+                } else setCreating({ type: "goal" });
+              }}
             >
               <Plus className="size-4" aria-hidden="true" />
               {t(($) => $.disciplines.addGoal)}

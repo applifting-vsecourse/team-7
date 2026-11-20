@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { OnboardingStatus } from "@/generated/prisma/client";
+import { subscriptionAccess } from "@/shared/subscription/subscription-access";
 
 const stateSelect = {
   onboardingStatus: true,
@@ -20,7 +21,12 @@ export class OnboardingService {
 
   /** Tour state and progress; all of it about the newest dog the tour sets up. */
   async get(userId: string, weekStart: Date) {
-    const activeDog = { userId, archivedAt: null };
+    const access = await subscriptionAccess(this.prisma, userId);
+    const activeDog = {
+      userId,
+      archivedAt: null,
+      ...(!access.isPlus ? { id: access.activeDogId ?? "" } : {}),
+    };
     const [state, dog, planned] = await Promise.all([
       this.prisma.user.findUniqueOrThrow({
         where: { id: userId },

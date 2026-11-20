@@ -1,4 +1,4 @@
-import { Circle } from "@gravity-ui/icons";
+import { Circle, Lock } from "@gravity-ui/icons";
 import { buttonVariants } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { useSetAtom } from "jotai";
@@ -62,6 +62,12 @@ export function SidebarDogs() {
             >
               {dog.name}
             </span>
+            {dog.locked && (
+              <Lock
+                className="size-4 shrink-0"
+                aria-label={t(($) => $.limits.locked)}
+              />
+            )}
             <Circle
               className="hidden size-4 shrink-0 in-data-[status=active]:block"
               aria-hidden="true"

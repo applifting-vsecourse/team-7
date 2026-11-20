@@ -33,10 +33,17 @@ import { DisciplineInputDto } from "@/modules/disciplines/controllers/dto/librar
 import { AVATAR_UPLOAD_LIMIT } from "@/modules/dogs/avatars/avatars.constants";
 import { DogAvatarsService } from "@/modules/dogs/avatars/avatars.service";
 import type { DogDetails } from "@/modules/dogs/domain/dog-details";
-import { findActiveDog, findOwnedDog } from "@/modules/dogs/domain/owned-dog";
+import { findActiveDog } from "@/modules/dogs/domain/owned-dog";
 import { User } from "@/shared/auth/decorators/user.decorator";
 import { Identity } from "@/shared/auth/domain/identity";
 import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
+import {
+  assertDogAccess,
+  lockSubscription,
+  subscriptionAccess,
+  subscriptionRequired,
+} from "@/shared/subscription/subscription-access";
+import { FREE_DOG_LIMIT } from "@/shared/subscription/subscription.constants";
 import { optionalText } from "@/shared/utils/optional-text";
 import { DogInputDto } from "./dto/dog-input.dto";
 
@@ -73,11 +80,22 @@ export class DogsController {
 
   @Get()
   @ApiOperation({ summary: "List dogs owned by the signed-in user" })
-  getDogs(@User() user: Identity): Promise<DogDetails[]> {
-    return this.prisma.dog.findMany({
+  async getDogs(@User() user: Identity) {
+    const access = await subscriptionAccess(this.prisma, user.id);
+    const dogs = await this.prisma.dog.findMany({
       where: { userId: user.id, archivedAt: null },
       omit: omitAvatar,
     });
+    return dogs.map((dog) =>
+      access.isPlus || dog.id === access.activeDogId
+        ? dog
+        : {
+            id: dog.id,
+            name: dog.name,
+            avatarVersion: dog.avatarVersion,
+            locked: true,
+          },
+    );
   }
 
   // Declared before ":id" so "archived" is not captured as a dog ID.
@@ -85,18 +103,31 @@ export class DogsController {
   @ApiOperation({
     summary: "List archived dogs owned by the signed-in user, newest first",
   })
-  getArchivedDogs(@User() user: Identity): Promise<DogDetails[]> {
-    return this.prisma.dog.findMany({
+  async getArchivedDogs(@User() user: Identity) {
+    const access = await subscriptionAccess(this.prisma, user.id);
+    const dogs = await this.prisma.dog.findMany({
       where: { userId: user.id, archivedAt: { not: null } },
       orderBy: { archivedAt: "desc" },
       omit: omitAvatar,
     });
+    return dogs.map((dog) =>
+      access.isPlus
+        ? dog
+        : {
+            id: dog.id,
+            name: dog.name,
+            avatarVersion: dog.avatarVersion,
+            archivedAt: dog.archivedAt,
+            locked: true,
+          },
+    );
   }
 
   @Get(":id")
   @ApiOperation({ summary: "Get an owned dog and its discipline progress" })
   @ApiNotFoundResponse({ description: "Dog not found" })
   async getDog(@User() user: Identity, @Param("id") id: string) {
+    await assertDogAccess(this.prisma, user.id, id);
     const now = new Date();
     const since = new Date(now.getTime() - 30 * 86400000);
     const dog = await this.prisma.dog.findFirst({
@@ -247,14 +278,29 @@ export class DogsController {
     @User() user: Identity,
     @Param("id") id: string,
   ): Promise<DogDetails> {
-    await findOwnedDog(this.prisma, user.id, id);
-    const [dog] = await this.prisma.dog.updateManyAndReturn({
-      where: { id, userId: user.id, archivedAt: { not: null } },
-      data: { archivedAt: null },
-      omit: omitAvatar,
+    return this.prisma.$transaction(async (tx) => {
+      await lockSubscription(tx, user.id);
+      const owned = await tx.dog.findFirst({
+        where: { id, userId: user.id },
+        select: { id: true },
+      });
+      if (!owned) throw new NotFoundException("Dog not found");
+      const access = await subscriptionAccess(tx, user.id);
+      if (
+        !access.isPlus &&
+        (await tx.dog.count({
+          where: { userId: user.id, archivedAt: null },
+        })) >= FREE_DOG_LIMIT
+      )
+        throw subscriptionRequired("dogLimit");
+      const [dog] = await tx.dog.updateManyAndReturn({
+        where: { id, userId: user.id, archivedAt: { not: null } },
+        data: { archivedAt: null },
+        omit: omitAvatar,
+      });
+      if (!dog) throw new ConflictException("Dog is not archived");
+      return dog;
     });
-    if (!dog) throw new ConflictException("Dog is not archived");
-    return dog;
   }
 
   @Post()
@@ -271,13 +317,20 @@ export class DogsController {
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<DogDetails> {
     const avatar = file ? await this.avatars.prepareAvatar(file.buffer) : {};
-    return this.prisma.dog.create({
-      data: {
-        ...dogFields(body),
-        userId: user.id,
-        ...avatar,
-      },
-      omit: omitAvatar,
+    return this.prisma.$transaction(async (tx) => {
+      await lockSubscription(tx, user.id);
+      const access = await subscriptionAccess(tx, user.id);
+      if (
+        !access.isPlus &&
+        (await tx.dog.count({
+          where: { userId: user.id, archivedAt: null },
+        })) >= FREE_DOG_LIMIT
+      )
+        throw subscriptionRequired("dogLimit");
+      return tx.dog.create({
+        data: { ...dogFields(body), userId: user.id, ...avatar },
+        omit: omitAvatar,
+      });
     });
   }
 
@@ -312,6 +365,7 @@ export class DogsController {
     @User() user: Identity,
     @Param("id") id: string,
   ): Promise<void> {
+    await assertDogAccess(this.prisma, user.id, id);
     const { count } = await this.prisma.dog.deleteMany({
       where: { id, userId: user.id },
     });

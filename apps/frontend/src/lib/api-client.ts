@@ -26,7 +26,9 @@ export const api = ky.create({
         try {
           const body = (await error.response.clone().json()) as {
             message?: string | string[];
+            code?: string;
           };
+          if (body.code) Object.assign(error, { subscriptionCode: body.code });
           const message = Array.isArray(body.message)
             ? body.message.join(", ")
             : body.message;

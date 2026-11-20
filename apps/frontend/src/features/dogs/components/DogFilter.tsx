@@ -12,7 +12,7 @@ import { DogAvatar } from "./DogAvatar";
 export function DogFilter() {
   const { t } = useTranslation();
   const { user } = useSession();
-  const { data: dogs, isPending, isError, refetch } = useDogs(user?.id);
+  const { data: allDogs, isPending, isError, refetch } = useDogs(user?.id);
   const [selectedDogIds, setSelectedDogIds] = useAtom(selectedDogIdsAtom);
 
   if (!user) return null;
@@ -38,6 +38,7 @@ export function DogFilter() {
     );
   }
 
+  const dogs = allDogs.filter((dog) => !dog.locked);
   if (dogs.length === 0) {
     return <p className="text-sm text-muted">{t(($) => $.dogs.filterEmpty)}</p>;
   }

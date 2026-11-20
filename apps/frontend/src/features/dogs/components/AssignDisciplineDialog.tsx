@@ -20,6 +20,10 @@ import {
   disciplinesQueryOptions,
 } from "@/features/disciplines/api/disciplinesQueryOptions";
 import { useTour } from "@/features/onboarding/hooks/useTour";
+import {
+  useSubscription,
+  usePlusOffer,
+} from "@/features/subscription/hooks/useSubscription";
 
 import {
   dogDisciplinePath,
@@ -48,6 +52,18 @@ export function AssignDisciplineDialog({
   const { t } = useTranslation();
   const { user } = useSession();
   const summary = useGoalsSummary();
+  const subscription = useSubscription();
+  const offer = usePlusOffer();
+  const selectGoals = (next: GoalSelection[]) => {
+    if (
+      subscription.data &&
+      !subscription.data.isPlus &&
+      subscription.data.goals + next.length > 2 &&
+      next.length > selection.length
+    ) {
+      offer({ reason: "goals", onSuccess: () => setSelection(next) });
+    } else setSelection(next);
+  };
   const [step, setStep] = useState(1);
   const tour = useTour();
   const [picked, setPicked] = useState("");
@@ -190,7 +206,7 @@ export function AssignDisciplineDialog({
                         variant="outline"
                         isDisabled={save.isPending}
                         onPress={() =>
-                          setSelection(
+                          selectGoals(
                             detail.data.goals.map((goal) => ({
                               goalId: goal.id,
                               exerciseIds: goal.exercises.map(
@@ -212,8 +228,8 @@ export function AssignDisciplineDialog({
                           (item) => item.goalId === goal.id,
                         )}
                         onChange={(item) =>
-                          setSelection((current) => [
-                            ...current.filter(
+                          selectGoals([
+                            ...selection.filter(
                               (item) => item.goalId !== goal.id,
                             ),
                             ...(item ? [item] : []),
