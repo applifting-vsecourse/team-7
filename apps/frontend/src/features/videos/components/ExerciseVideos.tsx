@@ -25,8 +25,12 @@ import { validateVideo, VIDEO_ACCEPT, VIDEO_LIMIT } from "../lib/videoUpload";
 type ExerciseVideosProps = {
   dogId: string;
   sessionId: string;
+  /** What the calendar tile currently shows (`ScheduledEvent.hasVideo`). */
+  tileHasVideo: boolean;
+  /** Training history: play only, no uploading or removing. */
+  readOnly?: boolean;
   isDisabled?: boolean;
-  onBusyChange: (busy: boolean) => void;
+  onBusyChange?: (busy: boolean) => void;
   onUpgrade?: () => void;
   onUpgraded?: () => void;
 };
@@ -57,16 +61,7 @@ function PaidExerciseVideos({
   readOnly = false,
   isDisabled = false,
   onBusyChange,
-}: {
-  dogId: string;
-  sessionId: string;
-  /** What the calendar tile currently shows (`ScheduledEvent.hasVideo`). */
-  tileHasVideo: boolean;
-  /** Training history: play only, no uploading or removing. */
-  readOnly?: boolean;
-  isDisabled?: boolean;
-  onBusyChange?: (busy: boolean) => void;
-}) {
+}: ExerciseVideosProps) {
   const { t } = useTranslation();
   const { user } = useSession();
   const client = useQueryClient();
