@@ -18,8 +18,8 @@ import type { z } from "zod";
 import { translateMessage } from "@/i18n/messages";
 
 import { type SessionUser } from "@/features/auth/api/authSessionQueryOptions";
-import { useUpdateProfile } from "@/features/auth/hooks/useUpdateProfile";
 import { usePendingEmailChange } from "@/features/settings/hooks/usePendingEmailChange";
+import { useUpdateProfile } from "@/features/settings/hooks/useUpdateProfile";
 import { profileSchema } from "@/features/settings/schemas/accountSettingsSchema";
 
 import { SettingsError } from "./SettingsError";
@@ -35,7 +35,7 @@ export function ProfileSettings({
   const { t, i18n } = useTranslation();
   const updateProfile = useUpdateProfile(user.id);
   const { query: pendingQuery, cancel } = usePendingEmailChange(user.id);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<"profile" | "email" | null>(null);
   const pending = pendingQuery.data?.pendingEmailChange;
   const pendingEmail = pending?.email;
   const form = useForm<z.infer<typeof profileSchema>>({
@@ -51,7 +51,7 @@ export function ProfileSettings({
       validationBehavior="aria"
       className="flex w-full flex-col items-start gap-6"
       onSubmit={form.handleSubmit(async (values) => {
-        setFailed(false);
+        setFailed(null);
         try {
           const callback = new URL("/settings", window.location.origin);
           callback.searchParams.set("lng", i18n.resolvedLanguage ?? "cs");
@@ -64,6 +64,11 @@ export function ProfileSettings({
                 : undefined,
             callbackURL: callback.href,
           });
+          if (result.emailChangeFailed) {
+            form.reset(values);
+            setFailed("email");
+            return;
+          }
           if (result.requestedEmail) {
             toast.success(
               t(($) => $.settings.emailSent, { email: result.requestedEmail }),
@@ -73,7 +78,7 @@ export function ProfileSettings({
           }
           form.reset({ name: values.name, email: user.email });
         } catch {
-          setFailed(true);
+          setFailed("profile");
         }
       })}
     >
@@ -169,7 +174,11 @@ export function ProfileSettings({
         </SettingsError>
       )}
       {failed && (
-        <SettingsError>{t(($) => $.settings.profileError)}</SettingsError>
+        <SettingsError>
+          {failed === "email"
+            ? t(($) => $.settings.profileEmailError)
+            : t(($) => $.settings.profileError)}
+        </SettingsError>
       )}
       <Button
         type="submit"

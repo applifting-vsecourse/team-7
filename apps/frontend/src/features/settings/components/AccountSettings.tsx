@@ -47,7 +47,11 @@ export function AccountSettings({ userId }: { userId: string }) {
       <ProfileSettings user={session.data.user} hasPassword={hasPassword} />
       {hasPassword && <PasswordSettings />}
       <SettingsContent userId={userId} />
-      <DeleteAccountSettings userId={userId} email={session.data.user.email} />
+      <DeleteAccountSettings
+        userId={userId}
+        email={session.data.user.email}
+        hasPassword={hasPassword}
+      />
     </div>
   );
 }

@@ -32,11 +32,15 @@ export const changePasswordSchema = z
     path: ["passwordConfirmation"],
   });
 
-export const deleteAccountSchema = z.object({
-  confirmation: z.literal("SMAZAT-UCET", {
-    error: keyFromSelector(messageSelectors.deleteConfirmation),
-  }),
-});
+export const deleteAccountSchema = (email: string, hasPassword: boolean) =>
+  z.object({
+    confirmation: z.literal(email, {
+      error: keyFromSelector(messageSelectors.deleteConfirmation),
+    }),
+    password: hasPassword
+      ? z.string().min(1, keyFromSelector(messageSelectors.passwordRequired))
+      : z.string().optional(),
+  });
 
 export const accountSummarySchema = z.object({
   dogs: z.number().int().nonnegative(),

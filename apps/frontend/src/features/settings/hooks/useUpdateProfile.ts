@@ -32,14 +32,19 @@ export function useUpdateProfile(userId: string) {
             : previous,
       );
       if (newEmail) {
-        const changed = await authClient.changeEmail({ newEmail, callbackURL });
-        if (changed.error) {
-          throw new Error(
-            keyFromSelector(messageSelectors.profileUpdateFailed),
-          );
+        try {
+          const changed = await authClient.changeEmail({
+            newEmail,
+            callbackURL,
+          });
+          if (changed.error) {
+            return { emailChangeFailed: true, requestedEmail: null };
+          }
+        } catch {
+          return { emailChangeFailed: true, requestedEmail: null };
         }
       }
-      return { requestedEmail: newEmail ?? null };
+      return { emailChangeFailed: false, requestedEmail: newEmail ?? null };
     },
     onSettled: async () => {
       await Promise.all([
