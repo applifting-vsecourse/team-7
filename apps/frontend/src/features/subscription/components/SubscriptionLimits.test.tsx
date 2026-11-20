@@ -97,7 +97,12 @@ function setup({
         <QueryClientProvider client={client}>
           <Trigger />
           {videos && (
-            <ExerciseVideos dogId="a" sessionId="s" onBusyChange={() => {}} />
+            <ExerciseVideos
+              dogId="a"
+              sessionId="s"
+              tileHasVideo={false}
+              onBusyChange={() => {}}
+            />
           )}
           <SubscriptionDialogs />
         </QueryClientProvider>
