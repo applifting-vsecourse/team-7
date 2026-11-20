@@ -278,6 +278,9 @@ describe("scheduled exercise actions", () => {
     durationMinutes: 10,
     createdAt: now,
     rating: null,
+    successfulAttempts: null,
+    totalAttempts: null,
+    elapsedSeconds: null,
     note: null,
     completedAt: null,
     deletedAt: null,
@@ -294,6 +297,34 @@ describe("scheduled exercise actions", () => {
     prisma.scheduledExercise.findFirst.mockResolvedValue(event);
     prisma.scheduledExercise.findMany.mockResolvedValue([]);
     prisma.scheduledExercise.updateMany.mockResolvedValue({ count: 1 });
+  });
+  it("saves measured attempts and replaces planned duration with measured minutes", async () => {
+    await service.complete("user-a", event.id, {
+      rating: 4,
+      successfulAttempts: 7,
+      totalAttempts: 10,
+      elapsedSeconds: 272,
+    });
+    expect(prisma.scheduledExercise.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          successfulAttempts: 7,
+          totalAttempts: 10,
+          elapsedSeconds: 272,
+          durationMinutes: 5,
+        }),
+      }),
+    );
+  });
+  it.each([
+    { successfulAttempts: 2, totalAttempts: 1, elapsedSeconds: 2 },
+    { successfulAttempts: 1 },
+    { successfulAttempts: null, totalAttempts: 1, elapsedSeconds: 2 },
+  ])("rejects inconsistent measured results: %s", async (measurement) => {
+    await expect(
+      service.complete("user-a", event.id, { rating: 4, ...measurement }),
+    ).rejects.toThrow();
+    expect(prisma.scheduledExercise.update).not.toHaveBeenCalled();
   });
   it("attributes early completion to today and overdue completion to its scheduled date", async () => {
     await service.complete("user-a", event.id, {
@@ -348,6 +379,9 @@ describe("scheduled exercise actions", () => {
       const { token } = await service.discard("user-a", event.id, action);
       const snapshot = {
         rating: 4,
+        successfulAttempts: null,
+        totalAttempts: null,
+        elapsedSeconds: null,
         note: "Keep me",
         completedAt: completedAt.toISOString(),
         deletedAt: null,

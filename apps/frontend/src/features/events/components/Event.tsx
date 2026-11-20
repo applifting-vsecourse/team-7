@@ -9,6 +9,7 @@ import {
   Comment,
   GraduationCap,
   Video,
+  Stopwatch,
 } from "@gravity-ui/icons";
 import { Button, Separator } from "@heroui/react";
 import { useDrag } from "react-aria";
@@ -259,6 +260,12 @@ export function Event({
           <p className="flex items-center gap-1 text-xs leading-5 text-muted">
             <CirclePause className="size-3 shrink-0" aria-hidden="true" />
             {t(($) => $.status.paused)}
+          </p>
+        )}
+        {isCompleted && scheduledEvent?.elapsedSeconds != null && (
+          <p className="flex items-center gap-1 text-xs leading-5 text-muted">
+            <Stopwatch className="size-3 shrink-0" aria-hidden="true" />
+            {t(($) => $.clicker.measured)}
           </p>
         )}
         {historyOnly ? (

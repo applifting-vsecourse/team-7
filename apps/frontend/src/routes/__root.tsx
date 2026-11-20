@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { Clicker } from "@/features/clicker/components/Clicker";
 import { OnboardingTour } from "@/features/onboarding/components/OnboardingTour";
 
 import "@/styles/global.css";
@@ -33,6 +34,7 @@ function RootComponent() {
       {/* Above the pages, so the tour (and its spotlight) carries on across
           the navigations it leads the user through. */}
       <OnboardingTour />
+      <Clicker />
       <Toast.Provider placement="top" />
     </I18nProvider>
   );

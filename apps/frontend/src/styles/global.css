@@ -6,10 +6,30 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
+/* The clicker is an immersive training view (Figma F-66). */
+@layer components {
+  .clicker-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-height: 100dvh;
+    padding: 0.75rem 1rem 1.5rem;
+  }
+  @media (min-width: 768px) {
+    .clicker-screen {
+      padding: 1rem 1.5rem 2.5rem;
+    }
+  }
+}
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-lily: "Lily Script One", cursive;
   --font-serif: Georgia, serif;
+  --text-clicker-timer: 3.75rem;
+  --text-clicker-timer--line-height: 1.1;
+  --text-clicker-action: 3rem;
+  --text-clicker-action--line-height: 1.1;
 
   /* Size Collection — the --container-* namespace generates w-*, min-w-* and max-w-* utilities */
   --container-sidebar: 264px;
