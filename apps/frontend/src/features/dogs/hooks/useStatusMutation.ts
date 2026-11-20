@@ -10,6 +10,8 @@ import { useTranslation } from "react-i18next";
 import { api } from "@/lib/api-client";
 
 import { useSession } from "@/features/auth/hooks/useSession";
+import { subscriptionError } from "@/features/subscription/hooks/subscriptionError";
+import { usePlusOffer } from "@/features/subscription/hooks/useSubscription";
 
 import { dogExerciseQueryOptions } from "../api/dogExerciseQueryOptions";
 import {
@@ -32,6 +34,7 @@ export function useStatusMutation(dogId: string) {
   const { t } = useTranslation();
   const { user } = useSession();
   const client = useQueryClient();
+  const offer = usePlusOffer();
 
   const mutation = useMutation({
     // Offline, the default ("online") would pause the request and leave the
@@ -99,6 +102,10 @@ export function useStatusMutation(dogId: string) {
       for (const [queryKey, data] of context?.previous ?? []) {
         client.setQueryData(queryKey, data);
       }
+      if (subscriptionError(_error) === "goalLimit") {
+        offer({ reason: "goals", onSuccess: () => mutation.mutate(change) });
+        return;
+      }
       // Stays until dismissed so the handler has time to retry.
       const id = toast.danger(
         t(($) => $.status.saveError),
@@ -154,6 +161,7 @@ export function useStatusMutation(dogId: string) {
     },
     onSettled: () =>
       Promise.all([
+        client.invalidateQueries({ queryKey: ["subscription", user?.id] }),
         invalidateDog(client, user?.id),
         invalidateDogListings(client, user?.id),
       ]),

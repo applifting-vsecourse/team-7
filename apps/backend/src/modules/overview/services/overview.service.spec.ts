@@ -220,3 +220,16 @@ describe("overview", () => {
     );
   });
 });
+
+// Existing feature scenarios run with Plus; Free boundaries are covered in subscription-access.spec.ts.
+vi.mock("@/shared/subscription/subscription-access", async (original) => ({
+  ...(await original<object>()),
+  subscriptionAccess: async () => ({
+    isPlus: true,
+    activeDogId: null,
+    needsDogChoice: false,
+  }),
+  assertDogAccess: async () => {},
+  assertPlus: async () => {},
+  lockSubscription: async () => {},
+}));

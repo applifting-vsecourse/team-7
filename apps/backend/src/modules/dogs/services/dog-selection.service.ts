@@ -14,6 +14,11 @@ import {
 import type { DogGoalSelection } from "@/modules/dogs/domain/dog-selection";
 import { findActiveDog, findOwnedDog } from "@/modules/dogs/domain/owned-dog";
 import { dogExerciseOrder } from "@/shared/domain/exercise-order";
+import {
+  lockSubscription,
+  subscriptionAccess,
+  subscriptionRequired,
+} from "@/shared/subscription/subscription-access";
 
 export type DogSelectionScope = {
   userId: string;
@@ -61,6 +66,7 @@ export class DogSelectionService {
       try {
         return await this.prisma.$transaction(
           async (tx) => {
+            if (!allowArchived) await lockSubscription(tx, scope.userId);
             await findDog(tx, scope.userId, scope.dogId);
             const discipline = await tx.discipline.findFirst({
               where: { id: scope.disciplineId, userId: scope.userId },
@@ -68,7 +74,46 @@ export class DogSelectionService {
             });
             if (!discipline)
               throw new NotFoundException("Discipline not found");
-            return action(tx);
+            if (allowArchived) return action(tx);
+            const access = await subscriptionAccess(tx, scope.userId);
+            const where = {
+              dog: {
+                userId: scope.userId,
+                archivedAt: null,
+                ...(!access.isPlus ? { id: access.activeDogId ?? "" } : {}),
+              },
+              status: { not: "completed" as const },
+            };
+            const before = access.isPlus
+              ? 0
+              : await tx.dogGoal.count({ where });
+            const beforeGoals = access.isPlus
+              ? []
+              : await tx.dogGoal.findMany({
+                  where,
+                  select: { dogId: true, goalId: true },
+                });
+            const result = await action(tx);
+            if (!access.isPlus) {
+              const after = await tx.dogGoal.count({ where });
+              if (after > 2) {
+                const afterGoals = await tx.dogGoal.findMany({
+                  where,
+                  select: { dogId: true, goalId: true },
+                });
+                const added = afterGoals.some(
+                  (goal) =>
+                    !beforeGoals.some(
+                      (previous) =>
+                        previous.dogId === goal.dogId &&
+                        previous.goalId === goal.goalId,
+                    ),
+                );
+                if (after > before || added)
+                  throw subscriptionRequired("goalLimit");
+              }
+            }
+            return result;
           },
           { isolationLevel: "Serializable" },
         );

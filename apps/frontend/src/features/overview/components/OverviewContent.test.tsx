@@ -5,6 +5,7 @@ import { createStore, Provider } from "jotai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { api } from "@/lib/api-client";
+import { createPlusSubscription } from "@/test/fixtures/subscription";
 
 import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
 import { eventsKey } from "@/features/events/api/eventsQueryOptions";
@@ -13,7 +14,14 @@ import { OverviewContent } from "./OverviewContent";
 
 const state = vi.hoisted(() => ({ get: vi.fn() }));
 vi.mock("@/lib/api-client", () => ({
-  api: { get: vi.fn(() => ({ json: state.get })) },
+  api: {
+    get: vi.fn((path: string) => ({
+      json:
+        path === "users/me/subscription"
+          ? async () => createPlusSubscription()
+          : state.get,
+    })),
+  },
 }));
 vi.mock("@/features/auth/hooks/useSession", () => ({
   useSession: () => ({ user: { id: "owner" } }),

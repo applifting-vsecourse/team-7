@@ -16,6 +16,7 @@ const weeklyStatsSchema = z.object({
   streakDays: z.number(),
   trainingMinutes: z.number(),
   satisfaction: z.number().nullable(),
+  trendsLocked: z.boolean().default(false),
   satisfactionHistory: z.array(
     z.object({ weekStart: z.string(), rating: z.number() }),
   ),

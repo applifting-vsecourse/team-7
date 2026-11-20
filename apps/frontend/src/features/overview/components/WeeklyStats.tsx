@@ -7,6 +7,8 @@ import { useTranslation } from "react-i18next";
 import { useCountUp } from "@/hooks/useCountUp";
 import { cn } from "@/lib/utils";
 
+import { LockedFeature } from "@/features/subscription/components/LockedFeature";
+
 export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
@@ -156,77 +158,116 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
           <Separator variant="secondary" />
         </div>
 
-        <figure aria-labelledby={trendId} className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <figcaption id={trendId} className="text-sm leading-6 font-medium">
-              {t(($) => $.weeklyStats.weeklySatisfaction)}
-            </figcaption>
-            {trend !== null && (
-              <Chip
-                className="animate-enter"
-                color={trend > 0 ? "success" : "default"}
-                size="sm"
-                variant="soft"
-              >
-                <Star width={12} aria-hidden="true" />
-                <Chip.Label>
-                  {new Intl.NumberFormat(locale, {
-                    minimumFractionDigits: 1,
-                    maximumFractionDigits: 1,
-                    signDisplay: "exceptZero",
-                  }).format(trend)}
-                </Chip.Label>
-              </Chip>
-            )}
+        {data.trendsLocked ? (
+          <div className="relative min-h-64 overflow-hidden">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none flex flex-col gap-6 opacity-35 blur-sm select-none"
+            >
+              {[false, true].map((success) => (
+                <div key={String(success)} className="flex flex-col gap-3">
+                  <p className="text-sm font-medium">
+                    {success
+                      ? t(($) => $.limits.weeklySuccess)
+                      : t(($) => $.weeklyStats.weeklySatisfaction)}
+                  </p>
+                  <div className="flex h-20 items-end justify-around gap-3">
+                    {[40, 45, 60, 55, 65, 75].map((height, i) => (
+                      <div
+                        key={i}
+                        className={`h-20 w-6 origin-bottom rounded-md ${success ? "bg-success-soft" : "bg-accent-soft"}`}
+                        style={{ transform: `scaleY(${height / 100})` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center px-3">
+              <LockedFeature
+                centered
+                reason="stats"
+                title={t(($) => $.limits.statsTitle)}
+                description={t(($) => $.limits.statsDescription)}
+              />
+            </div>
           </div>
-          {data.satisfactionHistory.length === 0 ? (
-            <p className="animate-enter text-xs text-muted">
-              {t(($) => $.weeklyStats.emptyHistory)}
-            </p>
-          ) : (
-            // Bars grow in one after another and ease to new values when the
-            // dog filter changes; --bar-height matches the bars' h-14.
-            <ol className="flex items-end gap-2 [--bar-height:3.5rem]">
-              {data.satisfactionHistory.map((week, index) => {
-                const isCurrent = week.weekStart === data.weekStart;
-                return (
-                  <li
-                    key={week.weekStart}
-                    className="flex min-w-0 flex-1 flex-col items-center gap-1 text-xs leading-5 text-muted"
-                    style={
-                      {
-                        "--ratio": Math.min(5, Math.max(0, week.rating)) / 5,
-                        "--i": index,
-                      } as CSSProperties
-                    }
-                  >
-                    <span
-                      className={cn(
-                        "bar-label",
-                        isCurrent && "font-medium text-accent",
-                      )}
+        ) : (
+          <figure aria-labelledby={trendId} className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <figcaption
+                id={trendId}
+                className="text-sm leading-6 font-medium"
+              >
+                {t(($) => $.weeklyStats.weeklySatisfaction)}
+              </figcaption>
+              {trend !== null && (
+                <Chip
+                  className="animate-enter"
+                  color={trend > 0 ? "success" : "default"}
+                  size="sm"
+                  variant="soft"
+                >
+                  <Star width={12} aria-hidden="true" />
+                  <Chip.Label>
+                    {new Intl.NumberFormat(locale, {
+                      minimumFractionDigits: 1,
+                      maximumFractionDigits: 1,
+                      signDisplay: "exceptZero",
+                    }).format(trend)}
+                  </Chip.Label>
+                </Chip>
+              )}
+            </div>
+            {data.satisfactionHistory.length === 0 ? (
+              <p className="animate-enter text-xs text-muted">
+                {t(($) => $.weeklyStats.emptyHistory)}
+              </p>
+            ) : (
+              // Bars grow in one after another and ease to new values when the
+              // dog filter changes; --bar-height matches the bars' h-14.
+              <ol className="flex items-end gap-2 [--bar-height:3.5rem]">
+                {data.satisfactionHistory.map((week, index) => {
+                  const isCurrent = week.weekStart === data.weekStart;
+                  return (
+                    <li
+                      key={week.weekStart}
+                      className="flex min-w-0 flex-1 flex-col items-center gap-1 text-xs leading-5 text-muted"
+                      style={
+                        {
+                          "--ratio": Math.min(5, Math.max(0, week.rating)) / 5,
+                          "--i": index,
+                        } as CSSProperties
+                      }
                     >
-                      {ratingFormat.format(week.rating)}
-                    </span>
-                    <div
-                      aria-hidden="true"
-                      className={cn(
-                        "h-14 w-6 max-w-full rounded-md bar-fill",
-                        isCurrent ? "bg-accent" : "bg-accent-soft",
-                      )}
-                    />
-                    <time
-                      dateTime={week.weekStart}
-                      className="whitespace-nowrap"
-                    >
-                      {formatDate(week.weekStart)}
-                    </time>
-                  </li>
-                );
-              })}
-            </ol>
-          )}
-        </figure>
+                      <span
+                        className={cn(
+                          "bar-label",
+                          isCurrent && "font-medium text-accent",
+                        )}
+                      >
+                        {ratingFormat.format(week.rating)}
+                      </span>
+                      <div
+                        aria-hidden="true"
+                        className={cn(
+                          "h-14 w-6 max-w-full rounded-md bar-fill",
+                          isCurrent ? "bg-accent" : "bg-accent-soft",
+                        )}
+                      />
+                      <time
+                        dateTime={week.weekStart}
+                        className="whitespace-nowrap"
+                      >
+                        {formatDate(week.weekStart)}
+                      </time>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </figure>
+        )}
       </div>
     </section>
   );

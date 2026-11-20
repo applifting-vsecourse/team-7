@@ -28,8 +28,11 @@ describe("mock subscriptions API", () => {
   let record: Record<string, unknown> | null;
   const prisma = {
     subscription: { findUnique: vi.fn(), upsert: vi.fn() },
-    dog: { count: vi.fn() },
+    dog: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn() },
     dogGoal: { count: vi.fn() },
+    $queryRaw: async () => [],
+    $transaction: async (run: (tx: unknown) => unknown): Promise<unknown> =>
+      run(prisma),
   };
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -50,6 +53,7 @@ describe("mock subscriptions API", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     record = null;
+    prisma.dog.findMany.mockResolvedValue([{ id: "dog" }]);
     vi.mocked(getSessionFromRequest).mockResolvedValue({
       user: { id: "owner", emailVerified: true, role: "user" },
     } as NonNullable<Awaited<ReturnType<typeof getSessionFromRequest>>>);
@@ -84,6 +88,7 @@ describe("mock subscriptions API", () => {
   it("persists the trial, mock payment, cancellation and resumption for the session owner", async () => {
     expect(await (await fetch(url)).json()).toMatchObject({
       status: "free",
+      freeDogLimit: 1,
       dogs: 1,
       goals: 2,
       trialUsed: false,
@@ -115,7 +120,7 @@ describe("mock subscriptions API", () => {
     expect(prisma.dogGoal.count).toHaveBeenCalledWith({
       where: {
         dog: { userId: "owner", archivedAt: null },
-        status: "in_progress",
+        status: { not: "completed" },
       },
     });
   });
@@ -157,6 +162,33 @@ describe("mock subscriptions API", () => {
       cancelled: true,
     };
     expect(await (await fetch(url)).json()).toMatchObject({ status: "free" });
+  });
+
+  it("persists the expiry dog choice and rejects changing it or choosing someone else's dog", async () => {
+    prisma.dog.findMany.mockResolvedValue([{ id: "a" }, { id: "b" }]);
+    prisma.dog.findFirst.mockImplementation(async ({ where }) =>
+      where.id === "a" ? { id: "a" } : null,
+    );
+    const choose = (dogId: string) =>
+      fetch(`${url}/active-dog`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dogId }),
+      });
+    expect(await (await fetch(url)).json()).toMatchObject({
+      needsDogChoice: true,
+    });
+    expect((await choose("someone-elses-dog")).status).toBe(404);
+    const chosen = await choose("a");
+    expect(chosen.status).toBe(201);
+    expect(await chosen.json()).toMatchObject({
+      needsDogChoice: false,
+      activeDogId: "a",
+    });
+    expect((await choose("b")).status).toBe(403);
+    await act("trial");
+    expect(record).toMatchObject({ activeDogId: null });
+    expect((await choose("a")).status).toBe(403);
   });
 
   it("rejects invalid actions, another user's ID, and unauthenticated requests", async () => {

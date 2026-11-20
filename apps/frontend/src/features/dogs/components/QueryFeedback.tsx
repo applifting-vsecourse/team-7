@@ -2,6 +2,9 @@ import { Button } from "@heroui/react";
 import { HTTPError } from "ky";
 import { useTranslation } from "react-i18next";
 
+import { LockedFeature } from "@/features/subscription/components/LockedFeature";
+import { subscriptionError } from "@/features/subscription/hooks/subscriptionError";
+
 export function QueryFeedback({
   query,
 }: {
@@ -21,6 +24,24 @@ export function QueryFeedback({
     );
   }
   if (!query.isError) return null;
+  if (
+    ["dogLocked", "dogChoiceRequired"].includes(
+      subscriptionError(query.error) ?? "",
+    )
+  ) {
+    return (
+      <div className="flex min-h-96 flex-1 items-center justify-center">
+        <div className="w-full max-w-md">
+          <LockedFeature
+            centered
+            reason="renew"
+            title={t(($) => $.limits.dogLockedTitle)}
+            description={t(($) => $.limits.dogLockedDescription)}
+          />
+        </div>
+      </div>
+    );
+  }
   const missing =
     query.error instanceof HTTPError && query.error.response.status === 404;
   return (

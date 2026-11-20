@@ -3,6 +3,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 
 export type Dog = {
+  locked?: boolean;
   id: string;
   name: string;
   breed?: string | null;

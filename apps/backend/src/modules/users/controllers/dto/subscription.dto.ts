@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsIn } from "class-validator";
+import { IsIn, IsOptional, IsString, MaxLength } from "class-validator";
 import {
   subscriptionActions,
   type SubscriptionAction,
@@ -12,6 +12,17 @@ export class SubscriptionActionDto {
   })
   @IsIn(subscriptionActions)
   action!: SubscriptionAction;
+  @ApiProperty({ required: false, enum: ["yearly", "monthly"] })
+  @IsOptional()
+  @IsIn(["yearly", "monthly"])
+  billingPeriod?: "yearly" | "monthly";
+}
+
+export class ActiveDogDto {
+  @ApiProperty()
+  @IsString()
+  @MaxLength(128)
+  dogId!: string;
 }
 
 export class SubscriptionDto {
@@ -30,5 +41,15 @@ export class SubscriptionDto {
   @ApiProperty()
   dogs!: number;
   @ApiProperty()
+  freeDogLimit!: number;
+  @ApiProperty()
   goals!: number;
+  @ApiProperty()
+  isPlus!: boolean;
+  @ApiProperty()
+  needsDogChoice!: boolean;
+  @ApiProperty({ nullable: true, type: String })
+  activeDogId!: string | null;
+  @ApiProperty({ enum: ["yearly", "monthly"] })
+  billingPeriod!: "yearly" | "monthly";
 }

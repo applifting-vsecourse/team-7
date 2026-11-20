@@ -13,6 +13,8 @@ import userEvent from "@testing-library/user-event";
 import { HTTPError } from "ky";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createPlusSubscription } from "@/test/fixtures/subscription";
+
 import type * as VideoUpload from "@/features/videos/lib/videoUpload";
 
 import { ScheduledExerciseDialog } from "./ScheduledExerciseDialog";
@@ -53,7 +55,10 @@ vi.mock("@/features/videos/lib/videoUpload", async (importOriginal) => ({
 }));
 vi.mock("@/lib/api-client", () => ({
   api: {
-    get: () => ({ json: async () => [] }),
+    get: (path: string) => ({
+      json: async () =>
+        path === "users/me/subscription" ? createPlusSubscription() : [],
+    }),
     patch: state.patch,
     post: (path: string, options?: unknown) =>
       path.endsWith("reopen")

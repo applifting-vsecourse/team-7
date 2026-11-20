@@ -10,6 +10,7 @@ import {
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { Config } from "@/shared/config/config.service";
 import { dayMs, localCalendar } from "@/shared/domain/local-calendar";
+import { subscriptionAccess } from "@/shared/subscription/subscription-access";
 
 const timeZone = "Europe/Prague";
 
@@ -64,6 +65,10 @@ export class DailyRemindersService {
       string,
       { email: string; dogs: Map<string, DailyReminderDog> }
     >();
+    const accessByUser = new Map<
+      string,
+      Awaited<ReturnType<typeof subscriptionAccess>>
+    >();
     for (const exercise of exercises) {
       if (
         calendar.dayOf(exercise.startsAt) !== calendar.today ||
@@ -71,6 +76,12 @@ export class DailyRemindersService {
       )
         continue;
       const { dog } = exercise;
+      let access = accessByUser.get(dog.user.id);
+      if (!access) {
+        access = await subscriptionAccess(this.prisma, dog.user.id);
+        accessByUser.set(dog.user.id, access);
+      }
+      if (!access.isPlus && access.activeDogId !== dog.id) continue;
       let recipient = recipients.get(dog.user.id);
       if (!recipient) {
         recipient = { email: dog.user.email, dogs: new Map() };

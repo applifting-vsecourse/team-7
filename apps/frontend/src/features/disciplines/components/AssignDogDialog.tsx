@@ -23,6 +23,10 @@ import type { Dog } from "@/features/dogs/api/dogsQueryOptions";
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 import { useDogs } from "@/features/dogs/hooks/useDogs";
 import { dogAge } from "@/features/dogs/lib/dogAge";
+import {
+  useSubscription,
+  usePlusOffer,
+} from "@/features/subscription/hooks/useSubscription";
 
 import {
   useAssignDiscipline,
@@ -89,9 +93,12 @@ function AssignSteps({
   const navigate = useNavigate();
   const { user } = useSession();
   const dogsQuery = useDogs(user?.id);
+  const subscription = useSubscription();
+  const offer = usePlusOffer();
   const assignedIds = new Set(discipline.dogs.map((dog) => dog.id));
   const availableDogs =
-    dogsQuery.data?.filter((dog) => !assignedIds.has(dog.id)) ?? [];
+    dogsQuery.data?.filter((dog) => !dog.locked && !assignedIds.has(dog.id)) ??
+    [];
   const [dogId, setDogId] = useState<string | null>(null);
   const [step, setStep] = useState<"dog" | "goals">("dog");
   // Preselect the first dog so the common case is one click.
@@ -99,6 +106,17 @@ function AssignSteps({
     availableDogs.find((dog) => dog.id === dogId) ?? availableDogs[0];
 
   const submit = (dog: Dog, goals: AssignedGoal[]) => {
+    if (
+      subscription.data &&
+      !subscription.data.isPlus &&
+      subscription.data.goals + goals.length > 2
+    ) {
+      offer({ reason: "goals", onSuccess: () => save(dog, goals) });
+      return;
+    }
+    save(dog, goals);
+  };
+  const save = (dog: Dog, goals: AssignedGoal[]) => {
     const exerciseCount = goals.reduce(
       (sum, goal) => sum + goal.exerciseIds.length,
       0,

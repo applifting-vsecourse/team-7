@@ -11,6 +11,7 @@ import { createStore, Provider } from "jotai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { mobileSidebarOpenAtom } from "@/app/atoms/mobileSidebarOpenAtom";
+import { createPlusSubscription } from "@/test/fixtures/subscription";
 
 import type { DogProfile } from "@/features/dogs/api/dogProfileQueryOptions";
 import { AssignDisciplineDialog } from "@/features/dogs/components/AssignDisciplineDialog";
@@ -66,13 +67,15 @@ vi.mock("@/lib/api-client", () => ({
   api: {
     get: (path: string) => ({
       json: async () =>
-        path === "onboarding"
-          ? state.onboarding
-          : path === "dogs"
-            ? [{ id: "dog-1", name: "Bára" }]
-            : path === "disciplines"
-              ? state.library
-              : recall,
+        path === "users/me/subscription"
+          ? createPlusSubscription()
+          : path === "onboarding"
+            ? state.onboarding
+            : path === "dogs"
+              ? [{ id: "dog-1", name: "Bára" }]
+              : path === "disciplines"
+                ? state.library
+                : recall,
     }),
     patch: (path: string, options: unknown) => {
       state.patch(path, options);

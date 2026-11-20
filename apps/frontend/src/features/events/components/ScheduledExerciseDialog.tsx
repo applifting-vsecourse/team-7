@@ -57,9 +57,11 @@ import { TrainingMeta } from "./TrainingMeta";
 export function ScheduledExerciseDialog({
   event,
   onClose,
+  onReopen,
 }: {
   event: ScheduledEvent;
   onClose: () => void;
+  onReopen?: () => void;
 }) {
   const { t } = useTranslation();
   const [today] = useState(() => new Date());
@@ -329,6 +331,8 @@ export function ScheduledExerciseDialog({
                       )}
                     />
                     <ExerciseVideos
+                      onUpgrade={onClose}
+                      onUpgraded={onReopen}
                       dogId={event.dogId}
                       key={event.id}
                       sessionId={event.id}

@@ -11,6 +11,11 @@ import { withEventFlags } from "@/shared/domain/event-videos";
 import { dogExerciseOrder } from "@/shared/domain/exercise-order";
 import { plannableDogExercise } from "@/shared/domain/exercise-status";
 import { localDayOf } from "@/shared/domain/local-calendar";
+import {
+  assertDogAccess,
+  subscriptionAccess,
+} from "@/shared/subscription/subscription-access";
+
 export type ScheduleInput = {
   dogId: string;
   timeZone: string;
@@ -26,6 +31,7 @@ export class EventsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async exercises(userId: string, dogId: string) {
+    await assertDogAccess(this.prisma, userId, dogId);
     const dog = await this.prisma.dog.findFirst({
       where: { id: dogId, userId, archivedAt: null },
       select: { id: true },
@@ -69,10 +75,16 @@ export class EventsService {
     const duration = to.getTime() - from.getTime();
     if (!Number.isFinite(duration) || duration <= 0 || duration > 62 * 86400000)
       throw new BadRequestException("Choose a range of at most 62 days");
+    return this.listVisible(userId, from, to);
+  }
+
+  private async listVisible(userId: string, from: Date, to: Date) {
+    const access = await subscriptionAccess(this.prisma, userId);
     return this.prisma.scheduledExercise
       .findMany({
         where: {
           dog: { userId, archivedAt: null },
+          ...(!access.isPlus ? { dogId: access.activeDogId ?? "" } : {}),
           deletedAt: null,
           OR: [
             { completedAt: { gte: from, lt: to } },
@@ -106,6 +118,7 @@ export class EventsService {
     for (const exercise of input.exercises)
       this.validateDate(exercise.startsAt, input.timeZone);
     return this.prisma.$transaction(async (tx) => {
+      await assertDogAccess(tx, userId, input.dogId);
       const dog = await tx.dog.findFirst({
         where: { id: input.dogId, userId, archivedAt: null },
         select: { id: true },
@@ -140,6 +153,7 @@ export class EventsService {
     },
   ) {
     this.validateDate(input.startsAt, input.timeZone);
+    await assertDogAccess(this.prisma, userId, input.dogId);
     const dog = await this.prisma.dog.findFirst({
       where: { id: input.dogId, userId, archivedAt: null },
       select: { id: true },
@@ -170,6 +184,7 @@ export class EventsService {
       },
     });
     if (!event) throw new NotFoundException("Scheduled exercise not found");
+    await assertDogAccess(tx, userId, event.dogId);
     return event;
   }
 
