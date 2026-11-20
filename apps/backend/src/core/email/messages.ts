@@ -1,5 +1,15 @@
 export const emailMessages = {
   cs: {
+    emailChangeNotice: {
+      subject: "Upozornění na změnu e-mailu",
+      preview: "Žádost o změnu e-mailu v TrainLoop",
+      heading: "Změna e-mailové adresy",
+      description: (email: string) =>
+        `Pro váš účet byla vyžádána změna e-mailu na ${email}.`,
+      button: "Zkontrolovat účet",
+      disclaimer:
+        "Pokud jste o změnu nežádali, přihlaste se původním e-mailem, zrušte změnu v nastavení a změňte heslo.",
+    },
     tagline: "Plánovač a tréninkový deník pro psa",
     unsubscribe: "Odhlásit e-mailové připomínky",
     dailyReminder: {
@@ -37,6 +47,16 @@ export const emailMessages = {
     },
   },
   en: {
+    emailChangeNotice: {
+      subject: "Email change requested",
+      preview: "A request to change your TrainLoop email",
+      heading: "Email address change",
+      description: (email: string) =>
+        `A change of your account email was requested to ${email}.`,
+      button: "Review account",
+      disclaimer:
+        "If you did not request this change, sign in with your original email, cancel the change in settings, and change your password.",
+    },
     tagline: "A planner and training journal for your dog",
     unsubscribe: "Unsubscribe from email reminders",
     dailyReminder: {
