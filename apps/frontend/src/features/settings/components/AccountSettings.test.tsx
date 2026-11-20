@@ -56,6 +56,46 @@ function setup() {
 }
 
 describe("account settings", () => {
+  it.each(["API", "NETWORK"])(
+    "reports a saved name when the email request fails: %s",
+    async (failure) => {
+      if (failure === "API") {
+        mocks.changeEmail.mockResolvedValueOnce({ error: { code: "UNKNOWN" } });
+      } else {
+        mocks.changeEmail.mockRejectedValueOnce(new Error("offline"));
+      }
+      const { user } = setup();
+      const name = await screen.findByRole("textbox", { name: "Name" });
+      await user.clear(name);
+      await user.type(name, "Jana Nová");
+      const email = screen.getByRole("textbox", { name: "Email" });
+      await user.clear(email);
+      await user.type(email, "new@example.com");
+      await user.click(screen.getByRole("button", { name: "Save changes" }));
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "Your name was saved, but we could not request the email change.",
+      );
+      expect(name).toHaveValue("Jana Nová");
+      expect(email).toHaveValue("new@example.com");
+    },
+  );
+
+  it("deletes a Google-only account without a password", async () => {
+    mocks.listAccounts.mockResolvedValue({ data: [{ providerId: "google" }] });
+    const { user } = setup();
+    await user.click(
+      await screen.findByRole("button", { name: "Delete account" }),
+    );
+    const dialog = within(await screen.findByRole("dialog"));
+    await dialog.findByText("Videos: 7");
+    expect(dialog.queryByLabelText("Current password")).not.toBeInTheDocument();
+    await user.type(dialog.getByRole("textbox"), "jana@example.com");
+    await user.click(dialog.getByRole("button", { name: "Delete account" }));
+    await waitFor(() =>
+      expect(mocks.deleteUser).toHaveBeenCalledExactlyOnceWith(undefined),
+    );
+  });
+
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.pending = null;
@@ -279,14 +319,17 @@ describe("account settings", () => {
     await user.click(dialog.getByRole("button", { name: "Delete account" }));
     expect(mocks.deleteUser).not.toHaveBeenCalled();
     expect(
-      await dialog.findByText("Type SMAZAT-UCET exactly to confirm."),
+      await dialog.findByText("Type your account email exactly to confirm."),
     ).toBeInTheDocument();
-    await user.type(dialog.getByRole("textbox"), "SMAZAT-UCET");
+    await user.type(dialog.getByRole("textbox"), "jana@example.com");
+    await user.type(dialog.getByLabelText("Current password"), "old password");
     await user.click(dialog.getByRole("button", { name: "Delete account" }));
     await waitFor(() =>
       expect(mocks.navigate).toHaveBeenCalledWith({ to: "/login" }),
     );
-    expect(mocks.deleteUser).toHaveBeenCalledTimes(1);
+    expect(mocks.deleteUser).toHaveBeenCalledExactlyOnceWith({
+      password: "old password",
+    });
     expect(clearCache).toHaveBeenCalledOnce();
   });
 
@@ -300,12 +343,13 @@ describe("account settings", () => {
     );
     const dialog = within(await screen.findByRole("dialog"));
     await dialog.findByText("Videos: 7");
-    await user.type(dialog.getByRole("textbox"), "SMAZAT-UCET");
+    await user.type(dialog.getByRole("textbox"), "jana@example.com");
+    await user.type(dialog.getByLabelText("Current password"), "old password");
     await user.click(dialog.getByRole("button", { name: "Delete account" }));
     expect(await dialog.findByRole("alert")).toHaveTextContent(
       "Could not delete your account.",
     );
-    expect(dialog.getByRole("textbox")).toHaveValue("SMAZAT-UCET");
+    expect(dialog.getByRole("textbox")).toHaveValue("jana@example.com");
     expect(mocks.navigate).not.toHaveBeenCalled();
   });
 });

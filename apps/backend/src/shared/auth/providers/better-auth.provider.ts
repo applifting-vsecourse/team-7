@@ -5,6 +5,7 @@ import { getOAuthState } from "better-auth/api";
 import { EmailService } from "@/core/email/interfaces/email-service.interface";
 import { emailLanguageFromUrl, emailMessages } from "@/core/email/messages";
 import { renderEmail } from "@/core/email/render";
+import { EmailChangeNotice } from "@/core/email/templates/email-change-notice";
 import { ResetPassword } from "@/core/email/templates/reset-password";
 import { VerifyEmail } from "@/core/email/templates/verify-email";
 import { PrismaService } from "@/core/prisma/prisma.service";
@@ -158,6 +159,17 @@ const createAuth = (
           link.searchParams.set("token", secret);
           link.searchParams.set("lng", language);
           verificationUrl = link.href;
+          // Notify the original owner before sending the confirmation link.
+          const notice = await renderEmail(EmailChangeNotice, {
+            email: user.email,
+            url: callback.href,
+            language,
+          });
+          await emailProvider.sendEmail(
+            storedUser.email,
+            emailMessages[language].emailChangeNotice.subject,
+            notice,
+          );
         }
         const html = await renderEmail(VerifyEmail, {
           url: verificationUrl,

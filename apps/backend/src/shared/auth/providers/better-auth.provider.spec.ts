@@ -6,6 +6,7 @@ import { mock, mockDeep } from "vitest-mock-extended";
 import { EmailService } from "@/core/email/interfaces/email-service.interface";
 import { emailMessages } from "@/core/email/messages";
 import { renderEmail } from "@/core/email/render";
+import { EmailChangeNotice } from "@/core/email/templates/email-change-notice";
 import { ResetPassword } from "@/core/email/templates/reset-password";
 import { VerifyEmail } from "@/core/email/templates/verify-email";
 import { PrismaService } from "@/core/prisma/prisma.service";
@@ -59,6 +60,17 @@ describe("auth email callbacks", () => {
       url: url.href,
       token: "private-token",
     });
+    expect(renderEmail).toHaveBeenCalledWith(EmailChangeNotice, {
+      email: "new@example.com",
+      url: "https://trainloop.example.com/settings?lng=cs",
+      language: "cs",
+    });
+    expect(email.sendEmail).toHaveBeenNthCalledWith(
+      1,
+      "old@example.com",
+      emailMessages.cs.emailChangeNotice.subject,
+      "<p>email</p>",
+    );
     expect(changes.issue).toHaveBeenCalledWith({
       userId: "owner",
       originalEmail: "old@example.com",
@@ -67,7 +79,11 @@ describe("auth email callbacks", () => {
       callbackUrl: "https://trainloop.example.com/settings?lng=cs",
       expiresAt: expect.any(Date),
     });
-    const props = vi.mocked(renderEmail).mock.calls[0]![1] as { url: string };
+    const props = vi
+      .mocked(renderEmail)
+      .mock.calls.find(([template]) => template === VerifyEmail)![1] as {
+      url: string;
+    };
     const link = new URL(props.url);
     expect(link.pathname).toBe("/api/users/email-change/confirm");
     expect(link.searchParams.get("token")).toBe("s".repeat(43));

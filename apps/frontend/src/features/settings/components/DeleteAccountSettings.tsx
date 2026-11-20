@@ -17,6 +17,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import type { z } from "zod";
 
+import { PasswordInput } from "@/components/PasswordInput";
 import { translateMessage } from "@/i18n/messages";
 
 import { authClient } from "@/features/auth/lib/auth-client";
@@ -29,9 +30,11 @@ import { SettingsSectionHeader } from "./SettingsSectionHeader";
 export function DeleteAccountSettings({
   userId,
   email,
+  hasPassword,
 }: {
   userId: string;
   email: string;
+  hasPassword: boolean;
 }) {
   const { t } = useTranslation();
   const [isOpen, setOpen] = useState(false);
@@ -57,6 +60,7 @@ export function DeleteAccountSettings({
         <DeleteAccountDialog
           userId={userId}
           email={email}
+          hasPassword={hasPassword}
           onClose={() => setOpen(false)}
         />
       )}
@@ -67,10 +71,12 @@ export function DeleteAccountSettings({
 function DeleteAccountDialog({
   userId,
   email,
+  hasPassword,
   onClose,
 }: {
   userId: string;
   email: string;
+  hasPassword: boolean;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
@@ -80,8 +86,9 @@ function DeleteAccountDialog({
   const [failed, setFailed] = useState(false);
   const [reauthenticate, setReauthenticate] = useState(false);
   const [isSigningOut, setSigningOut] = useState(false);
-  const form = useForm<z.infer<typeof deleteAccountSchema>>({
-    resolver: zodResolver(deleteAccountSchema),
+  const form = useForm<z.infer<ReturnType<typeof deleteAccountSchema>>>({
+    resolver: zodResolver(deleteAccountSchema(email, hasPassword)),
+    defaultValues: { password: "" },
   });
   const isPending = form.formState.isSubmitting || isSigningOut;
   return (
@@ -107,11 +114,13 @@ function DeleteAccountDialog({
           </Modal.Header>
           <Form
             validationBehavior="aria"
-            onSubmit={form.handleSubmit(async () => {
+            onSubmit={form.handleSubmit(async (values) => {
               if (!summary.data) return;
               setFailed(false);
               try {
-                const { error } = await authClient.deleteUser();
+                const { error } = await authClient.deleteUser(
+                  hasPassword ? { password: values.password } : undefined,
+                );
                 if (error) {
                   if (error.code === "SESSION_EXPIRED") setReauthenticate(true);
                   else setFailed(true);
@@ -180,12 +189,10 @@ function DeleteAccountDialog({
                     isDisabled={isPending}
                     isInvalid={fieldState.invalid}
                   >
-                    <Label>{t(($) => $.settings.deleteConfirmation)}</Label>
-                    <Input
-                      ref={ref}
-                      autoComplete="off"
-                      placeholder={t(($) => $.settings.deletePlaceholder)}
-                    />
+                    <Label>
+                      {t(($) => $.settings.deleteConfirmation, { email })}
+                    </Label>
+                    <Input ref={ref} autoComplete="off" placeholder={email} />
                     <FieldError>
                       {fieldState.error?.message
                         ? translateMessage(t, fieldState.error.message)
@@ -194,6 +201,31 @@ function DeleteAccountDialog({
                   </TextField>
                 )}
               />
+              {hasPassword && (
+                <Controller
+                  control={form.control}
+                  name="password"
+                  render={({ field: { ref, ...field }, fieldState }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      isDisabled={isPending}
+                      isInvalid={fieldState.invalid}
+                    >
+                      <Label>{t(($) => $.settings.currentPassword)}</Label>
+                      <PasswordInput
+                        ref={ref}
+                        autoComplete="current-password"
+                      />
+                      <FieldError>
+                        {fieldState.error?.message
+                          ? translateMessage(t, fieldState.error.message)
+                          : undefined}
+                      </FieldError>
+                    </TextField>
+                  )}
+                />
+              )}
               {failed && (
                 <SettingsError>
                   {t(($) => $.settings.deleteError)}
