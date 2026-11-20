@@ -19,7 +19,7 @@ import { clickerFeedback } from "../lib/feedback";
 
 export function Clicker() {
   const { t, i18n } = useTranslation();
-  const { user } = useSession();
+  const { user, isPending } = useSession();
   const [session, setSession] = useAtom(clickerAtom);
   const [now, setNow] = useState(Date.now);
   const [discard, setDiscard] = useState(false);
@@ -28,9 +28,9 @@ export function Clicker() {
   const full = session?.view === "full";
 
   useEffect(() => {
-    if (!session) return;
+    if (!session || isPending) return;
     if (!user || user.id !== session.userId) setSession(null);
-  }, [user, session, setSession]);
+  }, [user, isPending, session, setSession]);
 
   useEffect(() => {
     if (!running) return;

@@ -34,8 +34,8 @@ export function WeeklySuccessRate({ data }: { data: WeeklyStatsData }) {
     };
   });
   const measured = weeks.filter((week) => week.successRate !== null);
-  const latest = measured.at(-1)?.successRate;
-  const previous = measured.at(-2)?.successRate;
+  const latest = weeks.at(-1)?.successRate;
+  const previous = weeks.at(-2)?.successRate;
   const trend = latest != null && previous != null ? latest - previous : null;
 
   return (

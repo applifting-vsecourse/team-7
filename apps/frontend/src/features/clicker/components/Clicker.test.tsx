@@ -7,7 +7,7 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createStore, Provider } from "jotai";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   clickerAtom,
@@ -16,8 +16,12 @@ import {
 } from "../atoms/clickerAtom";
 import { Clicker } from "./Clicker";
 
+const auth = vi.hoisted(() => ({ isPending: false }));
 vi.mock("@/features/auth/hooks/useSession", () => ({
-  useSession: () => ({ user: { id: "user-a" } }),
+  useSession: () => ({
+    user: auth.isPending ? null : { id: "user-a" },
+    isPending: auth.isPending,
+  }),
 }));
 vi.mock("../lib/feedback", () => ({ clickerFeedback: vi.fn() }));
 vi.mock("@/features/events/components/ScheduledExerciseDialog", () => ({
@@ -50,6 +54,7 @@ const session = (): ClickerSession => ({
     note: null,
     completedAt: null,
     paused: false,
+    hasVideo: false,
     dog: { id: "dog-a", name: "Mája", avatarVersion: null },
     exercise: {
       id: "exercise-a",
@@ -75,12 +80,78 @@ function setup(initial = session()) {
   return store;
 }
 
+beforeEach(() => {
+  sessionStorage.clear();
+  auth.isPending = false;
+});
+
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
 });
 
 describe("clicker session", () => {
+  it("keeps a restored session while authentication is loading", () => {
+    const initial = session();
+    setup(initial);
+    cleanup();
+    auth.isPending = true;
+    const store = createStore();
+    const content = (
+      <Provider store={store}>
+        <Clicker />
+      </Provider>
+    );
+    const { rerender } = render(content);
+    expect(store.get(clickerAtom)).toEqual(initial);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    auth.isPending = false;
+    rerender(
+      <Provider store={store}>
+        <Clicker />
+      </Provider>,
+    );
+    expect(store.get(clickerAtom)).toEqual(initial);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it.each(["full", "minimized", "review"] as const)(
+    "restores a %s session after reloading without losing attempts, time or the result draft",
+    (view) => {
+      const initial = {
+        ...session(),
+        startedAt: Date.now() - 125000,
+        attempts: [true, false, true],
+        view,
+        ...(view === "review" && { elapsedSeconds: 42 }),
+        resultDraft: { rating: 4, note: "Keep me" },
+      };
+      setup(initial);
+      cleanup();
+
+      const restoredStore = createStore();
+      render(
+        <Provider store={restoredStore}>
+          <Clicker />
+        </Provider>,
+      );
+
+      const restored = restoredStore.get(clickerAtom)!;
+      expect(restored).toEqual(initial);
+      expect(measure(restored)).toMatchObject({
+        successfulAttempts: 2,
+        totalAttempts: 3,
+      });
+      if (view === "review") {
+        expect(measure(restored).elapsedSeconds).toBe(42);
+      } else {
+        expect(measure(restored).elapsedSeconds).toBeGreaterThanOrEqual(125);
+      }
+      expect(localStorage.getItem("clicker-session")).toBeNull();
+    },
+  );
+
   it("counts success and failure separately and undoes the last attempt", async () => {
     const user = userEvent.setup();
     const store = setup();
@@ -166,5 +237,6 @@ describe("clicker session", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Save result" }));
     expect(store.get(clickerAtom)).toBeNull();
+    expect(JSON.parse(sessionStorage.getItem("clicker-session")!)).toBeNull();
   });
 });

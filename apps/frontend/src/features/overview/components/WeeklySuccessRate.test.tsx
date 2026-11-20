@@ -26,7 +26,7 @@ describe("weekly success rate", () => {
     expect(screen.queryByText("0%")).not.toBeInTheDocument();
   });
 
-  it("keeps previous measurements when this week is empty and compares the latest measured weeks", () => {
+  it("keeps previous measurements without showing a trend when this week is empty", () => {
     render(
       <WeeklySuccessRate
         data={{
@@ -38,11 +38,24 @@ describe("weekly success rate", () => {
         }}
       />,
     );
-    expect(screen.getByText("+1%")).toBeInTheDocument();
+    expect(screen.queryByText("+1%")).not.toBeInTheDocument();
     const weeks = screen.getAllByRole("listitem");
     expect(within(weeks[2]!).getByText("71%")).toBeInTheDocument();
     expect(within(weeks[4]!).getByText("72%")).toBeInTheDocument();
     expect(within(weeks[5]!).getByText("–")).toBeInTheDocument();
+  });
+
+  it("does not compare this week with measurements before an empty previous week", () => {
+    render(
+      <WeeklySuccessRate
+        data={{
+          ...stats,
+          successRate: 0.72,
+          successHistory: [{ weekStart: "2026-10-12", successRate: 0.71 }],
+        }}
+      />,
+    );
+    expect(screen.queryByText("+1%")).not.toBeInTheDocument();
   });
 
   it("treats zero success as a measurement and shows decreases", () => {

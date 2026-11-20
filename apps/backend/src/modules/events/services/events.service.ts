@@ -231,14 +231,6 @@ export class EventsService {
                 successfulAttempts: result.successfulAttempts,
                 totalAttempts: result.totalAttempts,
                 elapsedSeconds: result.elapsedSeconds,
-                ...(result.elapsedSeconds != null
-                  ? {
-                      durationMinutes: Math.max(
-                        1,
-                        Math.ceil(result.elapsedSeconds / 60),
-                      ),
-                    }
-                  : {}),
               }
             : {}),
           // Early completion belongs to today; overdue completion keeps its date.

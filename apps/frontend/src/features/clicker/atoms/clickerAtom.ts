@@ -1,4 +1,4 @@
-import { atom } from "jotai";
+import { atomWithStorage, createJSONStorage } from "jotai/utils";
 
 import type { ScheduledEvent } from "@/features/events/api/eventsQueryOptions";
 
@@ -18,7 +18,12 @@ export type ClickerSession = {
   resultDraft?: { rating: number; note: string };
 };
 
-export const clickerAtom = atom<ClickerSession | null>(null);
+export const clickerAtom = atomWithStorage<ClickerSession | null>(
+  "clicker-session",
+  null,
+  createJSONStorage<ClickerSession | null>(() => sessionStorage),
+  { getOnInit: true },
+);
 
 export function measure(
   session: ClickerSession,
