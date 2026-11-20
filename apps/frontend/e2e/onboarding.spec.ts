@@ -6,6 +6,7 @@ import process from "node:process";
 
 import { expect, test } from "./fixtures";
 import { OnboardingPage } from "./pom/onboarding.page";
+import { ensurePlus } from "./subscription";
 
 // The tour state belongs to the user, so this spec uses its own seed account:
 // a running tour would dim every page of the specs that share the default one.
@@ -64,6 +65,7 @@ async function asTourUser(
   try {
     await login.signIn(credentials.email, credentials.password);
     await expect(page).toHaveURL(/\/(overview|dogs|calendar)/);
+    await ensurePlus(page.request);
     await finishTour(page);
     // The tour assigns a default discipline (added by a migration and to
     // every new account): an old database without it can't run this spec.
