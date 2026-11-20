@@ -6,6 +6,8 @@ export const betterAuthCoreConfig: BetterAuthOptions = {
     enabled: true,
   },
   user: {
+    changeEmail: { enabled: true },
+    deleteUser: { enabled: true },
     additionalFields: {
       role: {
         type: "string",

@@ -2,13 +2,15 @@ import { type FactoryProvider } from "@nestjs/common";
 import { betterAuth } from "better-auth";
 import { getOAuthState } from "better-auth/api";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { mock } from "vitest-mock-extended";
+import { mock, mockDeep } from "vitest-mock-extended";
 import { EmailService } from "@/core/email/interfaces/email-service.interface";
 import { emailMessages } from "@/core/email/messages";
 import { renderEmail } from "@/core/email/render";
+import { EmailChangeNotice } from "@/core/email/templates/email-change-notice";
 import { ResetPassword } from "@/core/email/templates/reset-password";
 import { VerifyEmail } from "@/core/email/templates/verify-email";
 import { PrismaService } from "@/core/prisma/prisma.service";
+import { EmailChangeService } from "@/shared/auth/services/email-change.service";
 import { Config } from "@/shared/config/config.service";
 import { betterAuthProvider } from "./better-auth.provider";
 
@@ -21,10 +23,83 @@ vi.mock("@/core/email/render", () => ({
 describe("auth email callbacks", () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it("emails a revocable link for email changes and keeps the BetterAuth token private", async () => {
+    const prisma = mockDeep<PrismaService>();
+    prisma.user.findUnique.mockResolvedValue({
+      email: "old@example.com",
+    } as never);
+    const changes = mock<EmailChangeService>();
+    changes.issue.mockResolvedValue("s".repeat(43));
+    const email = mock<EmailService>();
+    (betterAuthProvider as FactoryProvider).useFactory(
+      prisma,
+      mock<Config>({
+        frontendUrl: "https://trainloop.example.com",
+        backendUrl: "https://api.example.com",
+        additionalFrontendOrigins: "",
+      }),
+      email,
+      changes,
+    );
+    const options = vi.mocked(betterAuth).mock.calls[0]![0]!;
+    const url = new URL("https://api.example.com/api/auth/verify-email");
+    url.searchParams.set("token", "private-token");
+    url.searchParams.set(
+      "callbackURL",
+      "https://trainloop.example.com/settings?lng=cs",
+    );
+    await options.emailVerification!.sendVerificationEmail!({
+      user: {
+        id: "owner",
+        name: "Jana",
+        email: "new@example.com",
+        emailVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      url: url.href,
+      token: "private-token",
+    });
+    expect(renderEmail).toHaveBeenCalledWith(EmailChangeNotice, {
+      email: "new@example.com",
+      url: "https://trainloop.example.com/settings?lng=cs",
+      language: "cs",
+    });
+    expect(email.sendEmail).toHaveBeenNthCalledWith(
+      1,
+      "old@example.com",
+      emailMessages.cs.emailChangeNotice.subject,
+      "<p>email</p>",
+    );
+    expect(changes.issue).toHaveBeenCalledWith({
+      userId: "owner",
+      originalEmail: "old@example.com",
+      email: "new@example.com",
+      authToken: "private-token",
+      callbackUrl: "https://trainloop.example.com/settings?lng=cs",
+      expiresAt: expect.any(Date),
+    });
+    const props = vi
+      .mocked(renderEmail)
+      .mock.calls.find(([template]) => template === VerifyEmail)![1] as {
+      url: string;
+    };
+    const link = new URL(props.url);
+    expect(link.pathname).toBe("/api/users/email-change/confirm");
+    expect(link.searchParams.get("token")).toBe("s".repeat(43));
+    expect(link.searchParams.get("lng")).toBe("cs");
+    expect(props.url).not.toContain("private-token");
+    expect(email.sendEmail).toHaveBeenCalledWith(
+      "new@example.com",
+      expect.any(String),
+      "<p>email</p>",
+    );
+  });
+
   it("resolves a relative reset callback against FRONTEND_URL and keeps the language", async () => {
     const email = mock<EmailService>();
     (betterAuthProvider as FactoryProvider).useFactory(
-      mock<PrismaService>(),
+      mockDeep<PrismaService>(),
       mock<Config>({
         frontendUrl: "https://trainloop.example.com",
         additionalFrontendOrigins: "",
@@ -73,7 +148,7 @@ describe("auth email callbacks", () => {
     async (lng, language) => {
       const email = mock<EmailService>();
       (betterAuthProvider as FactoryProvider).useFactory(
-        mock<PrismaService>(),
+        mockDeep<PrismaService>(),
         mock<Config>({
           frontendUrl: "https://trainloop.example.com",
           additionalFrontendOrigins: "https://preview.example.com",

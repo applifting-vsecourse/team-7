@@ -4,6 +4,7 @@ import { MailModule } from "@/core/email/mail.module";
 import { PrismaModule } from "@/core/prisma/prisma.module";
 import { Config } from "@/shared/config/config.service";
 import { betterAuthProvider } from "./providers/better-auth.provider";
+import { EmailChangeService } from "./services/email-change.service";
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { betterAuthProvider } from "./providers/better-auth.provider";
     ConfigModule.forRootAsync(Config, { validate: true }),
     MailModule,
   ],
-  providers: [betterAuthProvider],
-  exports: [betterAuthProvider],
+  providers: [EmailChangeService, betterAuthProvider],
+  exports: [EmailChangeService, betterAuthProvider],
 })
 export class AuthModule {}

@@ -255,6 +255,7 @@ model User {
   accounts      Account[]
   dogs          Dog[]
   disciplines   Discipline[]
+  pendingEmailChange PendingEmailChange?
   role          UserRole     @default(user)
   // First-login tour (#72). Users who existed before it count as completed.
   onboardingStatus     OnboardingStatus @default(pending)
@@ -265,6 +266,22 @@ model User {
 
   @@unique([email])
   @@map("user")
+}
+
+// The public link contains a random secret; BetterAuth's verification token
+// stays on the server so cancelled links cannot bypass this record.
+model PendingEmailChange {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email        String
+  originalEmail String
+  tokenHash    String   @unique
+  authToken    String   @db.Text
+  callbackUrl  String   @db.Text
+  expiresAt    DateTime
+
+  @@map("pending_email_change")
 }
 
 // Keeps a discipline assigned even before its first goal is created.

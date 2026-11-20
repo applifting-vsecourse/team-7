@@ -5,10 +5,12 @@ import { getOAuthState } from "better-auth/api";
 import { EmailService } from "@/core/email/interfaces/email-service.interface";
 import { emailLanguageFromUrl, emailMessages } from "@/core/email/messages";
 import { renderEmail } from "@/core/email/render";
+import { EmailChangeNotice } from "@/core/email/templates/email-change-notice";
 import { ResetPassword } from "@/core/email/templates/reset-password";
 import { VerifyEmail } from "@/core/email/templates/verify-email";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { betterAuthCoreConfig } from "@/shared/auth/config/better-auth.config";
+import { EmailChangeService } from "@/shared/auth/services/email-change.service";
 import { Config } from "@/shared/config/config.service";
 import { frontendOrigins } from "@/shared/config/frontend-origins";
 import {
@@ -27,6 +29,7 @@ const createAuth = (
   prismaService: PrismaService,
   config: Config,
   emailProvider: EmailService,
+  emailChanges: EmailChangeService,
 ) =>
   betterAuth({
     // Apply shared defaults first so they do not replace the email callbacks.
@@ -66,6 +69,7 @@ const createAuth = (
       },
     },
     user: {
+      ...betterAuthCoreConfig.user,
       additionalFields: {
         role: {
           type: "string",
@@ -122,7 +126,55 @@ const createAuth = (
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
         const language = emailLanguageFromUrl(url);
-        const html = await renderEmail(VerifyEmail, { url, language });
+        const storedUser = await prismaService.user.findUnique({
+          where: { id: user.id },
+          select: { email: true },
+        });
+        let verificationUrl = url;
+        if (
+          storedUser &&
+          storedUser.email.toLowerCase() !== user.email.toLowerCase()
+        ) {
+          const nativeUrl = new URL(url);
+          const authToken = nativeUrl.searchParams.get("token");
+          if (!authToken) throw new Error("Missing email verification token");
+          const callback = new URL(
+            nativeUrl.searchParams.get("callbackURL") || "/settings",
+            config.frontendUrl,
+          );
+          if (!frontendOrigins(config).includes(callback.origin))
+            throw new Error("Invalid email change callback origin");
+          const secret = await emailChanges.issue({
+            userId: user.id,
+            originalEmail: storedUser.email,
+            email: user.email,
+            authToken,
+            callbackUrl: callback.href,
+            expiresAt: new Date(Date.now() + 60 * 60_000),
+          });
+          const link = new URL(
+            "/api/users/email-change/confirm",
+            config.backendUrl,
+          );
+          link.searchParams.set("token", secret);
+          link.searchParams.set("lng", language);
+          verificationUrl = link.href;
+          // Notify the original owner before sending the confirmation link.
+          const notice = await renderEmail(EmailChangeNotice, {
+            email: user.email,
+            url: callback.href,
+            language,
+          });
+          await emailProvider.sendEmail(
+            storedUser.email,
+            emailMessages[language].emailChangeNotice.subject,
+            notice,
+          );
+        }
+        const html = await renderEmail(VerifyEmail, {
+          url: verificationUrl,
+          language,
+        });
         await emailProvider.sendEmail(
           user.email,
           emailMessages[language].verifyEmail.subject,
@@ -142,8 +194,9 @@ export const betterAuthProvider: Provider = {
     prismaService: PrismaService,
     config: Config,
     emailProvider: EmailService,
-  ) => createAuth(prismaService, config, emailProvider),
-  inject: [PrismaService, Config, "EmailService"],
+    emailChanges: EmailChangeService,
+  ) => createAuth(prismaService, config, emailProvider, emailChanges),
+  inject: [PrismaService, Config, "EmailService", EmailChangeService],
 };
 
 export const InjectBetterAuth = Inject("BetterAuth");
