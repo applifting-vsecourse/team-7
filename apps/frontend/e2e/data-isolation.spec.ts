@@ -2,6 +2,7 @@ import { type APIRequestContext, request } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 
 import { credentials, expect, test } from "./fixtures";
+import { ensurePlus } from "./subscription";
 
 // API-only: the backend runs on the same port locally and in CI.
 const api = "http://localhost:4050/api/";
@@ -29,6 +30,8 @@ async function create(context: APIRequestContext, path: string, data: object) {
 test("another user can neither see nor change my dogs, disciplines and trainings", async () => {
   const owner = await signIn(credentials);
   const intruder = await signIn(other);
+  await ensurePlus(owner);
+  await ensurePlus(intruder);
   const timeZone = "Europe/Prague";
   const startsAt = new Date(Date.now() + 3 * 86_400_000).toISOString();
   const suffix = randomUUID();
