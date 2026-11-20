@@ -298,7 +298,7 @@ describe("scheduled exercise actions", () => {
     prisma.scheduledExercise.findMany.mockResolvedValue([]);
     prisma.scheduledExercise.updateMany.mockResolvedValue({ count: 1 });
   });
-  it("saves measured attempts and replaces planned duration with measured minutes", async () => {
+  it("saves measured attempts without changing the planned duration", async () => {
     await service.complete("user-a", event.id, {
       rating: 4,
       successfulAttempts: 7,
@@ -311,10 +311,12 @@ describe("scheduled exercise actions", () => {
           successfulAttempts: 7,
           totalAttempts: 10,
           elapsedSeconds: 272,
-          durationMinutes: 5,
         }),
       }),
     );
+    expect(
+      prisma.scheduledExercise.update.mock.calls[0]![0].data,
+    ).not.toHaveProperty("durationMinutes");
   });
   it.each([
     { successfulAttempts: 2, totalAttempts: 1, elapsedSeconds: 2 },
