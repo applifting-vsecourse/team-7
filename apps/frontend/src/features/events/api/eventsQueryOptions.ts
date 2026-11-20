@@ -27,6 +27,9 @@ export const eventSchema = z.object({
   startsAt: z.string(),
   durationMinutes: z.number(),
   rating: z.number().nullable(),
+  successfulAttempts: z.number().nullable().optional(),
+  totalAttempts: z.number().nullable().optional(),
+  elapsedSeconds: z.number().nullable().optional(),
   note: z.string().nullable(),
   completedAt: z.string().nullable(),
   // The exercise or its goal is paused for this dog.

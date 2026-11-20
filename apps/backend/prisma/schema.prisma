@@ -300,6 +300,9 @@ model ScheduledExercise {
   startsAt DateTime
   durationMinutes Int
   rating Int?
+  successfulAttempts Int?
+  totalAttempts Int?
+  elapsedSeconds Int?
   note String? @db.Text
   completedAt DateTime?
   deletedAt DateTime?

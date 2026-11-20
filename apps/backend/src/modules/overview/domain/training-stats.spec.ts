@@ -14,6 +14,26 @@ const record = (
 });
 
 describe("training stats", () => {
+  it("weights measured success by attempts and excludes unmeasured or empty sessions", () => {
+    const calendar = localCalendar(new Date("2026-10-28T12:00:00Z"), "UTC");
+    const completed = record("2026-10-27T09:00:00Z", "2026-10-27T09:00:00Z", 5);
+    const stats = trainingStats(
+      [
+        { ...completed, successfulAttempts: 1, totalAttempts: 1 },
+        { ...completed, successfulAttempts: 1, totalAttempts: 9 },
+        { ...completed, successfulAttempts: 0, totalAttempts: 0 },
+        completed,
+      ],
+      calendar,
+    );
+    expect(stats.successRate).toBe(0.2);
+    expect(stats.successHistory).toHaveLength(6);
+    expect(stats.successHistory.at(-1)).toEqual({
+      weekStart: "2026-10-26",
+      successRate: 0.2,
+    });
+    expect(stats.successHistory.at(-2)?.successRate).toBeNull();
+  });
   it("returns empty stats without inventing ratings", () => {
     expect(
       trainingStats([], localCalendar(new Date("2026-10-25T23:30:00Z"), "UTC")),
@@ -25,6 +45,8 @@ describe("training stats", () => {
       streakDays: 0,
       trainingMinutes: 0,
       satisfaction: null,
+      successRate: null,
+      successHistory: expect.any(Array),
       satisfactionHistory: [],
     });
   });
@@ -75,6 +97,8 @@ describe("training stats", () => {
       trainingMinutes: 20,
       streakDays: 2,
       satisfaction: 5,
+      successRate: null,
+      successHistory: expect.any(Array),
       satisfactionHistory: [
         { weekStart: "2026-10-19", rating: 3 },
         { weekStart: "2026-10-26", rating: 5 },

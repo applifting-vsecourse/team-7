@@ -89,6 +89,8 @@ export class OverviewService {
         completedAt: true,
         durationMinutes: true,
         rating: true,
+        successfulAttempts: true,
+        totalAttempts: true,
         exercise: { select: { goal: { select: { disciplineId: true } } } },
       },
     });

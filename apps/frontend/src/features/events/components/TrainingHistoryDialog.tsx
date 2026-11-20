@@ -1,10 +1,12 @@
 import type { ScheduledEvent } from "../api/eventsQueryOptions";
-import { CircleCheck } from "@gravity-ui/icons";
+import { CircleCheck, Stopwatch } from "@gravity-ui/icons";
 import { Chip, Modal } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
 import { transitionName } from "@/lib/utils";
 
+import { formatTimer } from "@/features/clicker/atoms/clickerAtom";
+import { DogStat } from "@/features/dogs/components/DogStat";
 import { ExerciseVideos } from "@/features/videos/components/ExerciseVideos";
 
 import { RatingStars } from "./RatingStars";
@@ -50,6 +52,26 @@ export function TrainingHistoryDialog({
           </Modal.Header>
           <Modal.Body className="flex flex-col gap-5">
             <TrainingMeta event={event} />
+            {event.elapsedSeconds != null &&
+              event.successfulAttempts != null &&
+              event.totalAttempts != null && (
+                <div className="flex flex-wrap gap-8">
+                  <DogStat
+                    icon={CircleCheck}
+                    tone="success"
+                    value={t(($) => $.clicker.counts, {
+                      successful: event.successfulAttempts,
+                      total: event.totalAttempts,
+                    })}
+                    label={t(($) => $.clicker.successfulAttempts)}
+                  />
+                  <DogStat
+                    icon={Stopwatch}
+                    value={formatTimer(event.elapsedSeconds)}
+                    label={t(($) => $.clicker.time)}
+                  />
+                </div>
+              )}
             {event.rating !== null && (
               <div className="flex flex-col gap-2">
                 <p className="text-sm">{t(($) => $.training.rating)}</p>
