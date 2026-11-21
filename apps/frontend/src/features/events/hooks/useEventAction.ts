@@ -12,7 +12,14 @@ import { eventsKey } from "../api/eventsQueryOptions";
 
 export type EventAction =
   // A lesson with a trainer is completed without a rating or note.
-  | { type: "result"; rating?: number; note?: string }
+  | {
+      type: "result";
+      rating?: number;
+      note?: string;
+      successfulAttempts?: number | null;
+      totalAttempts?: number | null;
+      elapsedSeconds?: number | null;
+    }
   | {
       type: "schedule";
       startsAt: string;

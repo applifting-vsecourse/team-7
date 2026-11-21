@@ -18,6 +18,8 @@ import {
   Star,
   StarFill,
   TrashBin,
+  Play,
+  Stopwatch,
 } from "@gravity-ui/icons";
 import {
   Button,
@@ -32,16 +34,25 @@ import {
   RadioGroup,
   TextArea,
   TextField,
+  toast,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "@tanstack/react-router";
 import { format, isBefore, parseISO, startOfDay } from "date-fns";
+import { useAtom } from "jotai";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { translateMessage } from "@/i18n/messages";
 import { cn, transitionName } from "@/lib/utils";
 
+import { useSession } from "@/features/auth/hooks/useSession";
+import {
+  clickerAtom,
+  formatTimer,
+  type Measurement,
+} from "@/features/clicker/atoms/clickerAtom";
+import { DogStat } from "@/features/dogs/components/DogStat";
 import { ExerciseVideos } from "@/features/videos/components/ExerciseVideos";
 
 import { useEventAction } from "../hooks/useEventAction";
@@ -57,14 +68,42 @@ import { TrainingMeta } from "./TrainingMeta";
 export function ScheduledExerciseDialog({
   event,
   onClose,
+  initialMeasurement,
+  onSaved,
+  onStartClicker,
 }: {
   event: ScheduledEvent;
   onClose: () => void;
+  initialMeasurement?: Measurement;
+  onSaved?: () => void;
+  onStartClicker?: () => void;
 }) {
   const { t } = useTranslation();
+  const { user } = useSession();
+  const [activeClicker, setActiveClicker] = useAtom(clickerAtom);
+  const [measurement, setMeasurement] = useState<Measurement | null>(
+    () =>
+      initialMeasurement ??
+      (event.elapsedSeconds != null &&
+      event.successfulAttempts != null &&
+      event.totalAttempts != null
+        ? {
+            successfulAttempts: event.successfulAttempts,
+            totalAttempts: event.totalAttempts,
+            elapsedSeconds: event.elapsedSeconds,
+          }
+        : null),
+  );
+  const clickerBlocked = Boolean(
+    activeClicker &&
+    !(activeClicker.event.id === event.id && activeClicker.view === "review"),
+  );
   const [today] = useState(() => new Date());
   const [mode, setMode] = useState<"result" | "schedule">("result");
-  const action = useEventAction(event.id, onClose);
+  const action = useEventAction(event.id, () => {
+    onSaved?.();
+    onClose();
+  });
   const lesson = event.kind === "lesson";
   const [videosBusy, setVideosBusy] = useState(false);
   const busy = action.isPending || videosBusy;
@@ -72,7 +111,12 @@ export function ScheduledExerciseDialog({
   const overdue = isBefore(parseISO(event.startsAt), startOfDay(today));
   const result = useForm<EventResultValues>({
     resolver: zodResolver(eventResultSchema),
-    defaultValues: { rating: event.rating ?? 0, note: event.note ?? "" },
+    defaultValues:
+      initialMeasurement &&
+      activeClicker?.event.id === event.id &&
+      activeClicker.resultDraft
+        ? activeClicker.resultDraft
+        : { rating: event.rating ?? 0, note: event.note ?? "" },
   });
   const schedule = useForm<ScheduleValues>({
     resolver: zodResolver(futureScheduleSchema),
@@ -89,6 +133,60 @@ export function ScheduledExerciseDialog({
     },
   });
   const rating = useWatch({ control: result.control, name: "rating" });
+  const closeDialog = () => {
+    const resultDraft = result.getValues();
+    setActiveClicker((current) =>
+      current?.event.id === event.id && current.view === "review"
+        ? { ...current, resultDraft }
+        : current,
+    );
+    onClose();
+  };
+  const startClicker = () => {
+    if (!user || clickerBlocked || !event.exercise) return;
+    const previous = measurement;
+    setActiveClicker({
+      event,
+      userId: user.id,
+      startedAt: Date.now(),
+      attempts: [],
+      view: "full",
+      resultDraft: result.getValues(),
+    });
+    if (previous) {
+      toast.success(
+        t(($) => $.clicker.resultDeleted),
+        {
+          actionProps: {
+            children: t(($) => $.training.undo),
+            variant: "ghost",
+            onPress: () =>
+              setActiveClicker((current) =>
+                current && current.event.id !== event.id
+                  ? current
+                  : {
+                      event,
+                      userId: user.id,
+                      startedAt: Date.now() - previous.elapsedSeconds * 1000,
+                      attempts: [
+                        ...Array<boolean>(previous.successfulAttempts).fill(
+                          true,
+                        ),
+                        ...Array<boolean>(
+                          previous.totalAttempts - previous.successfulAttempts,
+                        ).fill(false),
+                      ],
+                      elapsedSeconds: previous.elapsedSeconds,
+                      view: "review",
+                      resultDraft: result.getValues(),
+                    },
+              ),
+          },
+        },
+      );
+    }
+    (onStartClicker ?? onClose)();
+  };
   // Stars that change animate one after another, counted from the previous rating.
   const [shownRating, setShownRating] = useState(rating);
   const [fillFrom, setFillFrom] = useState(0);
@@ -102,7 +200,7 @@ export function ScheduledExerciseDialog({
       isDismissable={!busy}
       isKeyboardDismissDisabled={busy}
       onOpenChange={(open) => {
-        if (!open && !busy) onClose();
+        if (!open && !busy) closeDialog();
       }}
     >
       <Modal.Container size="lg" scroll="outside" className="grow-from-trigger">
@@ -237,13 +335,112 @@ export function ScheduledExerciseDialog({
                 if (!completed) action.mutate({ type: "result" });
               } else if (mode === "result") {
                 void result.handleSubmit((values) =>
-                  action.mutate({ type: "result", ...values }),
+                  action.mutate({
+                    type: "result",
+                    ...values,
+                    ...(measurement ??
+                      (event.elapsedSeconds != null || initialMeasurement
+                        ? {
+                            successfulAttempts: null,
+                            totalAttempts: null,
+                            elapsedSeconds: null,
+                          }
+                        : {})),
+                  }),
                 )(formEvent);
               } else formEvent.preventDefault();
             }}
           >
             <Modal.Body className="flex flex-col gap-5">
               <TrainingMeta event={event} />
+              {mode === "result" && event.exercise && (
+                <section
+                  className="flex flex-col gap-2"
+                  aria-label={t(($) => $.clicker.result)}
+                >
+                  {measurement ? (
+                    <>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h3 className="font-medium tracking-tight">
+                          {t(($) => $.clicker.result)}
+                        </h3>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          isDisabled={busy || clickerBlocked}
+                          onPress={startClicker}
+                        >
+                          <Play className="size-4" aria-hidden="true" />
+                          {t(($) => $.clicker.restart)}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          isIconOnly
+                          isDisabled={busy}
+                          aria-label={t(($) => $.clicker.deleteResult)}
+                          onPress={() => {
+                            const previous = measurement;
+                            setMeasurement(null);
+                            toast.success(
+                              t(($) => $.clicker.resultDeleted),
+                              {
+                                actionProps: {
+                                  children: t(($) => $.training.undo),
+                                  variant: "ghost",
+                                  onPress: () => setMeasurement(previous),
+                                },
+                              },
+                            );
+                          }}
+                        >
+                          <TrashBin className="size-4" aria-hidden="true" />
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-8">
+                        <DogStat
+                          icon={CircleCheck}
+                          tone="success"
+                          value={t(($) => $.clicker.counts, {
+                            successful: measurement.successfulAttempts,
+                            total: measurement.totalAttempts,
+                          })}
+                          label={t(($) => $.clicker.successfulAttempts)}
+                        />
+                        <DogStat
+                          icon={Stopwatch}
+                          value={formatTimer(measurement.elapsedSeconds)}
+                          label={t(($) => $.clicker.time)}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="w-full self-start sm:w-auto"
+                        isDisabled={busy || clickerBlocked}
+                        onPress={startClicker}
+                      >
+                        <Play className="size-4" aria-hidden="true" />
+                        {t(($) => $.clicker.start)}
+                      </Button>
+                      <p className="text-sm text-muted">
+                        {clickerBlocked
+                          ? t(($) => $.clicker.alreadyRunning, {
+                              exercise: activeClicker?.event.exercise?.name,
+                              dog: activeClicker?.event.dog.name,
+                            })
+                          : t(($) => $.clicker.startDescription)}
+                      </p>
+                    </>
+                  )}
+                </section>
+              )}
               {mode === "schedule" ? (
                 <ScheduleFields
                   control={schedule.control}
@@ -379,7 +576,7 @@ export function ScheduledExerciseDialog({
                   type="button"
                   variant="secondary"
                   className="flex-auto sm:flex-none"
-                  onPress={onClose}
+                  onPress={closeDialog}
                 >
                   {t(($) => $.training.close)}
                 </Button>
@@ -391,7 +588,7 @@ export function ScheduledExerciseDialog({
                     className="flex-auto sm:flex-none"
                     isDisabled={busy}
                     onPress={() => {
-                      if (mode === "result") onClose();
+                      if (mode === "result") closeDialog();
                       else {
                         action.reset();
                         setMode("result");

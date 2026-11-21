@@ -1,11 +1,13 @@
 import { type CSSProperties, useId } from "react";
 import type { WeeklyStatsData } from "../api/overviewQueryOptions";
-import { ChartLine, Clock, Flame, Star } from "@gravity-ui/icons";
+import { ChartLine, Clock, Flame, Star, Target } from "@gravity-ui/icons";
 import { Chip, ProgressCircle, Separator } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
 import { useCountUp } from "@/hooks/useCountUp";
 import { cn } from "@/lib/utils";
+
+import { WeeklySuccessRate } from "./WeeklySuccessRate";
 
 export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
   const { t, i18n } = useTranslation();
@@ -16,6 +18,7 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
   const streakDays = Math.round(useCountUp(data.streakDays));
   const trainingMinutes = Math.round(useCountUp(data.trainingMinutes));
   const satisfaction = useCountUp(data.satisfaction ?? 0);
+  const successRate = useCountUp(data.successRate ?? 0);
   const dateFormat = new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "numeric",
@@ -87,6 +90,18 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
               value: ratingFormat.format(satisfaction),
             }),
     },
+    {
+      label: t(($) => $.weeklyStats.successRate),
+      icon: Target,
+      color: "text-warning",
+      value:
+        data.successRate === null
+          ? t(($) => $.weeklyStats.noMeasurement)
+          : new Intl.NumberFormat(locale, {
+              style: "percent",
+              maximumFractionDigits: 0,
+            }).format(successRate),
+    },
   ];
 
   return (
@@ -137,7 +152,7 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
           <Separator variant="secondary" />
         </div>
 
-        <dl className="flex flex-wrap gap-x-8 gap-y-4">
+        <dl className="grid grid-cols-2 gap-x-8 gap-y-4">
           {metrics.map(({ label, icon: Icon, color, value }) => (
             <div key={label} className="flex flex-col gap-1">
               <dt className="flex items-center gap-1 text-xs leading-5 font-medium text-muted">
@@ -227,6 +242,10 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
             </ol>
           )}
         </figure>
+        <div className="flex h-3 items-center">
+          <Separator variant="secondary" />
+        </div>
+        <WeeklySuccessRate data={data} />
       </div>
     </section>
   );

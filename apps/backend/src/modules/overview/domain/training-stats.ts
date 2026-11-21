@@ -9,6 +9,8 @@ export type TrainingRecord = {
   completedAt: Date | null;
   durationMinutes: number;
   rating: number | null;
+  successfulAttempts?: number | null;
+  totalAttempts?: number | null;
 };
 
 const average = (ratings: number[]) =>
@@ -51,6 +53,32 @@ export function trainingStats(
     (week): week is { weekStart: string; rating: number } =>
       week.rating !== null,
   );
+  const successRate = (entries: TrainingRecord[]) => {
+    const measured = entries.filter(
+      (entry) =>
+        entry.successfulAttempts != null &&
+        entry.totalAttempts != null &&
+        entry.totalAttempts > 0,
+    );
+    const attempts = measured.reduce(
+      (sum, entry) => sum + entry.totalAttempts!,
+      0,
+    );
+    return attempts
+      ? measured.reduce((sum, entry) => sum + entry.successfulAttempts!, 0) /
+          attempts
+      : null;
+  };
+  const successHistory = Array.from({ length: 6 }, (_, index) => {
+    const start = shiftDay(weekStart, (index - 5) * 7);
+    const end = shiftDay(start, 7);
+    return {
+      weekStart: start,
+      successRate: successRate(
+        completed.filter(({ day }) => day >= start && day < end),
+      ),
+    };
+  });
   return {
     weekStart,
     weekEnd,
@@ -71,5 +99,7 @@ export function trainingStats(
       thisWeek.flatMap(({ rating }) => (rating === null ? [] : [rating])),
     ),
     satisfactionHistory,
+    successRate: successRate(thisWeek),
+    successHistory,
   };
 }

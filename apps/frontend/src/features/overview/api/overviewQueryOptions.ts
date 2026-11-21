@@ -16,6 +16,16 @@ const weeklyStatsSchema = z.object({
   streakDays: z.number(),
   trainingMinutes: z.number(),
   satisfaction: z.number().nullable(),
+  // Older APIs do not yet expose measured attempts. Missing data is not 0%.
+  successRate: z.number().min(0).max(1).nullable().default(null),
+  successHistory: z
+    .array(
+      z.object({
+        weekStart: z.string(),
+        successRate: z.number().min(0).max(1).nullable(),
+      }),
+    )
+    .default([]),
   satisfactionHistory: z.array(
     z.object({ weekStart: z.string(), rating: z.number() }),
   ),

@@ -12,6 +12,27 @@ import {
 } from "class-validator";
 
 export class CompleteEventDto {
+  @ApiPropertyOptional({ minimum: 0, nullable: true })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(1000000)
+  successfulAttempts?: number | null;
+
+  @ApiPropertyOptional({ minimum: 0, nullable: true })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(1000000)
+  totalAttempts?: number | null;
+
+  @ApiPropertyOptional({ minimum: 0, nullable: true })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(86400)
+  elapsedSeconds?: number | null;
+
   @ApiPropertyOptional({
     minimum: 1,
     maximum: 5,

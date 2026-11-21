@@ -176,11 +176,46 @@ export class EventsService {
   complete(
     userId: string,
     id: string,
-    result: { rating?: number; note?: string },
+    result: {
+      rating?: number;
+      note?: string;
+      successfulAttempts?: number | null;
+      totalAttempts?: number | null;
+      elapsedSeconds?: number | null;
+    },
   ) {
     return this.prisma.$transaction(async (tx) => {
       const event = await this.owned(tx, userId, id);
       const lesson = event.kind === "lesson";
+      const measurement = [
+        result.successfulAttempts,
+        result.totalAttempts,
+        result.elapsedSeconds,
+      ];
+      const hasMeasurement = measurement.some((value) => value !== undefined);
+      if (
+        hasMeasurement &&
+        (lesson ||
+          !(
+            measurement.every((value) => value === null) ||
+            measurement.every(
+              (value) =>
+                typeof value === "number" &&
+                Number.isInteger(value) &&
+                value >= 0,
+            )
+          ))
+      )
+        throw new BadRequestException(
+          "Provide all measurement fields together",
+        );
+      if (
+        typeof result.successfulAttempts === "number" &&
+        result.successfulAttempts > result.totalAttempts!
+      )
+        throw new BadRequestException(
+          "Successful attempts cannot exceed total attempts",
+        );
       // A lesson is only marked done; an exercise always carries its rating.
       if (lesson && (result.rating !== undefined || result.note !== undefined))
         throw new BadRequestException("A lesson has no rating or note");
@@ -191,6 +226,13 @@ export class EventsService {
         data: {
           rating: result.rating ?? null,
           note: result.note?.trim() || null,
+          ...(hasMeasurement
+            ? {
+                successfulAttempts: result.successfulAttempts,
+                totalAttempts: result.totalAttempts,
+                elapsedSeconds: result.elapsedSeconds,
+              }
+            : {}),
           // Early completion belongs to today; overdue completion keeps its date.
           completedAt:
             event.completedAt ??
@@ -260,6 +302,9 @@ export class EventsService {
   private snapshot(event: ScheduledExercise) {
     return {
       rating: event.rating,
+      successfulAttempts: event.successfulAttempts ?? null,
+      totalAttempts: event.totalAttempts ?? null,
+      elapsedSeconds: event.elapsedSeconds ?? null,
       note: event.note,
       completedAt: event.completedAt?.toISOString() ?? null,
       deletedAt: event.deletedAt?.toISOString() ?? null,
@@ -277,7 +322,14 @@ export class EventsService {
         data: {
           ...(action === "delete"
             ? { deletedAt: new Date() }
-            : { rating: null, note: null, completedAt: null }),
+            : {
+                rating: null,
+                note: null,
+                completedAt: null,
+                successfulAttempts: null,
+                totalAttempts: null,
+                elapsedSeconds: null,
+              }),
           undoToken: token,
           undoState: this.snapshot(event),
         },
@@ -296,6 +348,9 @@ export class EventsService {
         where: { id, undoToken: token },
         data: {
           rating: previous.rating,
+          successfulAttempts: previous.successfulAttempts ?? null,
+          totalAttempts: previous.totalAttempts ?? null,
+          elapsedSeconds: previous.elapsedSeconds ?? null,
           note: previous.note,
           completedAt: previous.completedAt
             ? new Date(previous.completedAt)

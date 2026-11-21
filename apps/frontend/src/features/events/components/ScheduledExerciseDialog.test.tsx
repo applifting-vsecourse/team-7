@@ -109,6 +109,59 @@ afterEach(() => {
 });
 
 describe("scheduled exercise dialog", () => {
+  it("saves measured attempts together with the required rating", async () => {
+    const { user } = setup({
+      ...event,
+      successfulAttempts: 7,
+      totalAttempts: 10,
+      elapsedSeconds: 272,
+    });
+    expect(screen.getByText("7 of 10")).toBeInTheDocument();
+    expect(screen.getByText("04:32")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Mark as completed" }),
+    ).toBeDisabled();
+    await user.click(screen.getByRole("radio", { name: "4 out of 5 stars" }));
+    await user.click(screen.getByRole("button", { name: "Mark as completed" }));
+    await waitFor(() =>
+      expect(state.patch).toHaveBeenCalledWith("events/event-a/result", {
+        json: {
+          rating: 4,
+          note: "",
+          successfulAttempts: 7,
+          totalAttempts: 10,
+          elapsedSeconds: 272,
+        },
+      }),
+    );
+  });
+  it("clears a measured result without deleting the scheduled exercise", async () => {
+    const { user } = setup({
+      ...event,
+      successfulAttempts: 7,
+      totalAttempts: 10,
+      elapsedSeconds: 272,
+    });
+    await user.click(screen.getByRole("button", { name: "Delete result" }));
+    expect(screen.queryByText("7 of 10")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Start exercise" }),
+    ).toBeEnabled();
+    await user.click(screen.getByRole("radio", { name: "4 out of 5 stars" }));
+    await user.click(screen.getByRole("button", { name: "Mark as completed" }));
+    await waitFor(() =>
+      expect(state.patch).toHaveBeenCalledWith("events/event-a/result", {
+        json: {
+          rating: 4,
+          note: "",
+          successfulAttempts: null,
+          totalAttempts: null,
+          elapsedSeconds: null,
+        },
+      }),
+    );
+    expect(state.remove).not.toHaveBeenCalled();
+  });
   it("uploads a video before completion and prevents closing or submitting during upload", async () => {
     let finishUpload!: () => void;
     state.post.mockImplementationOnce(
