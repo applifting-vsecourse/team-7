@@ -256,6 +256,7 @@ model User {
   dogs          Dog[]
   disciplines   Discipline[]
   pendingEmailChange PendingEmailChange?
+  subscription Subscription?
   role          UserRole     @default(user)
   // First-login tour (#72). Users who existed before it count as completed.
   onboardingStatus     OnboardingStatus @default(pending)
@@ -330,4 +331,18 @@ model ScheduledExercise {
   @@index([dogId, startsAt])
   @@index([exerciseId])
   @@map("scheduled_exercise")
+}
+
+// Mock billing only. No payment credentials or real charges.
+model Subscription {
+  userId String @id
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trialEndsAt DateTime?
+  paidUntil DateTime?
+  cancelled Boolean @default(false)
+  paymentFailed Boolean @default(false)
+  retryAt DateTime?
+  cardLast4 String @default("4242")
+
+  @@map("subscription")
 }
