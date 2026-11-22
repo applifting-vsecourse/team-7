@@ -135,11 +135,15 @@ export function ScheduledExerciseDialog({
   const rating = useWatch({ control: result.control, name: "rating" });
   const closeDialog = () => {
     const resultDraft = result.getValues();
-    setActiveClicker((current) =>
-      current?.event.id === event.id && current.view === "review"
-        ? { ...current, resultDraft }
-        : current,
-    );
+    // A deleted clicker result means the handler doesn't want it; closing must
+    // not resume the clicker with the deleted attempts.
+    const discardClicker = Boolean(initialMeasurement) && !measurement;
+    setActiveClicker((current) => {
+      if (current?.event.id !== event.id || current.view !== "review") {
+        return current;
+      }
+      return discardClicker ? null : { ...current, resultDraft };
+    });
     onClose();
   };
   const startClicker = () => {
