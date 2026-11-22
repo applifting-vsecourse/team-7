@@ -2,6 +2,7 @@ import type { ScheduledEvent } from "../api/eventsQueryOptions";
 import { toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -10,9 +11,14 @@ import {
   within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { createStore, Provider } from "jotai";
 import { HTTPError } from "ky";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  clickerAtom,
+  type ClickerSession,
+} from "@/features/clicker/atoms/clickerAtom";
 import type * as VideoUpload from "@/features/videos/lib/videoUpload";
 
 import { ScheduledExerciseDialog } from "./ScheduledExerciseDialog";
@@ -162,6 +168,72 @@ describe("scheduled exercise dialog", () => {
     );
     expect(state.remove).not.toHaveBeenCalled();
   });
+  describe("reviewing a clicker result", () => {
+    const measurement = {
+      successfulAttempts: 84,
+      totalAttempts: 84,
+      elapsedSeconds: 226,
+    };
+
+    function setupReview() {
+      const store = createStore();
+      const review: ClickerSession = {
+        event,
+        userId: "user-a",
+        startedAt: 1_000,
+        attempts: Array<boolean>(84).fill(true),
+        elapsedSeconds: 226,
+        view: "review",
+      };
+      store.set(clickerAtom, review);
+      const close = vi.fn();
+      render(
+        <QueryClientProvider client={new QueryClient()}>
+          <Provider store={store}>
+            <ScheduledExerciseDialog
+              event={event}
+              initialMeasurement={measurement}
+              onClose={close}
+            />
+          </Provider>
+        </QueryClientProvider>,
+      );
+      return { user: userEvent.setup(), store, close };
+    }
+
+    it("discards the clicker session when the result was deleted before closing", async () => {
+      const { user, store, close } = setupReview();
+      await user.click(screen.getByRole("button", { name: "Delete result" }));
+      await user.keyboard("{Escape}");
+      expect(close).toHaveBeenCalledOnce();
+      expect(store.get(clickerAtom)).toBeNull();
+    });
+
+    it("keeps the clicker session with the draft when closed without deleting", async () => {
+      const { user, store, close } = setupReview();
+      await user.click(screen.getByRole("radio", { name: "4 out of 5 stars" }));
+      await user.keyboard("{Escape}");
+      expect(close).toHaveBeenCalledOnce();
+      expect(store.get(clickerAtom)).toMatchObject({
+        view: "review",
+        attempts: Array<boolean>(84).fill(true),
+        resultDraft: { rating: 4 },
+      });
+    });
+
+    it("keeps the clicker session when the deletion was undone", async () => {
+      const success = vi.spyOn(toast, "success");
+      const { user, store } = setupReview();
+      await user.click(screen.getByRole("button", { name: "Delete result" }));
+      const undo = success.mock.calls.at(-1)?.[1]?.actionProps?.onPress;
+      expect(undo).toBeTypeOf("function");
+      act(() => undo?.({} as never));
+      expect(screen.getByText("84 of 84")).toBeInTheDocument();
+      await user.keyboard("{Escape}");
+      expect(store.get(clickerAtom)).toMatchObject({ view: "review" });
+    });
+  });
+
   it("uploads a video before completion and prevents closing or submitting during upload", async () => {
     let finishUpload!: () => void;
     state.post.mockImplementationOnce(
