@@ -18,9 +18,9 @@ import { useSession } from "@/features/auth/hooks/useSession";
 import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
 import { DogAvatar } from "@/features/dogs/components/DogAvatar";
 import {
+  applySubscription,
   chooseActiveDog,
   dogChoicesQueryOptions,
-  subscriptionQueryOptions,
   updateSubscription,
   type Subscription,
 } from "@/features/settings/api/subscriptionQueryOptions";
@@ -74,10 +74,8 @@ export function SubscriptionDialogs() {
     };
   }, [access, client, user, selectDogs]);
   if (!user || !access) return null;
-  const saved = async (data: Subscription) => {
-    client.setQueryData(subscriptionQueryOptions(user.id).queryKey, data);
-    await client.invalidateQueries();
-  };
+  const saved = (data: Subscription) =>
+    applySubscription(client, user.id, data);
   return (
     <>
       {offer && (
@@ -116,17 +114,12 @@ function PlusOfferDialog({
   );
   const [checkout, setCheckout] = useState(false);
   const [outcome, setOutcome] = useState("success");
+  // A declined first payment charges nothing and changes nothing (Figma M11).
+  const [declined, setDeclined] = useState(false);
   const trialAvailable = !subscription.trialUsed && !subscription.isPlus;
   const mutation = useMutation({
     mutationFn: () =>
-      updateSubscription(
-        !checkout && trialAvailable
-          ? "trial"
-          : outcome === "success"
-            ? "pay"
-            : "failPayment",
-        period,
-      ),
+      updateSubscription(!checkout && trialAvailable ? "trial" : "pay", period),
     onSuccess: async (data) => {
       await onSaved(data);
       onClose();
@@ -147,7 +140,9 @@ function PlusOfferDialog({
     },
   });
   const titles = {
-    dogs: t(($) => $.limits.dogsTitle),
+    dogs: t(($) => $.limits.dogsTitle, {
+      limit: subscription.plusDogLimit,
+    }),
     goals: t(($) => $.limits.goalsTitle),
     videos: t(($) => $.limits.videosTitle),
     stats: t(($) => $.limits.statsTitle),
@@ -157,7 +152,9 @@ function PlusOfferDialog({
     dogs: t(($) => $.limits.dogsDescription, {
       count: subscription.freeDogLimit,
     }),
-    goals: t(($) => $.limits.goalsDescription),
+    goals: t(($) => $.limits.goalsDescription, {
+      limit: subscription.goalLimit,
+    }),
     videos: t(($) => $.limits.videosDescription),
     stats: t(($) => $.limits.statsDescription),
     renew: t(($) => $.limits.payDescription),
@@ -189,7 +186,9 @@ function PlusOfferDialog({
             {trialAvailable && !checkout && (
               <ul className="flex flex-col gap-3">
                 {[
-                  t(($) => $.limits.unlimited),
+                  t(($) => $.limits.unlimited, {
+                    limit: subscription.plusDogLimit,
+                  }),
                   t(($) => $.limits.videosBenefit),
                   t(($) => $.limits.statsBenefit),
                 ].map((text) => (
@@ -210,6 +209,22 @@ function PlusOfferDialog({
             />
             {checkout ? (
               <>
+                {declined && (
+                  <Alert
+                    status="danger"
+                    className="animate-enter bg-danger-soft"
+                  >
+                    <Alert.Indicator />
+                    <Alert.Content>
+                      <Alert.Title>
+                        {t(($) => $.limits.paymentDeclined)}
+                      </Alert.Title>
+                      <Alert.Description>
+                        {t(($) => $.limits.paymentDeclinedDescription)}
+                      </Alert.Description>
+                    </Alert.Content>
+                  </Alert>
+                )}
                 <Alert status="accent">
                   <Alert.Indicator />
                   <Alert.Content>
@@ -220,7 +235,10 @@ function PlusOfferDialog({
                 </Alert>
                 <RadioGroup
                   value={outcome}
-                  onChange={setOutcome}
+                  onChange={(value) => {
+                    setOutcome(value);
+                    setDeclined(false);
+                  }}
                   isDisabled={mutation.isPending}
                 >
                   <Label>{t(($) => $.subscription.mockOutcome)}</Label>
@@ -270,6 +288,7 @@ function PlusOfferDialog({
               isDisabled={mutation.isPending}
               onPress={() => {
                 if (!checkout && !trialAvailable) setCheckout(true);
+                else if (checkout && outcome === "failure") setDeclined(true);
                 else mutation.mutate();
               }}
             >

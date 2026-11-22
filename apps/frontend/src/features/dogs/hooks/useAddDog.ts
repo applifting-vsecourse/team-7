@@ -1,6 +1,8 @@
 import type { AddDogValues } from "../components/AddDogForm";
+import { toast } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
+import { useTranslation } from "react-i18next";
 
 import { api } from "@/lib/api-client";
 
@@ -10,13 +12,18 @@ import {
 } from "@/features/dogs/api/dogsQueryOptions";
 import { addDogDialogOpenAtom } from "@/features/dogs/atoms/addDogDialogOpenAtom";
 import { subscriptionError } from "@/features/subscription/hooks/subscriptionError";
-import { usePlusOffer } from "@/features/subscription/hooks/useSubscription";
+import {
+  usePlusOffer,
+  useSubscription,
+} from "@/features/subscription/hooks/useSubscription";
 
 import { photoFormData } from "../api/dogPhotos";
 
 export function useAddDog(userId: string | undefined) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const offer = usePlusOffer();
+  const subscription = useSubscription();
   const setOpen = useSetAtom(addDogDialogOpenAtom);
 
   return useMutation({
@@ -33,10 +40,16 @@ export function useAddDog(userId: string | undefined) {
       return api.post("dogs", { body }).json<Dog>();
     },
     onError: (error) => {
-      if (subscriptionError(error) === "dogLimit") {
-        setOpen(false);
-        offer({ reason: "dogs", onSuccess: () => setOpen(true) });
-      }
+      if (subscriptionError(error) !== "dogLimit") return;
+      setOpen(false);
+      // Plus is already the highest plan, so there is nothing to offer.
+      if (subscription.data?.isPlus) {
+        toast.danger(
+          t(($) => $.limits.plusDogLimit, {
+            limit: subscription.data.dogLimit,
+          }),
+        );
+      } else offer({ reason: "dogs", onSuccess: () => setOpen(true) });
     },
     onSuccess: () =>
       Promise.all([

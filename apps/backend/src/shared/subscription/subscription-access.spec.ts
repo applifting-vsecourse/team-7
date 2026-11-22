@@ -110,6 +110,7 @@ describe("subscription boundaries", () => {
 
   it("serializes dog creation and restoration and rejects a second active dog", async () => {
     db.dog.count.mockResolvedValue(1);
+    db.dog.findFirst.mockResolvedValue({ archivedAt: new Date() } as never);
     const dogs = new DogsController(db, mockDeep<DogAvatarsService>());
     await expect(dogs.createDog(user, { name: "B" })).rejects.toMatchObject({
       response: { code: "dogLimit" },
@@ -129,6 +130,7 @@ describe("subscription boundaries", () => {
         paidUntil: new Date("2999-01-01"),
       } as never);
       db.dog.count.mockResolvedValue(count);
+      db.dog.findFirst.mockResolvedValue({ archivedAt: new Date() } as never);
       const dogs = new DogsController(db, mockDeep<DogAvatarsService>());
 
       await expect(dogs.createDog(user, { name: "New" })).rejects.toMatchObject(
@@ -156,6 +158,7 @@ describe("subscription boundaries", () => {
           paidUntil: new Date("2999-01-01"),
         } as never);
       db.dog.count.mockResolvedValue(count);
+      db.dog.findFirst.mockResolvedValue({ archivedAt: new Date() } as never);
       const dog = { id: "new", name: "New" };
       db.dog.create.mockResolvedValue(dog as never);
       db.dog.updateManyAndReturn.mockResolvedValue([dog] as never);
@@ -170,6 +173,36 @@ describe("subscription boundaries", () => {
       expect(db.$queryRaw).toHaveBeenCalledTimes(2);
     },
   );
+
+  it("reports restoring an active dog as a conflict before checking the limit", async () => {
+    db.dog.count.mockResolvedValue(1);
+    const dogs = new DogsController(db, mockDeep<DogAvatarsService>());
+    await expect(dogs.restoreDog(user, "a")).rejects.toMatchObject({
+      status: 409,
+    });
+    expect(db.dog.count).not.toHaveBeenCalled();
+  });
+
+  it("lets Free delete and archive a locked dog, and answers 404 for someone else's dog", async () => {
+    db.subscription.findUnique.mockResolvedValue({
+      activeDogId: "other",
+    } as never);
+    db.dog.findMany.mockResolvedValue([{ id: "a" }, { id: "other" }] as never);
+    db.dog.deleteMany.mockResolvedValue({ count: 1 });
+    db.dog.updateManyAndReturn.mockResolvedValue([{ id: "a" }] as never);
+    const dogs = new DogsController(db, mockDeep<DogAvatarsService>());
+
+    await expect(dogs.deleteDog(user, "a")).resolves.toBeUndefined();
+    await expect(dogs.archiveDog(user, "a")).resolves.toEqual({ id: "a" });
+
+    db.dog.findFirst.mockResolvedValue(null);
+    await expect(assertDogAccess(db, user.id, "foreign")).rejects.toMatchObject(
+      { status: 404 },
+    );
+    await expect(dogs.getDog(user, "foreign")).rejects.toMatchObject({
+      status: 404,
+    });
+  });
 
   it("limits in-progress goals across disciplines, permits existing over-limit goals, and permits reducing them", async () => {
     const selection = new DogSelectionService(db);
@@ -251,20 +284,25 @@ describe("subscription boundaries", () => {
     ).rejects.toMatchObject({ response: { code: "goalLimit" } });
   });
 
-  it("blocks Free photo uploads and dog creation with a photo before preparing or saving it", async () => {
+  // Photos were dropped from Plus with the PO (Figma spec F-55/F-56).
+  it("lets Free upload a dog photo and create a dog with one", async () => {
     const avatars = new DogAvatarsService(db);
-    const prepareAvatar = vi.spyOn(avatars, "prepareAvatar");
+    const prepareAvatar = vi.spyOn(avatars, "prepareAvatar").mockResolvedValue({
+      avatar: new Uint8Array(),
+      avatarVersion: "0-0-0-0-0",
+    });
     const file = { buffer: Buffer.from("photo") } as Express.Multer.File;
+    db.dog.count.mockResolvedValue(0);
+    db.dog.create.mockResolvedValue({ id: "new" } as never);
+    db.dog.updateManyAndReturn.mockResolvedValue([{ id: "a" }] as never);
 
     await expect(
       new DogAvatarsController(avatars).uploadAvatar(user, "a", file),
-    ).rejects.toMatchObject({ response: { code: "plusRequired" } });
+    ).resolves.toEqual({ id: "a" });
     await expect(
       new DogsController(db, avatars).createDog(user, { name: "New" }, file),
-    ).rejects.toMatchObject({ response: { code: "plusRequired" } });
-    expect(prepareAvatar).not.toHaveBeenCalled();
-    expect(db.dog.create).not.toHaveBeenCalled();
-    expect(db.dog.updateManyAndReturn).not.toHaveBeenCalled();
+    ).resolves.toEqual({ id: "new" });
+    expect(prepareAvatar).toHaveBeenCalledTimes(2);
     prepareAvatar.mockRestore();
   });
 
@@ -307,6 +345,7 @@ describe("subscription boundaries", () => {
     expect(result.stats).toMatchObject({
       trendsLocked: true,
       satisfactionHistory: [],
+      successHistory: [],
       plannedExercises: 0,
     });
     expect(neglected.findPlannable).toHaveBeenCalledWith(user.id, ["a"], db);

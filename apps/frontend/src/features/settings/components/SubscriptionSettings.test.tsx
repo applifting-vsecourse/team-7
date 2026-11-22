@@ -58,6 +58,7 @@ function setup() {
         <SubscriptionSettings userId="owner" />
       </QueryClientProvider>,
     ),
+    client,
     user: userEvent.setup(),
   };
 }
@@ -76,6 +77,9 @@ describe("subscription settings", () => {
       trialUsed: false,
       cardLast4: "4242",
       freeDogLimit: 1,
+      dogLimit: 1,
+      plusDogLimit: 5,
+      goalLimit: 2,
       dogs: 1,
       goals: 2,
     };
@@ -154,10 +158,18 @@ describe("subscription settings", () => {
     });
   });
 
-  it("shows a failed mock payment and recovers by changing the test card", async () => {
+  it("refreshes every plan-gated query after starting Plus from Settings", async () => {
+    const { user, client } = setup();
+    const invalidate = vi.spyOn(client, "invalidateQueries");
+    await user.click(await screen.findByRole("button", { name: "Try Plus" }));
+    await waitFor(() => expect(invalidate).toHaveBeenCalledWith());
+  });
+
+  it("keeps the payment dialog open on a declined first payment and charges nothing", async () => {
     state.data = {
       ...state.data,
       status: "trial",
+      isPlus: true,
       trialUsed: true,
       trialEndsAt: "2026-12-01T00:00:00.000Z",
     };
@@ -165,6 +177,31 @@ describe("subscription settings", () => {
     await user.click(
       await screen.findByRole("button", { name: "Pay for Plus" }),
     );
+    const dialog = await screen.findByRole("dialog");
+    await user.click(
+      within(dialog).getByRole("radio", { name: "Declined payment" }),
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: "Confirm mock payment" }),
+    );
+    expect(within(dialog).getByText("Payment declined")).toBeVisible();
+    expect(dialog).toBeVisible();
+    expect(state.save).not.toHaveBeenCalled();
+  });
+
+  it("shows a failed renewal and recovers by changing the test card", async () => {
+    state.data = {
+      ...state.data,
+      status: "active",
+      isPlus: true,
+      trialUsed: true,
+      paidUntil: "2027-12-01T00:00:00.000Z",
+      dogLimit: 5,
+      goalLimit: null,
+    };
+    const { user } = setup();
+    expect(await screen.findByText("1 of 5")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Change card" }));
     let dialog = await screen.findByRole("dialog");
     await user.click(
       within(dialog).getByRole("radio", { name: "Declined payment" }),

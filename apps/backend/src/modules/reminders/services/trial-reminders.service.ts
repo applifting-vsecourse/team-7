@@ -27,6 +27,8 @@ export class TrialRemindersService {
         trialEndsAt: { gt: now, lte: new Date(now.getTime() + 86400_000) },
         trialReminderSentAt: null,
         OR: [{ paidUntil: null }, { paidUntil: { lte: now } }],
+        // Transactional (billing), so emailNotificationsEnabled is ignored on
+        // purpose: that setting only covers training reminders.
         user: { emailVerified: true },
       },
       include: { user: { select: { email: true } } },
@@ -50,7 +52,7 @@ export class TrialRemindersService {
           heading: content.subject,
           description: content.description,
           button: content.button,
-          footer: content.description,
+          footer: content.disclaimer,
           url,
         });
         await this.email.sendEmail(trial.user.email, content.subject, html);

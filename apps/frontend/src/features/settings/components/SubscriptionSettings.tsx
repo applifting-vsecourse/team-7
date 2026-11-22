@@ -14,6 +14,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
 import {
+  applySubscription,
   subscriptionQueryOptions,
   updateSubscription,
   type SubscriptionAction,
@@ -33,6 +34,8 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
     null,
   );
   const [outcome, setOutcome] = useState("success");
+  // A declined first payment charges nothing and changes nothing (Figma M11).
+  const [declined, setDeclined] = useState(false);
   const [period, setPeriod] = useState<BillingPeriod>("yearly");
   const mutation = useMutation({
     mutationFn: (action: SubscriptionAction) =>
@@ -41,10 +44,7 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
         ["pay", "trial"].includes(action) ? period : undefined,
       ),
     onSuccess: (saved) => {
-      client.setQueryData(subscriptionQueryOptions(userId).queryKey, saved);
-      void client.invalidateQueries({
-        queryKey: subscriptionQueryOptions(userId).queryKey,
-      });
+      void applySubscription(client, userId, saved);
       setDialog(null);
       if (saved.status !== "pastDue") {
         toast.success(t(($) => $.subscription.saved));
@@ -58,6 +58,7 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
     mutation.reset();
     setPeriod(query.data?.billingPeriod ?? "yearly");
     setOutcome("success");
+    setDeclined(false);
     setDialog(next);
   };
   const date = (value: string | null) =>
@@ -100,6 +101,10 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
   const pastDue = s.status === "pastDue";
   const free = s.status === "free";
   const trial = s.status === "trial";
+  const dogUsage = [
+    t(($) => $.subscription.dogs),
+    t(($) => $.subscription.usage, { count: s.dogs, limit: s.dogLimit }),
+  ];
   const rows = [
     [
       t(($) => $.subscription.plan),
@@ -111,13 +116,13 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
     ],
     ...(free
       ? [
-          [
-            t(($) => $.subscription.dogs),
-            t(($) => $.subscription.usage, { count: s.dogs, limit: 1 }),
-          ],
+          dogUsage,
           [
             t(($) => $.subscription.goals),
-            t(($) => $.subscription.usage, { count: s.goals, limit: 2 }),
+            t(($) => $.subscription.usage, {
+              count: s.goals,
+              limit: s.goalLimit,
+            }),
           ],
         ]
       : trial
@@ -127,6 +132,7 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
               t(($) => $.subscription.afterwards),
               t(($) => $.subscription.freeAfterTrial),
             ],
+            dogUsage,
           ]
         : [
             [
@@ -145,6 +151,7 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
                   ],
                 ]
               : []),
+            ...(s.isPlus ? [dogUsage] : []),
           ]),
   ];
   return (
@@ -167,6 +174,7 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
             free
               ? t(($) => $.subscription.freeDescription, {
                   count: s.freeDogLimit,
+                  goals: s.goalLimit,
                 })
               : trial
                 ? t(($) => $.subscription.trialDescription, {
@@ -338,9 +346,28 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
                       isDisabled={mutation.isPending}
                     />
                   )}
+                  {declined && (
+                    <Alert
+                      status="danger"
+                      className="animate-enter bg-danger-soft"
+                    >
+                      <Alert.Indicator />
+                      <Alert.Content>
+                        <Alert.Title>
+                          {t(($) => $.limits.paymentDeclined)}
+                        </Alert.Title>
+                        <Alert.Description>
+                          {t(($) => $.limits.paymentDeclinedDescription)}
+                        </Alert.Description>
+                      </Alert.Content>
+                    </Alert>
+                  )}
                   <RadioGroup
                     value={outcome}
-                    onChange={setOutcome}
+                    onChange={(value) => {
+                      setOutcome(value);
+                      setDeclined(false);
+                    }}
                     isDisabled={mutation.isPending}
                   >
                     <Label>{t(($) => $.subscription.mockOutcome)}</Label>
@@ -385,15 +412,17 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
                 isPending={mutation.isPending}
                 isDisabled={mutation.isPending}
                 onPress={() =>
-                  act(
-                    dialog === "cancel"
-                      ? "cancel"
-                      : outcome === "failure"
-                        ? "failPayment"
-                        : dialog === "card"
-                          ? "changeCard"
-                          : "pay",
-                  )
+                  dialog === "payment" && outcome === "failure"
+                    ? setDeclined(true)
+                    : act(
+                        dialog === "cancel"
+                          ? "cancel"
+                          : outcome === "failure"
+                            ? "failPayment"
+                            : dialog === "card"
+                              ? "changeCard"
+                              : "pay",
+                      )
                 }
               >
                 {dialog === "cancel"

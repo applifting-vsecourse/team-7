@@ -53,8 +53,8 @@ export function DogDisciplineView({
   const offer = usePlusOffer();
   const limited =
     !!subscription.data &&
-    !subscription.data.isPlus &&
-    subscription.data.goals >= 2;
+    subscription.data.goalLimit !== null &&
+    subscription.data.goals >= subscription.data.goalLimit;
   const library = useQuery(disciplineQueryOptions(user?.id, disciplineId));
   const selection = useQuery(
     dogSelectionQueryOptions(user?.id, dog.id, disciplineId),

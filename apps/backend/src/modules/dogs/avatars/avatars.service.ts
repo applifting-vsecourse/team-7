@@ -9,7 +9,6 @@ import { randomUUID } from "node:crypto";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import type { DogDetails } from "@/modules/dogs/domain/dog-details";
 import { findActiveDog } from "@/modules/dogs/domain/owned-dog";
-import { assertPlus } from "@/shared/subscription/subscription-access";
 import { AVATAR_UPLOAD_LIMIT } from "./avatars.constants";
 
 @Injectable()
@@ -44,7 +43,6 @@ export class DogAvatarsService {
     input: Buffer | undefined,
   ): Promise<DogDetails> {
     await findActiveDog(this.prisma, userId, id);
-    await assertPlus(this.prisma, userId);
     if (!input?.length) throw new BadRequestException("A photo is required");
     const data = await this.prepareAvatar(input);
     const [dog] = await this.prisma.dog.updateManyAndReturn({

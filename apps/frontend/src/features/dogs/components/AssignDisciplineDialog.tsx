@@ -57,8 +57,8 @@ export function AssignDisciplineDialog({
   const selectGoals = (next: GoalSelection[]) => {
     if (
       subscription.data &&
-      !subscription.data.isPlus &&
-      subscription.data.goals + next.length > 2 &&
+      subscription.data.goalLimit !== null &&
+      subscription.data.goals + next.length > subscription.data.goalLimit &&
       next.length > selection.length
     ) {
       offer({ reason: "goals", onSuccess: () => setSelection(next) });

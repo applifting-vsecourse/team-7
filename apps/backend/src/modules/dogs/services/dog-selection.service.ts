@@ -19,6 +19,7 @@ import {
   subscriptionAccess,
   subscriptionRequired,
 } from "@/shared/subscription/subscription-access";
+import { FREE_GOAL_LIMIT } from "@/shared/subscription/subscription.constants";
 
 export type DogSelectionScope = {
   userId: string;
@@ -96,7 +97,7 @@ export class DogSelectionService {
             const result = await action(tx);
             if (!access.isPlus) {
               const after = await tx.dogGoal.count({ where });
-              if (after > 2) {
+              if (after > FREE_GOAL_LIMIT) {
                 const afterGoals = await tx.dogGoal.findMany({
                   where,
                   select: { dogId: true, goalId: true },

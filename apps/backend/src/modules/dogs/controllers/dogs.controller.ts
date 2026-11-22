@@ -39,15 +39,11 @@ import { Identity } from "@/shared/auth/domain/identity";
 import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
 import {
   assertDogAccess,
-  assertPlus,
   lockSubscription,
   subscriptionAccess,
   subscriptionRequired,
 } from "@/shared/subscription/subscription-access";
-import {
-  FREE_DOG_LIMIT,
-  PLUS_DOG_LIMIT,
-} from "@/shared/subscription/subscription.constants";
+import { dogLimit } from "@/shared/subscription/subscription.constants";
 import { optionalText } from "@/shared/utils/optional-text";
 import { DogInputDto } from "./dto/dog-input.dto";
 
@@ -260,7 +256,12 @@ export class DogsController {
   @ApiNotFoundResponse({ description: "Dog not found" })
   @ApiConflictResponse({ description: "Dog is already archived" })
   async archiveDog(@User() user: Identity, @Param("id") id: string) {
-    await findActiveDog(this.prisma, user.id, id);
+    // Archiving a locked dog is allowed on Free: it only tidies up the list.
+    const owned = await this.prisma.dog.findFirst({
+      where: { id, userId: user.id },
+      select: { id: true },
+    });
+    if (!owned) throw new NotFoundException("Dog not found");
     // The archivedAt condition keeps a concurrent archive from overwriting the date.
     const [dog] = await this.prisma.dog.updateManyAndReturn({
       where: { id, userId: user.id, archivedAt: null },
@@ -286,14 +287,15 @@ export class DogsController {
       await lockSubscription(tx, user.id);
       const owned = await tx.dog.findFirst({
         where: { id, userId: user.id },
-        select: { id: true },
+        select: { archivedAt: true },
       });
       if (!owned) throw new NotFoundException("Dog not found");
+      if (!owned.archivedAt) throw new ConflictException("Dog is not archived");
       const access = await subscriptionAccess(tx, user.id);
       if (
         (await tx.dog.count({
           where: { userId: user.id, archivedAt: null },
-        })) >= (access.isPlus ? PLUS_DOG_LIMIT : FREE_DOG_LIMIT)
+        })) >= dogLimit(access.isPlus)
       )
         throw subscriptionRequired("dogLimit");
       const [dog] = await tx.dog.updateManyAndReturn({
@@ -319,7 +321,6 @@ export class DogsController {
     @Body() body: DogInputDto,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<DogDetails> {
-    if (file) await assertPlus(this.prisma, user.id);
     const avatar = file ? await this.avatars.prepareAvatar(file.buffer) : {};
     return this.prisma.$transaction(async (tx) => {
       await lockSubscription(tx, user.id);
@@ -327,7 +328,7 @@ export class DogsController {
       if (
         (await tx.dog.count({
           where: { userId: user.id, archivedAt: null },
-        })) >= (access.isPlus ? PLUS_DOG_LIMIT : FREE_DOG_LIMIT)
+        })) >= dogLimit(access.isPlus)
       )
         throw subscriptionRequired("dogLimit");
       return tx.dog.create({
@@ -368,7 +369,7 @@ export class DogsController {
     @User() user: Identity,
     @Param("id") id: string,
   ): Promise<void> {
-    await assertDogAccess(this.prisma, user.id, id);
+    // Deleting is allowed for locked and archived dogs on Free too.
     const { count } = await this.prisma.dog.deleteMany({
       where: { id, userId: user.id },
     });

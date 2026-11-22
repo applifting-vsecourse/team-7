@@ -5,6 +5,8 @@ export const emailMessages = {
       description:
         "Zaplaťte, ať vám zůstanou všichni psi, videa a statistiky. Jinak přejdete na verzi Zdarma. Nic se nesmaže.",
       button: "Zaplatit Plus",
+      disclaimer:
+        "Tento e-mail posíláme vždy, protože se týká vašeho předplatného. Připomínky tréninku vypnutí nezmění.",
     },
     emailChangeNotice: {
       subject: "Upozornění na změnu e-mailu",
@@ -58,6 +60,8 @@ export const emailMessages = {
       description:
         "Pay to keep all your dogs, videos and statistics. Otherwise you will switch to Free. Nothing will be deleted.",
       button: "Pay for Plus",
+      disclaimer:
+        "We always send this email because it is about your subscription. Turning off training reminders doesn't affect it.",
     },
     emailChangeNotice: {
       subject: "Email change requested",
