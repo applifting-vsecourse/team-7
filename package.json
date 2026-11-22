@@ -41,7 +41,7 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "5.1.1",
-    "vitest-mock-extended": "5.1.1"
+    "vitest-mock-extended": "6.0.1"
   },
   "engines": {
     "node": ">=24"
