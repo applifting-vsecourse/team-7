@@ -17,7 +17,9 @@ export function subscriptionRequired(
     | "dogLimit"
     | "goalLimit"
     | "plusRequired"
-    | "dogChoiceRequired",
+    | "dogChoiceRequired"
+    | "dogArchived"
+    | "activeDogArchive",
 ) {
   return new ForbiddenException({
     code,
@@ -51,8 +53,13 @@ export async function assertDogAccess(
   const access = await subscriptionAccess(db, userId);
   if (access.isPlus || access.activeDogId === dogId) return;
   // A missing or foreign dog is "not found", never an upsell.
-  if (!(await db.dog.findFirst({ where: { id: dogId, userId } })))
-    throw new NotFoundException("Dog not found");
+  const dog = await db.dog.findFirst({
+    where: { id: dogId, userId },
+    select: { archivedAt: true },
+  });
+  if (!dog) throw new NotFoundException("Dog not found");
+  // Free can restore an archived dog but not browse it (Figma M14).
+  if (dog.archivedAt) throw subscriptionRequired("dogArchived");
   throw subscriptionRequired(
     access.needsDogChoice ? "dogChoiceRequired" : "dogLocked",
   );

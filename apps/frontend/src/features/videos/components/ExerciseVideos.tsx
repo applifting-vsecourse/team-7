@@ -31,8 +31,6 @@ type ExerciseVideosProps = {
   readOnly?: boolean;
   isDisabled?: boolean;
   onBusyChange?: (busy: boolean) => void;
-  onUpgrade?: () => void;
-  onUpgraded?: () => void;
 };
 export function ExerciseVideos(props: ExerciseVideosProps) {
   const subscription = useSubscription();
@@ -66,31 +64,22 @@ export function ExerciseVideos(props: ExerciseVideosProps) {
       </section>
     );
   }
-  if (!subscription.data.isPlus) {
-    return (
-      <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium">{t(($) => $.videos.title)}</h3>
-        <LockedFeature
-          reason="videos"
-          title={t(($) => $.limits.videosTitle)}
-          description={t(($) => $.limits.videosDescription)}
-          onUpgrade={props.onUpgrade}
-          onUpgraded={props.onUpgraded}
-        />
-      </section>
-    );
-  }
-  return <PaidExerciseVideos {...props} />;
+  return <ExerciseVideoList {...props} locked={!subscription.data.isPlus} />;
 }
 
-function PaidExerciseVideos({
+/**
+ * Without Plus (`locked`) the section shows the lock (Figma M3); videos saved
+ * while on Plus stay listed and can be deleted, but not played or added.
+ */
+function ExerciseVideoList({
   dogId,
   sessionId,
   tileHasVideo,
   readOnly = false,
   isDisabled = false,
   onBusyChange,
-}: Omit<ExerciseVideosProps, "onUpgrade" | "onUpgraded">) {
+  locked,
+}: ExerciseVideosProps & { locked: boolean }) {
   const { t } = useTranslation();
   const { user } = useSession();
   const client = useQueryClient();
@@ -151,12 +140,22 @@ function PaidExerciseVideos({
   const disabled = isDisabled || busy;
   // History can't add videos, so an empty list (its only video failed while
   // the tile still said "Video") has nothing to show until the tile refreshes.
-  if (readOnly && videos.isSuccess && items.length === 0) return null;
+  if (readOnly && videos.isSuccess && items.length === 0 && !locked) {
+    return null;
+  }
+  const canAdd = !readOnly && !locked;
   return (
     <section aria-labelledby={`${id}-heading`} className="flex flex-col gap-2">
       <h3 id={`${id}-heading`} className="text-sm font-medium">
         {t(($) => $.videos.title)}
       </h3>
+      {locked && (
+        <LockedFeature
+          reason="videos"
+          title={t(($) => $.limits.videosTitle)}
+          description={t(($) => $.limits.videosDescription)}
+        />
+      )}
       {videos.isPending && (
         <p role="status" className="text-sm text-muted">
           {t(($) => $.videos.loading)}
@@ -189,6 +188,7 @@ function PaidExerciseVideos({
             sessionId={sessionId}
             isDisabled={disabled}
             isRemoving={remove.isPending && remove.variables === video.id}
+            canPlay={!locked}
             onPlay={() => setPlaying(video.id)}
             onRemove={readOnly ? undefined : () => remove.mutate(video.id)}
           />
@@ -204,7 +204,7 @@ function PaidExerciseVideos({
               : t(($) => $.videos.uploading)}
           </div>
         )}
-        {!readOnly && (
+        {canAdd && (
           <input
             ref={input}
             id={id}
@@ -222,7 +222,7 @@ function PaidExerciseVideos({
             }}
           />
         )}
-        {!readOnly && !atLimit && (
+        {canAdd && !atLimit && (
           <Button
             type="button"
             variant="outline"
@@ -236,9 +236,14 @@ function PaidExerciseVideos({
           </Button>
         )}
       </div>
-      {!readOnly && (
+      {canAdd && (
         <p id={`${id}-hint`} className="text-xs leading-5 text-muted">
           {atLimit ? t(($) => $.videos.limit) : t(($) => $.videos.hint)}
+        </p>
+      )}
+      {locked && !readOnly && items.length > 0 && (
+        <p className="text-xs leading-5 text-muted">
+          {t(($) => $.limits.videosStored)}
         </p>
       )}
       {upload.isError && (
@@ -274,6 +279,7 @@ function VideoTile({
   sessionId,
   isDisabled,
   isRemoving,
+  canPlay,
   onPlay,
   onRemove,
 }: {
@@ -284,15 +290,18 @@ function VideoTile({
   sessionId: string;
   isDisabled: boolean;
   isRemoving: boolean;
+  canPlay: boolean;
   onPlay: () => void;
   onRemove?: () => void;
 }) {
   const { t } = useTranslation();
   const completed = video.status === "completed";
+  // Without Plus a saved video shows as a plain tile: no thumbnail, no play.
+  const playable = completed && canPlay;
   const failed = video.status === "failed";
   const playback = useQuery({
     ...playbackQueryOptions(userId, dogId, sessionId, video.id),
-    enabled: Boolean(userId) && completed,
+    enabled: Boolean(userId) && playable,
   });
   const seconds = Math.floor(video.duration ?? 0);
   return (
@@ -302,7 +311,7 @@ function VideoTile({
           type="button"
           variant="secondary"
           className="relative h-18 w-32 overflow-hidden"
-          isDisabled={isDisabled || !completed}
+          isDisabled={isDisabled || !playable}
           aria-label={t(($) => $.videos.play, { number })}
           onPress={onPlay}
         >
@@ -316,12 +325,12 @@ function VideoTile({
               className="pointer-events-none absolute inset-0 size-full object-cover"
             />
           )}
-          {completed ? (
+          {playable ? (
             <Play
               className="relative size-8 rounded-full bg-background/90 p-2"
               aria-hidden="true"
             />
-          ) : failed ? (
+          ) : failed || completed ? (
             <Video className="size-5" aria-hidden="true" />
           ) : (
             <Spinner size="sm" />

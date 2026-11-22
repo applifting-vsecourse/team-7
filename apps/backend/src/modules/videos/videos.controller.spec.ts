@@ -140,28 +140,33 @@ describe("exercise video HTTP boundary", () => {
     expect(videos.remove).not.toHaveBeenCalled();
   });
 
+  // Listing and deleting stay open without Plus, so videos never get stuck.
   it.each([
-    ["GET", ""],
-    ["POST", ""],
-    ["GET", "/video/playback"],
-    ["DELETE", "/video"],
-  ])("checks ownership before handling %s %s", async (method, suffix) => {
-    videos.assertAccess.mockRejectedValue(new NotFoundException());
-    const response =
-      method === "POST"
-        ? await upload()
-        : await fetch(`${url}${suffix}`, { method });
-    expect(response.status).toBe(404);
-    expect(videos.assertAccess).toHaveBeenCalledExactlyOnceWith(
-      "user",
-      "dog",
-      "session",
-    );
-    expect(videos.upload).not.toHaveBeenCalled();
-    expect(videos.list).not.toHaveBeenCalled();
-    expect(videos.playback).not.toHaveBeenCalled();
-    expect(videos.remove).not.toHaveBeenCalled();
-  });
+    ["GET", "", false],
+    ["POST", "", true],
+    ["GET", "/video/playback", true],
+    ["DELETE", "/video", false],
+  ])(
+    "checks ownership before handling %s %s (Plus: %s)",
+    async (method, suffix, requirePlus) => {
+      videos.assertAccess.mockRejectedValue(new NotFoundException());
+      const response =
+        method === "POST"
+          ? await upload()
+          : await fetch(`${url}${suffix}`, { method });
+      expect(response.status).toBe(404);
+      expect(videos.assertAccess).toHaveBeenCalledExactlyOnceWith(
+        "user",
+        "dog",
+        "session",
+        { requirePlus },
+      );
+      expect(videos.upload).not.toHaveBeenCalled();
+      expect(videos.list).not.toHaveBeenCalled();
+      expect(videos.playback).not.toHaveBeenCalled();
+      expect(videos.remove).not.toHaveBeenCalled();
+    },
+  );
 
   it("refuses uploads before writing a file if storage is disabled", async () => {
     storage.assertEnabled.mockImplementation(() => {

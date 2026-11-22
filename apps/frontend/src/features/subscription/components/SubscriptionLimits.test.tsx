@@ -50,9 +50,24 @@ vi.mock("@/lib/api-client", () => ({
             },
           ];
         }
+        if (path === "dogs/a/sessions/s/videos") {
+          return [
+            {
+              id: "v1",
+              status: "completed",
+              duration: 12,
+              error: null,
+              createdAt: "2026-11-01T00:00:00Z",
+              updatedAt: "2026-11-01T00:00:00Z",
+            },
+          ];
+        }
         throw new Error(`Unexpected request: ${path}`);
       },
     }),
+    delete: async (path: string) => {
+      state.calls(`DELETE ${path}`);
+    },
     post: (
       path: string,
       {
@@ -229,14 +244,28 @@ describe("subscription UI boundaries", () => {
       billingPeriod: "monthly",
     });
   });
-  it("shows the video section locked without requesting video metadata", async () => {
+  it("keeps saved videos deletable but not playable after Plus ends", async () => {
     const { user } = setup({ videos: true });
     expect(await screen.findByText("Exercise videos with Plus")).toBeVisible();
     expect(
+      await screen.findByRole("button", { name: "Play video 1" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByText(
+        "You can delete saved videos. Playing them requires Plus.",
+      ),
+    ).toBeVisible();
+    expect(
       state.calls.mock.calls.every(
-        ([path]) => !String(path).includes("/videos"),
+        ([path]) => !String(path).includes("playback"),
       ),
     ).toBe(true);
+    await user.click(screen.getByRole("button", { name: "Remove video 1" }));
+    await waitFor(() =>
+      expect(state.calls).toHaveBeenCalledWith(
+        "DELETE dogs/a/sessions/s/videos/v1",
+      ),
+    );
     await user.click(screen.getByRole("button", { name: "Try Plus" }));
     expect(
       within(await screen.findByRole("dialog")).getByText(

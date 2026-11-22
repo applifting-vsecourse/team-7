@@ -187,13 +187,19 @@ export function WeeklyStats({ data }: { data: WeeklyStatsData }) {
                       : t(($) => $.weeklyStats.weeklySatisfaction)}
                   </p>
                   <div className="flex h-20 items-end justify-around gap-3">
-                    {[40, 45, 60, 55, 65, 75].map((height, i) => (
-                      <div
-                        key={i}
-                        className={`h-20 w-6 origin-bottom rounded-md ${success ? "bg-success-soft" : "bg-accent-soft"}`}
-                        style={{ transform: `scaleY(${height / 100})` }}
-                      />
-                    ))}
+                    {/* Static sample bars (40–75 % of h-20); Free never gets real trends. */}
+                    {["h-8", "h-9", "h-12", "h-11", "h-13", "h-15"].map(
+                      (height, i) => (
+                        <div
+                          key={i}
+                          className={cn(
+                            "w-6 rounded-md",
+                            height,
+                            success ? "bg-success-soft" : "bg-accent-soft",
+                          )}
+                        />
+                      ),
+                    )}
                   </div>
                 </div>
               ))}

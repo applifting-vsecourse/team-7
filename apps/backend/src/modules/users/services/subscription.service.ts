@@ -38,9 +38,8 @@ export class SubscriptionService {
           dog: {
             userId,
             archivedAt: null,
-            ...(!access.isPlus && access.activeDogId
-              ? { id: access.activeDogId }
-              : {}),
+            // No active dog chosen yet: nothing counts towards the Free limit.
+            ...(!access.isPlus ? { id: access.activeDogId ?? "" } : {}),
           },
           status: "in_progress",
         },

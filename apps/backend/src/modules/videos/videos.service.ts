@@ -31,14 +31,24 @@ export class VideosService {
     private readonly storage: VideoStorageService,
   ) {}
 
-  async assertAccess(userId: string, dogId: string, sessionId: string) {
-    await assertPlus(this.prisma, userId);
-    await assertDogAccess(this.prisma, userId, dogId);
+  /**
+   * Ownership first (404), then the Free dog lock, then Plus. Listing and
+   * deleting existing videos stay open after Plus ends, so nothing is stuck
+   * in storage; uploading and playback need Plus.
+   */
+  async assertAccess(
+    userId: string,
+    dogId: string,
+    sessionId: string,
+    { requirePlus = true } = {},
+  ) {
     const dog = await this.prisma.dog.findFirst({
       where: { id: dogId, userId },
       select: { id: true },
     });
     if (!dog) throw new NotFoundException("Dog not found");
+    await assertDogAccess(this.prisma, userId, dogId);
+    if (requirePlus) await assertPlus(this.prisma, userId);
     const session = await this.prisma.scheduledExercise.findFirst({
       where: { id: sessionId, dogId, kind: "exercise", deletedAt: null },
       select: { id: true, exerciseId: true },
