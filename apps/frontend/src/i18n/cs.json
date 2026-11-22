@@ -525,7 +525,8 @@
     "lessonStepDog": "Krok 1 ze 2 · Pes",
     "lessonStepTime": "Krok 2 ze 2 · Termín",
     "scheduleLesson": "Naplánovat",
-    "lessonSuccess": "Cvičení s trenérem naplánováno"
+    "lessonSuccess": "Cvičení s trenérem naplánováno",
+    "allDogsLocked": "Všichni psi jsou uzamčení. Vyberte aktivního psa, nebo obnovte Plus."
   },
   "exerciseDetail": {
     "history": "Historie",
@@ -946,6 +947,8 @@
     "dogArchivedDescription": "Ve verzi Zdarma si data psa prohlédnete po jeho obnovení.",
     "deleteDog": "Smazat psa",
     "activeDogArchive": "S tímto psem ve verzi Zdarma trénujete. Archivovat ho půjde s Plus.",
-    "videosStored": "Uložená videa můžete smazat. Přehrát je půjde s Plus."
+    "videosStored": "Uložená videa můžete smazat. Přehrát je půjde s Plus.",
+    "chooseDogLoadError": "Psy se nepodařilo načíst.",
+    "chooseDogEmpty": "Žádného psa k výběru nemáte."
   }
 }

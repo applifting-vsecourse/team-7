@@ -165,6 +165,23 @@ describe("mock subscriptions API", () => {
     });
   });
 
+  it("turns a failed renewal into Free once the paid period ends", async () => {
+    record = {
+      trialEndsAt: null,
+      paidUntil: new Date(Date.now() - 1000),
+      paymentFailed: true,
+      cancelled: false,
+      retryAt: new Date(Date.now() - 1000),
+      cardLast4: "4242",
+    };
+    expect(await (await fetch(url)).json()).toMatchObject({
+      status: "free",
+      isPlus: false,
+    });
+    expect((await post({ action: "changeCard" })).status).toBe(400);
+    expect(await act("trial")).toMatchObject({ status: "trial" });
+  });
+
   it("expires trials and cancelled paid periods without deleting data or allowing a second trial", async () => {
     record = { trialEndsAt: new Date(Date.now() - 1000), paidUntil: null };
     expect(await (await fetch(url)).json()).toMatchObject({

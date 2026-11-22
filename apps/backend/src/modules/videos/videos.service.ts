@@ -32,9 +32,11 @@ export class VideosService {
   ) {}
 
   /**
-   * Ownership first (404), then the Free dog lock, then Plus. Listing and
-   * deleting existing videos stay open after Plus ends, so nothing is stuck
-   * in storage; uploading and playback need Plus.
+   * Ownership first (404), then the Free dog lock, then Plus. For the active
+   * dog, listing and deleting existing videos stay open after Plus ends;
+   * uploading and playback need Plus. A locked dog stays locked (Figma M14):
+   * its videos are cleaned up from storage when the dog is deleted
+   * (`dogId` is set to null and the worker removes them).
    */
   async assertAccess(
     userId: string,

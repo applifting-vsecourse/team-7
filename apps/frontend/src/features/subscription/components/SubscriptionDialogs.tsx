@@ -57,10 +57,14 @@ export function SubscriptionDialogs() {
   useEffect(() => {
     if (!access || !user) return;
     const last = previous.current;
+    // Only when access narrows: Plus ended, or the active dog changed away
+    // from a dog that was already active. Gaining an active dog (the first
+    // dog, or a choice) unlocks data, so there is nothing to remove.
     if (
       last &&
       !access.isPlus &&
-      (last.isPlus || last.activeDogId !== access.activeDogId)
+      (last.isPlus ||
+        (last.activeDogId !== null && last.activeDogId !== access.activeDogId))
     ) {
       // Remove the previous entitlement's data before any refetch can fail.
       selectDogs(null);
@@ -335,9 +339,19 @@ function ActiveDogDialog({
             <p>{t(($) => $.limits.chooseDogDescription)}</p>
             {dogs.isPending && <p role="status">{t(($) => $.dogs.loading)}</p>}
             {dogs.isError && (
-              <Button variant="secondary" onPress={() => void dogs.refetch()}>
-                {t(($) => $.dogs.retry)}
-              </Button>
+              <div className="flex flex-col items-start gap-3">
+                <p role="alert" className="text-sm text-danger">
+                  {t(($) => $.limits.chooseDogLoadError)}
+                </p>
+                <Button variant="secondary" onPress={() => void dogs.refetch()}>
+                  {t(($) => $.dogs.retry)}
+                </Button>
+              </div>
+            )}
+            {dogs.isSuccess && dogs.data.length === 0 && (
+              <p className="text-sm text-muted">
+                {t(($) => $.limits.chooseDogEmpty)}
+              </p>
             )}
             {dogs.data && (
               <RadioGroup
@@ -393,7 +407,7 @@ function ActiveDogDialog({
               variant="secondary"
               className="flex-auto sm:flex-none"
               isPending={mutation.isPending}
-              isDisabled={mutation.isPending}
+              isDisabled={mutation.isPending || !dogs.data?.length}
               onPress={() => {
                 if (!selected) setInvalid(true);
                 else mutation.mutate(selected);
