@@ -86,6 +86,14 @@ describe("revocable email changes", () => {
     });
   });
 
+  it("discards only the change issued with the given secret", async () => {
+    await service.discard("owner", secret);
+    expect(prisma.pendingEmailChange.deleteMany).toHaveBeenCalledWith({
+      where: { userId: "owner", tokenHash: record.tokenHash },
+    });
+    expect(prisma.$queryRaw).toHaveBeenCalled();
+  });
+
   it("rejects stale cancellation without cancelling a replacement", async () => {
     await expect(
       service.cancel("owner", "b".repeat(32)),

@@ -1,14 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsIn, IsOptional, IsString, Matches } from "class-validator";
 
+export const CONFIRMATION_TOKEN = /^[A-Za-z0-9_-]{43}$/;
+
+/** Documents the query; the controller validates it by hand (see there). */
 export class EmailChangeConfirmationDto {
-  @ApiProperty()
-  @IsString()
-  @Matches(/^[A-Za-z0-9_-]{43}$/)
+  @ApiProperty({ pattern: CONFIRMATION_TOKEN.source })
   token!: string;
 
   @ApiPropertyOptional({ enum: ["cs", "en"] })
-  @IsOptional()
-  @IsIn(["cs", "en"])
   lng?: "cs" | "en";
 }

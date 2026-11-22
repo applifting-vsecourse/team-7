@@ -47,6 +47,15 @@ export class EmailChangeService {
     return secret;
   }
 
+  /** Removes a just-issued change whose emails could not be sent. */
+  async discard(userId: string, secret: string) {
+    await this.locked(userId, (tx) =>
+      tx.pendingEmailChange.deleteMany({
+        where: { userId, tokenHash: hashToken(secret) },
+      }),
+    );
+  }
+
   async pending(userId: string) {
     const pending = await this.prisma.pendingEmailChange.findUnique({
       where: { userId },

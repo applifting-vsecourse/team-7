@@ -131,55 +131,64 @@ const createAuth = (
           select: { email: true },
         });
         let verificationUrl = url;
-        if (
-          storedUser &&
-          storedUser.email.toLowerCase() !== user.email.toLowerCase()
-        ) {
-          const nativeUrl = new URL(url);
-          const authToken = nativeUrl.searchParams.get("token");
-          if (!authToken) throw new Error("Missing email verification token");
-          const callback = new URL(
-            nativeUrl.searchParams.get("callbackURL") || "/settings",
-            config.frontendUrl,
-          );
-          if (!frontendOrigins(config).includes(callback.origin))
-            throw new Error("Invalid email change callback origin");
-          const secret = await emailChanges.issue({
-            userId: user.id,
-            originalEmail: storedUser.email,
-            email: user.email,
-            authToken,
-            callbackUrl: callback.href,
-            expiresAt: new Date(Date.now() + 60 * 60_000),
-          });
-          const link = new URL(
-            "/api/users/email-change/confirm",
-            config.backendUrl,
-          );
-          link.searchParams.set("token", secret);
-          link.searchParams.set("lng", language);
-          verificationUrl = link.href;
-          // Notify the original owner before sending the confirmation link.
-          const notice = await renderEmail(EmailChangeNotice, {
-            email: user.email,
-            url: callback.href,
+        // Without both emails there is no change to confirm, so a failed send
+        // must not leave a pending change the UI would show as awaiting.
+        let issued: string | undefined;
+        try {
+          if (
+            storedUser &&
+            storedUser.email.toLowerCase() !== user.email.toLowerCase()
+          ) {
+            const nativeUrl = new URL(url);
+            const authToken = nativeUrl.searchParams.get("token");
+            if (!authToken) throw new Error("Missing email verification token");
+            const callback = new URL(
+              nativeUrl.searchParams.get("callbackURL") || "/settings",
+              config.frontendUrl,
+            );
+            if (!frontendOrigins(config).includes(callback.origin))
+              throw new Error("Invalid email change callback origin");
+            const secret = await emailChanges.issue({
+              userId: user.id,
+              originalEmail: storedUser.email,
+              email: user.email,
+              authToken,
+              callbackUrl: callback.href,
+              expiresAt: new Date(Date.now() + 60 * 60_000),
+            });
+            issued = secret;
+            const link = new URL(
+              "/api/users/email-change/confirm",
+              config.backendUrl,
+            );
+            link.searchParams.set("token", secret);
+            link.searchParams.set("lng", language);
+            verificationUrl = link.href;
+            // Notify the original owner before sending the confirmation link.
+            const notice = await renderEmail(EmailChangeNotice, {
+              email: user.email,
+              url: callback.href,
+              language,
+            });
+            await emailProvider.sendEmail(
+              storedUser.email,
+              emailMessages[language].emailChangeNotice.subject,
+              notice,
+            );
+          }
+          const html = await renderEmail(VerifyEmail, {
+            url: verificationUrl,
             language,
           });
           await emailProvider.sendEmail(
-            storedUser.email,
-            emailMessages[language].emailChangeNotice.subject,
-            notice,
+            user.email,
+            emailMessages[language].verifyEmail.subject,
+            html,
           );
+        } catch (error) {
+          if (issued) await emailChanges.discard(user.id, issued);
+          throw error;
         }
-        const html = await renderEmail(VerifyEmail, {
-          url: verificationUrl,
-          language,
-        });
-        await emailProvider.sendEmail(
-          user.email,
-          emailMessages[language].verifyEmail.subject,
-          html,
-        );
       },
       sendOnSignUp: true,
     },
