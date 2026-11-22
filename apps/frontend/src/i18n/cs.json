@@ -941,6 +941,11 @@
     "weeklySuccess": "Úspěšnost po týdnech",
     "plusDogLimit": "Máte maximum {{limit}} psů. Místo uvolníte archivací.",
     "paymentDeclined": "Platba byla zamítnuta",
-    "paymentDeclinedDescription": "Banka platbu nepovolila. Nic jsme nestrhli. Zkuste jinou kartu, nebo se obraťte na svou banku."
+    "paymentDeclinedDescription": "Banka platbu nepovolila. Nic jsme nestrhli. Zkuste jinou kartu, nebo se obraťte na svou banku.",
+    "dogArchivedTitle": "{{name}} je v archivu",
+    "dogArchivedDescription": "Ve verzi Zdarma si data psa prohlédnete po jeho obnovení.",
+    "deleteDog": "Smazat psa",
+    "activeDogArchive": "S tímto psem ve verzi Zdarma trénujete. Archivovat ho půjde s Plus.",
+    "videosStored": "Uložená videa můžete smazat. Přehrát je půjde s Plus."
   }
 }

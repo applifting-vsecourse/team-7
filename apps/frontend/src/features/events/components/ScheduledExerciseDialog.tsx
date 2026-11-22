@@ -71,14 +71,12 @@ export function ScheduledExerciseDialog({
   initialMeasurement,
   onSaved,
   onStartClicker,
-  onReopen,
 }: {
   event: ScheduledEvent;
   onClose: () => void;
   initialMeasurement?: Measurement;
   onSaved?: () => void;
   onStartClicker?: () => void;
-  onReopen?: () => void;
 }) {
   const { t } = useTranslation();
   const { user } = useSession();
@@ -549,9 +547,8 @@ export function ScheduledExerciseDialog({
                         </RadioGroup>
                       )}
                     />
+                    {/* The Plus offer opens over this dialog, so the draft stays. */}
                     <ExerciseVideos
-                      onUpgrade={onClose}
-                      onUpgraded={onReopen}
                       dogId={event.dogId}
                       key={event.id}
                       sessionId={event.id}

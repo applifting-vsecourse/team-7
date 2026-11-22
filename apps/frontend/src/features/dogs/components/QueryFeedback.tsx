@@ -5,9 +5,14 @@ import { useTranslation } from "react-i18next";
 import { LockedFeature } from "@/features/subscription/components/LockedFeature";
 import { subscriptionError } from "@/features/subscription/hooks/subscriptionError";
 
+import { ArchivedDogLocked } from "./ArchivedDogLocked";
+
 export function QueryFeedback({
   query,
+  dogId,
 }: {
+  /** The dog the query is about, so an archived dog can offer "Restore". */
+  dogId?: string;
   query: {
     isPending: boolean;
     isError: boolean;
@@ -24,6 +29,9 @@ export function QueryFeedback({
     );
   }
   if (!query.isError) return null;
+  if (dogId && subscriptionError(query.error) === "dogArchived") {
+    return <ArchivedDogLocked dogId={dogId} />;
+  }
   if (
     ["dogLocked", "dogChoiceRequired"].includes(
       subscriptionError(query.error) ?? "",

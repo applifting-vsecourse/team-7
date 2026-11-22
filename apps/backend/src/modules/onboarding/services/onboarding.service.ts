@@ -25,7 +25,11 @@ export class OnboardingService {
     const activeDog = {
       userId,
       archivedAt: null,
-      ...(!access.isPlus ? { id: access.activeDogId ?? "" } : {}),
+      // Before a Free user picks the active dog (needsDogChoice) the tour
+      // still sees their dogs instead of falling back to "add a dog".
+      ...(!access.isPlus && access.activeDogId
+        ? { id: access.activeDogId }
+        : {}),
     };
     const [state, dog, planned] = await Promise.all([
       this.prisma.user.findUniqueOrThrow({

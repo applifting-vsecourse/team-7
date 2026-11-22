@@ -11,12 +11,14 @@ import { useSession } from "@/features/auth/hooks/useSession";
 import { addDogDialogOpenAtom } from "@/features/dogs/atoms/addDogDialogOpenAtom";
 import { useAddDog } from "@/features/dogs/hooks/useAddDog";
 import { useTour } from "@/features/onboarding/hooks/useTour";
+import { subscriptionError } from "@/features/subscription/hooks/subscriptionError";
 import {
   useDogLimit,
   usePlusOffer,
+  useSubscription,
 } from "@/features/subscription/hooks/useSubscription";
 
-import { AddDogForm } from "./AddDogForm";
+import { AddDogForm, type AddDogValues } from "./AddDogForm";
 
 /** Sidebar trigger; the dialog itself is rendered once by the layout. */
 export function AddDogButton() {
@@ -62,6 +64,41 @@ export function AddDogDialog() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useAtom(addDogDialogOpenAtom);
   const tour = useTour();
+  const subscription = useSubscription().data;
+  const offer = usePlusOffer();
+  const submit = async (values: AddDogValues): Promise<void> => {
+    let dog;
+    try {
+      dog = await addDog.mutateAsync(values);
+    } catch (error) {
+      if (subscriptionError(error) !== "dogLimit") throw error;
+      // Plus is already the highest plan, so there is nothing to offer.
+      if (subscription?.isPlus) {
+        toast.danger(
+          t(($) => $.limits.plusDogLimit, { limit: subscription.dogLimit }),
+        );
+        return;
+      }
+      // The offer opens over this dialog, so the form keeps its values, and
+      // a started trial saves the dog straight away (Figma M5).
+      offer({
+        reason: "dogs",
+        onSuccess: () =>
+          void submit(values).catch(() =>
+            toast.danger(t(($) => $.dogs.addError)),
+          ),
+      });
+      return;
+    }
+    setIsOpen(false);
+    // The new dog opens straight away and is active in the sidebar.
+    toast.success(t(($) => $.dogs.addedToast, { name: dog.name }));
+    void navigate({
+      to: ROUTES.dog,
+      params: { dogId: dog.id },
+    });
+    tour.complete("addDog");
+  };
 
   return (
     <Modal.Backdrop
@@ -84,17 +121,7 @@ export function AddDogDialog() {
             <AddDogForm
               isPending={addDog.isPending}
               onCancel={() => setIsOpen(false)}
-              onSubmit={async (values) => {
-                const dog = await addDog.mutateAsync(values);
-                setIsOpen(false);
-                // The new dog opens straight away and is active in the sidebar.
-                toast.success(t(($) => $.dogs.addedToast, { name: dog.name }));
-                void navigate({
-                  to: ROUTES.dog,
-                  params: { dogId: dog.id },
-                });
-                tour.complete("addDog");
-              }}
+              onSubmit={submit}
             />
           )}
         </Modal.Dialog>

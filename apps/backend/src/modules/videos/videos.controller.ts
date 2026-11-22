@@ -41,10 +41,14 @@ export class VideoOwnerGuard implements CanActivate {
     const request = context
       .switchToHttp()
       .getRequest<Request & { session: { user: Identity } }>();
+    const listOrDelete =
+      request.method === "DELETE" ||
+      (request.method === "GET" && !request.params.id);
     await this.videos.assertAccess(
       request.session.user.id,
       String(request.params.dogId),
       String(request.params.sessionId),
+      { requirePlus: !listOrDelete },
     );
     return true;
   }

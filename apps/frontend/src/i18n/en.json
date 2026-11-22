@@ -941,6 +941,11 @@
     "weeklySuccess": "Weekly success",
     "plusDogLimit": "You have the maximum of {{limit}} dogs. Archive one to make room.",
     "paymentDeclined": "Payment declined",
-    "paymentDeclinedDescription": "Your bank declined the payment. Nothing was charged. Try another card or contact your bank."
+    "paymentDeclinedDescription": "Your bank declined the payment. Nothing was charged. Try another card or contact your bank.",
+    "dogArchivedTitle": "{{name}} is archived",
+    "dogArchivedDescription": "On Free, you can view the dog’s data after restoring it.",
+    "deleteDog": "Delete dog",
+    "activeDogArchive": "This is the dog you train with on Free. You can archive it with Plus.",
+    "videosStored": "You can delete saved videos. Playing them requires Plus."
   }
 }

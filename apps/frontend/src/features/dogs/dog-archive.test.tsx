@@ -17,7 +17,7 @@ import { createPlusSubscription } from "@/test/fixtures/subscription";
 
 const state = vi.hoisted(() => ({
   get: new Map<string, () => unknown>(),
-  post: vi.fn<(path: string) => Promise<unknown>>(),
+  post: vi.fn<(path: string, options?: unknown) => Promise<unknown>>(),
 }));
 vi.mock("@/lib/api-client", () => ({
   api: {
@@ -28,7 +28,12 @@ vi.mock("@/lib/api-client", () => ({
         return response();
       },
     }),
-    post: (path: string) => state.post(path),
+    post: (path: string, options?: unknown) => {
+      // Called with the path alone when there is no body, as before.
+      const response =
+        options === undefined ? state.post(path) : state.post(path, options);
+      return Object.assign(response, { json: () => response });
+    },
   },
 }));
 vi.mock("@/features/auth/lib/auth-client", () => ({
@@ -266,5 +271,126 @@ describe("dog archive", () => {
     expect(screen.queryByRole("button", { name: "Assign" })).toBeNull();
     // Goals the dog doesn't train only offer assigning, so they're hidden.
     expect(screen.queryByText("Stay")).toBeNull();
+  });
+
+  it("on Free shows an archived dog locked, with restore and delete instead of a Plus offer", async () => {
+    const user = userEvent.setup();
+    state.get.set("users/me/subscription", () =>
+      createPlusSubscription({
+        status: "free",
+        isPlus: false,
+        paidUntil: null,
+        dogs: 0,
+        dogLimit: 1,
+        goalLimit: 2,
+      }),
+    );
+    const profile = state.get.get("dogs/dog-1")!;
+    let restored = false;
+    state.get.set("dogs/dog-1", () => {
+      if (restored) return profile();
+      throw Object.assign(new Error("Forbidden"), {
+        subscriptionCode: "dogArchived",
+      });
+    });
+    state.post.mockImplementation(async (path) => {
+      if (path === "dogs/dog-1/restore") restored = true;
+      return {};
+    });
+    renderRoute("/dogs/dog-1");
+
+    expect(
+      await screen.findByRole("heading", { name: "Mája is archived" }),
+    ).toBeVisible();
+    expect(screen.getByRole("button", { name: "Delete dog" })).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "Renew Plus" }),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Restore" }));
+    await waitFor(() =>
+      expect(state.post).toHaveBeenCalledWith("dogs/dog-1/restore"),
+    );
+  });
+
+  it("keeps the add-dog form when the dog limit offers Plus, then saves after the trial", async () => {
+    const user = userEvent.setup();
+    let plus = false;
+    state.get.set("users/me/subscription", () =>
+      plus
+        ? createPlusSubscription({ status: "trial", dogs: 0 })
+        : createPlusSubscription({
+            status: "free",
+            isPlus: false,
+            paidUntil: null,
+            trialUsed: false,
+            dogs: 0,
+            dogLimit: 1,
+            goalLimit: 2,
+          }),
+    );
+    state.get.set("dogs/dog-2", () => ({
+      ...archivedDog,
+      id: "dog-2",
+      name: "Rex",
+      archivedAt: null,
+    }));
+    state.post.mockImplementation(async (path) => {
+      if (path === "users/me/subscription") {
+        plus = true;
+        return createPlusSubscription({ status: "trial", dogs: 0 });
+      }
+      if (path === "dogs" && !plus) {
+        throw Object.assign(new Error("Forbidden"), {
+          subscriptionCode: "dogLimit",
+        });
+      }
+      return { ...archivedDog, id: "dog-2", name: "Rex", archivedAt: null };
+    });
+    renderRoute("/dogs/archive");
+
+    const [addDog] = await screen.findAllByRole("button", { name: "Add dog" });
+    await user.click(addDog!);
+    const form = await screen.findByRole("dialog");
+    await user.type(within(form).getByLabelText("Name"), "Rex");
+    await user.click(within(form).getByRole("button", { name: "Add dog" }));
+
+    await user.click(
+      await screen.findByRole("button", { name: "Try 14 days free" }),
+    );
+    await waitFor(() =>
+      expect(state.post).toHaveBeenCalledWith("dogs", expect.anything()),
+    );
+    expect(
+      state.post.mock.calls.filter(([path]) => path === "dogs"),
+    ).toHaveLength(2);
+    expect(
+      state.post.mock.calls.filter(([path]) => path === "dogs").at(-1)![1],
+    ).toEqual({ json: { name: "Rex" } });
+  });
+
+  it("disables archiving the Free active dog while other dogs exist", async () => {
+    const user = userEvent.setup();
+    state.get.set("users/me/subscription", () =>
+      createPlusSubscription({
+        status: "free",
+        isPlus: false,
+        paidUntil: null,
+        activeDogId: "dog-1",
+        dogs: 2,
+        dogLimit: 1,
+        goalLimit: 2,
+      }),
+    );
+    state.get.set("dogs/dog-1", () => ({ ...archivedDog, archivedAt: null }));
+    renderRoute("/dogs/dog-1");
+
+    await user.click(
+      await screen.findByRole("button", { name: "More dog actions" }),
+    );
+    const archive = await screen.findByRole("menuitem", { name: /Archive/ });
+    expect(archive).toHaveAttribute("aria-disabled", "true");
+    expect(archive).toHaveTextContent(
+      "This is the dog you train with on Free. You can archive it with Plus.",
+    );
   });
 });

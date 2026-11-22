@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { CrownDiamond, Lock } from "@gravity-ui/icons";
 import { Button } from "@heroui/react";
 import { useTranslation } from "react-i18next";
@@ -11,6 +12,7 @@ export function LockedFeature({
   onUpgrade,
   onUpgraded,
   centered = false,
+  actions,
 }: {
   reason: PlusReason;
   title: string;
@@ -18,6 +20,8 @@ export function LockedFeature({
   onUpgrade?: () => void;
   onUpgraded?: () => void;
   centered?: boolean;
+  /** Replaces the Plus button, e.g. with "Restore dog". */
+  actions?: ReactNode;
 }) {
   const { t } = useTranslation();
   const offer = usePlusOffer();
@@ -44,20 +48,22 @@ export function LockedFeature({
           <p className="leading-7 text-muted">{description}</p>
         </>
       )}
-      <Button
-        size="sm"
-        variant={centered && reason === "renew" ? "primary" : "secondary"}
-        className={centered ? "mt-1" : "w-full shrink-0 sm:ml-auto sm:w-auto"}
-        onPress={() => {
-          onUpgrade?.();
-          offer({ reason, onSuccess: onUpgraded });
-        }}
-      >
-        <CrownDiamond className="size-4" aria-hidden="true" />
-        {reason === "renew"
-          ? t(($) => $.limits.renew)
-          : t(($) => $.subscription.tryPlus)}
-      </Button>
+      {actions ?? (
+        <Button
+          size="sm"
+          variant={centered && reason === "renew" ? "primary" : "secondary"}
+          className={centered ? "mt-1" : "w-full shrink-0 sm:ml-auto sm:w-auto"}
+          onPress={() => {
+            onUpgrade?.();
+            offer({ reason, onSuccess: onUpgraded });
+          }}
+        >
+          <CrownDiamond className="size-4" aria-hidden="true" />
+          {reason === "renew"
+            ? t(($) => $.limits.renew)
+            : t(($) => $.subscription.tryPlus)}
+        </Button>
+      )}
     </div>
   );
 }

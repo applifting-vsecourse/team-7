@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "@/lib/api-client";
 
 import { DeleteDialog } from "@/features/disciplines/components/DeleteDialog";
+import { useSubscription } from "@/features/subscription/hooks/useSubscription";
 
 import { useDogMeta } from "../hooks/useDogMeta";
 import {
@@ -34,6 +35,14 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
   const action = useDogAction(dog.id);
   const restoreDog = useRestoreDog();
   const archived = Boolean(dog.archivedAt);
+  const subscription = useSubscription().data;
+  // On Free the active dog can't be archived while others exist; that would
+  // swap the active dog, which only renewing Plus may do.
+  const activeOnFree =
+    !!subscription &&
+    !subscription.isPlus &&
+    subscription.activeDogId === dog.id &&
+    subscription.dogs > 1;
   const save = useDogProfileMutation(
     ({ name, breed, birthDate }: AddDogValues) =>
       api.patch(`dogs/${encodeURIComponent(dog.id)}`, {
@@ -121,6 +130,7 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
                     id="archive"
                     textValue={t(($) => $.dogProfile.archive)}
                     className="items-start"
+                    isDisabled={activeOnFree}
                   >
                     {/* h-5 = the label's line height, so the icon centres on it. */}
                     <span className="flex h-5 shrink-0 items-center">
@@ -132,7 +142,9 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
                     <div className="flex flex-col">
                       <Label>{t(($) => $.dogProfile.archive)}</Label>
                       <Description>
-                        {t(($) => $.dogProfile.archiveHint)}
+                        {activeOnFree
+                          ? t(($) => $.limits.activeDogArchive)
+                          : t(($) => $.dogProfile.archiveHint)}
                       </Description>
                     </div>
                   </Dropdown.Item>

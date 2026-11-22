@@ -262,6 +262,17 @@ export class DogsController {
       select: { id: true },
     });
     if (!owned) throw new NotFoundException("Dog not found");
+    // On Free the active dog stays the active dog until Plus is renewed, so
+    // archiving it can't be used to unlock another one.
+    const access = await subscriptionAccess(this.prisma, user.id);
+    if (
+      !access.isPlus &&
+      access.activeDogId === id &&
+      (await this.prisma.dog.count({
+        where: { userId: user.id, archivedAt: null },
+      })) > 1
+    )
+      throw subscriptionRequired("activeDogArchive");
     // The archivedAt condition keeps a concurrent archive from overwriting the date.
     const [dog] = await this.prisma.dog.updateManyAndReturn({
       where: { id, userId: user.id, archivedAt: null },

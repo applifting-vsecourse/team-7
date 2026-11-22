@@ -7,6 +7,7 @@ import { DogsController } from "@/modules/dogs/controllers/dogs.controller";
 import { DogExerciseDetailsService } from "@/modules/dogs/services/dog-exercise-details.service";
 import { DogSelectionService } from "@/modules/dogs/services/dog-selection.service";
 import { EventsService } from "@/modules/events/services/events.service";
+import { OnboardingService } from "@/modules/onboarding/services/onboarding.service";
 import { NeglectedDisciplinesService } from "@/modules/overview/services/neglected-disciplines.service";
 import { OverviewService } from "@/modules/overview/services/overview.service";
 import { SubscriptionService } from "@/modules/users/services/subscription.service";
@@ -202,6 +203,68 @@ describe("subscription boundaries", () => {
     await expect(dogs.getDog(user, "foreign")).rejects.toMatchObject({
       status: 404,
     });
+  });
+
+  it("keeps the Free active dog from being archived while other dogs exist", async () => {
+    db.subscription.findUnique.mockResolvedValue({ activeDogId: "a" } as never);
+    db.dog.findMany.mockResolvedValue([{ id: "a" }, { id: "b" }] as never);
+    db.dog.count.mockResolvedValue(2);
+    const dogs = new DogsController(db, mockDeep<DogAvatarsService>());
+    await expect(dogs.archiveDog(user, "a")).rejects.toMatchObject({
+      response: { code: "activeDogArchive" },
+    });
+    expect(db.dog.updateManyAndReturn).not.toHaveBeenCalled();
+
+    // The only dog, or Plus: archiving is fine.
+    db.dog.findMany.mockResolvedValue([{ id: "a" }] as never);
+    db.dog.count.mockResolvedValue(1);
+    db.dog.updateManyAndReturn.mockResolvedValue([{ id: "a" }] as never);
+    await expect(dogs.archiveDog(user, "a")).resolves.toEqual({ id: "a" });
+  });
+
+  it("answers dogArchived for an archived dog on Free, so it can be restored", async () => {
+    db.dog.findFirst.mockResolvedValue({ archivedAt: new Date() } as never);
+    const dogs = new DogsController(db, mockDeep<DogAvatarsService>());
+    await expect(dogs.getDog(user, "archived")).rejects.toMatchObject({
+      response: { code: "dogArchived" },
+    });
+  });
+
+  it("lets Free list and delete saved videos but not upload or play them", async () => {
+    const videos = new VideosService(db, mockDeep<VideoStorageService>());
+    db.scheduledExercise.findFirst.mockResolvedValue({
+      id: "session",
+      exerciseId: "exercise",
+    } as never);
+    await expect(
+      videos.assertAccess(user.id, "a", "session", { requirePlus: false }),
+    ).resolves.toMatchObject({ id: "session" });
+    await expect(
+      videos.assertAccess(user.id, "a", "session"),
+    ).rejects.toMatchObject({ response: { code: "plusRequired" } });
+    db.dog.findFirst.mockResolvedValue(null);
+    await expect(
+      videos.assertAccess(user.id, "foreign", "session"),
+    ).rejects.toMatchObject({ status: 404 });
+  });
+
+  it("counts no goals and keeps the tour on the user's dogs before a dog is chosen", async () => {
+    db.dog.findMany.mockResolvedValue([{ id: "a" }, { id: "b" }] as never);
+    await new SubscriptionService(db).get(user.id);
+    expect(db.dogGoal.count).toHaveBeenCalledWith({
+      where: {
+        dog: { userId: user.id, archivedAt: null, id: "" },
+        status: "in_progress",
+      },
+    });
+    db.user.findUniqueOrThrow.mockResolvedValue({} as never);
+    db.dog.findFirst.mockResolvedValue(null);
+    await new OnboardingService(db).get(user.id, new Date());
+    expect(db.dog.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: user.id, archivedAt: null },
+      }),
+    );
   });
 
   it("limits in-progress goals across disciplines, permits existing over-limit goals, and permits reducing them", async () => {
