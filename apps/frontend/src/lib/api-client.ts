@@ -21,21 +21,19 @@ export const api = ky.create({
     // Without this the user would see ky's generic "Request failed with status
     // code 400" and never learn what was actually wrong.
     beforeError: [
-      async ({ error }) => {
+      ({ error }) => {
         if (!(error instanceof HTTPError)) return error;
-        try {
-          const body = (await error.response.clone().json()) as {
-            message?: string | string[];
-            code?: string;
-          };
-          if (body.code) Object.assign(error, { subscriptionCode: body.code });
-          const message = Array.isArray(body.message)
-            ? body.message.join(", ")
-            : body.message;
-          if (message) error.message = message;
-        } catch {
-          // response had no JSON body — keep ky's default message
-        }
+        // ky 2 consumes the body into `error.data` before this hook runs.
+        const body = (
+          typeof error.data === "object" && error.data !== null
+            ? error.data
+            : {}
+        ) as { message?: string | string[]; code?: string };
+        if (body.code) Object.assign(error, { subscriptionCode: body.code });
+        const message = Array.isArray(body.message)
+          ? body.message.join(", ")
+          : body.message;
+        if (message) error.message = message;
         return error;
       },
     ],
