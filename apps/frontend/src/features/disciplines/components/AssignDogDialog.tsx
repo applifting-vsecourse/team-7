@@ -108,8 +108,8 @@ function AssignSteps({
   const submit = (dog: Dog, goals: AssignedGoal[]) => {
     if (
       subscription.data &&
-      !subscription.data.isPlus &&
-      subscription.data.goals + goals.length > 2
+      subscription.data.goalLimit !== null &&
+      subscription.data.goals + goals.length > subscription.data.goalLimit
     ) {
       offer({ reason: "goals", onSuccess: () => save(dog, goals) });
       return;

@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, type QueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { api } from "@/lib/api-client";
@@ -12,7 +12,10 @@ export const subscriptionSchema = z.object({
   cardLast4: z.string(),
   dogs: z.number(),
   freeDogLimit: z.number().int().positive(),
+  dogLimit: z.number().int().positive(),
+  plusDogLimit: z.number().int().positive(),
   goals: z.number(),
+  goalLimit: z.number().int().positive().nullable(),
   isPlus: z.boolean(),
   needsDogChoice: z.boolean(),
   activeDogId: z.string().nullable(),
@@ -79,3 +82,16 @@ export const dogChoicesQueryOptions = (userId: string | undefined) =>
           await api.get("users/me/subscription/dog-choices", { signal }).json(),
         ),
   });
+
+/**
+ * After any subscription change: store the new state and refetch everything,
+ * because dogs, plans, videos and stats are all gated by the plan.
+ */
+export async function applySubscription(
+  client: QueryClient,
+  userId: string,
+  data: Subscription,
+) {
+  client.setQueryData(subscriptionQueryOptions(userId).queryKey, data);
+  await client.invalidateQueries();
+}

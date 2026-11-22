@@ -1,4 +1,4 @@
-import { ForbiddenException } from "@nestjs/common";
+import { ForbiddenException, NotFoundException } from "@nestjs/common";
 import type { Prisma, Subscription } from "@/generated/prisma/client";
 
 type AccessDb = Pick<Prisma.TransactionClient, "subscription" | "dog">;
@@ -49,10 +49,13 @@ export async function assertDogAccess(
   dogId: string,
 ) {
   const access = await subscriptionAccess(db, userId);
-  if (!access.isPlus && access.activeDogId !== dogId)
-    throw subscriptionRequired(
-      access.needsDogChoice ? "dogChoiceRequired" : "dogLocked",
-    );
+  if (access.isPlus || access.activeDogId === dogId) return;
+  // A missing or foreign dog is "not found", never an upsell.
+  if (!(await db.dog.findFirst({ where: { id: dogId, userId } })))
+    throw new NotFoundException("Dog not found");
+  throw subscriptionRequired(
+    access.needsDogChoice ? "dogChoiceRequired" : "dogLocked",
+  );
 }
 
 export async function assertPlus(db: AccessDb, userId: string) {

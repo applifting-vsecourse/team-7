@@ -89,8 +89,11 @@ describe("mock subscriptions API", () => {
     expect(await (await fetch(url)).json()).toMatchObject({
       status: "free",
       freeDogLimit: 1,
+      dogLimit: 1,
+      plusDogLimit: 5,
       dogs: 1,
       goals: 2,
+      goalLimit: 2,
       trialUsed: false,
     });
     const trial = await act("trial");
@@ -120,12 +123,25 @@ describe("mock subscriptions API", () => {
     expect(prisma.dogGoal.count).toHaveBeenCalledWith({
       where: {
         dog: { userId: "owner", archivedAt: null },
-        status: { not: "completed" },
+        status: "in_progress",
       },
     });
   });
 
-  it("simulates declined payments and recovers with a different test card", async () => {
+  it("rejects a failed payment without a paid period, so it can't become free Plus", async () => {
+    expect((await post({ action: "failPayment" })).status).toBe(400);
+    expect((await post({ action: "changeCard" })).status).toBe(400);
+    expect(await (await fetch(url)).json()).toMatchObject({
+      status: "free",
+      isPlus: false,
+    });
+    await act("trial");
+    expect((await post({ action: "failPayment" })).status).toBe(400);
+    expect(record).toMatchObject({ paymentFailed: false, paidUntil: null });
+  });
+
+  it("simulates a declined renewal and recovers with a different test card", async () => {
+    await act("pay");
     const failed = await act("failPayment");
     expect(failed.status).toBe("pastDue");
     expect(new Date(failed.retryAt).getTime()).toBeGreaterThan(Date.now());

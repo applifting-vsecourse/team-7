@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useId } from "react";
 import { Plus } from "@gravity-ui/icons";
 import { Button, Modal, toast } from "@heroui/react";
 import { useNavigate } from "@tanstack/react-router";
@@ -12,7 +12,7 @@ import { addDogDialogOpenAtom } from "@/features/dogs/atoms/addDogDialogOpenAtom
 import { useAddDog } from "@/features/dogs/hooks/useAddDog";
 import { useTour } from "@/features/onboarding/hooks/useTour";
 import {
-  useSubscription,
+  useDogLimit,
   usePlusOffer,
 } from "@/features/subscription/hooks/useSubscription";
 
@@ -23,18 +23,35 @@ export function AddDogButton() {
   const { t } = useTranslation();
   const { user } = useSession();
   const setIsOpen = useSetAtom(addDogDialogOpenAtom);
+  const offer = usePlusOffer();
+  const { limit, needsPlus, plusFull } = useDogLimit();
+  const noteId = useId();
 
   return (
-    <Button
-      variant="secondary"
-      isDisabled={!user}
-      className="h-9 w-full gap-2 rounded-3xl"
-      data-tour="add-dog"
-      onPress={() => setIsOpen(true)}
-    >
-      <Plus className="size-4" aria-hidden="true" />
-      {t(($) => $.navigation.addDog)}
-    </Button>
+    <div className="flex flex-col gap-2">
+      <Button
+        variant="secondary"
+        isDisabled={!user || plusFull}
+        className="h-9 w-full gap-2 rounded-3xl"
+        data-tour="add-dog"
+        aria-describedby={plusFull ? noteId : undefined}
+        // The limit is checked when the dialog opens, not while it is open:
+        // adding the first dog must not turn into a Plus offer.
+        onPress={() =>
+          needsPlus
+            ? offer({ reason: "dogs", onSuccess: () => setIsOpen(true) })
+            : setIsOpen(true)
+        }
+      >
+        <Plus className="size-4" aria-hidden="true" />
+        {t(($) => $.navigation.addDog)}
+      </Button>
+      {plusFull && (
+        <p id={noteId} className="text-xs text-muted">
+          {t(($) => $.limits.plusDogLimit, { limit })}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -45,22 +62,10 @@ export function AddDogDialog() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useAtom(addDogDialogOpenAtom);
   const tour = useTour();
-  const subscription = useSubscription();
-  const offer = usePlusOffer();
-  const limited =
-    !!subscription.data &&
-    !subscription.data.isPlus &&
-    subscription.data.dogs >= subscription.data.freeDogLimit;
-  useEffect(() => {
-    if (isOpen && limited) {
-      setIsOpen(false);
-      offer({ reason: "dogs", onSuccess: () => setIsOpen(true) });
-    }
-  }, [isOpen, limited, offer, setIsOpen]);
 
   return (
     <Modal.Backdrop
-      isOpen={isOpen && !limited}
+      isOpen={isOpen}
       onOpenChange={(open) => {
         if (addDog.isPending) return;
         setIsOpen(open);
@@ -75,7 +80,7 @@ export function AddDogDialog() {
           <Modal.Header>
             <Modal.Heading>{t(($) => $.navigation.addDog)}</Modal.Heading>
           </Modal.Header>
-          {isOpen && subscription.data && !limited ? (
+          {isOpen && (
             <AddDogForm
               isPending={addDog.isPending}
               onCancel={() => setIsOpen(false)}
@@ -91,26 +96,6 @@ export function AddDogDialog() {
                 tour.complete("addDog");
               }}
             />
-          ) : (
-            <Modal.Body>
-              {subscription.isError ? (
-                <div className="flex flex-col items-start gap-3">
-                  <p role="alert" className="text-danger">
-                    {t(($) => $.subscription.loadError)}
-                  </p>
-                  <Button
-                    variant="secondary"
-                    onPress={() => void subscription.refetch()}
-                  >
-                    {t(($) => $.dogs.retry)}
-                  </Button>
-                </div>
-              ) : (
-                <p role="status" className="text-sm text-muted">
-                  {t(($) => $.settings.loading)}
-                </p>
-              )}
-            </Modal.Body>
           )}
         </Modal.Dialog>
       </Modal.Container>

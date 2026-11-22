@@ -852,7 +852,7 @@
   },
   "subscription": {
     "title": "Předplatné",
-    "freeDescription": "Limity verze Zdarma: psi ({{count}}), rozpracované cíle (2).",
+    "freeDescription": "Limity verze Zdarma: psi ({{count}}), rozpracované cíle ({{goals}}).",
     "trialDescription": "Zkušební doba Plus. Do {{date}} nic neplatíte.",
     "activeDescription": "Plus se obnovuje automaticky.",
     "plan": "Tarif",
@@ -906,16 +906,16 @@
     "yearlyDescription": "41 Kč měsíčně",
     "monthlyDescription": "828 Kč za rok",
     "saving": "Ušetříte 41 %",
-    "dogsTitle": "Neomezeně psů s Plus",
+    "dogsTitle": "Až {{limit}} psů s Plus",
     "goalsTitle": "Víc rozpracovaných cílů s Plus",
     "videosTitle": "Videa ke cvičením s Plus",
     "statsTitle": "Vývoj po týdnech",
-    "dogsDescription": "Limit psů ve verzi Zdarma: {{count}}. S Plus jich přidáte, kolik potřebujete.",
-    "goalsDescription": "Ve verzi Zdarma můžete mít rozpracované 2 cíle. S Plus jich máte, kolik potřebujete.",
+    "dogsDescription": "Limit psů ve verzi Zdarma: {{count}}. S Plus jich můžete mít až {{limit}}.",
+    "goalsDescription": "Ve verzi Zdarma můžete mít rozpracované {{limit}} cíle. S Plus jich máte, kolik potřebujete.",
     "videosDescription": "Nahrajte až 3 videa ke každému cvičení.",
     "statsDescription": "Spokojenost a úspěšnost týden po týdnu jsou součástí Plus.",
     "payDescription": "Vyberte, jak chcete platit. Platba je pouze ukázková.",
-    "unlimited": "Neomezeně psů a rozpracovaných cílů",
+    "unlimited": "Až {{limit}} psů a neomezeně rozpracovaných cílů",
     "videosBenefit": "Videa ke cvičením",
     "statsBenefit": "Detailní statistiky a celá historie",
     "trialTerms": "14 dní zdarma, bez platební karty. Na konci zkušební doby se rozhodnete, jestli Plus zaplatíte.",
@@ -938,6 +938,9 @@
     "trialEndingDescription": "Zaplaťte, ať vám zůstanou všichni psi, videa a statistiky. Jinak přejdete na verzi Zdarma.",
     "testCheckout": "Testovací platba",
     "unfinishedGoals": "Rozpracované cíle: {{count}}",
-    "weeklySuccess": "Úspěšnost po týdnech"
+    "weeklySuccess": "Úspěšnost po týdnech",
+    "plusDogLimit": "Máte maximum {{limit}} psů. Místo uvolníte archivací.",
+    "paymentDeclined": "Platba byla zamítnuta",
+    "paymentDeclinedDescription": "Banka platbu nepovolila. Nic jsme nestrhli. Zkuste jinou kartu, nebo se obraťte na svou banku."
   }
 }

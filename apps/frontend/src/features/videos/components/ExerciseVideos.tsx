@@ -37,7 +37,36 @@ type ExerciseVideosProps = {
 export function ExerciseVideos(props: ExerciseVideosProps) {
   const subscription = useSubscription();
   const { t } = useTranslation();
-  if (!subscription.data?.isPlus) {
+  // Until the plan is known, show the same loading/error states as the list,
+  // so a paying user never sees the lock while the subscription loads.
+  if (!subscription.data) {
+    return (
+      <section className="flex flex-col gap-2">
+        <h3 className="text-sm font-medium">{t(($) => $.videos.title)}</h3>
+        {subscription.isError ? (
+          <div
+            role="alert"
+            className="flex items-center gap-2 text-sm text-danger"
+          >
+            {t(($) => $.videos.loadError)}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onPress={() => void subscription.refetch()}
+            >
+              {t(($) => $.videos.retry)}
+            </Button>
+          </div>
+        ) : (
+          <p role="status" className="text-sm text-muted">
+            {t(($) => $.videos.loading)}
+          </p>
+        )}
+      </section>
+    );
+  }
+  if (!subscription.data.isPlus) {
     return (
       <section className="flex flex-col gap-2">
         <h3 className="text-sm font-medium">{t(($) => $.videos.title)}</h3>

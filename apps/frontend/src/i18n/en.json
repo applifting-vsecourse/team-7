@@ -852,7 +852,7 @@
   },
   "subscription": {
     "title": "Subscription",
-    "freeDescription": "Free plan limits: dogs ({{count}}), goals in progress (2).",
+    "freeDescription": "Free plan limits: dogs ({{count}}), goals in progress ({{goals}}).",
     "trialDescription": "Plus trial. Nothing to pay until {{date}}.",
     "activeDescription": "Plus renews automatically.",
     "plan": "Plan",
@@ -906,16 +906,16 @@
     "yearlyDescription": "CZK 41 per month",
     "monthlyDescription": "CZK 828 per year",
     "saving": "Save 41%",
-    "dogsTitle": "Unlimited dogs with Plus",
+    "dogsTitle": "Up to {{limit}} dogs with Plus",
     "goalsTitle": "More goals in progress with Plus",
     "videosTitle": "Exercise videos with Plus",
     "statsTitle": "Weekly trends",
-    "dogsDescription": "Free plan dog limit: {{count}}. Add as many as you need with Plus.",
-    "goalsDescription": "Free includes 2 unfinished goals. Plus lets you work on as many as you need.",
+    "dogsDescription": "Free plan dog limit: {{count}}. With Plus you can have up to {{limit}}.",
+    "goalsDescription": "Free includes {{limit}} goals in progress. Plus lets you work on as many as you need.",
     "videosDescription": "Upload up to 3 videos per training session.",
     "statsDescription": "Weekly satisfaction and success trends are part of Plus.",
     "payDescription": "Choose how to pay. This is a mock payment only.",
-    "unlimited": "Unlimited dogs and goals in progress",
+    "unlimited": "Up to {{limit}} dogs and unlimited goals in progress",
     "videosBenefit": "Exercise videos",
     "statsBenefit": "Detailed statistics and full history",
     "trialTerms": "14 days free, no payment card needed. Decide whether to pay for Plus at the end of your trial.",
@@ -938,6 +938,9 @@
     "trialEndingDescription": "Pay to keep all your dogs, videos and statistics. Otherwise you will switch to Free.",
     "testCheckout": "Test payment",
     "unfinishedGoals": "Unfinished goals: {{count}}",
-    "weeklySuccess": "Weekly success"
+    "weeklySuccess": "Weekly success",
+    "plusDogLimit": "You have the maximum of {{limit}} dogs. Archive one to make room.",
+    "paymentDeclined": "Payment declined",
+    "paymentDeclinedDescription": "Your bank declined the payment. Nothing was charged. Try another card or contact your bank."
   }
 }

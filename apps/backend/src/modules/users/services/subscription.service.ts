@@ -11,7 +11,12 @@ import {
   subscriptionAccess,
   subscriptionRequired,
 } from "@/shared/subscription/subscription-access";
-import { FREE_DOG_LIMIT } from "@/shared/subscription/subscription.constants";
+import {
+  dogLimit,
+  FREE_DOG_LIMIT,
+  FREE_GOAL_LIMIT,
+  PLUS_DOG_LIMIT,
+} from "@/shared/subscription/subscription.constants";
 
 @Injectable()
 export class SubscriptionService {
@@ -37,7 +42,7 @@ export class SubscriptionService {
               ? { id: access.activeDogId }
               : {}),
           },
-          status: { not: "completed" },
+          status: "in_progress",
         },
       }),
     ]);
@@ -64,7 +69,10 @@ export class SubscriptionService {
       cardLast4: subscription?.cardLast4 ?? "4242",
       dogs,
       freeDogLimit: FREE_DOG_LIMIT,
+      dogLimit: dogLimit(access.isPlus),
+      plusDogLimit: PLUS_DOG_LIMIT,
       goals,
+      goalLimit: access.isPlus ? null : FREE_GOAL_LIMIT,
     };
   }
 
@@ -98,8 +106,12 @@ export class SubscriptionService {
       ) {
         throw new BadRequestException("Trial already used");
       }
+      // A failed payment only simulates a failed renewal of a paid period; a
+      // failed first payment charges nothing and changes nothing (Figma M11).
       if (
-        (action === "cancel" || action === "changeCard") &&
+        (action === "cancel" ||
+          action === "changeCard" ||
+          action === "failPayment") &&
         !["active", "pastDue"].includes(current.status)
       ) {
         throw new BadRequestException("No active subscription");

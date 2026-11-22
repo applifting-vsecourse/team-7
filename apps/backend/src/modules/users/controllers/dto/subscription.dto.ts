@@ -42,8 +42,18 @@ export class SubscriptionDto {
   dogs!: number;
   @ApiProperty()
   freeDogLimit!: number;
-  @ApiProperty()
+  @ApiProperty({ description: "Non-archived dogs allowed on the current plan" })
+  dogLimit!: number;
+  @ApiProperty({ description: "Non-archived dogs allowed with Plus" })
+  plusDogLimit!: number;
+  @ApiProperty({ description: "In-progress goals" })
   goals!: number;
+  @ApiProperty({
+    nullable: true,
+    type: Number,
+    description: "In-progress goal limit; null when unlimited",
+  })
+  goalLimit!: number | null;
   @ApiProperty()
   isPlus!: boolean;
   @ApiProperty()

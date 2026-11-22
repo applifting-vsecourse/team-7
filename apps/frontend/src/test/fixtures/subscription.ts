@@ -17,6 +17,9 @@ export function createPlusSubscription(
     retryAt: null,
     cardLast4: "4242",
     freeDogLimit: 1,
+    dogLimit: 5,
+    plusDogLimit: 5,
+    goalLimit: null,
     ...overrides,
   };
 }

@@ -44,6 +44,9 @@ vi.mock("@/lib/api-client", () => ({
             trialUsed: false,
             cardLast4: "4242",
             freeDogLimit: 1,
+            dogLimit: 1,
+            plusDogLimit: 5,
+            goalLimit: 2,
             dogs: 1,
             goals: 2,
           };

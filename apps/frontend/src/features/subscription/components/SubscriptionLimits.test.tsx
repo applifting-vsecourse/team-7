@@ -2,9 +2,11 @@ import { Button } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Provider } from "jotai";
+import { Provider, useAtomValue } from "jotai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { addDogDialogOpenAtom } from "@/features/dogs/atoms/addDogDialogOpenAtom";
+import { AddDogButton } from "@/features/dogs/components/AddDogDialog";
 import type { Subscription } from "@/features/settings/api/subscriptionQueryOptions";
 import { subscriptionQueryOptions } from "@/features/settings/api/subscriptionQueryOptions";
 import { usePlusOffer } from "@/features/subscription/hooks/useSubscription";
@@ -16,6 +18,7 @@ const state = vi.hoisted(() => ({
   data: {} as Subscription,
   calls: vi.fn(),
   continue: vi.fn(),
+  hang: false,
 }));
 vi.mock("@/features/auth/hooks/useSession", () => ({
   useSession: () => ({ user: { id: "owner" } }),
@@ -25,7 +28,10 @@ vi.mock("@/lib/api-client", () => ({
     get: (path: string) => ({
       json: async () => {
         state.calls(path);
-        if (path === "users/me/subscription") return state.data;
+        if (path === "users/me/subscription") {
+          if (state.hang) return new Promise(() => {});
+          return state.data;
+        }
         if (path === "users/me/subscription/dog-choices") {
           return [
             {
@@ -87,8 +93,12 @@ function Trigger() {
     </Button>
   );
 }
+function AddDogProbe() {
+  return useAtomValue(addDogDialogOpenAtom) ? <p>add dog form</p> : null;
+}
 function setup({
   videos = false,
+  addDog = false,
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
 } = {}) {
   return {
@@ -96,6 +106,12 @@ function setup({
       <Provider>
         <QueryClientProvider client={client}>
           <Trigger />
+          {addDog && (
+            <>
+              <AddDogButton />
+              <AddDogProbe />
+            </>
+          )}
           {videos && (
             <ExerciseVideos
               dogId="a"
@@ -129,15 +145,78 @@ describe("subscription UI boundaries", () => {
       retryAt: null,
       cardLast4: "4242",
       freeDogLimit: 1,
+      dogLimit: 1,
+      plusDogLimit: 5,
+      goalLimit: 2,
     };
     state.calls.mockClear();
     state.continue.mockClear();
+    state.hang = false;
+  });
+  it("never shows the video lock while the plan is still loading", async () => {
+    state.hang = true;
+    setup({ videos: true });
+    expect(await screen.findByText("Loading videos…")).toBeVisible();
+    expect(
+      screen.queryByText("Exercise videos with Plus"),
+    ).not.toBeInTheDocument();
+  });
+  it("opens the add-dog form below the limit without offering Plus", async () => {
+    state.data = { ...state.data, dogs: 0 };
+    const { user } = setup({ addDog: true });
+    await waitFor(() => expect(state.calls).toHaveBeenCalled());
+    // The first "Add dog" button is the offer trigger; the second is the sidebar one.
+    const [, sidebarButton] = screen.getAllByRole("button", {
+      name: "Add dog",
+    });
+    await user.click(sidebarButton!);
+    expect(await screen.findByText("add dog form")).toBeVisible();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+  it("disables adding a dog for Plus at its dog limit instead of offering Plus", async () => {
+    state.data = {
+      ...state.data,
+      status: "active",
+      isPlus: true,
+      dogs: 5,
+      dogLimit: 5,
+      goalLimit: null,
+    };
+    setup({ addDog: true });
+    expect(
+      await screen.findByText(
+        "You have the maximum of 5 dogs. Archive one to make room.",
+      ),
+    ).toBeVisible();
+    const buttons = screen.getAllByRole("button", { name: "Add dog" });
+    expect(buttons.at(-1)).toBeDisabled();
+  });
+  it("keeps the offer open with an alert when the mock payment is declined", async () => {
+    state.data = { ...state.data, trialUsed: true };
+    const { user } = setup();
+    await user.click(screen.getByRole("button", { name: "Add dog" }));
+    const dialog = await screen.findByRole("dialog");
+    await user.click(
+      within(dialog).getByRole("button", { name: "Continue to payment" }),
+    );
+    await user.click(
+      within(dialog).getByRole("radio", { name: "Declined payment" }),
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: "Confirm mock payment" }),
+    );
+    expect(within(dialog).getByText("Payment declined")).toBeVisible();
+    expect(state.calls).not.toHaveBeenCalledWith(
+      "users/me/subscription",
+      expect.anything(),
+    );
+    expect(state.continue).not.toHaveBeenCalled();
   });
   it("offers a card-free trial with the selected plan and continues the original action", async () => {
     const { user } = setup();
     await user.click(screen.getByRole("button", { name: "Add dog" }));
     const dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getByText("Unlimited dogs with Plus")).toBeVisible();
+    expect(within(dialog).getByText("Up to 5 dogs with Plus")).toBeVisible();
     await user.click(
       within(dialog).getByRole("radio", { name: "Monthly · CZK 69" }),
     );

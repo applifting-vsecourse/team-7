@@ -50,7 +50,9 @@ export class OverviewService {
           tomorrow: calendar.tomorrow,
           stats: {
             ...stats,
+            // Free gets no real trend values; the locked charts use sample data.
             satisfactionHistory: access.isPlus ? stats.satisfactionHistory : [],
+            successHistory: access.isPlus ? stats.successHistory : [],
             trendsLocked: !access.isPlus,
           },
           events: await withEventFlags(
