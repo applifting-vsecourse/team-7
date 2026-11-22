@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { createPlusSubscription } from "@/test/fixtures/subscription";
+
 import { TrainingHistoryDialog } from "./TrainingHistoryDialog";
 
 const list = vi.hoisted(() => vi.fn<(path: string) => Promise<unknown>>());
@@ -13,12 +15,14 @@ vi.mock("@/lib/api-client", () => ({
   api: {
     get: (path: string) => ({
       json: () =>
-        path.endsWith("playback")
-          ? Promise.resolve({
-              url: "https://storage.example/v.mp4",
-              expiresIn: 3600,
-            })
-          : list(path),
+        path === "users/me/subscription"
+          ? Promise.resolve(createPlusSubscription())
+          : path.endsWith("playback")
+            ? Promise.resolve({
+                url: "https://storage.example/v.mp4",
+                expiresIn: 3600,
+              })
+            : list(path),
     }),
   },
 }));

@@ -61,7 +61,7 @@ function PaidExerciseVideos({
   readOnly = false,
   isDisabled = false,
   onBusyChange,
-}: ExerciseVideosProps) {
+}: Omit<ExerciseVideosProps, "onUpgrade" | "onUpgraded">) {
   const { t } = useTranslation();
   const { user } = useSession();
   const client = useQueryClient();
