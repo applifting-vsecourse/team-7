@@ -9,6 +9,7 @@ import { DeleteAccountSettings } from "./DeleteAccountSettings";
 import { PasswordSettings } from "./PasswordSettings";
 import { ProfileSettings } from "./ProfileSettings";
 import { SettingsContent } from "./SettingsContent";
+import { SubscriptionSettings } from "./SubscriptionSettings";
 
 export function AccountSettings({ userId }: { userId: string }) {
   const { t } = useTranslation();
@@ -45,6 +46,7 @@ export function AccountSettings({ userId }: { userId: string }) {
   return (
     <div className="flex w-full max-w-settings flex-col gap-12">
       <ProfileSettings user={session.data.user} hasPassword={hasPassword} />
+      <SubscriptionSettings userId={userId} />
       {hasPassword && <PasswordSettings />}
       <SettingsContent userId={userId} />
       <DeleteAccountSettings
