@@ -334,38 +334,44 @@ export function ScheduleExerciseDialog({
                     }}
                     className="gap-2"
                   >
-                    {dogs.data?.map((item) => {
-                      const age = dogAge(item.birthDate);
-                      const ageText = age
-                        ? t(
-                            ($) =>
-                              age.unit === "years"
-                                ? $.dogs.ageYears[pluralForm(age.count)]
-                                : $.dogs.ageMonths[pluralForm(age.count)],
-                            { count: age.count },
-                          )
-                        : null;
-                      return (
-                        <Radio key={item.id} value={item.id} className="w-full">
-                          <Radio.Content className="w-full cursor-pointer gap-3 rounded-3xl bg-surface p-4 shadow-card data-[selected=true]:bg-default">
-                            <Radio.Control>
-                              <Radio.Indicator />
-                            </Radio.Control>
-                            <DogAvatar dog={item} />
-                            <span className="flex min-w-0 flex-col gap-1">
-                              <span className="text-sm font-medium">
-                                {item.name}
+                    {dogs.data
+                      ?.filter((item) => !item.locked)
+                      .map((item) => {
+                        const age = dogAge(item.birthDate);
+                        const ageText = age
+                          ? t(
+                              ($) =>
+                                age.unit === "years"
+                                  ? $.dogs.ageYears[pluralForm(age.count)]
+                                  : $.dogs.ageMonths[pluralForm(age.count)],
+                              { count: age.count },
+                            )
+                          : null;
+                        return (
+                          <Radio
+                            key={item.id}
+                            value={item.id}
+                            className="w-full"
+                          >
+                            <Radio.Content className="w-full cursor-pointer gap-3 rounded-3xl bg-surface p-4 shadow-card data-[selected=true]:bg-default">
+                              <Radio.Control>
+                                <Radio.Indicator />
+                              </Radio.Control>
+                              <DogAvatar dog={item} />
+                              <span className="flex min-w-0 flex-col gap-1">
+                                <span className="text-sm font-medium">
+                                  {item.name}
+                                </span>
+                                <span className="text-xs text-muted">
+                                  {[item.breed, ageText]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                                </span>
                               </span>
-                              <span className="text-xs text-muted">
-                                {[item.breed, ageText]
-                                  .filter(Boolean)
-                                  .join(" · ")}
-                              </span>
-                            </span>
-                          </Radio.Content>
-                        </Radio>
-                      );
-                    })}
+                            </Radio.Content>
+                          </Radio>
+                        );
+                      })}
                   </RadioGroup>
                 </>
               ) : (

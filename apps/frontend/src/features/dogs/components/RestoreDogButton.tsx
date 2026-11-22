@@ -3,6 +3,11 @@ import { Button, type ButtonProps, toast } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
+import {
+  useSubscription,
+  usePlusOffer,
+} from "@/features/subscription/hooks/useSubscription";
+
 import { useRestoreDog } from "../hooks/useRestoreDog";
 
 export function RestoreDogButton({
@@ -15,6 +20,8 @@ export function RestoreDogButton({
   className?: string;
 }) {
   const { t } = useTranslation();
+  const subscription = useSubscription();
+  const offer = usePlusOffer();
   const restoreDog = useRestoreDog();
   const restore = useMutation({
     mutationFn: () => restoreDog(dog),
@@ -25,7 +32,15 @@ export function RestoreDogButton({
       variant={variant}
       className={className}
       isPending={restore.isPending}
-      onPress={() => restore.mutate()}
+      onPress={() => {
+        if (
+          subscription.data &&
+          !subscription.data.isPlus &&
+          subscription.data.dogs >= subscription.data.freeDogLimit
+        ) {
+          offer({ reason: "dogs", onSuccess: () => restore.mutate() });
+        } else restore.mutate();
+      }}
     >
       {t(($) => $.dogArchive.restore)}
     </Button>

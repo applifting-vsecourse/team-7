@@ -35,6 +35,7 @@ import {
 import { User } from "@/shared/auth/decorators/user.decorator";
 import { Identity } from "@/shared/auth/domain/identity";
 import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
+import { subscriptionAccess } from "@/shared/subscription/subscription-access";
 import { optionalText } from "@/shared/utils/optional-text";
 import { DisciplineInputDto, GoalInputDto } from "./dto/library-input.dto";
 
@@ -56,10 +57,25 @@ export class DisciplinesController {
   @Get()
   @ApiOperation({ summary: "List disciplines owned by the signed-in user" })
   async getDisciplines(@User() user: Identity): Promise<DisciplineSummary[]> {
+    const access = await subscriptionAccess(this.prisma, user.id);
     const rows = await this.prisma.discipline.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "asc" },
-      include: disciplineSummaryInclude,
+      include: access.isPlus
+        ? disciplineSummaryInclude
+        : {
+            goals: {
+              select: {
+                ...disciplineSummaryInclude.goals.select,
+                dogs: {
+                  ...disciplineSummaryInclude.goals.select.dogs,
+                  where: {
+                    dog: { archivedAt: null, id: access.activeDogId ?? "" },
+                  },
+                },
+              },
+            },
+          },
     });
     return rows.map(toDisciplineSummary);
   }
@@ -87,9 +103,35 @@ export class DisciplinesController {
     @User() user: Identity,
     @Param("id") id: string,
   ): Promise<DisciplineDetail> {
+    const access = await subscriptionAccess(this.prisma, user.id);
     const row = await this.prisma.discipline.findFirst({
       where: { id, userId: user.id },
-      include: disciplineDetailInclude,
+      include: access.isPlus
+        ? disciplineDetailInclude
+        : {
+            goals: {
+              ...disciplineDetailInclude.goals,
+              include: {
+                ...disciplineDetailInclude.goals.include,
+                dogs: {
+                  ...disciplineDetailInclude.goals.include.dogs,
+                  where: {
+                    dog: { archivedAt: null, id: access.activeDogId ?? "" },
+                  },
+                },
+                exercises: {
+                  ...disciplineDetailInclude.goals.include.exercises,
+                  include: {
+                    _count: {
+                      select: {
+                        dogs: { where: { dogId: access.activeDogId ?? "" } },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
     });
 
     if (!row) throw new NotFoundException("Discipline not found");

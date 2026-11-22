@@ -1,7 +1,8 @@
 import { ConflictException, NotFoundException } from "@nestjs/common";
 import type { Prisma } from "@/generated/prisma/client";
+import { assertDogAccess } from "@/shared/subscription/subscription-access";
 
-type DogReader = Pick<Prisma.TransactionClient, "dog">;
+type DogReader = Pick<Prisma.TransactionClient, "dog" | "subscription">;
 
 /** The signed-in user's dog, archived or not; 404 when it isn't theirs. */
 export async function findOwnedDog(db: DogReader, userId: string, id: string) {
@@ -10,6 +11,7 @@ export async function findOwnedDog(db: DogReader, userId: string, id: string) {
     select: { id: true, archivedAt: true },
   });
   if (!dog) throw new NotFoundException("Dog not found");
+  await assertDogAccess(db, userId, id);
   return dog;
 }
 

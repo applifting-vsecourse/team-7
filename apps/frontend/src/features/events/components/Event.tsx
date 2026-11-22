@@ -303,7 +303,11 @@ export function Event({
         (historyOnly ? (
           <TrainingHistoryDialog event={scheduledEvent} onClose={close} />
         ) : (
-          <ScheduledExerciseDialog event={scheduledEvent} onClose={close} />
+          <ScheduledExerciseDialog
+            event={scheduledEvent}
+            onClose={close}
+            onReopen={open}
+          />
         ))}
     </>
   );

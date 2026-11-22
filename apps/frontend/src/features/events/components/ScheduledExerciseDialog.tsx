@@ -71,12 +71,14 @@ export function ScheduledExerciseDialog({
   initialMeasurement,
   onSaved,
   onStartClicker,
+  onReopen,
 }: {
   event: ScheduledEvent;
   onClose: () => void;
   initialMeasurement?: Measurement;
   onSaved?: () => void;
   onStartClicker?: () => void;
+  onReopen?: () => void;
 }) {
   const { t } = useTranslation();
   const { user } = useSession();
@@ -548,6 +550,8 @@ export function ScheduledExerciseDialog({
                       )}
                     />
                     <ExerciseVideos
+                      onUpgrade={onClose}
+                      onUpgraded={onReopen}
                       dogId={event.dogId}
                       key={event.id}
                       sessionId={event.id}

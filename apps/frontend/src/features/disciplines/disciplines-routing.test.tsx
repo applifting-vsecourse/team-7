@@ -19,6 +19,7 @@ import { ThemeController } from "@/hooks/useTheme";
 import i18n from "@/i18n";
 import { api } from "@/lib/api-client";
 import { routeTree } from "@/routeTree.gen";
+import { createPlusSubscription } from "@/test/fixtures/subscription";
 
 import { disciplineQueryOptions } from "./api/disciplinesQueryOptions";
 
@@ -165,6 +166,7 @@ describe("disciplines", () => {
     vi.clearAllMocks();
     toast.clear();
     state.responses = new Map<string, () => unknown>([
+      ["users/me/subscription", () => createPlusSubscription()],
       ["dogs", () => []],
       ["disciplines", () => [poslusnost, agility]],
       ["disciplines/d1", () => poslusnostDetail],

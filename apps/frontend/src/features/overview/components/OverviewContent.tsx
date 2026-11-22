@@ -1,4 +1,4 @@
-import { Button } from "@heroui/react";
+import { Alert, Button } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { useAtomValue } from "jotai";
@@ -10,6 +10,10 @@ import {
   Calendar,
   type CalendarProps,
 } from "@/features/events/components/Calendar";
+import {
+  useSubscription,
+  usePlusOffer,
+} from "@/features/subscription/hooks/useSubscription";
 
 import { overviewQueryOptions } from "../api/overviewQueryOptions";
 import { NeglectedDisciplines } from "./NeglectedDisciplines";
@@ -19,6 +23,12 @@ import { WeeklyStats } from "./WeeklyStats";
 export function OverviewContent() {
   const { t } = useTranslation();
   const { user } = useSession();
+  const subscription = useSubscription();
+  const offer = usePlusOffer();
+  const remainingTrial =
+    subscription.data?.status === "trial" && subscription.data.trialEndsAt
+      ? Date.parse(subscription.data.trialEndsAt) - subscription.dataUpdatedAt
+      : Infinity;
   const selected = useAtomValue(selectedDogIdsAtom);
   const query = useQuery(overviewQueryOptions(user?.id, selected));
 
@@ -83,6 +93,24 @@ export function OverviewContent() {
   }
   return (
     <>
+      {remainingTrial > 0 && remainingTrial <= 86400_000 && (
+        <Alert status="warning" className="flex-wrap">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Title>{t(($) => $.limits.trialEnding)}</Alert.Title>
+            <Alert.Description>
+              {t(($) => $.limits.trialEndingDescription)}
+            </Alert.Description>
+          </Alert.Content>
+          <Button
+            variant="secondary"
+            className="w-full sm:w-auto"
+            onPress={() => offer({ reason: "renew" })}
+          >
+            {t(($) => $.subscription.pay)}
+          </Button>
+        </Alert>
+      )}
       <NeglectedDisciplines
         items={query.data.neglected}
         weekStart={query.data.stats.weekStart}

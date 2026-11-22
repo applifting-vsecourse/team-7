@@ -34,11 +34,16 @@ vi.mock("@/lib/api-client", () => ({
         if (path.endsWith("subscription")) {
           return {
             status: "free",
+            isPlus: false,
+            needsDogChoice: false,
+            activeDogId: "dog",
+            billingPeriod: "yearly",
             trialEndsAt: null,
             paidUntil: null,
             retryAt: null,
             trialUsed: false,
             cardLast4: "4242",
+            freeDogLimit: 1,
             dogs: 1,
             goals: 2,
           };

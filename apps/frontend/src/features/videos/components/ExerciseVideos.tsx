@@ -11,6 +11,8 @@ import { api } from "@/lib/api-client";
 import { useSession } from "@/features/auth/hooks/useSession";
 import { dogProfileKey } from "@/features/dogs/api/dogProfileQueryOptions";
 import { eventsKey } from "@/features/events/api/eventsQueryOptions";
+import { LockedFeature } from "@/features/subscription/components/LockedFeature";
+import { useSubscription } from "@/features/subscription/hooks/useSubscription";
 
 import {
   type ExerciseVideo,
@@ -20,7 +22,35 @@ import {
 } from "../api/videosQueryOptions";
 import { validateVideo, VIDEO_ACCEPT, VIDEO_LIMIT } from "../lib/videoUpload";
 
-export function ExerciseVideos({
+type ExerciseVideosProps = {
+  dogId: string;
+  sessionId: string;
+  isDisabled?: boolean;
+  onBusyChange: (busy: boolean) => void;
+  onUpgrade?: () => void;
+  onUpgraded?: () => void;
+};
+export function ExerciseVideos(props: ExerciseVideosProps) {
+  const subscription = useSubscription();
+  const { t } = useTranslation();
+  if (!subscription.data?.isPlus) {
+    return (
+      <section className="flex flex-col gap-2">
+        <h3 className="text-sm font-medium">{t(($) => $.videos.title)}</h3>
+        <LockedFeature
+          reason="videos"
+          title={t(($) => $.limits.videosTitle)}
+          description={t(($) => $.limits.videosDescription)}
+          onUpgrade={props.onUpgrade}
+          onUpgraded={props.onUpgraded}
+        />
+      </section>
+    );
+  }
+  return <PaidExerciseVideos {...props} />;
+}
+
+function PaidExerciseVideos({
   dogId,
   sessionId,
   tileHasVideo,

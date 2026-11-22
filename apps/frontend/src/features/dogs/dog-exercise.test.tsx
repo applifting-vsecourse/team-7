@@ -25,6 +25,7 @@ import {
 
 import { ThemeController } from "@/hooks/useTheme";
 import { routeTree } from "@/routeTree.gen";
+import { createPlusSubscription } from "@/test/fixtures/subscription";
 
 import type { ScheduledEvent } from "@/features/events/api/eventsQueryOptions";
 
@@ -89,6 +90,7 @@ vi.mock("@/lib/api-client", () => ({
   api: {
     get: (path: string) => ({
       json: async () => {
+        if (path === "users/me/subscription") return createPlusSubscription();
         if (path === "dogs") return [dog];
         if (path === "dogs/dog-a") return dog;
         if (path === "dogs/dog-a/exercises/e1") {
@@ -215,6 +217,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   toast.clear();
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
@@ -294,12 +297,19 @@ describe("dog exercise detail page", () => {
       training("t3", "2026-10-20T08:00:00Z", 5),
     ];
     setup();
-    expect(
+    const chart = within(
       await screen.findByRole("table", {
         name: "Ratings by training session",
         hidden: true,
       }),
-    ).toBeInTheDocument();
+    );
+    expect(chart.getAllByRole("row")).toHaveLength(3);
+    expect(chart.getAllByRole("cell").map((cell) => cell.textContent)).toEqual([
+      "10/18",
+      "3",
+      "10/20",
+      "5",
+    ]);
     expect(
       screen.getAllByRole("button", {
         name: "Open training: Recall from play",

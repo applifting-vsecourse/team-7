@@ -13,6 +13,8 @@ import {
   planningExercisesKey,
 } from "@/features/events/api/eventsQueryOptions";
 import { onboardingKey } from "@/features/onboarding/api/onboardingQueryOptions";
+import { subscriptionError } from "@/features/subscription/hooks/subscriptionError";
+import { usePlusOffer } from "@/features/subscription/hooks/useSubscription";
 
 import { dogProfileKey } from "../api/dogProfileQueryOptions";
 import {
@@ -53,15 +55,27 @@ export function useDogProfileMutation<T = void, TResult = unknown>(
 ) {
   const { user } = useSession();
   const client = useQueryClient();
-  return useMutation({
+  const offer = usePlusOffer();
+  const mutation = useMutation({
     mutationFn: action,
+    onError: (error, variables) => {
+      const code = subscriptionError(error);
+      if (code === "goalLimit" || code === "dogLimit") {
+        offer({
+          reason: code === "goalLimit" ? "goals" : "dogs",
+          onSuccess: () => mutation.mutate(variables),
+        });
+      }
+    },
     onSuccess: () =>
       Promise.all([
+        client.invalidateQueries({ queryKey: ["subscription", user?.id] }),
         invalidateDog(client, user?.id),
         invalidateDogListings(client, user?.id),
         changesArchive && invalidateArchivedDogs(client, user?.id),
       ]),
   });
+  return mutation;
 }
 
 /** Restoring goes through useRestoreDog, which an undo toast can call too. */

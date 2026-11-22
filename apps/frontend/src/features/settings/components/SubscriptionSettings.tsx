@@ -18,6 +18,10 @@ import {
   updateSubscription,
   type SubscriptionAction,
 } from "@/features/settings/api/subscriptionQueryOptions";
+import {
+  PlanOptions,
+  type BillingPeriod,
+} from "@/features/subscription/components/PlanOptions";
 
 import { SettingsSectionHeader } from "./SettingsSectionHeader";
 
@@ -29,8 +33,13 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
     null,
   );
   const [outcome, setOutcome] = useState("success");
+  const [period, setPeriod] = useState<BillingPeriod>("yearly");
   const mutation = useMutation({
-    mutationFn: updateSubscription,
+    mutationFn: (action: SubscriptionAction) =>
+      updateSubscription(
+        action,
+        ["pay", "trial"].includes(action) ? period : undefined,
+      ),
     onSuccess: (saved) => {
       client.setQueryData(subscriptionQueryOptions(userId).queryKey, saved);
       void client.invalidateQueries({
@@ -47,6 +56,7 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
   };
   const open = (next: typeof dialog) => {
     mutation.reset();
+    setPeriod(query.data?.billingPeriod ?? "yearly");
     setOutcome("success");
     setDialog(next);
   };
@@ -93,7 +103,11 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
   const rows = [
     [
       t(($) => $.subscription.plan),
-      free ? t(($) => $.subscription.free) : t(($) => $.subscription.plus),
+      free
+        ? t(($) => $.subscription.free)
+        : s.billingPeriod === "monthly"
+          ? t(($) => $.subscription.plusMonthly)
+          : t(($) => $.subscription.plus),
     ],
     ...(free
       ? [
@@ -151,7 +165,9 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
           title={t(($) => $.subscription.title)}
           description={
             free
-              ? t(($) => $.subscription.freeDescription)
+              ? t(($) => $.subscription.freeDescription, {
+                  count: s.freeDogLimit,
+                })
               : trial
                 ? t(($) => $.subscription.trialDescription, {
                     date: date(s.trialEndsAt),
@@ -315,6 +331,13 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
                       ? t(($) => $.subscription.mockCardChange)
                       : t(($) => $.subscription.plus)}
                   </p>
+                  {dialog === "payment" && (
+                    <PlanOptions
+                      value={period}
+                      onChange={setPeriod}
+                      isDisabled={mutation.isPending}
+                    />
+                  )}
                   <RadioGroup
                     value={outcome}
                     onChange={setOutcome}
