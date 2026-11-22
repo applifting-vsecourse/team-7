@@ -1,5 +1,12 @@
-let audio: AudioContext | undefined;
-let noise: AudioBuffer | undefined;
+type Engine = {
+  context: AudioContext;
+  noise: AudioBuffer;
+  output: AudioNode;
+};
+
+let engine: Engine | undefined;
+let waking: Promise<void> | undefined;
+let lastTapAt = 0;
 
 // A mechanical clicker is two short metallic transients ("click-clack"),
 // not a tone, so each click is a decaying noise burst rather than a beep.
@@ -14,41 +21,77 @@ const FILTER_FREQUENCY = 2600;
 const FILTER_Q = 1;
 // Schedule slightly ahead so the transient is not cut off by output latency.
 const LOOKAHEAD_SECONDS = 0.01;
+// A click that comes late marks the wrong behaviour, which is worse for the
+// dog than no click at all; vibration still confirms the attempt.
+const MAX_WAKE_DELAY_MS = 100;
 
 /** A short percussive click, synthesized locally so it also works offline. */
 export function clickerFeedback(success: boolean) {
   navigator.vibrate?.(success ? 30 : [20, 40, 20]);
   if (!success) return;
-  let context: AudioContext;
   try {
-    context = audio ??= new AudioContext();
+    if (!engine || engine.context.state === "closed") engine = createEngine();
   } catch {
     // Audio is optional on browsers that don't support Web Audio.
+    engine = undefined;
     return;
   }
-  if (context.state === "running") {
-    playClick(context);
+  const current = engine;
+  if (current.context.state === "running") {
+    playClick(current);
     return;
   }
   // Mobile browsers suspend the context on the first tap, screen lock or app
   // switch, and waking it takes tens of milliseconds. Scheduling before it runs
   // lets the short click finish in silence. resume() must still be called
   // synchronously inside the user gesture, so only the scheduling waits.
-  context.resume().then(
-    () => playClick(context),
-    () => undefined,
-  );
+  // Taps made while it wakes share one resume and play a single click.
+  lastTapAt = performance.now();
+  if (waking) return;
+  try {
+    waking = current.context
+      .resume()
+      .then(
+        () => {
+          if (performance.now() - lastTapAt <= MAX_WAKE_DELAY_MS) {
+            playClick(current);
+          }
+        },
+        () => {
+          // A context that cannot resume is replaced on the next tap.
+          if (engine === current) engine = undefined;
+        },
+      )
+      .finally(() => {
+        waking = undefined;
+      });
+  } catch {
+    if (engine === current) engine = undefined;
+  }
 }
 
-function playClick(context: AudioContext) {
+function createEngine(): Engine {
+  const context = new AudioContext();
+  // The two bursts are boosted for small speakers; the limiter keeps their
+  // peaks from clipping into a harsh crackle.
+  const limiter = context.createDynamicsCompressor();
+  limiter.threshold.value = -3;
+  limiter.knee.value = 0;
+  limiter.ratio.value = 20;
+  limiter.attack.value = 0;
+  limiter.release.value = 0.05;
+  limiter.connect(context.destination);
+  return { context, noise: createNoiseBurst(context), output: limiter };
+}
+
+function playClick({ context, noise, output }: Engine) {
   try {
-    noise ??= createNoiseBurst(context);
     const start = context.currentTime + LOOKAHEAD_SECONDS;
     const filter = context.createBiquadFilter();
     filter.type = "bandpass";
     filter.frequency.value = FILTER_FREQUENCY;
     filter.Q.value = FILTER_Q;
-    filter.connect(context.destination);
+    filter.connect(output);
     for (const { offset, level } of CLICKS) {
       const source = context.createBufferSource();
       source.buffer = noise;
