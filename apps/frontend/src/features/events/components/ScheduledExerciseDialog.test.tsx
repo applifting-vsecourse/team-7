@@ -91,13 +91,15 @@ const event: ScheduledEvent = {
     },
   },
 };
-function setup(value = event) {
-  const client = new QueryClient({
+function testQueryClient() {
+  return new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
+}
+function setup(value = event) {
   const close = vi.fn();
   const rendered = render(
-    <QueryClientProvider client={client}>
+    <QueryClientProvider client={testQueryClient()}>
       <ScheduledExerciseDialog event={value} onClose={close} />
     </QueryClientProvider>,
   );
@@ -188,7 +190,7 @@ describe("scheduled exercise dialog", () => {
       store.set(clickerAtom, review);
       const close = vi.fn();
       render(
-        <QueryClientProvider client={new QueryClient()}>
+        <QueryClientProvider client={testQueryClient()}>
           <Provider store={store}>
             <ScheduledExerciseDialog
               event={event}

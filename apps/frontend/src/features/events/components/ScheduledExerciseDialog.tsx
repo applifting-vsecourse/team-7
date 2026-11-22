@@ -387,6 +387,11 @@ export function ScheduledExerciseDialog({
                           aria-label={t(($) => $.clicker.deleteResult)}
                           onPress={() => {
                             const previous = measurement;
+                            const review =
+                              activeClicker?.event.id === event.id &&
+                              activeClicker.view === "review"
+                                ? activeClicker
+                                : null;
                             setMeasurement(null);
                             toast.success(
                               t(($) => $.clicker.resultDeleted),
@@ -394,7 +399,20 @@ export function ScheduledExerciseDialog({
                                 actionProps: {
                                   children: t(($) => $.training.undo),
                                   variant: "ghost",
-                                  onPress: () => setMeasurement(previous),
+                                  onPress: () => {
+                                    setMeasurement(previous);
+                                    // Closing after the delete discarded the
+                                    // clicker session; bring its review back.
+                                    if (review) {
+                                      setActiveClicker(
+                                        (current) =>
+                                          current ?? {
+                                            ...review,
+                                            resultDraft: result.getValues(),
+                                          },
+                                      );
+                                    }
+                                  },
                                 },
                               },
                             );
