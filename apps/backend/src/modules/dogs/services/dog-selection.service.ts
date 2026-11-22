@@ -82,7 +82,7 @@ export class DogSelectionService {
                 archivedAt: null,
                 ...(!access.isPlus ? { id: access.activeDogId ?? "" } : {}),
               },
-              status: { not: "completed" as const },
+              status: "in_progress" as const,
             };
             const before = access.isPlus
               ? 0
