@@ -22,13 +22,32 @@ export function ArchivedDogLocked({ dogId }: { dogId: string }) {
   const navigate = useNavigate();
   const [confirm, setConfirm] = useState(false);
   const remove = useDogAction(dogId);
-  const archived = useQuery(archivedDogsQueryOptions(user?.id));
+  // Always fresh: the dog may have been archived in another tab since the
+  // list was cached.
+  const archived = useQuery({
+    ...archivedDogsQueryOptions(user?.id),
+    refetchOnMount: "always",
+  });
   const dog = archived.data?.find((item) => item.id === dogId);
-  if (!dog) {
+  if (archived.isPending || (!dog && archived.isFetching)) {
     return (
       <p role="status" className="text-sm text-muted">
         {t(($) => $.dogs.pageLoading)}
       </p>
+    );
+  }
+  if (!dog) {
+    return (
+      <div className="flex animate-enter flex-col items-start gap-3">
+        <p role="alert" className="text-sm text-danger">
+          {archived.isError
+            ? t(($) => $.dogProfile.loadError)
+            : t(($) => $.dogs.notFound)}
+        </p>
+        <Button variant="secondary" onPress={() => void archived.refetch()}>
+          {t(($) => $.dogs.retry)}
+        </Button>
+      </div>
     );
   }
   return (

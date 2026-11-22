@@ -525,7 +525,8 @@
     "lessonStepDog": "Step 1 of 2 · Dog",
     "lessonStepTime": "Step 2 of 2 · Time",
     "scheduleLesson": "Schedule",
-    "lessonSuccess": "Session with a trainer scheduled"
+    "lessonSuccess": "Session with a trainer scheduled",
+    "allDogsLocked": "All your dogs are locked. Choose an active dog or renew Plus."
   },
   "exerciseDetail": {
     "history": "History",
@@ -946,6 +947,8 @@
     "dogArchivedDescription": "On Free, you can view the dog’s data after restoring it.",
     "deleteDog": "Delete dog",
     "activeDogArchive": "This is the dog you train with on Free. You can archive it with Plus.",
-    "videosStored": "You can delete saved videos. Playing them requires Plus."
+    "videosStored": "You can delete saved videos. Playing them requires Plus.",
+    "chooseDogLoadError": "Could not load your dogs.",
+    "chooseDogEmpty": "You have no dog to choose."
   }
 }

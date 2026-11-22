@@ -393,4 +393,28 @@ describe("dog archive", () => {
       "This is the dog you train with on Free. You can archive it with Plus.",
     );
   });
+
+  it("explains a Free archived dog that is missing from the archive instead of loading forever", async () => {
+    state.get.set("users/me/subscription", () =>
+      createPlusSubscription({
+        status: "free",
+        isPlus: false,
+        paidUntil: null,
+        dogs: 0,
+        dogLimit: 1,
+        goalLimit: 2,
+      }),
+    );
+    state.get.set("dogs/archived", () => []);
+    state.get.set("dogs/dog-1", () => {
+      throw Object.assign(new Error("Forbidden"), {
+        subscriptionCode: "dogArchived",
+      });
+    });
+    renderRoute("/dogs/dog-1");
+    expect(
+      await screen.findByText("The dog doesn't exist or was deleted."),
+    ).toBeVisible();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeVisible();
+  });
 });

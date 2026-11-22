@@ -50,7 +50,9 @@ export class SubscriptionService {
     const trial = !!subscription?.trialEndsAt && subscription.trialEndsAt > now;
     return {
       status:
-        subscription?.paymentFailed && !subscription.cancelled
+        // A failed renewal is pastDue only while the paid period runs; after
+        // it ends the account is simply Free again and can pay or trial.
+        subscription?.paymentFailed && !subscription.cancelled && paid
           ? "pastDue"
           : paid
             ? subscription?.cancelled

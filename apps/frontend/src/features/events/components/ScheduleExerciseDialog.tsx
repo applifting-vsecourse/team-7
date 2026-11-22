@@ -323,6 +323,14 @@ export function ScheduleExerciseDialog({
                       </Button>
                     </div>
                   )}
+                  {/* Only behind the Free "choose your dog" dialog (M13). */}
+                  {dogs.isSuccess &&
+                    dogs.data.length > 0 &&
+                    dogs.data.every((item) => item.locked) && (
+                      <p className="text-sm text-muted">
+                        {t(($) => $.planning.allDogsLocked)}
+                      </p>
+                    )}
                   <RadioGroup
                     aria-label={t(($) => $.planning.dog)}
                     value={dogId}

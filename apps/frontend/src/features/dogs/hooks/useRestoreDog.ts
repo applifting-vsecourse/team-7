@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { api } from "@/lib/api-client";
 
 import { useSession } from "@/features/auth/hooks/useSession";
+import { subscriptionQueryOptions } from "@/features/settings/api/subscriptionQueryOptions";
 
 import {
   invalidateArchivedDogs,
@@ -34,9 +35,13 @@ export function useRestoreDog() {
     // waits for what the current page shows, so its button doesn't stay
     // pending on unrelated queries (nor invite a second restore meanwhile).
     void invalidateDogListings(client, user?.id);
+    // Dog counts drive the limits (Add dog / Restore), so refresh them too.
     await Promise.all([
       invalidateDog(client, user?.id),
       invalidateArchivedDogs(client, user?.id),
+      client.invalidateQueries({
+        queryKey: subscriptionQueryOptions(user?.id).queryKey,
+      }),
     ]);
   };
 }

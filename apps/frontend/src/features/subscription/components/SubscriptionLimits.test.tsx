@@ -19,6 +19,7 @@ const state = vi.hoisted(() => ({
   calls: vi.fn(),
   continue: vi.fn(),
   hang: false,
+  choices: "ok" as "ok" | "empty" | "error",
 }));
 vi.mock("@/features/auth/hooks/useSession", () => ({
   useSession: () => ({ user: { id: "owner" } }),
@@ -33,6 +34,8 @@ vi.mock("@/lib/api-client", () => ({
           return state.data;
         }
         if (path === "users/me/subscription/dog-choices") {
+          if (state.choices === "error") throw new Error("offline");
+          if (state.choices === "empty") return [];
           return [
             {
               id: "a",
@@ -167,6 +170,48 @@ describe("subscription UI boundaries", () => {
     state.calls.mockClear();
     state.continue.mockClear();
     state.hang = false;
+    state.choices = "ok";
+  });
+  it.each([
+    ["error", "Could not load your dogs."],
+    ["empty", "You have no dog to choose."],
+  ] as const)(
+    "explains a %s dog list in the active-dog choice",
+    async (choices, text) => {
+      state.choices = choices;
+      state.data = {
+        ...state.data,
+        needsDogChoice: true,
+        activeDogId: null,
+        dogs: 2,
+      };
+      setup();
+      const dialog = await screen.findByRole("dialog");
+      expect(await within(dialog).findByText(text)).toBeVisible();
+      expect(
+        within(dialog).getByRole("button", { name: "Confirm selection" }),
+      ).toBeDisabled();
+    },
+  );
+  it("keeps cached data when the first active dog appears, but clears it when the active dog changes", async () => {
+    state.data = { ...state.data, activeDogId: null, dogs: 0 };
+    const { client } = setup();
+    const key = subscriptionQueryOptions("owner").queryKey;
+    await waitFor(() => expect(client.getQueryData(key)).toBeDefined());
+    client.setQueryData(["dogs", "owner"], [{ id: "a" }]);
+
+    state.data = { ...state.data, activeDogId: "a", dogs: 1 };
+    await client.refetchQueries({ queryKey: key });
+    await waitFor(() =>
+      expect(client.getQueryData(key)).toMatchObject({ activeDogId: "a" }),
+    );
+    expect(client.getQueryData(["dogs", "owner"])).toEqual([{ id: "a" }]);
+
+    state.data = { ...state.data, activeDogId: "b" };
+    await client.refetchQueries({ queryKey: key });
+    await waitFor(() =>
+      expect(client.getQueryData(["dogs", "owner"])).toBeUndefined(),
+    );
   });
   it("never shows the video lock while the plan is still loading", async () => {
     state.hang = true;
