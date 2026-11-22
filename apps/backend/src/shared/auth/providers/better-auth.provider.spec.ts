@@ -96,6 +96,51 @@ describe("auth email callbacks", () => {
     );
   });
 
+  it.each([1, 2])(
+    "discards the issued email change when email %i of 2 fails to send",
+    async (failing) => {
+      const prisma = mockDeep<PrismaService>();
+      prisma.user.findUnique.mockResolvedValue({
+        email: "old@example.com",
+      } as never);
+      const changes = mock<EmailChangeService>();
+      changes.issue.mockResolvedValue("s".repeat(43));
+      const email = mock<EmailService>();
+      let sent = 0;
+      email.sendEmail.mockImplementation(async () => {
+        if (++sent === failing) throw new Error("offline");
+      });
+      (betterAuthProvider as FactoryProvider).useFactory(
+        prisma,
+        mock<Config>({
+          frontendUrl: "https://trainloop.example.com",
+          backendUrl: "https://api.example.com",
+          additionalFrontendOrigins: "",
+        }),
+        email,
+        changes,
+      );
+      const options = vi.mocked(betterAuth).mock.calls[0]![0]!;
+      const url = new URL("https://api.example.com/api/auth/verify-email");
+      url.searchParams.set("token", "private-token");
+      await expect(
+        options.emailVerification!.sendVerificationEmail!({
+          user: {
+            id: "owner",
+            name: "Jana",
+            email: "new@example.com",
+            emailVerified: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          url: url.href,
+          token: "private-token",
+        }),
+      ).rejects.toThrow("offline");
+      expect(changes.discard).toHaveBeenCalledWith("owner", "s".repeat(43));
+    },
+  );
+
   it("resolves a relative reset callback against FRONTEND_URL and keeps the language", async () => {
     const email = mock<EmailService>();
     (betterAuthProvider as FactoryProvider).useFactory(

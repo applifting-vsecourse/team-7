@@ -5,8 +5,6 @@ import {
   Query,
   Req,
   Res,
-  UsePipes,
-  ValidationPipe,
 } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { fromNodeHeaders } from "better-auth/node";
@@ -17,17 +15,16 @@ import {
 } from "@/shared/auth/providers/better-auth.provider";
 import { EmailChangeService } from "@/shared/auth/services/email-change.service";
 import { Config } from "@/shared/config/config.service";
-import { EmailChangeConfirmationDto } from "./dto/email-change-confirmation.dto";
+import {
+  CONFIRMATION_TOKEN,
+  EmailChangeConfirmationDto,
+} from "./dto/email-change-confirmation.dto";
 
 @ApiTags("user settings")
 @Controller("users/email-change/confirm")
-@UsePipes(
-  new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }),
-)
+// No ValidationPipe: this link is opened from an email, so mail clients and
+// link trackers may add parameters or mangle the token. Anything invalid goes
+// to the same "invalid link" page instead of a raw 400.
 export class EmailChangeConfirmationController {
   constructor(
     private readonly changes: EmailChangeService,
@@ -48,9 +45,13 @@ export class EmailChangeConfirmationController {
     response.setHeader("Referrer-Policy", "no-referrer");
     const failure = new URL("/settings", this.config.frontendUrl);
     failure.searchParams.set("emailChange", "invalid");
-    if (query.lng) failure.searchParams.set("lng", query.lng);
+    // Unvalidated at runtime, so treat both values as unknown.
+    const { token, lng }: { token: unknown; lng?: unknown } = query;
+    if (lng === "cs" || lng === "en") failure.searchParams.set("lng", lng);
+    if (typeof token !== "string" || !CONFIRMATION_TOKEN.test(token))
+      return response.redirect(303, failure.href);
     try {
-      const result = await this.changes.confirm(query.token, (token) =>
+      const result = await this.changes.confirm(token, (token) =>
         this.auth.api.verifyEmail({
           query: { token },
           headers: fromNodeHeaders(request.headers),

@@ -177,4 +177,30 @@ describe("email change HTTP boundary", () => {
     expect(result.headers.get("location")).toContain("emailChange=invalid");
     expect(result.headers.get("set-cookie")).toBeNull();
   });
+
+  it.each([
+    [`token=${"s".repeat(43)}&lng=cs&utm_source=mail`, "lng=cs"],
+    [`token=${"s".repeat(20)}&lng=en`, "lng=en"],
+    ["lng=xx", null],
+    [`token=${"s".repeat(43)}&token=${"t".repeat(43)}`, null],
+  ])(
+    "sends a mangled link (%s) to the app instead of a raw 400",
+    async (search, lng) => {
+      const result = await fetch(
+        `${base}/users/email-change/confirm?${search}`,
+        { redirect: "manual" },
+      );
+      expect(result.status).toBe(303);
+      const location = new URL(result.headers.get("location")!);
+      expect(location.pathname).toBe("/settings");
+      if (search.includes("utm_source")) {
+        expect(location.searchParams.get("emailChange")).toBe("confirmed");
+      } else {
+        expect(location.searchParams.get("emailChange")).toBe("invalid");
+        expect(changes.confirm).not.toHaveBeenCalled();
+      }
+      if (lng) expect(location.search).toContain(lng);
+      else expect(location.searchParams.get("lng")).toBeNull();
+    },
+  );
 });
