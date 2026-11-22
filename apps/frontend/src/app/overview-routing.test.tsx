@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ThemeController } from "@/hooks/useTheme";
 import { api } from "@/lib/api-client";
 import { routeTree } from "@/routeTree.gen";
+import { createPlusSubscription } from "@/test/fixtures/subscription";
 
 import { selectedDogIdsAtom } from "@/features/dogs/atoms/selectedDogIdsAtom";
 
@@ -35,6 +36,7 @@ vi.mock("@/lib/api-client", () => ({
   api: {
     get: vi.fn((path: string) => ({
       json: async () => {
+        if (path === "users/me/subscription") return createPlusSubscription();
         if (path === "overview") {
           return {
             today: "2026-10-25",

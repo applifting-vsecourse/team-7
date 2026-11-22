@@ -342,6 +342,9 @@ model Subscription {
   cancelled Boolean @default(false)
   paymentFailed Boolean @default(false)
   retryAt DateTime?
+  activeDogId String?
+  billingPeriod String @default("yearly")
+  trialReminderSentAt DateTime?
   cardLast4 String @default("4242")
 
   @@map("subscription")

@@ -391,3 +391,12 @@ describe("discipline library API", () => {
     });
   });
 });
+
+vi.mock("@/shared/subscription/subscription-access", async (original) => ({
+  ...(await original<object>()),
+  subscriptionAccess: async () => ({
+    isPlus: true,
+    activeDogId: null,
+    needsDogChoice: false,
+  }),
+}));

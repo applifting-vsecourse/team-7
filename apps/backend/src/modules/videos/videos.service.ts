@@ -9,6 +9,12 @@ import type {} from "multer";
 import { randomUUID } from "node:crypto";
 import { rm } from "node:fs/promises";
 import { PrismaService } from "@/core/prisma/prisma.service";
+// VideoOwnerGuard validates access before these operations, including before
+// Multer accepts an upload body.
+import {
+  assertDogAccess,
+  assertPlus,
+} from "@/shared/subscription/subscription-access";
 import { VideoStorageService } from "./video-storage.service";
 import {
   VIDEO_ADMISSION_LOCK,
@@ -18,8 +24,6 @@ import {
   VIDEO_QUEUE_LIMIT,
 } from "./videos.constants";
 
-// VideoOwnerGuard validates access before these operations, including before
-// Multer accepts an upload body.
 @Injectable()
 export class VideosService {
   constructor(
@@ -28,6 +32,8 @@ export class VideosService {
   ) {}
 
   async assertAccess(userId: string, dogId: string, sessionId: string) {
+    await assertPlus(this.prisma, userId);
+    await assertDogAccess(this.prisma, userId, dogId);
     const dog = await this.prisma.dog.findFirst({
       where: { id: dogId, userId },
       select: { id: true },

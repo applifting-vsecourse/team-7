@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "@/core/prisma/prisma.service";
 import { withEventFlags } from "@/shared/domain/event-videos";
+import { assertDogAccess } from "@/shared/subscription/subscription-access";
 
 @Injectable()
 export class DogExerciseDetailsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async get(userId: string, dogId: string, exerciseId: string) {
+    await assertDogAccess(this.prisma, userId, dogId);
     const dog = await this.prisma.dog.findFirst({
       where: { id: dogId, userId },
       select: { id: true, name: true, avatarVersion: true, archivedAt: true },

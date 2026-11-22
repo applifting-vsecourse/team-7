@@ -10,6 +10,7 @@ import {
   localCalendar,
   shiftDay,
 } from "@/shared/domain/local-calendar";
+import { subscriptionAccess } from "@/shared/subscription/subscription-access";
 import { NeglectedDisciplinesService } from "./neglected-disciplines.service";
 
 type Scope = { userId: string; dogIds?: string[] };
@@ -26,7 +27,14 @@ export class OverviewService {
     { timeZone, dogIds }: { timeZone: string; dogIds?: string[] },
   ) {
     const calendar = localCalendar(new Date(), timeZone);
-    const scope = { userId, dogIds };
+    const access = await subscriptionAccess(this.prisma, userId);
+    const visibleDogIds = access.isPlus
+      ? dogIds
+      : access.activeDogId &&
+          (dogIds === undefined || dogIds.includes(access.activeDogId))
+        ? [access.activeDogId]
+        : [];
+    const scope = { userId, dogIds: visibleDogIds };
     // One snapshot: a dog deleted meanwhile (e.g. in another tab) would
     // otherwise vanish between the queries and fail its required relations.
     return this.prisma.$transaction(
@@ -34,12 +42,17 @@ export class OverviewService {
         const [records, candidates, plannable] = await Promise.all([
           this.findRecords(tx, scope, calendar),
           this.findCandidates(tx, scope, calendar),
-          this.neglected.findPlannable(userId, dogIds, tx),
+          this.neglected.findPlannable(userId, visibleDogIds, tx),
         ]);
+        const stats = trainingStats(records, calendar);
         return {
           today: calendar.today,
           tomorrow: calendar.tomorrow,
-          stats: trainingStats(records, calendar),
+          stats: {
+            ...stats,
+            satisfactionHistory: access.isPlus ? stats.satisfactionHistory : [],
+            trendsLocked: !access.isPlus,
+          },
           events: await withEventFlags(
             tx,
             userId,

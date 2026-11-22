@@ -26,6 +26,7 @@ const weeklyStatsSchema = z.object({
       }),
     )
     .default([]),
+  trendsLocked: z.boolean().default(false),
   satisfactionHistory: z.array(
     z.object({ weekStart: z.string(), rating: z.number() }),
   ),

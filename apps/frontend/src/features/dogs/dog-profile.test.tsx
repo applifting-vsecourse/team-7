@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ThemeController } from "@/hooks/useTheme";
 import { routeTree } from "@/routeTree.gen";
+import { createPlusSubscription } from "@/test/fixtures/subscription";
 
 const state = vi.hoisted(() => ({
   get: new Map<string, () => unknown>(),
@@ -113,6 +114,7 @@ function renderRoute(path = "/dogs/dog-1?lng=en") {
 beforeEach(() => {
   vi.clearAllMocks();
   state.get = new Map<string, () => unknown>([
+    ["users/me/subscription", () => createPlusSubscription()],
     ["events", () => []],
     ["dogs", () => [emptyDog]],
     ["dogs/dog-1", () => emptyDog],

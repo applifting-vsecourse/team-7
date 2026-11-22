@@ -66,17 +66,32 @@ describe("subscription settings", () => {
   beforeEach(() => {
     state.data = {
       status: "free",
+      isPlus: false,
+      needsDogChoice: false,
+      activeDogId: "dog",
+      billingPeriod: "yearly",
       trialEndsAt: null,
       paidUntil: null,
       retryAt: null,
       trialUsed: false,
       cardLast4: "4242",
+      freeDogLimit: 1,
       dogs: 1,
       goals: 2,
     };
     state.save.mockReset();
     state.loadError = false;
     state.saveError = false;
+  });
+
+  it("displays the Free dog limit returned by the API", async () => {
+    state.data.freeDogLimit = 3;
+    setup();
+    expect(
+      await screen.findByText(
+        "Free plan limits: dogs (3), goals in progress (2).",
+      ),
+    ).toBeVisible();
   });
 
   it("starts a trial and makes the mock nature of checkout explicit", async () => {
@@ -96,6 +111,7 @@ describe("subscription settings", () => {
     expect(await screen.findByText("Visa •••• 4242")).toBeVisible();
     expect(state.save).toHaveBeenLastCalledWith("users/me/subscription", {
       action: "pay",
+      billingPeriod: "yearly",
     });
   });
 
