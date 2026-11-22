@@ -63,6 +63,16 @@ describe("/api/dogs", () => {
               scheduledExercise: { groupBy },
               exercise: { findMany: findExercises },
               dog: {
+                count: ({
+                  where,
+                }: {
+                  where: { userId: string; archivedAt: null };
+                }) =>
+                  Promise.resolve(
+                    dogs.filter(
+                      (dog) => dog.userId === where.userId && !dog.archivedAt,
+                    ).length,
+                  ),
                 findMany,
                 findFirst,
                 create,

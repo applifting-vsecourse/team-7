@@ -39,11 +39,15 @@ import { Identity } from "@/shared/auth/domain/identity";
 import { AuthenticatedUserGuard } from "@/shared/auth/guards/authenticated-user.guard";
 import {
   assertDogAccess,
+  assertPlus,
   lockSubscription,
   subscriptionAccess,
   subscriptionRequired,
 } from "@/shared/subscription/subscription-access";
-import { FREE_DOG_LIMIT } from "@/shared/subscription/subscription.constants";
+import {
+  FREE_DOG_LIMIT,
+  PLUS_DOG_LIMIT,
+} from "@/shared/subscription/subscription.constants";
 import { optionalText } from "@/shared/utils/optional-text";
 import { DogInputDto } from "./dto/dog-input.dto";
 
@@ -287,10 +291,9 @@ export class DogsController {
       if (!owned) throw new NotFoundException("Dog not found");
       const access = await subscriptionAccess(tx, user.id);
       if (
-        !access.isPlus &&
         (await tx.dog.count({
           where: { userId: user.id, archivedAt: null },
-        })) >= FREE_DOG_LIMIT
+        })) >= (access.isPlus ? PLUS_DOG_LIMIT : FREE_DOG_LIMIT)
       )
         throw subscriptionRequired("dogLimit");
       const [dog] = await tx.dog.updateManyAndReturn({
@@ -316,15 +319,15 @@ export class DogsController {
     @Body() body: DogInputDto,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<DogDetails> {
+    if (file) await assertPlus(this.prisma, user.id);
     const avatar = file ? await this.avatars.prepareAvatar(file.buffer) : {};
     return this.prisma.$transaction(async (tx) => {
       await lockSubscription(tx, user.id);
       const access = await subscriptionAccess(tx, user.id);
       if (
-        !access.isPlus &&
         (await tx.dog.count({
           where: { userId: user.id, archivedAt: null },
-        })) >= FREE_DOG_LIMIT
+        })) >= (access.isPlus ? PLUS_DOG_LIMIT : FREE_DOG_LIMIT)
       )
         throw subscriptionRequired("dogLimit");
       return tx.dog.create({

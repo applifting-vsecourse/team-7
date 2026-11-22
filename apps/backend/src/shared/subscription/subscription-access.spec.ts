@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mockDeep } from "vitest-mock-extended";
 import { PrismaService } from "@/core/prisma/prisma.service";
+import { DogAvatarsController } from "@/modules/dogs/avatars/avatars.controller";
 import { DogAvatarsService } from "@/modules/dogs/avatars/avatars.service";
 import { DogsController } from "@/modules/dogs/controllers/dogs.controller";
 import { DogExerciseDetailsService } from "@/modules/dogs/services/dog-exercise-details.service";
@@ -121,7 +122,56 @@ describe("subscription boundaries", () => {
     expect(db.dog.updateManyAndReturn).not.toHaveBeenCalled();
   });
 
-  it("limits unfinished goals across disciplines, permits existing over-limit goals, and permits reducing them", async () => {
+  it.each([5, 6])(
+    "rejects creating or restoring a Plus dog with %i active dogs",
+    async (count) => {
+      db.subscription.findUnique.mockResolvedValue({
+        paidUntil: new Date("2999-01-01"),
+      } as never);
+      db.dog.count.mockResolvedValue(count);
+      const dogs = new DogsController(db, mockDeep<DogAvatarsService>());
+
+      await expect(dogs.createDog(user, { name: "New" })).rejects.toMatchObject(
+        {
+          response: { code: "dogLimit" },
+        },
+      );
+      await expect(dogs.restoreDog(user, "archived")).rejects.toMatchObject({
+        response: { code: "dogLimit" },
+      });
+      expect(db.$queryRaw).toHaveBeenCalledTimes(2);
+      expect(db.dog.create).not.toHaveBeenCalled();
+      expect(db.dog.updateManyAndReturn).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    ["Free", 0],
+    ["Plus", 4],
+  ])(
+    "allows creating and restoring a dog below the %s limit",
+    async (tier, count) => {
+      if (tier === "Plus")
+        db.subscription.findUnique.mockResolvedValue({
+          paidUntil: new Date("2999-01-01"),
+        } as never);
+      db.dog.count.mockResolvedValue(count);
+      const dog = { id: "new", name: "New" };
+      db.dog.create.mockResolvedValue(dog as never);
+      db.dog.updateManyAndReturn.mockResolvedValue([dog] as never);
+      const dogs = new DogsController(db, mockDeep<DogAvatarsService>());
+
+      await expect(dogs.createDog(user, { name: "New" })).resolves.toEqual(dog);
+      await expect(dogs.restoreDog(user, "archived")).resolves.toEqual(dog);
+      expect(db.dog.count).toHaveBeenCalledTimes(2);
+      expect(db.dog.count).toHaveBeenCalledWith({
+        where: { userId: user.id, archivedAt: null },
+      });
+      expect(db.$queryRaw).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it("limits in-progress goals across disciplines, permits existing over-limit goals, and permits reducing them", async () => {
     const selection = new DogSelectionService(db);
     db.dogGoal.count.mockResolvedValueOnce(2).mockResolvedValueOnce(3);
     await expect(
@@ -130,20 +180,60 @@ describe("subscription boundaries", () => {
     expect(db.dogGoal.count).toHaveBeenCalledWith({
       where: {
         dog: { userId: "owner", archivedAt: null, id: "a" },
-        status: { not: "completed" },
+        status: "in_progress",
       },
     });
     db.dogGoal.count.mockResolvedValueOnce(3).mockResolvedValueOnce(3);
     await expect(
-      selection.run(scope, async () => "existing paused goal"),
-    ).resolves.toBe("existing paused goal");
+      selection.run(scope, async () => "existing in-progress goal"),
+    ).resolves.toBe("existing in-progress goal");
     db.dogGoal.count.mockResolvedValueOnce(3).mockResolvedValueOnce(2);
     await expect(
       selection.run(scope, async () => "complete goal"),
     ).resolves.toBe("complete goal");
   });
 
-  it("rejects bulk replacement that introduces new unfinished goals above the limit", async () => {
+  it("allows a new goal after pausing one, but rejects resuming it above the limit", async () => {
+    const goals: Array<{ status: "in_progress" | "paused" | "completed" }> = [
+      { status: "in_progress" },
+      { status: "in_progress" },
+      { status: "completed" },
+    ];
+    db.dogGoal.count.mockImplementation(
+      ({ where } = {}) =>
+        Promise.resolve(
+          goals.filter((goal) => goal.status === where?.status).length,
+        ) as never,
+    );
+    const selection = new DogSelectionService(db);
+
+    await expect(
+      selection.run(scope, async () => {
+        goals[0].status = "paused";
+        return "paused";
+      }),
+    ).resolves.toBe("paused");
+    await expect(
+      selection.run(scope, async () => {
+        goals.push({ status: "in_progress" });
+        return "new goal";
+      }),
+    ).resolves.toBe("new goal");
+    await expect(
+      selection.run(scope, async () => {
+        goals[0].status = "in_progress";
+      }),
+    ).rejects.toMatchObject({ response: { code: "goalLimit" } });
+    expect(db.dogGoal.findMany).toHaveBeenCalledWith({
+      where: {
+        dog: { userId: "owner", archivedAt: null, id: "a" },
+        status: "in_progress",
+      },
+      select: { dogId: true, goalId: true },
+    });
+  });
+
+  it("rejects bulk replacement that introduces new in-progress goals above the limit", async () => {
     db.dogGoal.count.mockResolvedValue(3);
     db.dogGoal.findMany
       .mockResolvedValueOnce([
@@ -159,6 +249,23 @@ describe("subscription boundaries", () => {
     await expect(
       new DogSelectionService(db).run(scope, async () => "replace"),
     ).rejects.toMatchObject({ response: { code: "goalLimit" } });
+  });
+
+  it("blocks Free photo uploads and dog creation with a photo before preparing or saving it", async () => {
+    const avatars = new DogAvatarsService(db);
+    const prepareAvatar = vi.spyOn(avatars, "prepareAvatar");
+    const file = { buffer: Buffer.from("photo") } as Express.Multer.File;
+
+    await expect(
+      new DogAvatarsController(avatars).uploadAvatar(user, "a", file),
+    ).rejects.toMatchObject({ response: { code: "plusRequired" } });
+    await expect(
+      new DogsController(db, avatars).createDog(user, { name: "New" }, file),
+    ).rejects.toMatchObject({ response: { code: "plusRequired" } });
+    expect(prepareAvatar).not.toHaveBeenCalled();
+    expect(db.dog.create).not.toHaveBeenCalled();
+    expect(db.dog.updateManyAndReturn).not.toHaveBeenCalled();
+    prepareAvatar.mockRestore();
   });
 
   it("blocks video metadata and playback admission without Plus", async () => {
