@@ -921,7 +921,8 @@
     "saved": "Subscription updated.",
     "loadError": "Could not load your subscription.",
     "saveError": "Could not update your subscription. Please try again.",
-    "plusMonthly": "Plus · monthly, CZK 69"
+    "plusMonthly": "Plus · monthly, CZK 69",
+    "goalsPaused": "The Free plan allows at most {{limit}} goals in progress, so we paused all of them. Resume the ones you want to train."
   },
   "limits": {
     "plan": "Plus plan",

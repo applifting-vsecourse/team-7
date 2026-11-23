@@ -44,6 +44,7 @@ const restrictedKeys = new Set([
   "videoPlayback",
 ]);
 export function SubscriptionDialogs() {
+  const { t } = useTranslation();
   const { user } = useSession();
   const query = useSubscription();
   const client = useQueryClient();
@@ -77,6 +78,18 @@ export function SubscriptionDialogs() {
       activeDogId: access.activeDogId,
     };
   }, [access, client, user, selectDogs]);
+  // Free over the goal limit: the backend just paused every goal in progress.
+  // Say so once and refetch the plans that still show them in progress.
+  const pausedGoals = access?.pausedGoals ?? 0;
+  useEffect(() => {
+    if (!pausedGoals || !access?.goalLimit) return;
+    toast.info(
+      t(($) => $.subscription.goalsPaused, { limit: access.goalLimit }),
+    );
+    void client.invalidateQueries({
+      predicate: (query) => restrictedKeys.has(String(query.queryKey[0])),
+    });
+  }, [pausedGoals, access?.goalLimit, client, t]);
   if (!user || !access) return null;
   const saved = (data: Subscription) =>
     applySubscription(client, user.id, data);

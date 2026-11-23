@@ -54,6 +54,11 @@ export class SubscriptionDto {
     description: "In-progress goal limit; null when unlimited",
   })
   goalLimit!: number | null;
+  @ApiProperty({
+    description:
+      "Goals in progress this request paused: Free over the goal limit pauses all of them",
+  })
+  pausedGoals!: number;
   @ApiProperty()
   isPlus!: boolean;
   @ApiProperty()

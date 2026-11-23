@@ -29,7 +29,7 @@ describe("mock subscriptions API", () => {
   const prisma = {
     subscription: { findUnique: vi.fn(), upsert: vi.fn() },
     dog: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn() },
-    dogGoal: { count: vi.fn() },
+    dogGoal: { count: vi.fn(), updateMany: vi.fn() },
     $queryRaw: async () => [],
     $transaction: async (run: (tx: unknown) => unknown): Promise<unknown> =>
       run(prisma),
@@ -84,6 +84,49 @@ describe("mock subscriptions API", () => {
       body: JSON.stringify(body),
     });
   const act = async (action: string) => (await post({ action })).json();
+
+  it("pauses every goal in progress when Free is over the goal limit", async () => {
+    let inProgress = 5;
+    prisma.dogGoal.count.mockImplementation(async () => inProgress);
+    prisma.dogGoal.updateMany.mockImplementation(async () => {
+      const count = inProgress;
+      inProgress = 0;
+      return { count };
+    });
+
+    expect(await (await fetch(url)).json()).toMatchObject({
+      goals: 0,
+      goalLimit: 2,
+      pausedGoals: 5,
+    });
+    expect(prisma.dogGoal.updateMany).toHaveBeenCalledWith({
+      where: { dogId: "dog", status: "in_progress" },
+      data: { status: "paused" },
+    });
+    // Resumed up to the limit, nothing is paused again.
+    inProgress = 2;
+    expect(await (await fetch(url)).json()).toMatchObject({ pausedGoals: 0 });
+    expect(prisma.dogGoal.updateMany).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps goals in progress with Plus, however many", async () => {
+    record = {
+      trialEndsAt: null,
+      paidUntil: new Date(Date.now() + 86400_000),
+      retryAt: null,
+      cancelled: false,
+      paymentFailed: false,
+      cardLast4: "4242",
+    };
+    prisma.dogGoal.count.mockResolvedValue(9);
+
+    expect(await (await fetch(url)).json()).toMatchObject({
+      goals: 9,
+      goalLimit: null,
+      pausedGoals: 0,
+    });
+    expect(prisma.dogGoal.updateMany).not.toHaveBeenCalled();
+  });
 
   it("persists the trial, mock payment, cancellation and resumption for the session owner", async () => {
     expect(await (await fetch(url)).json()).toMatchObject({

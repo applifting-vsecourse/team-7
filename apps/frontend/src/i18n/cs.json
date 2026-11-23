@@ -921,7 +921,8 @@
     "saved": "Předplatné bylo aktualizováno.",
     "loadError": "Předplatné se nepodařilo načíst.",
     "saveError": "Předplatné se nepodařilo aktualizovat. Zkuste to znovu.",
-    "plusMonthly": "Plus · měsíčně, 69 Kč"
+    "plusMonthly": "Plus · měsíčně, 69 Kč",
+    "goalsPaused": "Ve verzi Zdarma můžete mít rozpracované nejvýš {{limit}} cíle, proto jsme všechny rozpracované cíle pozastavili. Vraťte si do rozpracovaných ty, které chcete trénovat."
   },
   "limits": {
     "plan": "Tarif Plus",
