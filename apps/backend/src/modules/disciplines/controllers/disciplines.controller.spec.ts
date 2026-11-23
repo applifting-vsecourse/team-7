@@ -177,10 +177,56 @@ describe("discipline library API", () => {
     });
   });
 
+  it("stores a catalog category, clears it with null and keeps it when omitted", async () => {
+    prisma.discipline.create.mockImplementation(({ data }) =>
+      Promise.resolve({ id: "d1", ...data }),
+    );
+    prisma.discipline.updateManyAndReturn.mockResolvedValue([{ id: "d1" }]);
+
+    await request("POST", "/disciplines", {
+      name: "Agility",
+      category: "agility-sports",
+    });
+    await request("PATCH", "/disciplines/d1", { name: "A", category: null });
+    await request("PATCH", "/disciplines/d1", { name: "A" });
+
+    expect(prisma.discipline.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ category: "agility-sports" }),
+    });
+    const updates = prisma.discipline.updateManyAndReturn.mock.calls;
+    expect(updates[0]![0].data).toHaveProperty("category", null);
+    expect(updates[1]![0].data.category).toBeUndefined();
+  });
+
+  it("returns category and catalog key in the list and detail", async () => {
+    const row = {
+      id: "d1",
+      name: "Agility",
+      description: null,
+      category: "agility-sports",
+      catalogKey: "agility",
+      goals: [],
+    };
+    prisma.discipline.findMany.mockResolvedValue([row]);
+    prisma.discipline.findFirst.mockResolvedValue(row);
+
+    const [summary] = await (await request("GET", "/disciplines")).json();
+    const detail = await (await request("GET", "/disciplines/d1")).json();
+
+    for (const body of [summary, detail]) {
+      expect(body).toMatchObject({
+        category: "agility-sports",
+        catalogKey: "agility",
+      });
+    }
+  });
+
   it.each([
     { name: "   " },
     { name: "x".repeat(101) },
     { name: "Agility", userId: "user-b" },
+    { name: "Agility", category: "unknown" },
+    { name: "Agility", catalogKey: "agility" },
   ])("rejects invalid discipline input %o", async (body) => {
     const response = await request("POST", "/disciplines", body);
 

@@ -91,6 +91,7 @@ export class DisciplinesController {
       data: {
         name: body.name.trim(),
         description: optionalText(body.description),
+        category: body.category,
         userId: user.id,
       },
     });
@@ -120,7 +121,9 @@ export class DisciplinesController {
   }
 
   @Patch(":id")
-  @ApiOperation({ summary: "Update a discipline's name and description" })
+  @ApiOperation({
+    summary: "Update a discipline's name, description and category",
+  })
   @ApiBadRequestResponse({ description: "Invalid discipline data" })
   @ApiNotFoundResponse({ description: "Discipline not found" })
   async updateDiscipline(
@@ -133,6 +136,7 @@ export class DisciplinesController {
       data: {
         name: body.name.trim(),
         description: optionalText(body.description),
+        category: body.category,
       },
     });
 
