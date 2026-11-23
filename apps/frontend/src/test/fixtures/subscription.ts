@@ -20,6 +20,7 @@ export function createPlusSubscription(
     dogLimit: 5,
     plusDogLimit: 5,
     goalLimit: null,
+    pausedGoals: 0,
     ...overrides,
   };
 }

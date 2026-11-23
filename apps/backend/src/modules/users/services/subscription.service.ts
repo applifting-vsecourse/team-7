@@ -182,7 +182,7 @@ export class SubscriptionService {
         },
       });
     });
-    return this.get(userId);
+    return this.current(userId);
   }
   async dogChoices(userId: string) {
     const access = await subscriptionAccess(this.prisma, userId);
@@ -225,6 +225,37 @@ export class SubscriptionService {
         update: { activeDogId: dogId },
       });
     });
-    return this.get(userId);
+    return this.current(userId);
+  }
+
+  /**
+   * The subscription as the app sees it. Free allows FREE_GOAL_LIMIT goals in
+   * progress; an account over it (a Plus that lapsed, an account from before
+   * Plus, a newly chosen active dog) gets every goal in progress paused, and
+   * the handler resumes up to the limit. `pausedGoals` says how many just were.
+   */
+  async current(userId: string) {
+    const data = await this.get(userId);
+    if (data.goalLimit === null || data.goals <= data.goalLimit) {
+      return { ...data, pausedGoals: 0 };
+    }
+    return this.prisma.$transaction(async (tx) => {
+      await lockSubscription(tx, userId);
+      const access = await subscriptionAccess(tx, userId);
+      let pausedGoals = 0;
+      if (!access.isPlus && access.activeDogId) {
+        const where = {
+          dogId: access.activeDogId,
+          status: "in_progress" as const,
+        };
+        if ((await tx.dogGoal.count({ where })) > FREE_GOAL_LIMIT) {
+          ({ count: pausedGoals } = await tx.dogGoal.updateMany({
+            where,
+            data: { status: "paused" },
+          }));
+        }
+      }
+      return { ...(await this.get(userId, tx)), pausedGoals };
+    });
   }
 }

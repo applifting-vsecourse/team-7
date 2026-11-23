@@ -16,6 +16,8 @@ export const subscriptionSchema = z.object({
   plusDogLimit: z.number().int().positive(),
   goals: z.number(),
   goalLimit: z.number().int().positive().nullable(),
+  // Goals in progress this response paused (Free over the goal limit).
+  pausedGoals: z.number().int().nonnegative().default(0),
   isPlus: z.boolean(),
   needsDogChoice: z.boolean(),
   activeDogId: z.string().nullable(),

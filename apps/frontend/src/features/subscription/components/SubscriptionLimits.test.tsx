@@ -1,4 +1,4 @@
-import { Button } from "@heroui/react";
+import { Button, toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -160,6 +160,7 @@ describe("subscription UI boundaries", () => {
       status: "free",
       isPlus: false,
       needsDogChoice: false,
+      pausedGoals: 0,
       activeDogId: "a",
       dogs: 1,
       goals: 2,
@@ -220,6 +221,26 @@ describe("subscription UI boundaries", () => {
     await waitFor(() =>
       expect(client.getQueryData(["dogs", "owner"])).toBeUndefined(),
     );
+  });
+  it("tells the handler once when Free paused their goals and refetches the plans", async () => {
+    const info = vi.spyOn(toast, "info");
+    state.data = { ...state.data, goals: 0, pausedGoals: 4 };
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    client.setQueryData(["dogProfiles", "owner"], { stale: false });
+    setup({ client });
+
+    await waitFor(() =>
+      expect(info).toHaveBeenCalledWith(
+        "The Free plan allows at most 2 goals in progress, so we paused all of them. Resume the ones you want to train.",
+      ),
+    );
+    expect(client.getQueryState(["dogProfiles", "owner"])?.isInvalidated).toBe(
+      true,
+    );
+    expect(info).toHaveBeenCalledTimes(1);
+    info.mockRestore();
   });
   it("never shows the video lock while the plan is still loading", async () => {
     state.hang = true;

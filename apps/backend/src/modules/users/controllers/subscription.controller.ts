@@ -44,7 +44,7 @@ export class SubscriptionController {
   @ApiOperation({ summary: "Get the signed-in user's mock subscription" })
   @ApiOkResponse({ type: SubscriptionDto })
   get(@User() user: Identity) {
-    return this.subscriptions.get(user.id);
+    return this.subscriptions.current(user.id);
   }
 
   @Get("dog-choices")

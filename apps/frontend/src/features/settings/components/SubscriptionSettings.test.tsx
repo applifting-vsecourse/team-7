@@ -69,6 +69,7 @@ describe("subscription settings", () => {
       status: "free",
       isPlus: false,
       needsDogChoice: false,
+      pausedGoals: 0,
       activeDogId: "dog",
       billingPeriod: "yearly",
       trialEndsAt: null,
