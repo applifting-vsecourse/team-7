@@ -14,12 +14,19 @@ type GoalSeed = {
   // Picked by every dog of the user, with this status.
   dogs?: "assigned" | "paused" | "completed";
 };
-type DisciplineSeed = { name: string; description: string; goals: GoalSeed[] };
+type DisciplineSeed = {
+  name: string;
+  description: string;
+  // Catalog category key (F-63).
+  category: string;
+  goals: GoalSeed[];
+};
 
 // The sample library from the Figma flow "Vytvoření disciplíny, cílů a cvičení".
 const disciplines: DisciplineSeed[] = [
   {
     name: "Poslušnost",
+    category: "everyday",
     description: "Základní povely a sebekontrola v běžném i rušném prostředí.",
     goals: [
       {
@@ -63,6 +70,7 @@ const disciplines: DisciplineSeed[] = [
   },
   {
     name: "Canicross",
+    category: "mushing",
     description: "Běh v postroji, tempo a povely na trati.",
     goals: [
       {
@@ -86,6 +94,7 @@ const disciplines: DisciplineSeed[] = [
   },
   {
     name: "Nosework",
+    category: "scent",
     description: "Hledání pachu v krabicích, interiéru i venku.",
     goals: [
       {
@@ -113,14 +122,15 @@ const disciplines: DisciplineSeed[] = [
   },
   {
     name: "Agility",
+    category: "agility-sports",
     description: "Překážky, slalom a vedení na dálku.",
     goals: [],
   },
 ];
 
 export async function seedDisciplines(prisma: PrismaService): Promise<void> {
-  // Every account also starts with the default disciplines (#72), so the
-  // sample library is recognised by its first discipline, not by any.
+  // A user may already have copied catalog disciplines, so the sample library
+  // is recognised by its first discipline, not by any.
   const usersWithoutDisciplines = await prisma.user.findMany({
     where: { disciplines: { none: { name: disciplines[0]!.name } } },
     select: { id: true, dogs: { select: { id: true } } },
@@ -133,6 +143,7 @@ export async function seedDisciplines(prisma: PrismaService): Promise<void> {
           userId: user.id,
           name: discipline.name,
           description: discipline.description,
+          category: discipline.category,
           dogs: discipline.goals.some((goal) => goal.dogs)
             ? { create: user.dogs.map((dog) => ({ dogId: dog.id })) }
             : undefined,

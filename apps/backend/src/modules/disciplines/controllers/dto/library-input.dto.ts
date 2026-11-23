@@ -3,12 +3,14 @@ import {
   ArrayMaxSize,
   ArrayUnique,
   IsArray,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
   Matches,
   MaxLength,
 } from "class-validator";
+import { CATEGORY_KEYS } from "@/shared/domain/discipline-catalog";
 
 export const NAME_MAX_LENGTH = 100;
 export const TEXT_MAX_LENGTH = 1000;
@@ -30,6 +32,16 @@ export class DisciplineInputDto {
   @IsString()
   @MaxLength(TEXT_MAX_LENGTH)
   description?: string;
+
+  @ApiPropertyOptional({
+    enum: CATEGORY_KEYS,
+    nullable: true,
+    description:
+      "Catalog category key; null clears it, omitted keeps it on update",
+  })
+  @IsOptional()
+  @IsIn(CATEGORY_KEYS)
+  category?: string | null;
 }
 
 export class GoalInputDto {

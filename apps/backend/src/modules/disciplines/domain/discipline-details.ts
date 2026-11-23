@@ -7,6 +7,8 @@ export type DisciplineSummary = {
   id: string;
   name: string;
   description: string | null;
+  category: string | null;
+  catalogKey: string | null;
   goalCount: number;
   exerciseCount: number;
   // Dogs with at least one goal of the discipline.
@@ -42,6 +44,8 @@ export type DisciplineDetail = {
   id: string;
   name: string;
   description: string | null;
+  category: string | null;
+  catalogKey: string | null;
   goals: GoalDetail[];
   dogs: DisciplineDog[];
   // Like GoalDetail.dogCount, for the delete warning.
@@ -99,6 +103,8 @@ export function toDisciplineSummary(row: SummaryRow): DisciplineSummary {
     id: row.id,
     name: row.name,
     description: row.description,
+    category: row.category,
+    catalogKey: row.catalogKey,
     goalCount: row.goals.length,
     exerciseCount: row.goals.reduce(
       (sum, goal) => sum + goal._count.exercises,
@@ -135,6 +141,8 @@ export function toDisciplineDetail(
     id: row.id,
     name: row.name,
     description: row.description,
+    category: row.category,
+    catalogKey: row.catalogKey,
     goals: row.goals.map((goal) => ({
       id: goal.id,
       name: goal.name,

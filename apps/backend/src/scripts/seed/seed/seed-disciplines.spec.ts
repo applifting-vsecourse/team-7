@@ -4,7 +4,7 @@ import { PrismaService } from "@/core/prisma/prisma.service";
 import { seedDisciplines } from "./seed-disciplines";
 
 describe("seedDisciplines", () => {
-  it("adds the sample library to users who only have the default disciplines", async () => {
+  it("adds the sample library to users who do not have it yet", async () => {
     const prisma = mockDeep<PrismaService>();
     prisma.user.findMany.mockResolvedValue([]);
 
