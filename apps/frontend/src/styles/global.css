@@ -561,3 +561,11 @@
     @apply flex min-h-0 flex-1 flex-col;
   }
 }
+
+/* Breadcrumb items stay at 15ch on phones; from tablet width a whole name
+   usually fits, so they cut only really long ones. */
+@media (width >= 48rem) {
+  :root {
+    --container-breadcrumb-item: 40ch;
+  }
+}

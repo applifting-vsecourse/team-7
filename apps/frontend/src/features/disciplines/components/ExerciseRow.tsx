@@ -60,14 +60,10 @@ export function ExerciseRow({
           aria-hidden="true"
         />
       )}
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <p className="text-sm leading-6 font-medium">{exercise.name}</p>
-        {exercise.procedure ? (
-          <p className="line-clamp-1 text-xs leading-5 text-muted">
-            {exercise.procedure}
-          </p>
-        ) : null}
-      </div>
+      {/* Name only: the procedure lives in the exercise and its edit dialog. */}
+      <p className="min-w-0 flex-1 text-sm leading-6 font-medium">
+        {exercise.name}
+      </p>
       <ItemMenu
         label={t(($) => $.disciplines.exerciseActions, {
           name: exercise.name,
