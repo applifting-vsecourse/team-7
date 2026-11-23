@@ -1,12 +1,12 @@
 import { useId, useState } from "react";
 import {
+  Accordion,
   Alert,
   Button,
   Description,
   Modal,
   Radio,
   RadioGroup,
-  Tabs,
   toast,
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +16,7 @@ import { api } from "@/lib/api-client";
 import { pluralForm } from "@/lib/plural";
 
 import { useSession } from "@/features/auth/hooks/useSession";
+import { CategoryTrigger } from "@/features/catalog/components/CategoryTrigger";
 import {
   disciplineQueryOptions,
   disciplinesQueryOptions,
@@ -41,7 +42,8 @@ import { GoalPicker } from "./GoalPicker";
 import { QueryFeedback } from "./QueryFeedback";
 
 const CUSTOM = "custom";
-const LIBRARY = "library";
+// Quiet subhead for the "library" and "catalog" groups of step 1.
+const LABEL = "text-sm leading-6 font-semibold";
 // A catalog discipline that isn't in the library yet; copied on Continue.
 const CATALOG = "catalog:";
 
@@ -82,8 +84,8 @@ export function AssignDisciplineDialog({
   };
   const [step, setStep] = useState(1);
   const tour = useTour();
+  const id = useId();
   const [picked, setPicked] = useState("");
-  const [tab, setTab] = useState<string | null>(null);
   const [selection, setSelection] = useState<GoalSelection[]>([]);
   const library = useQuery(disciplinesQueryOptions(user?.id));
   const catalog = useCatalog();
@@ -138,8 +140,6 @@ export function AssignDisciplineDialog({
   // nothing to assign from the library, in the first catalog category.
   const startInCatalog =
     Boolean(onCustom) && available.length === 0 && Boolean(firstCategory);
-  const activeTab =
-    tab ?? (startInCatalog && firstCategory ? firstCategory.key : LIBRARY);
   const firstOption = startInCatalog
     ? catalogOptions(0).find((option) => !option.isDisabled)?.value
     : available[0]?.id;
@@ -159,7 +159,7 @@ export function AssignDisciplineDialog({
     });
   });
   const isBusy = save.isPending || copy.isPending;
-  const options = (items: Option[]) => (
+  const options = (items: Option[], withCustom = false) => (
     <RadioGroup
       aria-label={t(($) => $.navigation.disciplines)}
       value={disciplineId}
@@ -172,7 +172,7 @@ export function AssignDisciplineDialog({
       {items.map((option) => (
         <DisciplineRadio key={option.value} {...option} />
       ))}
-      {onCustom && (
+      {withCustom && onCustom && (
         <DisciplineRadio
           value={CUSTOM}
           name={t(($) => $.onboarding.disciplineDialog.custom)}
@@ -233,57 +233,71 @@ export function AssignDisciplineDialog({
                   />
                 )}
                 {isReady && (
-                  <Tabs
-                    className="tabs--wrap"
-                    selectedKey={activeTab}
-                    onSelectionChange={(key) => setTab(String(key))}
+                  <section
+                    aria-labelledby={`${id}-library`}
+                    className="flex flex-col gap-3"
                   >
-                    <Tabs.ListContainer>
-                      <Tabs.List
-                        aria-label={t(($) => $.dogProfile.disciplineSources)}
-                      >
-                        <Tabs.Tab id={LIBRARY}>
-                          {t(($) => $.dogProfile.libraryTab)}
-                          <Tabs.Indicator />
-                        </Tabs.Tab>
-                        {catalog.data?.map((category) => (
-                          <Tabs.Tab key={category.key} id={category.key}>
-                            {category.name}
-                            <Tabs.Indicator />
-                          </Tabs.Tab>
-                        ))}
-                      </Tabs.List>
-                    </Tabs.ListContainer>
-                    <Tabs.Panel id={LIBRARY} className="flex flex-col gap-5">
-                      {available.length === 0 && (
-                        <Alert status="accent">
-                          <Alert.Indicator />
-                          <Alert.Content>
-                            <Alert.Title>
-                              {t(($) => $.dogProfile.libraryEmptyHint)}
-                            </Alert.Title>
-                          </Alert.Content>
-                        </Alert>
-                      )}
-                      {(available.length > 0 || onCustom) &&
-                        options(libraryOptions)}
-                      {!onCustom && available.length > 0 && (
-                        <Alert status="accent">
-                          <Alert.Indicator />
-                          <Alert.Content>
-                            <Alert.Title>
-                              {t(($) => $.dogProfile.libraryNotice)}
-                            </Alert.Title>
-                          </Alert.Content>
-                        </Alert>
-                      )}
-                    </Tabs.Panel>
-                    {catalog.data?.map((category, index) => (
-                      <Tabs.Panel key={category.key} id={category.key}>
-                        {options(catalogOptions(index))}
-                      </Tabs.Panel>
-                    ))}
-                  </Tabs>
+                    <h3 id={`${id}-library`} className={LABEL}>
+                      {t(($) => $.dogProfile.libraryTab)}
+                    </h3>
+                    {available.length === 0 && (
+                      <Alert status="accent">
+                        <Alert.Indicator />
+                        <Alert.Content>
+                          <Alert.Title>
+                            {t(($) => $.dogProfile.libraryEmptyHint)}
+                          </Alert.Title>
+                        </Alert.Content>
+                      </Alert>
+                    )}
+                    {(available.length > 0 || onCustom) &&
+                      options(libraryOptions, true)}
+                    {!onCustom && available.length > 0 && (
+                      <Alert status="accent">
+                        <Alert.Indicator />
+                        <Alert.Content>
+                          <Alert.Title>
+                            {t(($) => $.dogProfile.libraryNotice)}
+                          </Alert.Title>
+                        </Alert.Content>
+                      </Alert>
+                    )}
+                  </section>
+                )}
+                {isReady && catalog.data && catalog.data.length > 0 && (
+                  <section
+                    aria-labelledby={`${id}-catalog`}
+                    className="flex flex-col gap-1"
+                  >
+                    <h3 id={`${id}-catalog`} className={LABEL}>
+                      {t(($) => $.disciplines.catalog.title)}
+                    </h3>
+                    {/* Collapsed so the dialog stays calm; the tour opens the
+                        category its first option comes from. */}
+                    <Accordion
+                      defaultExpandedKeys={
+                        startInCatalog && firstCategory
+                          ? [firstCategory.key]
+                          : []
+                      }
+                    >
+                      {catalog.data.map((category, index) => (
+                        <Accordion.Item key={category.key} id={category.key}>
+                          <Accordion.Heading level={4}>
+                            <CategoryTrigger
+                              name={category.name}
+                              description={category.description}
+                            />
+                          </Accordion.Heading>
+                          <Accordion.Panel>
+                            <Accordion.Body>
+                              {options(catalogOptions(index))}
+                            </Accordion.Body>
+                          </Accordion.Panel>
+                        </Accordion.Item>
+                      ))}
+                    </Accordion>
+                  </section>
                 )}
                 {copy.isError && (
                   <p role="alert" className="text-sm text-danger">

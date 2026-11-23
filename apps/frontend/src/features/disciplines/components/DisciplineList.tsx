@@ -1,5 +1,6 @@
+import type { ReactNode } from "react";
 import type { DisciplineSummary } from "../api/disciplinesQueryOptions";
-import { ChartLine, Plus } from "@gravity-ui/icons";
+import { ChartLine } from "@gravity-ui/icons";
 import { Button } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 
@@ -12,13 +13,24 @@ import { EmptyState } from "./EmptyState";
 
 type Group = { key: string; name: string; items: DisciplineSummary[] };
 
-export function DisciplineList({
-  onBrowseCatalog,
-  onCreate,
-}: {
-  onBrowseCatalog: () => void;
-  onCreate: () => void;
-}) {
+/** "My library" section of the disciplines page, grouped by catalog category. */
+export function DisciplineList() {
+  const { t } = useTranslation();
+
+  return (
+    <section aria-labelledby="library-heading" className="flex flex-col gap-4">
+      <h2
+        id="library-heading"
+        className="text-xl leading-7 font-semibold tracking-tight"
+      >
+        {t(($) => $.disciplines.libraryTitle)}
+      </h2>
+      <LibraryContent />
+    </section>
+  );
+}
+
+function LibraryContent(): ReactNode {
   const { t } = useTranslation();
   const { user } = useSession();
   const { data, isPending, isError, refetch } = useDisciplines(user?.id);
@@ -46,28 +58,18 @@ export function DisciplineList({
   }
 
   if (data.length === 0) {
+    // The catalog right below and the header button are the way out.
     return (
       <EmptyState
         icon={ChartLine}
         title={t(($) => $.disciplines.emptyTitle)}
         description={t(($) => $.disciplines.emptyDescription)}
-        action={
-          <div className="flex flex-wrap justify-center gap-3">
-            <Button onPress={onBrowseCatalog}>
-              {t(($) => $.disciplines.pickFromCatalog)}
-            </Button>
-            <Button variant="secondary" onPress={onCreate}>
-              <Plus className="size-4 shrink-0" aria-hidden="true" />
-              {t(($) => $.disciplines.newDiscipline)}
-            </Button>
-          </div>
-        }
       />
     );
   }
 
   // Without the catalog the category names are unknown: one plain list.
-  if (!catalog.data) return <Cards items={data} heading="h2" />;
+  if (!catalog.data) return <Cards items={data} heading="h3" />;
 
   const known = new Set(catalog.data.map((category) => category.key));
   const groups: Group[] = [
@@ -84,7 +86,7 @@ export function DisciplineList({
   ].filter((group) => group.items.length > 0);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       {groups.map((group) => (
         <section
           key={group.key}
@@ -93,13 +95,13 @@ export function DisciplineList({
         >
           {/* The one small label style (DESIGN.md): a group label must not
               outweigh the card titles under it. */}
-          <h2
+          <h3
             id={`category-${group.key}`}
             className="text-xs leading-5 font-semibold tracking-widest text-muted uppercase"
           >
             {group.name}
-          </h2>
-          <Cards items={group.items} heading="h3" />
+          </h3>
+          <Cards items={group.items} heading="h4" />
         </section>
       ))}
     </div>
@@ -111,7 +113,7 @@ function Cards({
   heading,
 }: {
   items: DisciplineSummary[];
-  heading: "h2" | "h3";
+  heading: "h3" | "h4";
 }) {
   return (
     <ul className="grid stagger grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

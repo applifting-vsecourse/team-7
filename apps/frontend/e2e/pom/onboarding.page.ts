@@ -18,11 +18,15 @@ export class OnboardingPage {
     });
   }
 
-  /** A catalog category tab of the O5 dialog, by the start of its name. */
-  catalogCategory(prefix: string) {
-    return this.disciplineDialog.getByRole("tab", {
+  /** Expands a catalog category of the O5 dialog (by the start of its name)
+   * unless the tour already opened it. */
+  async openCatalogCategory(prefix: string) {
+    const trigger = this.disciplineDialog.getByRole("button", {
       name: new RegExp(`^${prefix}`),
     });
+    if ((await trigger.getAttribute("aria-expanded")) !== "true") {
+      await trigger.click();
+    }
   }
 
   /** The first exercise of the library copy of a catalog discipline. */
