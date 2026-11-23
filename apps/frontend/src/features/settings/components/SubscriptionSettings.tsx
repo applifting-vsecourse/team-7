@@ -172,10 +172,7 @@ export function SubscriptionSettings({ userId }: { userId: string }) {
           title={t(($) => $.subscription.title)}
           description={
             free
-              ? t(($) => $.subscription.freeDescription, {
-                  count: s.freeDogLimit,
-                  goals: s.goalLimit,
-                })
+              ? t(($) => $.subscription.freeDescription)
               : trial
                 ? t(($) => $.subscription.trialDescription, {
                     date: date(s.trialEndsAt),

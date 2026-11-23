@@ -88,13 +88,10 @@ describe("subscription settings", () => {
     state.saveError = false;
   });
 
-  it("displays the Free dog limit returned by the API", async () => {
-    state.data.freeDogLimit = 3;
+  it("describes the Free plan in one fixed sentence", async () => {
     setup();
     expect(
-      await screen.findByText(
-        "Free plan limits: dogs (3), goals in progress (2).",
-      ),
+      await screen.findByText("Free plan: 1 dog and 2 goals in progress."),
     ).toBeVisible();
   });
 
