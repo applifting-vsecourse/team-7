@@ -227,7 +227,8 @@ describe("disciplines", () => {
     expect(within(obedience).getByText("training 1 of 1")).toBeInTheDocument();
     const card = screen.getByRole("link", { name: /Poslušnost/ });
     expect(card).toHaveAttribute("href", "/disciplines/d1?lng=en");
-    expect(screen.getByText("3 goals · 7 exercises")).toBeInTheDocument();
+    expect(screen.getByText("3 goals")).toBeInTheDocument();
+    expect(screen.getByText("7 exercises")).toBeInTheDocument();
     expect(screen.getByText("Terminátor")).toBeInTheDocument();
     expect(screen.getByText("Mája")).toBeInTheDocument();
     // Ready-made and the handler's own areas start collapsed.
@@ -254,7 +255,8 @@ describe("disciplines", () => {
     try {
       renderRoute("/disciplines?lng=cs");
 
-      expect(await screen.findByText("5 cílů · 1 cvičení")).toBeInTheDocument();
+      expect(await screen.findByText("5 cílů")).toBeInTheDocument();
+      expect(screen.getByText("1 cvičení")).toBeInTheDocument();
       expect(screen.getByText("trénujete 1 z 1")).toBeInTheDocument();
     } finally {
       await i18n.changeLanguage("en");
