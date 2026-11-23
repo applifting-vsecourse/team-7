@@ -876,7 +876,7 @@
   },
   "subscription": {
     "title": "Subscription",
-    "freeDescription": "Free plan limits: dogs ({{count}}), goals in progress ({{goals}}).",
+    "freeDescription": "Free plan: 1 dog and 2 goals in progress.",
     "trialDescription": "Plus trial. Nothing to pay until {{date}}.",
     "activeDescription": "Plus renews automatically.",
     "plan": "Plan",

@@ -876,7 +876,7 @@
   },
   "subscription": {
     "title": "Předplatné",
-    "freeDescription": "Limity verze Zdarma: psi ({{count}}), rozpracované cíle ({{goals}}).",
+    "freeDescription": "Verze Zdarma: 1 pes a 2 rozpracované cíle.",
     "trialDescription": "Zkušební doba Plus. Do {{date}} nic neplatíte.",
     "activeDescription": "Plus se obnovuje automaticky.",
     "plan": "Tarif",
