@@ -165,7 +165,7 @@ function GroupTrigger({
     group.items.some((item) => item.dogs.some((ref) => ref.id === dog.id)),
   );
   return (
-    <Accordion.Trigger className="gap-3 px-1">
+    <Accordion.Trigger className="gap-3">
       <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3">
         <span className="text-lg leading-7 font-semibold tracking-tight">
           {group.name}
@@ -183,13 +183,9 @@ function GroupTrigger({
         </span>
       </span>
       {trainers.length > 0 && (
-        <span className="flex shrink-0 -space-x-1.5">
+        <span className="flex shrink-0 gap-1">
           {trainers.map((dog) => (
-            <DogAvatar
-              key={dog.id}
-              dog={dog}
-              className="size-7 ring-2 ring-surface"
-            />
+            <DogAvatar key={dog.id} dog={dog} className="size-7" />
           ))}
         </span>
       )}
