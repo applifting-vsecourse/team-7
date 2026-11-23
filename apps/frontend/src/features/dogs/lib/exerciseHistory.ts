@@ -21,11 +21,26 @@ export function exerciseHistory(events: ScheduledEvent[], today: Date) {
   const recent = completed.filter(
     (event) => timestamp(event) >= since && timestamp(event) <= today.getTime(),
   );
+  // Success rate counts only clicker-measured sessions: all successful
+  // attempts over all attempts, like the overview's weekly rate.
+  const measured = completed.filter((event) => event.totalAttempts);
+  const recentMeasured = recent.filter((event) => event.totalAttempts);
+  const attempts = recentMeasured.reduce(
+    (sum, event) => sum + event.totalAttempts!,
+    0,
+  );
   return {
     history,
     completed,
+    measured,
     average: recent.length
       ? recent.reduce((sum, event) => sum + event.rating!, 0) / recent.length
+      : null,
+    successRate: attempts
+      ? recentMeasured.reduce(
+          (sum, event) => sum + (event.successfulAttempts ?? 0),
+          0,
+        ) / attempts
       : null,
     lastTraining: completed.at(-1)?.completedAt ?? null,
   };

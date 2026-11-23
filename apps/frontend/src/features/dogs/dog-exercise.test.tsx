@@ -261,7 +261,7 @@ describe("dog exercise detail page", () => {
     expect(await screen.findByText("No training yet")).toBeInTheDocument();
     expect(screen.getByText("Call once and reward.")).toBeInTheDocument();
     expect(
-      screen.queryByRole("heading", { name: "Ratings by training session" }),
+      screen.queryByRole("heading", { name: "Rating trend" }),
     ).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Schedule exercise" }));
     expect(
@@ -304,7 +304,7 @@ describe("dog exercise detail page", () => {
     setup();
     const chart = within(
       await screen.findByRole("table", {
-        name: "Ratings by training session",
+        name: "Rating trend",
         hidden: true,
       }),
     );
@@ -321,6 +321,45 @@ describe("dog exercise detail page", () => {
       }),
     ).toHaveLength(3);
     expect(screen.getByText("4.0 / 5")).toBeInTheDocument();
+    // No clicker measurements: "—" and how to measure instead of the chart.
+    expect(
+      within(
+        screen.getByText("Average success rate over 30 days").parentElement!,
+      ).getByText("—"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/The chart will appear after two measured sessions/),
+    ).toBeInTheDocument();
+  });
+  it("shows the 30-day success rate and charts only measured sessions", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-21T12:00:00Z"));
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    const measured = (
+      id: string,
+      date: string,
+      successfulAttempts: number,
+      totalAttempts: number,
+    ) => ({ ...training(id, date, 4), successfulAttempts, totalAttempts });
+    state.events = [
+      measured("t1", "2026-10-17T08:00:00Z", 3, 4),
+      training("t2", "2026-10-18T08:00:00Z", 5),
+      measured("t3", "2026-10-19T08:00:00Z", 4, 6),
+    ];
+    setup();
+    const table = await screen.findByRole("table", {
+      name: "Success rate trend",
+      hidden: true,
+    });
+    expect(
+      within(table).getAllByRole("row", { hidden: true }).slice(1),
+    ).toHaveLength(2);
+    expect(within(table).getByText("75%")).toBeInTheDocument();
+    expect(within(table).getByText("67%")).toBeInTheDocument();
+    // All successful attempts over all attempts, not an average of rates.
+    expect(screen.getByText("70%")).toBeInTheDocument();
   });
   it("removes the assignment, returns to the discipline, and restores it using Undo", async () => {
     const success = vi.spyOn(toast, "success");

@@ -444,8 +444,21 @@ describe("/api/dogs", () => {
     });
     groupBy
       .mockResolvedValueOnce([
-        { exerciseId: "e1", _sum: { rating: 8 }, _count: { rating: 2 } },
-        { exerciseId: "e2", _sum: { rating: 3 }, _count: { rating: 1 } },
+        {
+          exerciseId: "e1",
+          _sum: { rating: 8, successfulAttempts: 3, totalAttempts: 4 },
+          _count: { rating: 2 },
+        },
+        {
+          exerciseId: "e2",
+          _sum: { rating: 3, successfulAttempts: 4, totalAttempts: 6 },
+          _count: { rating: 1 },
+        },
+        {
+          exerciseId: "e3",
+          _sum: { rating: null, successfulAttempts: 0, totalAttempts: 0 },
+          _count: { rating: 0 },
+        },
       ])
       .mockResolvedValueOnce([
         { exerciseId: "e2", _max: { completedAt: recent } },
@@ -467,6 +480,7 @@ describe("/api/dogs", () => {
         name: "Obedience",
         description: null,
         averageRating: 11 / 3,
+        averageSuccessRate: 7 / 10,
         lastTrainingAt: recent.toISOString(),
         exerciseTraining: [
           { exerciseId: "e2", lastTrainingAt: recent.toISOString() },
@@ -481,6 +495,7 @@ describe("/api/dogs", () => {
         name: "New",
         description: null,
         averageRating: null,
+        averageSuccessRate: null,
         lastTrainingAt: old.toISOString(),
         exerciseTraining: [
           { exerciseId: "e3", lastTrainingAt: old.toISOString() },
@@ -506,7 +521,7 @@ describe("/api/dogs", () => {
         completedAt: { gte: range.gte, lte: range.lte },
         exercise: { goal: { disciplineId: { in: ["d1", "d2"] } } },
       },
-      _sum: { rating: true },
+      _sum: { rating: true, successfulAttempts: true, totalAttempts: true },
       _count: { rating: true },
     });
     expect(groupBy).toHaveBeenNthCalledWith(2, {

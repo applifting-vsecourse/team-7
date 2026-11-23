@@ -16,6 +16,8 @@ const dogDisciplineSchema = z.object({
   completedGoalCount: z.number(),
   exerciseCount: z.number(),
   averageRating: z.number().nullable(),
+  // Older APIs do not expose it yet; missing data is not 0 %.
+  averageSuccessRate: z.number().nullable().default(null),
   lastTrainingAt: z.string().nullable(),
   exerciseTraining: z.array(
     z.object({ exerciseId: z.string(), lastTrainingAt: z.string() }),

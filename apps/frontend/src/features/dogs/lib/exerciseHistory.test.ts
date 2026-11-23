@@ -53,6 +53,26 @@ describe("exercise history statistics", () => {
     expect(result.average).toBe(4);
     expect(result.lastTraining).toBe("2026-10-20T08:00Z");
   });
+  it("rates success from measured sessions in the last 30 days only", () => {
+    const measured = (
+      id: string,
+      startsAt: string,
+      successfulAttempts: number,
+      totalAttempts: number,
+    ) => ({ ...event(id, startsAt, 4), successfulAttempts, totalAttempts });
+    const result = exerciseHistory(
+      [
+        measured("old", "2026-08-01T08:00Z", 0, 10),
+        measured("a", "2026-10-18T08:00Z", 1, 4),
+        event("unmeasured", "2026-10-19T08:00Z", 5),
+        measured("empty", "2026-10-20T08:00Z", 0, 0),
+        measured("b", "2026-10-21T08:00Z", 5, 6),
+      ],
+      today,
+    );
+    expect(result.measured.map((item) => item.id)).toEqual(["old", "a", "b"]);
+    expect(result.successRate).toBe(6 / 10);
+  });
   it("uses no-data values when there are no completed sessions", () => {
     const result = exerciseHistory(
       [event("missed", "2026-10-20T08:00Z")],
@@ -60,6 +80,7 @@ describe("exercise history statistics", () => {
     );
     expect(result.average).toBeNull();
     expect(result.lastTraining).toBeNull();
+    expect(result.successRate).toBeNull();
     expect(result.completed).toHaveLength(0);
   });
 });
