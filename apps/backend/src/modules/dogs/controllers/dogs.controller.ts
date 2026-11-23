@@ -256,31 +256,34 @@ export class DogsController {
   @ApiNotFoundResponse({ description: "Dog not found" })
   @ApiConflictResponse({ description: "Dog is already archived" })
   async archiveDog(@User() user: Identity, @Param("id") id: string) {
-    // Archiving a locked dog is allowed on Free: it only tidies up the list.
-    const owned = await this.prisma.dog.findFirst({
-      where: { id, userId: user.id },
-      select: { id: true },
+    return this.prisma.$transaction(async (tx) => {
+      await lockSubscription(tx, user.id);
+      // Archiving a locked dog is allowed on Free: it only tidies up the list.
+      const owned = await tx.dog.findFirst({
+        where: { id, userId: user.id },
+        select: { id: true },
+      });
+      if (!owned) throw new NotFoundException("Dog not found");
+      // On Free the active dog stays the active dog until Plus is renewed.
+      // Any other dog, archived ones included, could take its place (archive
+      // this one, restore that one), so archiving it is refused.
+      const access = await subscriptionAccess(tx, user.id);
+      if (
+        !access.isPlus &&
+        access.activeDogId === id &&
+        (await tx.dog.count({ where: { userId: user.id, id: { not: id } } })) >
+          0
+      )
+        throw subscriptionRequired("activeDogArchive");
+      // The archivedAt condition keeps a concurrent archive from overwriting the date.
+      const [dog] = await tx.dog.updateManyAndReturn({
+        where: { id, userId: user.id, archivedAt: null },
+        data: { archivedAt: new Date() },
+        omit: omitAvatar,
+      });
+      if (!dog) throw new ConflictException("Dog is already archived");
+      return dog;
     });
-    if (!owned) throw new NotFoundException("Dog not found");
-    // On Free the active dog stays the active dog until Plus is renewed, so
-    // archiving it can't be used to unlock another one.
-    const access = await subscriptionAccess(this.prisma, user.id);
-    if (
-      !access.isPlus &&
-      access.activeDogId === id &&
-      (await this.prisma.dog.count({
-        where: { userId: user.id, archivedAt: null },
-      })) > 1
-    )
-      throw subscriptionRequired("activeDogArchive");
-    // The archivedAt condition keeps a concurrent archive from overwriting the date.
-    const [dog] = await this.prisma.dog.updateManyAndReturn({
-      where: { id, userId: user.id, archivedAt: null },
-      data: { archivedAt: new Date() },
-      omit: omitAvatar,
-    });
-    if (!dog) throw new ConflictException("Dog is already archived");
-    return dog;
   }
 
   @Post(":id/restore")

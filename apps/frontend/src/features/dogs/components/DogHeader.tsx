@@ -9,14 +9,17 @@ import {
   Modal,
   toast,
 } from "@heroui/react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { api } from "@/lib/api-client";
 
+import { useSession } from "@/features/auth/hooks/useSession";
 import { DeleteDialog } from "@/features/disciplines/components/DeleteDialog";
 import { useSubscription } from "@/features/subscription/hooks/useSubscription";
 
+import { archivedDogsQueryOptions } from "../api/dogsQueryOptions";
 import { useDogMeta } from "../hooks/useDogMeta";
 import {
   useDogAction,
@@ -36,13 +39,15 @@ export function DogHeader({ dog }: { dog: DogProfile }) {
   const restoreDog = useRestoreDog();
   const archived = Boolean(dog.archivedAt);
   const subscription = useSubscription().data;
-  // On Free the active dog can't be archived while others exist; that would
-  // swap the active dog, which only renewing Plus may do.
+  const { user } = useSession();
+  const archivedDogs = useQuery(archivedDogsQueryOptions(user?.id)).data;
+  // On Free the active dog can't be archived while other dogs exist, archived
+  // ones included; that would swap the active dog, which only Plus may do.
   const activeOnFree =
     !!subscription &&
     !subscription.isPlus &&
     subscription.activeDogId === dog.id &&
-    subscription.dogs > 1;
+    (subscription.dogs > 1 || !!archivedDogs?.length);
   const save = useDogProfileMutation(
     ({ name, breed, birthDate }: AddDogValues) =>
       api.patch(`dogs/${encodeURIComponent(dog.id)}`, {

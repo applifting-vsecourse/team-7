@@ -86,7 +86,16 @@ export class SubscriptionService {
       await lockSubscription(tx, userId);
       const current = await this.get(userId, tx);
       const now = new Date();
-      const paidUntil = new Date(now);
+      // Retrying a failed renewal extends the period that is still paid, so
+      // no paid days are lost (changeCard keeps them too).
+      const paidUntil = new Date(
+        action === "pay" &&
+          current.status === "pastDue" &&
+          current.paidUntil &&
+          current.paidUntil > now
+          ? current.paidUntil
+          : now,
+      );
       const period = ["pay", "trial"].includes(action)
         ? (billingPeriod ?? current.billingPeriod)
         : current.billingPeriod;
