@@ -84,7 +84,14 @@ export function DogDisciplineCard({
           <span className="font-medium">
             {t(($) => $.dogProfile.averageSuccess)}
           </span>
-          <span className="font-medium">
+          {/* Muted when empty, like the rating above. */}
+          <span
+            className={cn(
+              discipline.averageSuccessRate === null
+                ? "text-muted"
+                : "font-medium",
+            )}
+          >
             {discipline.averageSuccessRate === null
               ? t(($) => $.dogProfile.noData)
               : new Intl.NumberFormat(i18n.resolvedLanguage ?? "cs", {

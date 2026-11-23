@@ -19,9 +19,8 @@ export function exerciseHistory(events: ScheduledEvent[], today: Date) {
   );
   // A fixed 30×24 h window, the same as the backend's discipline rate.
   const since = today.getTime() - 30 * 86400000;
-  // No upper bound: completedAt is set by the server, so it is never in the
-  // future, and a session finished after `today` (the page was opened earlier)
-  // must still count.
+  // `today` is the fetch time, so the window moves with every refetch. No upper
+  // bound: completedAt is set by the server, so it is never in the future.
   const recent = completed.filter((event) => timestamp(event) >= since);
   // Success rate counts only clicker-measured sessions: all successful
   // attempts over all attempts, like the overview's weekly rate.
