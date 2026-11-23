@@ -93,11 +93,19 @@ export function DisciplineSamples() {
           )
         }
       >
-        {/* Hugs its tabs; on phones the kit scrolls the overflow. */}
-        <Tabs.ListContainer className="max-w-full self-start">
-          <Tabs.List aria-label={t(($) => $.catalog.categories)}>
+        {/* Every area visible without scrolling: 2 per row on phones, 3 on
+            tablets, all 5 from desktop; a long name wraps inside its tab. */}
+        <Tabs.ListContainer className="w-full">
+          <Tabs.List
+            aria-label={t(($) => $.catalog.categories)}
+            className="grid w-full grid-cols-2 gap-1 sm:grid-cols-3 lg:grid-cols-5"
+          >
             {categories.map((c) => (
-              <Tabs.Tab key={c.key} id={c.key}>
+              <Tabs.Tab
+                key={c.key}
+                id={c.key}
+                className="h-auto min-h-8 px-3 py-1.5 leading-5"
+              >
                 {c.name}
                 <Tabs.Indicator />
               </Tabs.Tab>
