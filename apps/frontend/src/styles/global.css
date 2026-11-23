@@ -460,7 +460,8 @@
      into text-muted itself. Alert dialogs (delete confirmations) keep the kit
      default. */
   .modal__body,
-  .drawer__body {
+  .drawer__body,
+  .accordion__body-inner {
     @apply text-foreground;
   }
 
@@ -525,15 +526,6 @@
     --toggle-button-bg-selected-hover: var(--accent-hover);
     --toggle-button-bg-selected-pressed: var(--accent-hover);
     --toggle-button-fg-selected: var(--accent-foreground);
-  }
-
-  /* Category tabs wrap instead of scrolling sideways: with long Czech names
-     only one or two of five categories would be visible in a dialog. */
-  .tabs--wrap .tabs__list[data-orientation="horizontal"] {
-    @apply w-full flex-wrap;
-  }
-  .tabs--wrap .tabs__tab {
-    @apply w-auto flex-auto;
   }
 
   /* Figma "Heading 3" for modal titles; delete confirmations keep the kit size. */

@@ -163,7 +163,7 @@ test("the guide walks through a dog, a catalog discipline and the first exercise
         .getByRole("button", { name: "Assign discipline", exact: true })
         .click();
       const dialog = tour.disciplineDialog;
-      await tour.catalogCategory("Everyday").click();
+      await tour.openCatalogCategory("Everyday");
       // A copy the account already has (e.g. a former default, in Czech) is
       // offered under its library name instead.
       await dialog

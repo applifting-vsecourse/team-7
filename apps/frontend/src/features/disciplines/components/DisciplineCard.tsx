@@ -16,8 +16,8 @@ export function DisciplineCard({
   heading: Heading = "h2",
 }: {
   discipline: DisciplineSummary;
-  /** h3 under a category heading. */
-  heading?: "h2" | "h3";
+  /** Level under the page's section and category headings. */
+  heading?: "h2" | "h3" | "h4";
 }) {
   const { t, i18n } = useTranslation();
   const titleRef = useRef<HTMLSpanElement>(null);

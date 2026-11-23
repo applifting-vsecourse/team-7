@@ -256,8 +256,9 @@ describe("disciplines", () => {
     expect(
       await screen.findByText("You don't have any disciplines yet"),
     ).toBeInTheDocument();
+    // The catalog stays on the page as the way to a first discipline.
     expect(
-      screen.getByRole("button", { name: "Choose from the catalog" }),
+      screen.getByRole("heading", { level: 2, name: "Discipline catalog" }),
     ).toBeInTheDocument();
   });
 
@@ -267,15 +268,14 @@ describe("disciplines", () => {
     const own = await screen.findByRole("region", {
       name: "Your own disciplines",
     });
-    const headings = within(screen.getByRole("main")).getAllByRole("heading", {
-      level: 2,
-    });
+    const library = screen.getByRole("region", { name: "My library" });
+    const headings = within(library).getAllByRole("heading", { level: 3 });
     expect(headings.map((heading) => heading.textContent)).toEqual([
       "Obedience sports",
       "Your own disciplines",
     ]);
     expect(
-      within(own).getByRole("heading", { level: 3, name: "Agility" }),
+      within(own).getByRole("heading", { level: 4, name: "Agility" }),
     ).toBeInTheDocument();
   });
 
@@ -283,31 +283,22 @@ describe("disciplines", () => {
     const user = userEvent.setup();
     state.post.mockResolvedValue({ id: "d1", created: true });
     const router = renderRoute("/disciplines?lng=en");
+    const catalog = await screen.findByRole("region", {
+      name: "Discipline catalog",
+    });
 
+    // Categories start collapsed; one already copied links to the copy.
     await user.click(
-      await screen.findByRole("button", { name: "Browse catalog" }),
+      await within(catalog).findByRole("button", { name: /^Obedience sports/ }),
     );
-    const dialog = await screen.findByRole("dialog");
-    // The first discipline of the first category starts picked.
     expect(
-      await within(dialog).findByRole("radio", { name: "Reliable recall" }),
-    ).toBeChecked();
-    // One already copied opens instead of copying again.
-    await user.click(
-      within(dialog).getByRole("tab", { name: "Obedience sports" }),
-    );
-    await user.click(within(dialog).getByRole("radio", { name: "Obedience" }));
-    expect(
-      within(dialog).getByRole("button", { name: "Open in library" }),
+      within(catalog).getByRole("link", { name: "Open in library" }),
     ).toBeInTheDocument();
     await user.click(
-      within(dialog).getByRole("tab", { name: "Everyday life" }),
+      within(catalog).getByRole("button", { name: /^Everyday life/ }),
     );
     await user.click(
-      within(dialog).getByRole("radio", { name: "Reliable recall" }),
-    );
-    await user.click(
-      within(dialog).getByRole("button", { name: "Add to library" }),
+      within(catalog).getByRole("button", { name: "Add to library" }),
     );
 
     await waitFor(() =>
@@ -321,22 +312,24 @@ describe("disciplines", () => {
     ).toBeInTheDocument();
   });
 
-  it("keeps the catalog dialog open with an error when copying fails", async () => {
+  it("reports a failed copy and stays on the page", async () => {
     const user = userEvent.setup();
     state.post.mockRejectedValue(new Error("offline"));
-    renderRoute("/disciplines?lng=en");
+    const router = renderRoute("/disciplines?lng=en");
+    const catalog = await screen.findByRole("region", {
+      name: "Discipline catalog",
+    });
 
     await user.click(
-      await screen.findByRole("button", { name: "Browse catalog" }),
+      await within(catalog).findByRole("button", { name: /^Everyday life/ }),
     );
-    const dialog = await screen.findByRole("dialog");
-    await within(dialog).findByRole("radio", { name: "Reliable recall" });
     await user.click(
-      within(dialog).getByRole("button", { name: "Add to library" }),
+      within(catalog).getByRole("button", { name: "Add to library" }),
     );
 
+    expect(router.state.location.pathname).toBe("/disciplines");
     expect(
-      await within(dialog).findByText(
+      await screen.findByText(
         "The discipline couldn't be added to your library. Please try again.",
       ),
     ).toBeInTheDocument();

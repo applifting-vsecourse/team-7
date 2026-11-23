@@ -510,17 +510,15 @@ describe("discipline dialog in the guide (O5)", () => {
     );
 
     expect(
-      await screen.findByRole("tab", { name: "Everyday life" }),
-    ).toHaveAttribute("aria-selected", "true");
+      await screen.findByRole("button", { name: /^Everyday life/ }),
+    ).toHaveAttribute("aria-expanded", "true");
     const recallRadio = screen.getByRole("radio", { name: "Reliable recall" });
     expect(recallRadio).toBeChecked();
-    // Both disciplines of the category, none from the other tabs.
-    expect(
-      screen.getAllByText("From the catalog · 2 goals · 3 exercises"),
-    ).toHaveLength(2);
-    // Your own discipline stays the last option.
+    // Your own discipline (the library group) and both disciplines of the
+    // open category; the other categories stay collapsed.
     const radios = screen.getAllByRole("radio");
-    expect(radios.at(-1)).toHaveAccessibleName("Your own discipline");
+    expect(radios).toHaveLength(3);
+    expect(radios[0]).toHaveAccessibleName("Your own discipline");
     await user.click(screen.getByRole("radio", { name: "Loose-lead walking" }));
     await user.click(screen.getByRole("radio", { name: "Reliable recall" }));
     await user.click(screen.getByRole("button", { name: "Continue" }));
@@ -580,7 +578,7 @@ describe("discipline dialog in the guide (O5)", () => {
     expect(
       await screen.findByText(/Ready-made disciplines are in the catalog/),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("tab", { name: "Everyday life" }));
+    await user.click(screen.getByRole("button", { name: /^Everyday life/ }));
     expect(
       screen.getByRole("radio", { name: "Reliable recall" }),
     ).toBeDisabled();

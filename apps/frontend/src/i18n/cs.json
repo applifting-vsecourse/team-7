@@ -296,13 +296,10 @@
     "emptyTitle": "Zatím nemáte žádnou disciplínu",
     "emptyDescription": "Vyberte hotovou disciplínu z katalogu, nebo si založte vlastní. Disciplína sdružuje cíle a cvičení, které pak přiřadíte svým psům.",
     "emptyDiscipline": "Disciplína je prázdná",
-    "browseCatalog": "Procházet katalog",
-    "pickFromCatalog": "Vybrat z katalogu",
     "ownCategory": "Vlastní disciplíny",
-    "catalogDialog": {
+    "catalog": {
       "title": "Katalog disciplín",
       "intro": "Vyberte hotovou disciplínu s cíli a cvičeními. Přidá se do vaší knihovny, kde si ji můžete upravit.",
-      "categories": "Kategorie katalogu",
       "inLibrary": "V knihovně · {{summary}}",
       "add": "Přidat do knihovny",
       "open": "Otevřít v knihovně",
@@ -310,6 +307,7 @@
       "copyError": "Disciplínu se nepodařilo přidat do knihovny. Zkuste to znovu.",
       "addedToast": "Disciplína {{name}} je ve vaší knihovně"
     },
+    "libraryTitle": "Moje knihovna",
     "goalCount": {
       "one": "{{count}} cíl",
       "few": "{{count}} cíle",
@@ -469,7 +467,6 @@
     "stepTwo": "Krok 2 ze 2 · Cíle a cvičení",
     "chooseDiscipline": "Vyberte disciplínu z knihovny nebo z katalogu, kterou bude {{name}} trénovat.",
     "libraryTab": "Moje knihovna",
-    "disciplineSources": "Knihovna a kategorie katalogu",
     "fromCatalog": "Z katalogu · {{summary}}",
     "inLibrary": "V knihovně · {{summary}}",
     "alreadyAssigned": "{{name}} ji už trénuje",
