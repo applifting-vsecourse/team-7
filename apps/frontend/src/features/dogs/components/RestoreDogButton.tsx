@@ -6,9 +6,11 @@ import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
+import { subscriptionError } from "@/features/subscription/hooks/subscriptionError";
 import {
   useDogLimit,
   usePlusOffer,
+  useSubscription,
 } from "@/features/subscription/hooks/useSubscription";
 
 import { useRestoreDog } from "../hooks/useRestoreDog";
@@ -24,12 +26,21 @@ export function RestoreDogButton({
 }) {
   const { t } = useTranslation();
   const { limit, needsPlus, plusFull } = useDogLimit();
+  const isPlus = useSubscription().data?.isPlus;
   const offer = usePlusOffer();
   const restoreDog = useRestoreDog();
   const noteId = useId();
   const restore = useMutation({
     mutationFn: () => restoreDog(dog),
-    onError: () => toast.danger(t(($) => $.dogArchive.restoreError)),
+    onError: (error) => {
+      // The cached count can be stale; the server's dogLimit gets the same
+      // answer as a full account does up front.
+      if (subscriptionError(error) !== "dogLimit") {
+        toast.danger(t(($) => $.dogArchive.restoreError));
+      } else if (isPlus) {
+        toast.danger(t(($) => $.limits.plusDogLimit, { limit }));
+      } else offer({ reason: "dogs", onSuccess: () => restore.mutate() });
+    },
   });
   const button = (
     <Button

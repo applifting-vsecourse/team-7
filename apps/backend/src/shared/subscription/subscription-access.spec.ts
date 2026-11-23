@@ -208,16 +208,24 @@ describe("subscription boundaries", () => {
   it("keeps the Free active dog from being archived while other dogs exist", async () => {
     db.subscription.findUnique.mockResolvedValue({ activeDogId: "a" } as never);
     db.dog.findMany.mockResolvedValue([{ id: "a" }, { id: "b" }] as never);
-    db.dog.count.mockResolvedValue(2);
+    db.dog.count.mockResolvedValue(1);
     const dogs = new DogsController(db, mockDeep<DogAvatarsService>());
     await expect(dogs.archiveDog(user, "a")).rejects.toMatchObject({
       response: { code: "activeDogArchive" },
     });
+
+    // An archived dog counts too: archiving "a" and restoring it would swap.
+    db.dog.findMany.mockResolvedValue([{ id: "a" }] as never);
+    await expect(dogs.archiveDog(user, "a")).rejects.toMatchObject({
+      response: { code: "activeDogArchive" },
+    });
+    expect(db.dog.count).toHaveBeenLastCalledWith({
+      where: { userId: user.id, id: { not: "a" } },
+    });
     expect(db.dog.updateManyAndReturn).not.toHaveBeenCalled();
 
     // The only dog, or Plus: archiving is fine.
-    db.dog.findMany.mockResolvedValue([{ id: "a" }] as never);
-    db.dog.count.mockResolvedValue(1);
+    db.dog.count.mockResolvedValue(0);
     db.dog.updateManyAndReturn.mockResolvedValue([{ id: "a" }] as never);
     await expect(dogs.archiveDog(user, "a")).resolves.toEqual({ id: "a" });
   });
