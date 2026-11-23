@@ -84,7 +84,7 @@ export function DogDisciplineCard({
           <span className="font-medium">
             {t(($) => $.dogProfile.averageSuccess)}
           </span>
-          <span className="text-muted">
+          <span className="font-medium">
             {discipline.averageSuccessRate === null
               ? t(($) => $.dogProfile.noData)
               : new Intl.NumberFormat(i18n.resolvedLanguage ?? "cs", {
