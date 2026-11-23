@@ -514,11 +514,11 @@ describe("discipline dialog in the guide (O5)", () => {
     ).toHaveAttribute("aria-expanded", "true");
     const recallRadio = screen.getByRole("radio", { name: "Reliable recall" });
     expect(recallRadio).toBeChecked();
-    // Your own discipline (the library group) and both disciplines of the
-    // open category; the other categories stay collapsed.
+    // Both disciplines of the open area, then your own discipline; the
+    // other areas stay collapsed.
     const radios = screen.getAllByRole("radio");
     expect(radios).toHaveLength(3);
-    expect(radios[0]).toHaveAccessibleName("Your own discipline");
+    expect(radios.at(-1)).toHaveAccessibleName("Your own discipline");
     await user.click(screen.getByRole("radio", { name: "Loose-lead walking" }));
     await user.click(screen.getByRole("radio", { name: "Reliable recall" }));
     await user.click(screen.getByRole("button", { name: "Continue" }));
@@ -551,7 +551,7 @@ describe("discipline dialog in the guide (O5)", () => {
 
     expect(
       await screen.findByText(
-        "The discipline couldn't be added to your library. Please try again.",
+        "The discipline couldn't be opened. Please try again.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByText("Step 1 of 2 · Discipline")).toBeInTheDocument();
@@ -563,7 +563,7 @@ describe("discipline dialog in the guide (O5)", () => {
     expect(state.copy).toHaveBeenCalledTimes(2);
   });
 
-  it("uses the library copy of a catalog discipline and disables one the dog trains", async () => {
+  it("uses the handler's copy of a ready-made discipline and disables one the dog trains", async () => {
     state.onboarding = onboarding();
     state.library = [summary];
     const trained = {
@@ -574,11 +574,12 @@ describe("discipline dialog in the guide (O5)", () => {
       <AssignDisciplineDialog dog={trained} onClose={vi.fn()} />,
     );
 
-    // Nothing left to assign from the library: a hint points to the catalog.
-    expect(
-      await screen.findByText(/Ready-made disciplines are in the catalog/),
-    ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /^Everyday life/ }));
+    // Nothing of the handler's left to assign: every area starts collapsed.
+    const everyday = await screen.findByRole("button", {
+      name: /^Everyday life/,
+    });
+    expect(everyday).toHaveAttribute("aria-expanded", "false");
+    await user.click(everyday);
     expect(
       screen.getByRole("radio", { name: "Reliable recall" }),
     ).toBeDisabled();

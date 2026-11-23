@@ -8,7 +8,6 @@ import Layout from "@/components/Layout";
 import { Sidebar } from "@/components/Sidebar";
 
 import { requireVerifiedSession } from "@/features/auth/lib/require-session";
-import { CatalogSection } from "@/features/catalog/components/CatalogSection";
 import { DisciplineList } from "@/features/disciplines/components/DisciplineList";
 import { DisciplineDialog } from "@/features/disciplines/components/LibraryDialogs";
 
@@ -54,7 +53,6 @@ function DisciplinesPage() {
           </Button>
         </div>
         <DisciplineList />
-        <CatalogSection />
       </section>
       <DisciplineDialog isOpen={isCreating} onOpenChange={setIsCreating} />
     </Layout>

@@ -39,6 +39,7 @@ Use the Tailwind scale; no arbitrary values like `p-[13px]` unless a size token 
 ## Surfaces
 
 - **Borders are hairlines**: `border border-border`. One border, not two adjacent ones.
+- **A dashed hairline (`border border-dashed border-border`) marks a list item that isn't in use yet** — a discipline no dog trains. In use, the same item is a solid card (`bg-background shadow-card`). Pair the state with content (no dog avatars, an "Add" action), never the outline alone.
 - Radius comes from the token. Never mix radii in one component.
 
 ## Forms

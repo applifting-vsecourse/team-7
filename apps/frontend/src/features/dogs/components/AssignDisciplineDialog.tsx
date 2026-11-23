@@ -1,7 +1,6 @@
 import { useId, useState } from "react";
 import {
   Accordion,
-  Alert,
   Button,
   Description,
   Modal,
@@ -16,15 +15,11 @@ import { api } from "@/lib/api-client";
 import { pluralForm } from "@/lib/plural";
 
 import { useSession } from "@/features/auth/hooks/useSession";
-import { CategoryTrigger } from "@/features/catalog/components/CategoryTrigger";
+import { disciplineQueryOptions } from "@/features/disciplines/api/disciplinesQueryOptions";
 import {
-  disciplineQueryOptions,
-  disciplinesQueryOptions,
-} from "@/features/disciplines/api/disciplinesQueryOptions";
-import {
-  catalogExerciseCount,
-  useCatalog,
-} from "@/features/disciplines/hooks/useCatalog";
+  type DisciplineItem,
+  useDisciplineGroups,
+} from "@/features/disciplines/hooks/useDisciplineGroups";
 import { useCopyCatalogDiscipline } from "@/features/disciplines/hooks/useLibraryMutations";
 import { useTour } from "@/features/onboarding/hooks/useTour";
 import {
@@ -42,9 +37,7 @@ import { GoalPicker } from "./GoalPicker";
 import { QueryFeedback } from "./QueryFeedback";
 
 const CUSTOM = "custom";
-// Quiet subhead for the "library" and "catalog" groups of step 1.
-const LABEL = "text-sm leading-6 font-semibold";
-// A catalog discipline that isn't in the library yet; copied on Continue.
+// A ready-made discipline the handler hasn't used yet; copied on Continue.
 const CATALOG = "catalog:";
 
 type Option = {
@@ -58,14 +51,17 @@ export function AssignDisciplineDialog({
   dog,
   onClose,
   onCustom,
+  disciplineId: initialDisciplineId,
 }: {
   dog: DogProfile;
   onClose: () => void;
   /**
-   * The tour's variant (Figma O5): the library and the catalog plus "Your own
+   * The tour's variant (Figma O5): every discipline plus "Your own
    * discipline", which hands over to the new-discipline dialog.
    */
   onCustom?: () => void;
+  /** Already picked (the disciplines page): opens on choosing goals. */
+  disciplineId?: string;
 }) {
   const { t } = useTranslation();
   const { user } = useSession();
@@ -82,69 +78,60 @@ export function AssignDisciplineDialog({
       offer({ reason: "goals", onSuccess: () => setSelection(next) });
     } else setSelection(next);
   };
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(initialDisciplineId ? 2 : 1);
   const tour = useTour();
-  const id = useId();
-  const [picked, setPicked] = useState("");
+  const [picked, setPicked] = useState(initialDisciplineId ?? "");
   const [selection, setSelection] = useState<GoalSelection[]>([]);
-  const library = useQuery(disciplinesQueryOptions(user?.id));
-  const catalog = useCatalog();
+  const disciplines = useDisciplineGroups();
   const copy = useCopyCatalogDiscipline();
   const isAssigned = (id: string) =>
     dog.disciplines.some((assigned) => assigned.id === id);
-  const available =
-    library.data?.filter(
-      (item) => item.goalCount > 0 && !isAssigned(item.id),
-    ) ?? [];
-  const libraryOptions: Option[] = available.map((discipline) => ({
-    value: discipline.id,
-    name: discipline.name,
-    description: summary(discipline.goalCount, discipline.exerciseCount),
-  }));
-  // A catalog discipline copied before is the library one: picking it
+  // A ready-made discipline used before is the handler's copy: picking it
   // assigns that copy instead of making another.
-  const catalogOptions = (index: number): Option[] =>
-    (catalog.data?.[index]?.disciplines ?? []).map((discipline) => {
-      const copied = library.data?.find(
-        (item) => item.catalogKey === discipline.key,
-      );
-      if (!copied) {
-        return {
-          value: CATALOG + discipline.key,
-          name: discipline.name,
-          description: t(($) => $.dogProfile.fromCatalog, {
-            summary: summary(
-              discipline.goals.length,
-              catalogExerciseCount(discipline),
-            ),
-          }),
-        };
-      }
-      const assigned = isAssigned(copied.id);
+  const toOption = (item: DisciplineItem): Option => {
+    const counts = summary(item.goalCount, item.exerciseCount);
+    if (!item.id) {
       return {
-        value: copied.id,
-        name: copied.name,
-        description: assigned
-          ? t(($) => $.dogProfile.alreadyAssigned, { name: dog.name })
-          : copied.goalCount === 0
-            ? t(($) => $.disciplines.emptyDiscipline)
-            : t(($) => $.dogProfile.inLibrary, {
-                summary: summary(copied.goalCount, copied.exerciseCount),
-              }),
-        isDisabled: assigned || copied.goalCount === 0,
+        value: CATALOG + item.catalogKey,
+        name: item.name,
+        description: counts,
       };
-    });
-  const isReady = library.isSuccess && !catalog.isPending;
-  const firstCategory = catalog.data?.[0];
-  // The tour starts with the first option picked, as in Figma O5; with
-  // nothing to assign from the library, in the first catalog category.
-  const startInCatalog =
-    Boolean(onCustom) && available.length === 0 && Boolean(firstCategory);
-  const firstOption = startInCatalog
-    ? catalogOptions(0).find((option) => !option.isDisabled)?.value
-    : available[0]?.id;
+    }
+    const assigned = isAssigned(item.id);
+    return {
+      value: item.id,
+      name: item.name,
+      description: assigned
+        ? t(($) => $.dogProfile.alreadyAssigned, { name: dog.name })
+        : item.goalCount === 0
+          ? t(($) => $.disciplines.emptyDiscipline)
+          : counts,
+      isDisabled: assigned || item.goalCount === 0,
+    };
+  };
+  const groups = (disciplines.groups ?? []).map((group) => ({
+    ...group,
+    options: group.items.map(toOption),
+  }));
+  const isReady = Boolean(disciplines.groups);
+  const isOwn = (option: Option) =>
+    !option.isDisabled && !option.value.startsWith(CATALOG);
+  const enabled = groups
+    .flatMap((group) => group.options)
+    .filter((option) => !option.isDisabled);
+  // The tour starts with the first option picked, as in Figma O5: the
+  // handler's own first, else the first ready-made one.
+  const firstOption = (enabled.find(isOwn) ?? enabled[0])?.value;
   const disciplineId =
     picked || (onCustom && isReady ? (firstOption ?? CUSTOM) : "");
+  // Open: groups with something of the handler's to assign, and the pick's.
+  const expanded = groups
+    .filter((group) =>
+      group.options.some(
+        (option) => isOwn(option) || option.value === disciplineId,
+      ),
+    )
+    .map((group) => group.key);
   const detail = useQuery(
     disciplineQueryOptions(
       user?.id,
@@ -159,9 +146,9 @@ export function AssignDisciplineDialog({
     });
   });
   const isBusy = save.isPending || copy.isPending;
-  const options = (items: Option[], withCustom = false) => (
+  const options = (items: Option[], label: string, withCustom = false) => (
     <RadioGroup
-      aria-label={t(($) => $.navigation.disciplines)}
+      aria-label={label}
       value={disciplineId}
       onChange={(value) => {
         setPicked(value);
@@ -225,83 +212,43 @@ export function AssignDisciplineDialog({
             </p>
             {step === 1 ? (
               <>
-                <QueryFeedback query={library} />
-                {library.isSuccess && (
-                  <QueryFeedback
-                    query={catalog}
-                    errorMessage={t(($) => $.dogProfile.catalogLoadError)}
-                  />
-                )}
+                <QueryFeedback query={disciplines} />
                 {isReady && (
-                  <section
-                    aria-labelledby={`${id}-library`}
-                    className="flex flex-col gap-3"
+                  // Collapsed except what the handler can assign right away,
+                  // so the dialog stays calm.
+                  <Accordion
+                    allowsMultipleExpanded
+                    defaultExpandedKeys={expanded}
                   >
-                    <h3 id={`${id}-library`} className={LABEL}>
-                      {t(($) => $.dogProfile.libraryTab)}
-                    </h3>
-                    {available.length === 0 && (
-                      <Alert status="accent">
-                        <Alert.Indicator />
-                        <Alert.Content>
-                          <Alert.Title>
-                            {t(($) => $.dogProfile.libraryEmptyHint)}
-                          </Alert.Title>
-                        </Alert.Content>
-                      </Alert>
-                    )}
-                    {(available.length > 0 || onCustom) &&
-                      options(libraryOptions, true)}
-                    {!onCustom && available.length > 0 && (
-                      <Alert status="accent">
-                        <Alert.Indicator />
-                        <Alert.Content>
-                          <Alert.Title>
-                            {t(($) => $.dogProfile.libraryNotice)}
-                          </Alert.Title>
-                        </Alert.Content>
-                      </Alert>
-                    )}
-                  </section>
+                    {groups.map((group) => (
+                      <Accordion.Item key={group.key} id={group.key}>
+                        <Accordion.Heading level={3}>
+                          <Accordion.Trigger>
+                            <span className="text-base leading-6 font-semibold tracking-tight">
+                              {group.name}
+                            </span>
+                            <Accordion.Indicator />
+                          </Accordion.Trigger>
+                        </Accordion.Heading>
+                        <Accordion.Panel>
+                          <Accordion.Body>
+                            {options(group.options, group.name)}
+                          </Accordion.Body>
+                        </Accordion.Panel>
+                      </Accordion.Item>
+                    ))}
+                  </Accordion>
                 )}
-                {isReady && catalog.data && catalog.data.length > 0 && (
-                  <section
-                    aria-labelledby={`${id}-catalog`}
-                    className="flex flex-col gap-1"
-                  >
-                    <h3 id={`${id}-catalog`} className={LABEL}>
-                      {t(($) => $.disciplines.catalog.title)}
-                    </h3>
-                    {/* Collapsed so the dialog stays calm; the tour opens the
-                        category its first option comes from. */}
-                    <Accordion
-                      defaultExpandedKeys={
-                        startInCatalog && firstCategory
-                          ? [firstCategory.key]
-                          : []
-                      }
-                    >
-                      {catalog.data.map((category, index) => (
-                        <Accordion.Item key={category.key} id={category.key}>
-                          <Accordion.Heading level={4}>
-                            <CategoryTrigger
-                              name={category.name}
-                              description={category.description}
-                            />
-                          </Accordion.Heading>
-                          <Accordion.Panel>
-                            <Accordion.Body>
-                              {options(catalogOptions(index))}
-                            </Accordion.Body>
-                          </Accordion.Panel>
-                        </Accordion.Item>
-                      ))}
-                    </Accordion>
-                  </section>
-                )}
+                {isReady &&
+                  onCustom &&
+                  options(
+                    [],
+                    t(($) => $.navigation.disciplines),
+                    true,
+                  )}
                 {copy.isError && (
                   <p role="alert" className="text-sm text-danger">
-                    {t(($) => $.dogProfile.copyError)}
+                    {t(($) => $.disciplines.prepareError)}
                   </p>
                 )}
               </>
@@ -390,7 +337,7 @@ export function AssignDisciplineDialog({
                       // and a step back find it.
                       const { id } = await copy.mutateAsync({
                         key: disciplineId.slice(CATALOG.length),
-                        lng: catalog.lng,
+                        lng: disciplines.lng,
                       });
                       setPicked(id);
                     } catch {

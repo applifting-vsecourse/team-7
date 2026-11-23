@@ -288,26 +288,13 @@
     "disciplinesIn": "Disciplines in {{name}}"
   },
   "disciplines": {
-    "intro": "A library of disciplines, goals and exercises. Assign your dogs only what they actually train.",
+    "intro": "Ready-made disciplines by area and your own. Assign your dogs only what they actually train.",
     "newDiscipline": "New discipline",
     "loading": "Loading disciplines…",
     "loadError": "Disciplines could not be loaded.",
     "retry": "Try again",
-    "emptyTitle": "You don't have any disciplines yet",
-    "emptyDescription": "Pick a ready-made discipline from the catalog or create your own. A discipline groups goals and exercises that you then assign to your dogs.",
     "emptyDiscipline": "The discipline is empty",
     "ownCategory": "Your own disciplines",
-    "catalog": {
-      "title": "Discipline catalog",
-      "intro": "Pick a ready-made discipline with goals and exercises. It is added to your library, where you can edit it.",
-      "inLibrary": "In your library · {{summary}}",
-      "add": "Add to library",
-      "open": "Open in library",
-      "loadError": "The catalog could not be loaded.",
-      "copyError": "The discipline couldn't be added to your library. Please try again.",
-      "addedToast": "Discipline {{name}} is in your library"
-    },
-    "libraryTitle": "My library",
     "goalCount": {
       "one": "{{count}} goal",
       "few": "{{count}} goals",
@@ -449,7 +436,18 @@
       "body": "{{dog}} loses all goals and exercises of this discipline, including completed ones. The discipline stays in your library.",
       "confirm": "Remove"
     },
-    "removedToast": "Discipline {{discipline}} removed from {{dog}}"
+    "removedToast": "Discipline {{discipline}} removed from {{dog}}",
+    "trainedSummary": "training {{trained}} of {{count}}",
+    "disciplineCount": {
+      "one": "{{count}} discipline",
+      "few": "{{count}} disciplines",
+      "other": "{{count}} disciplines"
+    },
+    "addToDog": "Add to a dog",
+    "addToDogFor": "Add {{name}} to a dog",
+    "whichDog": "Who will train {{name}}?",
+    "goalsNext": "Next you choose the goals and exercises to train.",
+    "prepareError": "The discipline couldn't be opened. Please try again."
   },
   "dogProfile": {
     "done": "Completed",
@@ -465,16 +463,9 @@
     "assignDiscipline": "Assign discipline",
     "stepOne": "Step 1 of 2 · Discipline",
     "stepTwo": "Step 2 of 2 · Goals and exercises",
-    "chooseDiscipline": "Choose a discipline from your library or the catalog for {{name}} to train.",
-    "libraryTab": "My library",
-    "fromCatalog": "From the catalog · {{summary}}",
-    "inLibrary": "In your library · {{summary}}",
+    "chooseDiscipline": "Choose a discipline for {{name}} to train.",
     "alreadyAssigned": "{{name}} already trains it",
-    "libraryEmptyHint": "Your library has no discipline to assign yet. Ready-made disciplines are in the catalog categories.",
-    "catalogLoadError": "The catalog could not be loaded.",
-    "copyError": "The discipline couldn't be added to your library. Please try again.",
     "chooseGoals": "Choose the goals and exercises {{name}} will train.",
-    "libraryNotice": "If a discipline is missing, it is already assigned to this dog or has no goals in the library.",
     "selectAll": "Select all",
     "previousStep": "Back to previous step",
     "continue": "Continue",
@@ -491,14 +482,14 @@
     "archiveTitle": "Archive {{name}}?",
     "deleteTitle": "Delete {{name}}?",
     "fromLibrary": "Choose a discipline",
-    "fromLibraryHint": "From your library or the catalog, with goals and exercises",
+    "fromLibraryHint": "Ready-made or your own, with goals and exercises",
     "newDisciplineHint": "Create and assign to the dog",
     "newDisciplineTitle": "New discipline for {{name}}",
     "newDisciplineDescription": "The discipline will be saved in the library and assigned to {{name}}.",
     "newDisciplineNotice": "Add goals and exercises on the discipline detail. Anything you add there will be assigned to {{name}}.",
     "createAndAddGoals": "Create and add goals",
     "emptyTitle": "{{name}} has no disciplines yet",
-    "emptyDescription": "Assign a discipline from your library or the catalog, or create a new one. Then choose just the goals and exercises you want to train.",
+    "emptyDescription": "Assign a ready-made discipline or create your own. Then choose just the goals and exercises you want to train.",
     "allDisciplinesDone": "All assigned disciplines are completed.",
     "doneDisciplines": "Completed disciplines ({{count}})",
     "assignGoal": "Assign goal",
@@ -694,7 +685,7 @@
       },
       "assignDiscipline": {
         "title": "Assign a discipline",
-        "body": "Pick a ready-made discipline with goals and exercises from the catalog, sorted by category, or create your own."
+        "body": "Pick a ready-made discipline with goals and exercises by area, or create your own."
       },
       "openCalendar": {
         "title": "Discipline assigned",
@@ -752,7 +743,7 @@
       }
     },
     "disciplineDialog": {
-      "intro": "Pick a ready-made discipline from a catalog category or create your own. It is copied to your library, where you can edit its goals and exercises at any time.",
+      "intro": "Pick a ready-made discipline by area or create your own. You can edit its goals and exercises at any time.",
       "custom": "Your own discipline",
       "customHint": "Start with an empty discipline and add goals yourself."
     },
