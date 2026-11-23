@@ -216,18 +216,30 @@ describe("disciplines", () => {
     }));
   });
 
-  it("lists disciplines with their counts, dogs and empty warning", async () => {
+  it("lists every discipline by area, open where a dog trains one", async () => {
+    const user = userEvent.setup();
     renderRoute("/disciplines?lng=en");
 
-    const card = await screen.findByRole("link", { name: /Poslušnost/ });
+    const obedience = await screen.findByRole("button", {
+      name: /^Obedience sports/,
+    });
+    expect(obedience).toHaveAttribute("aria-expanded", "true");
+    expect(within(obedience).getByText("training 1 of 1")).toBeInTheDocument();
+    const card = screen.getByRole("link", { name: /Poslušnost/ });
     expect(card).toHaveAttribute("href", "/disciplines/d1?lng=en");
-    expect(within(card).getByText("3 goals")).toBeInTheDocument();
-    expect(within(card).getByText("7 exercises")).toBeInTheDocument();
-    expect(within(card).getByText("Terminátor, Mája")).toBeInTheDocument();
-    const empty = screen.getByRole("link", { name: /Agility/ });
-    expect(
-      within(empty).getByText("The discipline is empty"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("3 goals · 7 exercises")).toBeInTheDocument();
+    expect(screen.getByText("Terminátor")).toBeInTheDocument();
+    expect(screen.getByText("Mája")).toBeInTheDocument();
+    // Ready-made and the handler's own areas start collapsed.
+    const everyday = screen.getByRole("button", { name: /^Everyday life/ });
+    expect(everyday).toHaveAttribute("aria-expanded", "false");
+    expect(within(everyday).getByText("1 discipline")).toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: /^Your own disciplines/ }),
+    );
+    const empty = await screen.findByRole("link", { name: /Agility/ });
+    expect(empty).toHaveAttribute("href", "/disciplines/d2?lng=en");
+    expect(screen.getByText("The discipline is empty")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Disciplines" })).toHaveAttribute(
       "aria-current",
       "page",
@@ -242,64 +254,37 @@ describe("disciplines", () => {
     try {
       renderRoute("/disciplines?lng=cs");
 
-      expect(await screen.findByText("5 cílů")).toBeInTheDocument();
-      expect(screen.getByText("1 cvičení")).toBeInTheDocument();
+      expect(await screen.findByText("5 cílů · 1 cvičení")).toBeInTheDocument();
+      expect(screen.getByText("trénujete 1 z 1")).toBeInTheDocument();
     } finally {
       await i18n.changeLanguage("en");
     }
   });
 
-  it("shows the empty state without disciplines", async () => {
+  it("offers the ready-made disciplines before the handler has any", async () => {
     state.responses.set("disciplines", () => []);
     renderRoute("/disciplines?lng=en");
 
     expect(
-      await screen.findByText("You don't have any disciplines yet"),
+      await screen.findByRole("button", { name: /^Everyday life/ }),
     ).toBeInTheDocument();
-    // The catalog stays on the page as the way to a first discipline.
     expect(
-      screen.getByRole("heading", { level: 2, name: "Discipline catalog" }),
+      screen.getByRole("button", { name: /^Obedience sports/ }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /^Your own disciplines/ }),
+    ).not.toBeInTheDocument();
   });
 
-  it("groups the library by catalog category, own disciplines last", async () => {
-    renderRoute("/disciplines?lng=en");
-
-    const own = await screen.findByRole("region", {
-      name: "Your own disciplines",
-    });
-    const library = screen.getByRole("region", { name: "My library" });
-    const headings = within(library).getAllByRole("heading", { level: 3 });
-    expect(headings.map((heading) => heading.textContent)).toEqual([
-      "Obedience sports",
-      "Your own disciplines",
-    ]);
-    expect(
-      within(own).getByRole("heading", { level: 4, name: "Agility" }),
-    ).toBeInTheDocument();
-  });
-
-  it("adds a catalog discipline to the library and opens it", async () => {
+  it("copies a ready-made discipline silently when it is opened", async () => {
     const user = userEvent.setup();
     state.post.mockResolvedValue({ id: "d1", created: true });
     const router = renderRoute("/disciplines?lng=en");
-    const catalog = await screen.findByRole("region", {
-      name: "Discipline catalog",
-    });
 
-    // Categories start collapsed; one already copied links to the copy.
     await user.click(
-      await within(catalog).findByRole("button", { name: /^Obedience sports/ }),
+      await screen.findByRole("button", { name: /^Everyday life/ }),
     );
-    expect(
-      within(catalog).getByRole("link", { name: "Open in library" }),
-    ).toBeInTheDocument();
-    await user.click(
-      within(catalog).getByRole("button", { name: /^Everyday life/ }),
-    );
-    await user.click(
-      within(catalog).getByRole("button", { name: "Add to library" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Reliable recall" }));
 
     await waitFor(() =>
       expect(router.state.location.pathname).toBe("/disciplines/d1"),
@@ -307,32 +292,56 @@ describe("disciplines", () => {
     expect(state.post).toHaveBeenCalledWith("catalog/recall/copy", {
       json: { lng: "en" },
     });
-    expect(
-      await screen.findByText("Discipline Reliable recall is in your library"),
-    ).toBeInTheDocument();
   });
 
   it("reports a failed copy and stays on the page", async () => {
     const user = userEvent.setup();
     state.post.mockRejectedValue(new Error("offline"));
     const router = renderRoute("/disciplines?lng=en");
-    const catalog = await screen.findByRole("region", {
-      name: "Discipline catalog",
-    });
 
     await user.click(
-      await within(catalog).findByRole("button", { name: /^Everyday life/ }),
+      await screen.findByRole("button", { name: /^Everyday life/ }),
     );
-    await user.click(
-      within(catalog).getByRole("button", { name: "Add to library" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Reliable recall" }));
 
-    expect(router.state.location.pathname).toBe("/disciplines");
     expect(
       await screen.findByText(
-        "The discipline couldn't be added to your library. Please try again.",
+        "The discipline couldn't be opened. Please try again.",
       ),
     ).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/disciplines");
+  });
+
+  it("adds a discipline to a dog that doesn't train it yet", async () => {
+    const user = userEvent.setup();
+    state.responses.set("dogs", () => [
+      { id: "dog-1", name: "Terminátor" },
+      { id: "dog-2", name: "Mája" },
+      { id: "dog-3", name: "Rex" },
+    ]);
+    state.post.mockResolvedValue({ id: "d9", created: true });
+    renderRoute("/disciplines?lng=en");
+
+    // Both dogs of Poslušnost train it: only Rex is left, so no picker.
+    expect(
+      await screen.findByRole("button", { name: "Add Poslušnost to a dog" }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /^Everyday life/ }));
+    await user.click(
+      screen.getByRole("button", { name: "Add Reliable recall to a dog" }),
+    );
+    const dialog = await screen.findByRole("dialog");
+    expect(
+      within(dialog).getByText("Who will train Reliable recall?"),
+    ).toBeInTheDocument();
+    await user.click(within(dialog).getByRole("radio", { name: "Rex" }));
+    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+
+    await waitFor(() =>
+      expect(state.post).toHaveBeenCalledWith("catalog/recall/copy", {
+        json: { lng: "en" },
+      }),
+    );
   });
 
   it("validates, creates a discipline and opens its detail", async () => {

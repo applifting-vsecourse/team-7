@@ -1,127 +1,199 @@
-import type { ReactNode } from "react";
-import type { DisciplineSummary } from "../api/disciplinesQueryOptions";
-import { ChartLine } from "@gravity-ui/icons";
-import { Button } from "@heroui/react";
+import { useState } from "react";
+import { Accordion, Button, toast } from "@heroui/react";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { ROUTES } from "@/app/routes";
+import { czechFrom, pluralForm } from "@/lib/plural";
+
 import { useSession } from "@/features/auth/hooks/useSession";
+import type { Dog } from "@/features/dogs/api/dogsQueryOptions";
+import { DogAvatar } from "@/features/dogs/components/DogAvatar";
+import { useDogs } from "@/features/dogs/hooks/useDogs";
 
-import { useCatalog } from "../hooks/useCatalog";
-import { useDisciplines } from "../hooks/useDisciplines";
-import { DisciplineCard } from "./DisciplineCard";
-import { EmptyState } from "./EmptyState";
+import {
+  type DisciplineGroup,
+  type DisciplineItem,
+  useDisciplineGroups,
+} from "../hooks/useDisciplineGroups";
+import { useCopyCatalogDiscipline } from "../hooks/useLibraryMutations";
+import { AssignToDog, DogPickDialog } from "./AddToDogDialog";
+import { DisciplineTile } from "./DisciplineTile";
 
-type Group = { key: string; name: string; items: DisciplineSummary[] };
-
-/** "My library" section of the disciplines page, grouped by catalog category. */
+/**
+ * Every discipline the handler can train, ready-made and their own, in one
+ * list by area (#14). Areas with something a dog trains start open.
+ */
 export function DisciplineList() {
   const { t } = useTranslation();
-
-  return (
-    <section aria-labelledby="library-heading" className="flex flex-col gap-4">
-      <h2
-        id="library-heading"
-        className="text-xl leading-7 font-semibold tracking-tight"
-      >
-        {t(($) => $.disciplines.libraryTitle)}
-      </h2>
-      <LibraryContent />
-    </section>
-  );
-}
-
-function LibraryContent(): ReactNode {
-  const { t } = useTranslation();
   const { user } = useSession();
-  const { data, isPending, isError, refetch } = useDisciplines(user?.id);
-  const catalog = useCatalog();
+  const navigate = useNavigate();
+  const disciplines = useDisciplineGroups();
+  const dogs = (useDogs(user?.id).data ?? []).filter((dog) => !dog.locked);
+  const copy = useCopyCatalogDiscipline();
+  const [picking, setPicking] = useState<DisciplineItem | null>(null);
+  const [assigning, setAssigning] = useState<{
+    dogId: string;
+    disciplineId: string;
+  } | null>(null);
 
-  if (isPending || catalog.isPending) {
+  // A ready-made discipline becomes the handler's on first use, silently.
+  const ensureId = async (item: DisciplineItem) => {
+    if (item.id) return item.id;
+    try {
+      const { id } = await copy.mutateAsync({
+        key: item.catalogKey!,
+        lng: disciplines.lng,
+      });
+      return id;
+    } catch {
+      toast.danger(t(($) => $.disciplines.prepareError));
+      return null;
+    }
+  };
+  const freeDogs = (item: DisciplineItem) =>
+    dogs.filter((dog) => !item.dogs.some((trains) => trains.id === dog.id));
+  const assign = async (item: DisciplineItem, dogId: string) => {
+    const disciplineId = await ensureId(item);
+    if (!disciplineId) return;
+    setPicking(null);
+    setAssigning({ dogId, disciplineId });
+  };
+
+  if (disciplines.isPending) {
     return (
       <p role="status" className="text-sm text-muted">
         {t(($) => $.disciplines.loading)}
       </p>
     );
   }
-
-  if (isError) {
+  if (!disciplines.groups) {
     return (
-      <div role="alert" className="flex flex-col items-start gap-3">
+      <div
+        role="alert"
+        className="flex animate-enter flex-col items-start gap-3"
+      >
         <p className="text-sm text-danger">
           {t(($) => $.disciplines.loadError)}
         </p>
-        <Button variant="secondary" onPress={() => void refetch()}>
+        <Button variant="secondary" onPress={disciplines.refetch}>
           {t(($) => $.disciplines.retry)}
         </Button>
       </div>
     );
   }
 
-  if (data.length === 0) {
-    // The catalog right below and the header button are the way out.
-    return (
-      <EmptyState
-        icon={ChartLine}
-        title={t(($) => $.disciplines.emptyTitle)}
-        description={t(($) => $.disciplines.emptyDescription)}
-      />
-    );
-  }
-
-  // Without the catalog the category names are unknown: one plain list.
-  if (!catalog.data) return <Cards items={data} heading="h3" />;
-
-  const known = new Set(catalog.data.map((category) => category.key));
-  const groups: Group[] = [
-    ...catalog.data.map((category) => ({
-      key: category.key,
-      name: category.name,
-      items: data.filter((item) => item.category === category.key),
-    })),
-    {
-      key: "own",
-      name: t(($) => $.disciplines.ownCategory),
-      items: data.filter((item) => !known.has(item.category ?? "")),
-    },
-  ].filter((group) => group.items.length > 0);
-
+  const groups = disciplines.groups;
   return (
-    <div className="flex flex-col gap-6">
-      {groups.map((group) => (
-        <section
-          key={group.key}
-          aria-labelledby={`category-${group.key}`}
-          className="flex flex-col gap-3"
-        >
-          {/* The one small label style (DESIGN.md): a group label must not
-              outweigh the card titles under it. */}
-          <h3
-            id={`category-${group.key}`}
-            className="text-xs leading-5 font-semibold tracking-widest text-muted uppercase"
-          >
-            {group.name}
-          </h3>
-          <Cards items={group.items} heading="h4" />
-        </section>
-      ))}
-    </div>
+    <>
+      <Accordion
+        allowsMultipleExpanded
+        defaultExpandedKeys={groups
+          .filter((group) => group.items.some((item) => item.dogs.length > 0))
+          .map((group) => group.key)}
+        className="flex flex-col gap-2"
+      >
+        {groups.map((group) => (
+          <Accordion.Item key={group.key} id={group.key}>
+            <Accordion.Heading level={2}>
+              <GroupTrigger group={group} dogs={dogs} />
+            </Accordion.Heading>
+            <Accordion.Panel>
+              <Accordion.Body>
+                <ul className="grid stagger grid-cols-1 gap-4 pt-2 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                  {group.items.map((item) => (
+                    <li
+                      key={item.id ?? item.catalogKey}
+                      className="flex min-w-0 flex-col"
+                    >
+                      <DisciplineTile
+                        item={item}
+                        dogs={dogs}
+                        freeDogs={freeDogs(item)}
+                        isBusy={copy.isPending}
+                        onOpen={async () => {
+                          const disciplineId = await ensureId(item);
+                          if (disciplineId) {
+                            void navigate({
+                              to: ROUTES.discipline,
+                              params: { disciplineId },
+                            });
+                          }
+                        }}
+                        onAddToDog={() => {
+                          const free = freeDogs(item);
+                          if (free.length === 1) void assign(item, free[0]!.id);
+                          else setPicking(item);
+                        }}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </Accordion.Body>
+            </Accordion.Panel>
+          </Accordion.Item>
+        ))}
+      </Accordion>
+      {picking && (
+        <DogPickDialog
+          name={picking.name}
+          dogs={freeDogs(picking)}
+          isPending={copy.isPending}
+          onPick={(dogId) => void assign(picking, dogId)}
+          onClose={() => setPicking(null)}
+        />
+      )}
+      {assigning && (
+        <AssignToDog {...assigning} onClose={() => setAssigning(null)} />
+      )}
+    </>
   );
 }
 
-function Cards({
-  items,
-  heading,
+/** Area name, "training 2 of 5" (or the count) and who trains something. */
+function GroupTrigger({
+  group,
+  dogs,
 }: {
-  items: DisciplineSummary[];
-  heading: "h3" | "h4";
+  group: DisciplineGroup;
+  dogs: Dog[];
 }) {
+  const { t } = useTranslation();
+  const trained = group.items.filter((item) => item.dogs.length > 0).length;
+  const count = group.items.length;
+  const trainers = dogs.filter((dog) =>
+    group.items.some((item) => item.dogs.some((ref) => ref.id === dog.id)),
+  );
   return (
-    <ul className="grid stagger grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-      {items.map((discipline) => (
-        <li key={discipline.id} className="flex min-w-0 flex-col">
-          <DisciplineCard discipline={discipline} heading={heading} />
-        </li>
-      ))}
-    </ul>
+    <Accordion.Trigger className="gap-3 px-1">
+      <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3">
+        <span className="text-lg leading-7 font-semibold tracking-tight">
+          {group.name}
+        </span>
+        <span className="text-sm leading-6 font-normal text-muted">
+          {trained > 0
+            ? t(($) => $.disciplines.trainedSummary, {
+                trained,
+                count,
+                from: czechFrom(count),
+              })
+            : t(($) => $.disciplines.disciplineCount[pluralForm(count)], {
+                count,
+              })}
+        </span>
+      </span>
+      {trainers.length > 0 && (
+        <span className="flex shrink-0 -space-x-1.5">
+          {trainers.map((dog) => (
+            <DogAvatar
+              key={dog.id}
+              dog={dog}
+              className="size-7 ring-2 ring-surface"
+            />
+          ))}
+        </span>
+      )}
+      <Accordion.Indicator />
+    </Accordion.Trigger>
   );
 }
