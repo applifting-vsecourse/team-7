@@ -1,5 +1,6 @@
 import { unlinkSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mockDeep } from "vitest-mock-extended";
 import { PrismaService } from "@/core/prisma/prisma.service";
@@ -119,7 +120,9 @@ describe("PostgreSQL video worker", () => {
 
   it("unlinks the raw local file immediately after encoding, before upload, and removes the remote raw after completion", async () => {
     storage.upload.mockImplementation(async () => {
-      expect(unlinkSync).toHaveBeenCalledWith("/tmp/video-worker-test/input");
+      expect(unlinkSync).toHaveBeenCalledWith(
+        join("/tmp/video-worker-test", "input"),
+      );
     });
     await worker.tick();
     expect(prisma.video.updateMany).toHaveBeenCalledWith({
