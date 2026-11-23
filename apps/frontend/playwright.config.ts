@@ -3,6 +3,11 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
+const timezoneId = "Europe/Prague";
+
+// timezoneId only affects the browser. Match the Node workers too, otherwise
+// date calculations disagree around midnight on CI's UTC host.
+process.env.TZ = timezoneId;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -20,8 +25,7 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:3050",
     reducedMotion: "reduce",
-    // "Today" is the same locally and in CI (UTC): plans default to today.
-    timezoneId: "Europe/Prague",
+    timezoneId,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
