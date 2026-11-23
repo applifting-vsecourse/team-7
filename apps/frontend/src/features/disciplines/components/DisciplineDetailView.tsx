@@ -215,7 +215,7 @@ function DisciplineContent({ discipline }: { discipline: DisciplineDetail }) {
           name: discipline.name,
         })}
         body={t(($) => $.disciplines.deleteDialog.disciplineBody)}
-        affectedDogCount={discipline.dogs.length}
+        affectedDogCount={discipline.dogCount}
         isPending={remove.isPending}
         isError={remove.isError}
         onConfirm={() =>

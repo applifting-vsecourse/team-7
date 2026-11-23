@@ -104,39 +104,19 @@ export class DisciplinesController {
     @Param("id") id: string,
   ): Promise<DisciplineDetail> {
     const access = await subscriptionAccess(this.prisma, user.id);
+    // Locked dogs stay out of the view but count in delete warnings, since
+    // deleting cascades to their plans.
     const row = await this.prisma.discipline.findFirst({
       where: { id, userId: user.id },
-      include: access.isPlus
-        ? disciplineDetailInclude
-        : {
-            goals: {
-              ...disciplineDetailInclude.goals,
-              include: {
-                ...disciplineDetailInclude.goals.include,
-                dogs: {
-                  ...disciplineDetailInclude.goals.include.dogs,
-                  where: {
-                    dog: { archivedAt: null, id: access.activeDogId ?? "" },
-                  },
-                },
-                exercises: {
-                  ...disciplineDetailInclude.goals.include.exercises,
-                  include: {
-                    _count: {
-                      select: {
-                        dogs: { where: { dogId: access.activeDogId ?? "" } },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
+      include: disciplineDetailInclude,
     });
 
     if (!row) throw new NotFoundException("Discipline not found");
 
-    return toDisciplineDetail(row);
+    return toDisciplineDetail(
+      row,
+      access.isPlus ? undefined : (dogId) => dogId === access.activeDogId,
+    );
   }
 
   @Patch(":id")

@@ -58,15 +58,6 @@ export function useDogProfileMutation<T = void, TResult = unknown>(
   const offer = usePlusOffer();
   const mutation = useMutation({
     mutationFn: action,
-    onError: (error, variables) => {
-      const code = subscriptionError(error);
-      if (code === "goalLimit" || code === "dogLimit") {
-        offer({
-          reason: code === "goalLimit" ? "goals" : "dogs",
-          onSuccess: () => mutation.mutate(variables),
-        });
-      }
-    },
     onSuccess: () =>
       Promise.all([
         client.invalidateQueries({ queryKey: ["subscription", user?.id] }),
@@ -75,7 +66,29 @@ export function useDogProfileMutation<T = void, TResult = unknown>(
         changesArchive && invalidateArchivedDogs(client, user?.id),
       ]),
   });
-  return mutation;
+  // A limit error opens the Plus offer; getting Plus retries inside the
+  // caller's promise, so its follow-up (toast, closing, tour) still runs.
+  const mutateAsync = async (variables: T): Promise<TResult> => {
+    try {
+      return await mutation.mutateAsync(variables);
+    } catch (error) {
+      const code = subscriptionError(error);
+      if (code !== "goalLimit" && code !== "dogLimit") throw error;
+      await new Promise<void>((resolve, reject) =>
+        offer({
+          reason: code === "goalLimit" ? "goals" : "dogs",
+          onSuccess: resolve,
+          onDismiss: () => reject(error),
+        }),
+      );
+      return mutation.mutateAsync(variables);
+    }
+  };
+  return {
+    ...mutation,
+    mutateAsync,
+    mutate: (variables: T) => void mutateAsync(variables).catch(() => {}),
+  };
 }
 
 /** Restoring goes through useRestoreDog, which an undo toast can call too. */

@@ -26,6 +26,8 @@ export type Goal = {
   criterion: string | null;
   exercises: Exercise[];
   dogs: DogRef[];
+  // Includes dogs locked on Free (hidden from `dogs`): delete warnings count them.
+  dogCount: number;
 };
 
 export type DisciplineDog = DogRef & {
@@ -40,6 +42,7 @@ export type DisciplineDetail = {
   description: string | null;
   goals: Goal[];
   dogs: DisciplineDog[];
+  dogCount: number;
 };
 
 // Every library mutation invalidates this prefix: lists and details share it.

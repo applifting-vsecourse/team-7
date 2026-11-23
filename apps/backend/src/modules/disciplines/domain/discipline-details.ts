@@ -26,6 +26,9 @@ export type GoalDetail = {
   criterion: string | null;
   exercises: ExerciseDetail[];
   dogs: DogRef[];
+  // Every non-archived dog with the goal, including dogs locked on Free:
+  // deleting the goal removes their plans too.
+  dogCount: number;
 };
 
 export type DisciplineDog = DogRef & {
@@ -41,6 +44,8 @@ export type DisciplineDetail = {
   description: string | null;
   goals: GoalDetail[];
   dogs: DisciplineDog[];
+  // Like GoalDetail.dogCount, for the delete warning.
+  dogCount: number;
 };
 
 const dogRef = { select: { id: true, name: true } } as const;
@@ -103,10 +108,17 @@ export function toDisciplineSummary(row: SummaryRow): DisciplineSummary {
   };
 }
 
-export function toDisciplineDetail(row: DetailRow): DisciplineDetail {
+/** `isVisible` hides dogs locked on Free; counts still include them. */
+export function toDisciplineDetail(
+  row: DetailRow,
+  isVisible: (dogId: string) => boolean = () => true,
+): DisciplineDetail {
   const dogs = new Map<string, DisciplineDog>();
+  const allDogs = new Set<string>();
   for (const goal of row.goals) {
     for (const { dog, status, _count } of goal.dogs) {
+      allDogs.add(dog.id);
+      if (!isVisible(dog.id)) continue;
       const entry = dogs.get(dog.id) ?? {
         ...dog,
         goalCount: 0,
@@ -133,8 +145,10 @@ export function toDisciplineDetail(row: DetailRow): DisciplineDetail {
         procedure: exercise.procedure,
         dogCount: exercise._count.dogs,
       })),
-      dogs: goal.dogs.map(({ dog }) => dog),
+      dogs: goal.dogs.map(({ dog }) => dog).filter(({ id }) => isVisible(id)),
+      dogCount: goal.dogs.length,
     })),
     dogs: [...dogs.values()],
+    dogCount: allDogs.size,
   };
 }

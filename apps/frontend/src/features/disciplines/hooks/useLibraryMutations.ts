@@ -168,7 +168,13 @@ export function useSaveGoal() {
               ...detail,
               goals: [
                 ...detail.goals,
-                { ...fields, id: saved.id, exercises: [], dogs: [] },
+                {
+                  ...fields,
+                  id: saved.id,
+                  exercises: [],
+                  dogs: [],
+                  dogCount: 0,
+                },
               ],
             }
           : detail;

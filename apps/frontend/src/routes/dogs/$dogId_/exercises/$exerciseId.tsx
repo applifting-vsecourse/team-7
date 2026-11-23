@@ -10,6 +10,8 @@ import { useSession } from "@/features/auth/hooks/useSession";
 import { requireVerifiedSession } from "@/features/auth/lib/require-session";
 import { dogExerciseQueryOptions } from "@/features/dogs/api/dogExerciseQueryOptions";
 import { DogExerciseView } from "@/features/dogs/components/DogExerciseView";
+import { QueryFeedback } from "@/features/dogs/components/QueryFeedback";
+import { subscriptionError } from "@/features/subscription/hooks/subscriptionError";
 
 export const Route = createFileRoute("/dogs/$dogId_/exercises/$exerciseId")({
   beforeLoad: requireVerifiedSession,
@@ -28,7 +30,11 @@ function DogExercisePage() {
             {t(($) => $.exerciseDetail.loading)}
           </p>
         )}
-        {query.isError && (
+        {/* A locked or archived dog shows its lock / restore panel. */}
+        {query.isError && subscriptionError(query.error) && (
+          <QueryFeedback query={query} dogId={dogId} />
+        )}
+        {query.isError && !subscriptionError(query.error) && (
           <div className="flex flex-col items-start gap-3">
             <p role="alert" className="text-sm text-danger">
               {t(($) => $.exerciseDetail.error)}

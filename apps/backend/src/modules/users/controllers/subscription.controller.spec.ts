@@ -140,6 +140,27 @@ describe("mock subscriptions API", () => {
     expect(record).toMatchObject({ paymentFailed: false, paidUntil: null });
   });
 
+  it("keeps the rest of a running trial when paying during it", async () => {
+    const trial = await act("trial");
+    const paid = await act("pay");
+    const expected = new Date(trial.trialEndsAt);
+    expected.setUTCFullYear(expected.getUTCFullYear() + 1);
+    expect(paid).toMatchObject({
+      status: "active",
+      paidUntil: expected.toISOString(),
+    });
+  });
+
+  it("clamps a yearly period that starts on 29 February to 28 February", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2028-02-29T12:00:00.000Z"));
+    try {
+      expect((await act("pay")).paidUntil).toBe("2029-02-28T12:00:00.000Z");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("simulates a declined renewal and recovers with a different test card", async () => {
     await act("pay");
     const failed = await act("failPayment");
