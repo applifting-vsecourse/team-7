@@ -234,6 +234,7 @@ export function AssignDisciplineDialog({
                 )}
                 {isReady && (
                   <Tabs
+                    className="tabs--wrap"
                     selectedKey={activeTab}
                     onSelectionChange={(key) => setTab(String(key))}
                   >
@@ -253,10 +254,7 @@ export function AssignDisciplineDialog({
                         ))}
                       </Tabs.List>
                     </Tabs.ListContainer>
-                    <Tabs.Panel
-                      id={LIBRARY}
-                      className="flex flex-col gap-5 pt-4"
-                    >
+                    <Tabs.Panel id={LIBRARY} className="flex flex-col gap-5">
                       {available.length === 0 && (
                         <Alert status="accent">
                           <Alert.Indicator />
@@ -281,11 +279,7 @@ export function AssignDisciplineDialog({
                       )}
                     </Tabs.Panel>
                     {catalog.data?.map((category, index) => (
-                      <Tabs.Panel
-                        key={category.key}
-                        id={category.key}
-                        className="pt-4"
-                      >
+                      <Tabs.Panel key={category.key} id={category.key}>
                         {options(catalogOptions(index))}
                       </Tabs.Panel>
                     ))}

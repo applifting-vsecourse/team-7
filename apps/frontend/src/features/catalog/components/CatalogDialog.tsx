@@ -73,6 +73,7 @@ export function CatalogDialog({ onClose }: { onClose: () => void }) {
             />
             {categories.length > 0 && (
               <Tabs
+                className="tabs--wrap"
                 selectedKey={tab ?? categories[0]!.key}
                 onSelectionChange={(key) => setTab(String(key))}
               >
@@ -94,7 +95,7 @@ export function CatalogDialog({ onClose }: { onClose: () => void }) {
                   <Tabs.Panel
                     key={category.key}
                     id={category.key}
-                    className="flex flex-col gap-3 pt-4"
+                    className="flex flex-col gap-3"
                   >
                     <p className="text-sm leading-6 text-muted">
                       {category.description}

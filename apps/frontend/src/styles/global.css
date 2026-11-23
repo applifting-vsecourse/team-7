@@ -527,6 +527,15 @@
     --toggle-button-fg-selected: var(--accent-foreground);
   }
 
+  /* Category tabs wrap instead of scrolling sideways: with long Czech names
+     only one or two of five categories would be visible in a dialog. */
+  .tabs--wrap .tabs__list[data-orientation="horizontal"] {
+    @apply w-full flex-wrap;
+  }
+  .tabs--wrap .tabs__tab {
+    @apply w-auto flex-auto;
+  }
+
   /* Figma "Heading 3" for modal titles; delete confirmations keep the kit size. */
   .modal__dialog:not([data-delete-confirmation]) .modal__heading {
     @apply text-2xl leading-8 font-semibold tracking-tight;
