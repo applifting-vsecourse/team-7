@@ -46,16 +46,21 @@ async function asTourUser(
     if (
       response.request().method() !== "POST" ||
       !response.ok() ||
-      // A dog or an own discipline created by the test.
-      !/\/api\/(dogs|dogs\/[^/]+\/disciplines)$/.test(pathname)
+      // A dog, an own discipline or a catalog copy created by the test.
+      !/\/api\/(dogs|dogs\/[^/]+\/disciplines|catalog\/[^/]+\/copy)$/.test(
+        pathname,
+      )
     ) {
       return;
     }
-    const { id, name } = (await response.json()) as {
+    const { id, name, created } = (await response.json()) as {
       id: string;
-      name: string;
+      name?: string;
+      created?: boolean;
     };
     if (pathname.endsWith("/api/dogs") && name !== dogName) return;
+    // A copy the account already had stays.
+    if (pathname.endsWith("/copy") && !created) return;
     cleanup.push(
       pathname.endsWith("/api/dogs")
         ? `${response.url()}/${id}`
@@ -67,17 +72,6 @@ async function asTourUser(
     await expect(page).toHaveURL(/\/(overview|dogs|calendar)/);
     await ensurePlus(page.request);
     await finishTour(page);
-    // The tour assigns a default discipline (added by a migration and to
-    // every new account): an old database without it can't run this spec.
-    const library = (await (
-      await page.request.get("/api/disciplines")
-    ).json()) as {
-      name: string;
-    }[];
-    expect(
-      library.map(({ name }) => name),
-      "Default disciplines missing: run `pnpm backend prisma:migrations:run`",
-    ).toContain("Spolehlivé přivolání");
     await page.goto("/overview?lng=en");
     await expect(app.overviewHeading).toBeVisible();
     await run();
@@ -90,7 +84,7 @@ async function asTourUser(
   }
 }
 
-test("the guide walks through a dog, a default discipline and the first exercise", async ({
+test("the guide walks through a dog, a catalog discipline and the first exercise", async ({
   page,
   login,
   app,
@@ -154,7 +148,10 @@ test("the guide walks through a dog, a default discipline and the first exercise
       await tour.button(profile, "Next").click();
     });
 
-    await test.step("Assign a default discipline from the library (O4, O5)", async () => {
+    // The first exercise of the assigned catalog discipline, read from the API
+    // so the steps don't depend on the catalog's wording or language.
+    let exercise = "";
+    await test.step("Assign a catalog discipline (O4, O5)", async () => {
       await tour.expectBubble("Assign a discipline", "Step 3 of 7");
       expect(
         await page.evaluate(
@@ -166,10 +163,13 @@ test("the guide walks through a dog, a default discipline and the first exercise
         .getByRole("button", { name: "Assign discipline", exact: true })
         .click();
       const dialog = tour.disciplineDialog;
+      await tour.catalogCategory("Everyday").click();
+      // A copy the account already has (e.g. a former default, in Czech) is
+      // offered under its library name instead.
       await dialog
-        // Every account starts with the default disciplines; test accounts
-        // got the Czech ones.
-        .getByRole("radio", { name: "Spolehlivé přivolání", exact: true })
+        .getByRole("radio", {
+          name: /^(Reliable recall|Spolehlivé přivolání)$/,
+        })
         .press("Space");
       await dialog
         .getByRole("button", { name: "Continue", exact: true })
@@ -179,6 +179,7 @@ test("the guide walks through a dog, a default discipline and the first exercise
         .click();
       await dialog.getByRole("button", { name: /^Assign / }).click();
       await expect(dialog).toBeHidden();
+      exercise = await tour.firstCatalogExercise("recall");
     });
 
     await test.step("Open the calendar and plan the first exercise (O6, O7)", async () => {
@@ -187,9 +188,7 @@ test("the guide walks through a dog, a default discipline and the first exercise
       await tour.expectBubble("Plan an exercise", "Step 5 of 7");
       await calendar.scheduleExercise.click();
       // The tour's dog and discipline are already selected.
-      await calendar
-        .schedulingExercise("Na jméno z vedlejší místnosti")
-        .press("Space");
+      await calendar.schedulingExercise(exercise).press("Space");
       await calendar.continueScheduling.click();
       await expect(calendar.date).not.toHaveValue("");
       // Next week: the guide has to move the calendar to find the exercise.
@@ -214,7 +213,7 @@ test("the guide walks through a dog, a default discipline and the first exercise
       );
       // The highlighted tile is the planned exercise, on screen and ringed.
       const tile = page.getByRole("article", {
-        name: "Na jméno z vedlejší místnosti",
+        name: exercise,
       });
       await expect(tile).toBeInViewport();
       const ring = page.locator(".animate-spotlight");

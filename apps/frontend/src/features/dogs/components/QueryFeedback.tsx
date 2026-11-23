@@ -10,9 +10,12 @@ import { ArchivedDogLocked } from "./ArchivedDogLocked";
 export function QueryFeedback({
   query,
   dogId,
+  errorMessage,
 }: {
   /** The dog the query is about, so an archived dog can offer "Restore". */
   dogId?: string;
+  /** Replaces the default "could not load the profile" message. */
+  errorMessage?: string;
   query: {
     isPending: boolean;
     isError: boolean;
@@ -55,7 +58,10 @@ export function QueryFeedback({
   return (
     <div className="flex animate-enter flex-col items-start gap-3">
       <p role="alert" className="text-sm text-danger">
-        {missing ? t(($) => $.dogs.notFound) : t(($) => $.dogProfile.loadError)}
+        {errorMessage ??
+          (missing
+            ? t(($) => $.dogs.notFound)
+            : t(($) => $.dogProfile.loadError))}
       </p>
       <Button
         variant="secondary"

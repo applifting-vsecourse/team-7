@@ -8,6 +8,10 @@ export type DisciplineSummary = {
   id: string;
   name: string;
   description: string | null;
+  /** Catalog category key (#14); null for a discipline without one. */
+  category: string | null;
+  /** Source discipline in the catalog; null for the handler's own. */
+  catalogKey: string | null;
   goalCount: number;
   exerciseCount: number;
   dogs: DogRef[];
@@ -40,6 +44,8 @@ export type DisciplineDetail = {
   id: string;
   name: string;
   description: string | null;
+  category: string | null;
+  catalogKey: string | null;
   goals: Goal[];
   dogs: DisciplineDog[];
   dogCount: number;

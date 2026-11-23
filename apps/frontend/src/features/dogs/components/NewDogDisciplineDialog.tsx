@@ -6,7 +6,11 @@ import { useTranslation } from "react-i18next";
 import { api } from "@/lib/api-client";
 
 import { LibraryItemDialog } from "@/features/disciplines/components/LibraryItemDialog";
-import type { LibraryItemValues } from "@/features/disciplines/schemas/libraryItemSchema";
+import { useCatalog } from "@/features/disciplines/hooks/useCatalog";
+import {
+  categoryOf,
+  type LibraryItemValues,
+} from "@/features/disciplines/schemas/libraryItemSchema";
 
 import { useDogProfileMutation } from "../hooks/useDogProfileMutation";
 
@@ -22,12 +26,18 @@ export function NewDogDisciplineDialog({
   const save = useDogProfileMutation((values: LibraryItemValues) =>
     api
       .post(`dogs/${encodeURIComponent(dog.id)}/disciplines`, {
-        json: { name: values.name, description: values.text },
+        json: {
+          name: values.name,
+          description: values.text,
+          category: categoryOf(values),
+        },
       })
       .json<{ id: string }>(),
   );
+  const catalog = useCatalog();
   return (
     <LibraryItemDialog
+      categories={catalog.data}
       isOpen
       onOpenChange={(open) => {
         if (!open) onClose();

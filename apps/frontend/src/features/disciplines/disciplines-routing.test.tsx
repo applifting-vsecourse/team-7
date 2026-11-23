@@ -71,10 +71,35 @@ vi.mock("@/features/auth/lib/auth-client", () => ({
   },
 }));
 
+const catalogDiscipline = (key: string, name: string) => ({
+  key,
+  shortName: name,
+  name,
+  description: `${name} step by step.`,
+  goals: [{ name: "First goal", exercises: [{ name: "A" }, { name: "B" }] }],
+});
+const catalog = {
+  categories: [
+    {
+      key: "everyday",
+      name: "Everyday life",
+      description: "Manners at home and outside.",
+      disciplines: [catalogDiscipline("recall", "Reliable recall")],
+    },
+    {
+      key: "obedience-sports",
+      name: "Obedience sports",
+      description: "Exams and competitions.",
+      disciplines: [catalogDiscipline("obedience", "Obedience")],
+    },
+  ],
+};
 const poslusnost: DisciplineSummary = {
   id: "d1",
   name: "Poslušnost",
   description: "Základní povely a sebekontrola.",
+  category: "obedience-sports",
+  catalogKey: "obedience",
   goalCount: 3,
   exerciseCount: 7,
   dogs: [
@@ -86,6 +111,8 @@ const agility: DisciplineSummary = {
   id: "d2",
   name: "Agility",
   description: null,
+  category: null,
+  catalogKey: null,
   goalCount: 0,
   exerciseCount: 0,
   dogs: [],
@@ -94,6 +121,8 @@ const poslusnostDetail: DisciplineDetail = {
   id: "d1",
   name: "Poslušnost",
   description: "Základní povely a sebekontrola.",
+  category: "obedience-sports",
+  catalogKey: "obedience",
   goals: [
     {
       id: "g1",
@@ -173,6 +202,7 @@ describe("disciplines", () => {
       ["dogs", () => []],
       ["disciplines", () => [poslusnost, agility]],
       ["disciplines/d1", () => poslusnostDetail],
+      ["catalog", () => catalog],
     ]);
     vi.spyOn(window, "matchMedia").mockImplementation((media) => ({
       matches: false,
@@ -226,6 +256,90 @@ describe("disciplines", () => {
     expect(
       await screen.findByText("You don't have any disciplines yet"),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Choose from the catalog" }),
+    ).toBeInTheDocument();
+  });
+
+  it("groups the library by catalog category, own disciplines last", async () => {
+    renderRoute("/disciplines?lng=en");
+
+    const own = await screen.findByRole("region", {
+      name: "Your own disciplines",
+    });
+    const headings = within(screen.getByRole("main")).getAllByRole("heading", {
+      level: 2,
+    });
+    expect(headings.map((heading) => heading.textContent)).toEqual([
+      "Obedience sports",
+      "Your own disciplines",
+    ]);
+    expect(
+      within(own).getByRole("heading", { level: 3, name: "Agility" }),
+    ).toBeInTheDocument();
+  });
+
+  it("adds a catalog discipline to the library and opens it", async () => {
+    const user = userEvent.setup();
+    state.post.mockResolvedValue({ id: "d1", created: true });
+    const router = renderRoute("/disciplines?lng=en");
+
+    await user.click(
+      await screen.findByRole("button", { name: "Browse catalog" }),
+    );
+    const dialog = await screen.findByRole("dialog");
+    // The first discipline of the first category starts picked.
+    expect(
+      await within(dialog).findByRole("radio", { name: "Reliable recall" }),
+    ).toBeChecked();
+    // One already copied opens instead of copying again.
+    await user.click(
+      within(dialog).getByRole("tab", { name: "Obedience sports" }),
+    );
+    await user.click(within(dialog).getByRole("radio", { name: "Obedience" }));
+    expect(
+      within(dialog).getByRole("button", { name: "Open in library" }),
+    ).toBeInTheDocument();
+    await user.click(
+      within(dialog).getByRole("tab", { name: "Everyday life" }),
+    );
+    await user.click(
+      within(dialog).getByRole("radio", { name: "Reliable recall" }),
+    );
+    await user.click(
+      within(dialog).getByRole("button", { name: "Add to library" }),
+    );
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/disciplines/d1"),
+    );
+    expect(state.post).toHaveBeenCalledWith("catalog/recall/copy", {
+      json: { lng: "en" },
+    });
+    expect(
+      await screen.findByText("Discipline Reliable recall is in your library"),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the catalog dialog open with an error when copying fails", async () => {
+    const user = userEvent.setup();
+    state.post.mockRejectedValue(new Error("offline"));
+    renderRoute("/disciplines?lng=en");
+
+    await user.click(
+      await screen.findByRole("button", { name: "Browse catalog" }),
+    );
+    const dialog = await screen.findByRole("dialog");
+    await within(dialog).findByRole("radio", { name: "Reliable recall" });
+    await user.click(
+      within(dialog).getByRole("button", { name: "Add to library" }),
+    );
+
+    expect(
+      await within(dialog).findByText(
+        "The discipline couldn't be added to your library. Please try again.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("validates, creates a discipline and opens its detail", async () => {
@@ -259,7 +373,7 @@ describe("disciplines", () => {
       expect(router.state.location.pathname).toBe("/disciplines/d1"),
     );
     expect(state.post).toHaveBeenCalledWith("disciplines", {
-      json: { name: "Agility", description: "Obstacles" },
+      json: { name: "Agility", description: "Obstacles", category: null },
     });
     expect(router.state.location.search.lng).toBe("en");
     expect(

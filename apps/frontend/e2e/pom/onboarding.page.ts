@@ -10,12 +10,32 @@ export class OnboardingPage {
       exact: true,
     });
   }
-  /** O5: assign a discipline from the library, or your own. */
+  /** O5: assign a discipline from the library or the catalog, or your own. */
   get disciplineDialog() {
     return this.page.getByRole("dialog", {
       name: "Assign discipline",
       exact: true,
     });
+  }
+
+  /** A catalog category tab of the O5 dialog, by the start of its name. */
+  catalogCategory(prefix: string) {
+    return this.disciplineDialog.getByRole("tab", {
+      name: new RegExp(`^${prefix}`),
+    });
+  }
+
+  /** The first exercise of the library copy of a catalog discipline. */
+  async firstCatalogExercise(catalogKey: string) {
+    const library = (await (
+      await this.page.request.get("/api/disciplines")
+    ).json()) as { id: string; catalogKey: string | null }[];
+    const copy = library.find((item) => item.catalogKey === catalogKey);
+    expect(copy, `No library copy of ${catalogKey}`).toBeDefined();
+    const detail = (await (
+      await this.page.request.get(`/api/disciplines/${copy!.id}`)
+    ).json()) as { goals: { exercises: { name: string }[] }[] };
+    return detail.goals[0]!.exercises[0]!.name;
   }
 
   bubble(title: string) {

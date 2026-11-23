@@ -6,6 +6,7 @@ import {
   Modal,
   Radio,
   RadioGroup,
+  Tabs,
   toast,
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
@@ -19,6 +20,11 @@ import {
   disciplineQueryOptions,
   disciplinesQueryOptions,
 } from "@/features/disciplines/api/disciplinesQueryOptions";
+import {
+  catalogExerciseCount,
+  useCatalog,
+} from "@/features/disciplines/hooks/useCatalog";
+import { useCopyCatalogDiscipline } from "@/features/disciplines/hooks/useLibraryMutations";
 import { useTour } from "@/features/onboarding/hooks/useTour";
 import {
   useSubscription,
@@ -35,6 +41,16 @@ import { GoalPicker } from "./GoalPicker";
 import { QueryFeedback } from "./QueryFeedback";
 
 const CUSTOM = "custom";
+const LIBRARY = "library";
+// A catalog discipline that isn't in the library yet; copied on Continue.
+const CATALOG = "catalog:";
+
+type Option = {
+  value: string;
+  name: string;
+  description: string;
+  isDisabled?: boolean;
+};
 
 export function AssignDisciplineDialog({
   dog,
@@ -44,8 +60,8 @@ export function AssignDisciplineDialog({
   dog: DogProfile;
   onClose: () => void;
   /**
-   * The tour's variant (Figma O5): the library plus "Your own discipline",
-   * which hands over to the new-discipline dialog.
+   * The tour's variant (Figma O5): the library and the catalog plus "Your own
+   * discipline", which hands over to the new-discipline dialog.
    */
   onCustom?: () => void;
 }) {
@@ -67,22 +83,74 @@ export function AssignDisciplineDialog({
   const [step, setStep] = useState(1);
   const tour = useTour();
   const [picked, setPicked] = useState("");
+  const [tab, setTab] = useState<string | null>(null);
   const [selection, setSelection] = useState<GoalSelection[]>([]);
   const library = useQuery(disciplinesQueryOptions(user?.id));
+  const catalog = useCatalog();
+  const copy = useCopyCatalogDiscipline();
+  const isAssigned = (id: string) =>
+    dog.disciplines.some((assigned) => assigned.id === id);
   const available =
     library.data?.filter(
-      (item) =>
-        item.goalCount > 0 &&
-        !dog.disciplines.some((assigned) => assigned.id === item.id),
+      (item) => item.goalCount > 0 && !isAssigned(item.id),
     ) ?? [];
-  // The tour starts with the first option picked, as in Figma O5.
+  const libraryOptions: Option[] = available.map((discipline) => ({
+    value: discipline.id,
+    name: discipline.name,
+    description: summary(discipline.goalCount, discipline.exerciseCount),
+  }));
+  // A catalog discipline copied before is the library one: picking it
+  // assigns that copy instead of making another.
+  const catalogOptions = (index: number): Option[] =>
+    (catalog.data?.[index]?.disciplines ?? []).map((discipline) => {
+      const copied = library.data?.find(
+        (item) => item.catalogKey === discipline.key,
+      );
+      if (!copied) {
+        return {
+          value: CATALOG + discipline.key,
+          name: discipline.name,
+          description: t(($) => $.dogProfile.fromCatalog, {
+            summary: summary(
+              discipline.goals.length,
+              catalogExerciseCount(discipline),
+            ),
+          }),
+        };
+      }
+      const assigned = isAssigned(copied.id);
+      return {
+        value: copied.id,
+        name: copied.name,
+        description: assigned
+          ? t(($) => $.dogProfile.alreadyAssigned, { name: dog.name })
+          : copied.goalCount === 0
+            ? t(($) => $.disciplines.emptyDiscipline)
+            : t(($) => $.dogProfile.inLibrary, {
+                summary: summary(copied.goalCount, copied.exerciseCount),
+              }),
+        isDisabled: assigned || copied.goalCount === 0,
+      };
+    });
+  const isReady = library.isSuccess && !catalog.isPending;
+  const firstCategory = catalog.data?.[0];
+  // The tour starts with the first option picked, as in Figma O5; with
+  // nothing to assign from the library, in the first catalog category.
+  const startInCatalog =
+    Boolean(onCustom) && available.length === 0 && Boolean(firstCategory);
+  const activeTab =
+    tab ?? (startInCatalog && firstCategory ? firstCategory.key : LIBRARY);
+  const firstOption = startInCatalog
+    ? catalogOptions(0).find((option) => !option.isDisabled)?.value
+    : available[0]?.id;
   const disciplineId =
-    picked ||
-    (onCustom && library.isSuccess ? (available[0]?.id ?? CUSTOM) : "");
+    picked || (onCustom && isReady ? (firstOption ?? CUSTOM) : "");
   const detail = useQuery(
     disciplineQueryOptions(
       user?.id,
-      disciplineId === CUSTOM ? "" : disciplineId,
+      disciplineId === CUSTOM || disciplineId.startsWith(CATALOG)
+        ? ""
+        : disciplineId,
     ),
   );
   const save = useDogProfileMutation(async () => {
@@ -90,6 +158,29 @@ export function AssignDisciplineDialog({
       json: { goals: selection },
     });
   });
+  const isBusy = save.isPending || copy.isPending;
+  const options = (items: Option[]) => (
+    <RadioGroup
+      aria-label={t(($) => $.navigation.disciplines)}
+      value={disciplineId}
+      onChange={(value) => {
+        setPicked(value);
+        setSelection([]);
+        copy.reset();
+      }}
+    >
+      {items.map((option) => (
+        <DisciplineRadio key={option.value} {...option} />
+      ))}
+      {onCustom && (
+        <DisciplineRadio
+          value={CUSTOM}
+          name={t(($) => $.onboarding.disciplineDialog.custom)}
+          description={t(($) => $.onboarding.disciplineDialog.customHint)}
+        />
+      )}
+    </RadioGroup>
+  );
   const exerciseCount = selection.reduce(
     (total, goal) => total + goal.exerciseIds.length,
     0,
@@ -98,10 +189,10 @@ export function AssignDisciplineDialog({
     <Modal.Backdrop
       isOpen
       onOpenChange={(open) => {
-        if (!open && !save.isPending) onClose();
+        if (!open && !isBusy) onClose();
       }}
-      isDismissable={!save.isPending}
-      isKeyboardDismissDisabled={save.isPending}
+      isDismissable={!isBusy}
+      isKeyboardDismissDisabled={isBusy}
     >
       <Modal.Container size="lg" scroll="outside">
         <Modal.Dialog className="sm:max-w-160">
@@ -136,60 +227,74 @@ export function AssignDisciplineDialog({
               <>
                 <QueryFeedback query={library} />
                 {library.isSuccess && (
-                  <>
-                    {available.length === 0 && !onCustom ? (
-                      <Alert status="accent">
-                        <Alert.Indicator />
-                        <Alert.Content>
-                          <Alert.Title>
-                            {t(($) => $.dogProfile.noAvailableDisciplines)}
-                          </Alert.Title>
-                        </Alert.Content>
-                      </Alert>
-                    ) : (
-                      <RadioGroup
-                        aria-label={t(($) => $.navigation.disciplines)}
-                        value={disciplineId}
-                        onChange={(value) => {
-                          setPicked(value);
-                          setSelection([]);
-                        }}
+                  <QueryFeedback
+                    query={catalog}
+                    errorMessage={t(($) => $.dogProfile.catalogLoadError)}
+                  />
+                )}
+                {isReady && (
+                  <Tabs
+                    selectedKey={activeTab}
+                    onSelectionChange={(key) => setTab(String(key))}
+                  >
+                    <Tabs.ListContainer>
+                      <Tabs.List
+                        aria-label={t(($) => $.dogProfile.disciplineSources)}
                       >
-                        {available.map((discipline) => (
-                          <DisciplineRadio
-                            key={discipline.id}
-                            value={discipline.id}
-                            name={discipline.name}
-                            description={summary(
-                              discipline.goalCount,
-                              discipline.exerciseCount,
-                            )}
-                          />
+                        <Tabs.Tab id={LIBRARY}>
+                          {t(($) => $.dogProfile.libraryTab)}
+                          <Tabs.Indicator />
+                        </Tabs.Tab>
+                        {catalog.data?.map((category) => (
+                          <Tabs.Tab key={category.key} id={category.key}>
+                            {category.name}
+                            <Tabs.Indicator />
+                          </Tabs.Tab>
                         ))}
-                        {onCustom && (
-                          <DisciplineRadio
-                            value={CUSTOM}
-                            name={t(
-                              ($) => $.onboarding.disciplineDialog.custom,
-                            )}
-                            description={t(
-                              ($) => $.onboarding.disciplineDialog.customHint,
-                            )}
-                          />
-                        )}
-                      </RadioGroup>
-                    )}
-                    {!onCustom && (
-                      <Alert status="accent">
-                        <Alert.Indicator />
-                        <Alert.Content>
-                          <Alert.Title>
-                            {t(($) => $.dogProfile.libraryNotice)}
-                          </Alert.Title>
-                        </Alert.Content>
-                      </Alert>
-                    )}
-                  </>
+                      </Tabs.List>
+                    </Tabs.ListContainer>
+                    <Tabs.Panel
+                      id={LIBRARY}
+                      className="flex flex-col gap-5 pt-4"
+                    >
+                      {available.length === 0 && (
+                        <Alert status="accent">
+                          <Alert.Indicator />
+                          <Alert.Content>
+                            <Alert.Title>
+                              {t(($) => $.dogProfile.libraryEmptyHint)}
+                            </Alert.Title>
+                          </Alert.Content>
+                        </Alert>
+                      )}
+                      {(available.length > 0 || onCustom) &&
+                        options(libraryOptions)}
+                      {!onCustom && available.length > 0 && (
+                        <Alert status="accent">
+                          <Alert.Indicator />
+                          <Alert.Content>
+                            <Alert.Title>
+                              {t(($) => $.dogProfile.libraryNotice)}
+                            </Alert.Title>
+                          </Alert.Content>
+                        </Alert>
+                      )}
+                    </Tabs.Panel>
+                    {catalog.data?.map((category, index) => (
+                      <Tabs.Panel
+                        key={category.key}
+                        id={category.key}
+                        className="pt-4"
+                      >
+                        {options(catalogOptions(index))}
+                      </Tabs.Panel>
+                    ))}
+                  </Tabs>
+                )}
+                {copy.isError && (
+                  <p role="alert" className="text-sm text-danger">
+                    {t(($) => $.dogProfile.copyError)}
+                  </p>
                 )}
               </>
             ) : (
@@ -250,7 +355,7 @@ export function AssignDisciplineDialog({
           <Modal.Footer className="flex-wrap">
             <Button
               variant="secondary"
-              isDisabled={save.isPending}
+              isDisabled={isBusy}
               className="flex-auto sm:flex-none"
               onPress={() => (step === 1 ? onClose() : setStep(1))}
             >
@@ -261,17 +366,30 @@ export function AssignDisciplineDialog({
             <Button
               isDisabled={
                 step === 1
-                  ? !disciplineId
+                  ? !disciplineId || isBusy
                   : selection.length === 0 ||
                     !detail.isSuccess ||
                     save.isPending
               }
-              isPending={save.isPending}
+              isPending={isBusy}
               className="flex-auto sm:flex-none"
               onPress={async () => {
                 if (step === 1) {
-                  if (disciplineId === CUSTOM) onCustom?.();
-                  else setStep(2);
+                  if (disciplineId === CUSTOM) return onCustom?.();
+                  if (disciplineId.startsWith(CATALOG)) {
+                    try {
+                      // Resolves once the library holds the copy, so step 2
+                      // and a step back find it.
+                      const { id } = await copy.mutateAsync({
+                        key: disciplineId.slice(CATALOG.length),
+                        lng: catalog.lng,
+                      });
+                      setPicked(id);
+                    } catch {
+                      return; // The error stays on step 1 for a retry.
+                    }
+                  }
+                  setStep(2);
                   return;
                 }
                 try {
@@ -316,10 +434,15 @@ export function DisciplineRadio({
   value,
   name,
   description,
+  details,
+  isDisabled,
 }: {
   value: string;
   name: string;
   description: string;
+  /** Longer text under the name, clamped (the catalog's description). */
+  details?: string;
+  isDisabled?: boolean;
 }) {
   const id = useId();
   return (
@@ -327,6 +450,7 @@ export function DisciplineRadio({
     // description included, selects the discipline.
     <Radio
       value={value}
+      isDisabled={isDisabled}
       className="w-full"
       // Name only; the summary is the description.
       aria-labelledby={`${id}-name`}
@@ -341,6 +465,11 @@ export function DisciplineRadio({
           <span id={`${id}-name`} className="text-sm leading-6 font-medium">
             {name}
           </span>
+          {details && (
+            <span className="line-clamp-2 text-xs leading-5 text-muted">
+              {details}
+            </span>
+          )}
           <Description id={`${id}-summary`}>{description}</Description>
         </span>
       </Radio.Content>

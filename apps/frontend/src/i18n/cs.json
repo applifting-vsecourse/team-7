@@ -273,7 +273,19 @@
       }
     },
     "closingHeading": "Vyzkoušejte TrainLoop",
-    "closingLead": "Registrace je zdarma. Po přihlášení si můžete hned přidat psa a založit první plán."
+    "closingLead": "Registrace je zdarma. Po přihlášení si můžete hned přidat psa a založit první plán.",
+    "samples": {
+      "heading": "Začněte s hotovými disciplínami",
+      "lead": "Po registraci si vyberete {{from}} {{count}} disciplín v {{categoryCount}} oblastech – s cíli i cvičeními. Upravíte si je podle sebe, nebo založíte vlastní.",
+      "loading": "Načítám ukázky disciplín…",
+      "loadError": "Ukázky disciplín se nepodařilo načíst.",
+      "retry": "Zkusit znovu",
+      "empty": "Ukázky disciplín tu zatím nejsou."
+    }
+  },
+  "catalog": {
+    "categories": "Oblasti disciplín",
+    "disciplinesIn": "Disciplíny v oblasti {{name}}"
   },
   "disciplines": {
     "intro": "Knihovna disciplín, cílů a cvičení. Psům z ní přiřadíte jen to, co opravdu trénují.",
@@ -282,8 +294,22 @@
     "loadError": "Disciplíny se nepodařilo načíst.",
     "retry": "Zkusit znovu",
     "emptyTitle": "Zatím nemáte žádnou disciplínu",
-    "emptyDescription": "Disciplína sdružuje cíle a cvičení, které pak přiřadíte svým psům.",
+    "emptyDescription": "Vyberte hotovou disciplínu z katalogu, nebo si založte vlastní. Disciplína sdružuje cíle a cvičení, které pak přiřadíte svým psům.",
     "emptyDiscipline": "Disciplína je prázdná",
+    "browseCatalog": "Procházet katalog",
+    "pickFromCatalog": "Vybrat z katalogu",
+    "ownCategory": "Vlastní disciplíny",
+    "catalogDialog": {
+      "title": "Katalog disciplín",
+      "intro": "Vyberte hotovou disciplínu s cíli a cvičeními. Přidá se do vaší knihovny, kde si ji můžete upravit.",
+      "categories": "Kategorie katalogu",
+      "inLibrary": "V knihovně · {{summary}}",
+      "add": "Přidat do knihovny",
+      "open": "Otevřít v knihovně",
+      "loadError": "Katalog se nepodařilo načíst.",
+      "copyError": "Disciplínu se nepodařilo přidat do knihovny. Zkuste to znovu.",
+      "addedToast": "Disciplína {{name}} je ve vaší knihovně"
+    },
     "goalCount": {
       "one": "{{count}} cíl",
       "few": "{{count}} cíle",
@@ -330,6 +356,8 @@
       "namePlaceholder": "Agility",
       "text": "Popis",
       "textPlaceholder": "Překážky, slalom a vedení na dálku.",
+      "category": "Kategorie",
+      "noCategory": "Bez kategorie",
       "submit": "Vytvořit disciplínu"
     },
     "goalForm": {
@@ -439,9 +467,16 @@
     "assignDiscipline": "Přiřadit disciplínu",
     "stepOne": "Krok 1 ze 2 · Disciplína",
     "stepTwo": "Krok 2 ze 2 · Cíle a cvičení",
-    "chooseDiscipline": "Vyberte disciplínu z knihovny, kterou bude {{name}} trénovat.",
+    "chooseDiscipline": "Vyberte disciplínu z knihovny nebo z katalogu, kterou bude {{name}} trénovat.",
+    "libraryTab": "Moje knihovna",
+    "disciplineSources": "Knihovna a kategorie katalogu",
+    "fromCatalog": "Z katalogu · {{summary}}",
+    "inLibrary": "V knihovně · {{summary}}",
+    "alreadyAssigned": "{{name}} ji už trénuje",
+    "libraryEmptyHint": "V knihovně zatím nemáte disciplínu k přiřazení. Hotové disciplíny najdete v kategoriích katalogu.",
+    "catalogLoadError": "Katalog se nepodařilo načíst.",
+    "copyError": "Disciplínu se nepodařilo přidat do knihovny. Zkuste to znovu.",
     "chooseGoals": "Vyberte cíle a cvičení, které bude {{name}} trénovat.",
-    "noAvailableDisciplines": "Žádná další disciplína s cíli není k dispozici. Vytvořte novou disciplínu nebo přidejte cíle v knihovně.",
     "libraryNotice": "Jestli zde disciplínu nevidíte, buď ji už má pes přiřazenou, nebo v ní nemáte vytvořené cíle.",
     "selectAll": "Vybrat vše",
     "previousStep": "Zpět na předchozí krok",
@@ -458,15 +493,15 @@
     "editDog": "Upravit psa",
     "archiveTitle": "Archivovat psa {{name}}?",
     "deleteTitle": "Smazat psa {{name}}?",
-    "fromLibrary": "Z knihovny",
-    "fromLibraryHint": "Vybrat disciplínu, cíle a cvičení",
+    "fromLibrary": "Vybrat disciplínu",
+    "fromLibraryHint": "Z knihovny nebo z katalogu, s cíli a cvičeními",
     "newDisciplineHint": "Vytvořit a přiřadit psovi",
     "newDisciplineTitle": "Nová disciplína pro psa {{name}}",
     "newDisciplineDescription": "Disciplína se uloží do knihovny a rovnou se přiřadí psovi {{name}}.",
     "newDisciplineNotice": "Na detailu disciplíny přidáte cíle a cvičení. Vše, co přidáte, se psovi {{name}} rovnou přiřadí.",
     "createAndAddGoals": "Vytvořit a přidat cíle",
     "emptyTitle": "{{name}} zatím nemá žádnou disciplínu",
-    "emptyDescription": "Přiřaďte disciplínu z knihovny nebo vytvořte novou. Pak z ní vyberete jen cíle a cvičení, které chcete trénovat.",
+    "emptyDescription": "Přiřaďte disciplínu z knihovny nebo z katalogu, případně vytvořte novou. Pak z ní vyberete jen cíle a cvičení, které chcete trénovat.",
     "allDisciplinesDone": "Všechny přiřazené disciplíny jsou splněné.",
     "doneDisciplines": "Splněné disciplíny ({{count}})",
     "assignGoal": "Přiřadit cíl",
@@ -662,7 +697,7 @@
       },
       "assignDiscipline": {
         "title": "Přiřaďte disciplínu",
-        "body": "Vyberte připravenou disciplínu s cíli a cvičeními, nebo si založte vlastní."
+        "body": "Vyberte hotovou disciplínu s cíli a cvičeními z katalogu, kde je najdete podle kategorií, nebo si založte vlastní."
       },
       "openCalendar": {
         "title": "Disciplína je přiřazená",
@@ -720,7 +755,7 @@
       }
     },
     "disciplineDialog": {
-      "intro": "Vyberte připravenou disciplínu, nebo si založte vlastní. Cíle a cvičení si můžete kdykoli upravit.",
+      "intro": "Vyberte hotovou disciplínu z katalogu podle kategorie, nebo si založte vlastní. Zkopíruje se do vaší knihovny, kde si cíle a cvičení můžete kdykoli upravit.",
       "custom": "Vlastní disciplína",
       "customHint": "Začnete s prázdnou disciplínou a cíle si doplníte sami."
     },

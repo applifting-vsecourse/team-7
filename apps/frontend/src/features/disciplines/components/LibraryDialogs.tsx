@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { ROUTES } from "@/app/routes";
 
+import { useCatalog } from "../hooks/useCatalog";
 import {
   useSaveDiscipline,
   useSaveExercise,
@@ -24,11 +25,17 @@ export function DisciplineDialog({
   discipline,
   ...state
 }: DialogState & {
-  discipline?: { id: string; name: string; description: string | null };
+  discipline?: {
+    id: string;
+    name: string;
+    description: string | null;
+    category: string | null;
+  };
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const save = useSaveDiscipline();
+  const catalog = useCatalog();
 
   return (
     <LibraryItemDialog
@@ -49,6 +56,7 @@ export function DisciplineDialog({
         text: t(($) => $.disciplines.disciplineForm.text),
         textPlaceholder: t(($) => $.disciplines.disciplineForm.textPlaceholder),
       }}
+      categories={catalog.data}
       submitLabel={
         discipline
           ? t(($) => $.disciplines.save)
@@ -58,6 +66,7 @@ export function DisciplineDialog({
         discipline && {
           name: discipline.name,
           text: discipline.description ?? "",
+          category: discipline.category ?? "",
         }
       }
       isPending={save.isPending}
