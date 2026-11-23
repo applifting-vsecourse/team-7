@@ -244,6 +244,7 @@ export class DogsController {
         data: {
           name: body.name.trim(),
           description: optionalText(body.description),
+          category: body.category,
           userId: user.id,
           dogs: { create: { dogId: dog.id } },
         },

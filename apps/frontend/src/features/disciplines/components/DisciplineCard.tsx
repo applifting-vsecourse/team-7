@@ -13,8 +13,11 @@ import { pluralForm } from "@/lib/plural";
 /** Library list item; the whole card links to the discipline detail. */
 export function DisciplineCard({
   discipline,
+  heading: Heading = "h2",
 }: {
   discipline: DisciplineSummary;
+  /** h3 under a category heading. */
+  heading?: "h2" | "h3";
 }) {
   const { t, i18n } = useTranslation();
   const titleRef = useRef<HTMLSpanElement>(null);
@@ -33,7 +36,7 @@ export function DisciplineCard({
       {/* Grows so the footer lines up across cards in a row. */}
       <div className="flex flex-1 items-start gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h2 className="text-xl leading-7 font-semibold tracking-tight">
+          <Heading className="text-xl leading-7 font-semibold tracking-tight">
             {/* Morphs into the detail heading; inline-block keeps the box to the text. */}
             <span
               ref={titleRef}
@@ -42,7 +45,7 @@ export function DisciplineCard({
             >
               {discipline.name}
             </span>
-          </h2>
+          </Heading>
           {discipline.description ? (
             <p className="line-clamp-3 text-sm leading-6">
               {discipline.description}

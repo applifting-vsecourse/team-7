@@ -28,6 +28,8 @@ const state = vi.hoisted(() => ({
   patch: vi.fn(),
   put: vi.fn(),
   library: [] as unknown[],
+  // POST catalog/:key/copy; the default copies into the library.
+  copy: vi.fn<(path: string, options: unknown) => Promise<unknown>>(),
   patchResult: undefined as Promise<void> | undefined,
 }));
 
@@ -45,7 +47,36 @@ vi.mock("@tanstack/react-router", () => ({
   }) =>
     select({ location: { pathname: state.pathname, search: state.search } }),
 }));
-// The library holds whatever the handler has, the defaults included (#72).
+// New accounts start with an empty library; disciplines come from the catalog (#14).
+const catalogDiscipline = (key: string, name: string) => ({
+  key,
+  shortName: name,
+  name,
+  description: `${name} step by step.`,
+  goals: [
+    { name: "Goal 1", exercises: [{ name: "A" }, { name: "B" }] },
+    { name: "Goal 2", exercises: [{ name: "C" }] },
+  ],
+});
+const catalog = {
+  categories: [
+    {
+      key: "everyday",
+      name: "Everyday life",
+      description: "Manners.",
+      disciplines: [
+        catalogDiscipline("recall", "Reliable recall"),
+        catalogDiscipline("walking", "Loose-lead walking"),
+      ],
+    },
+    {
+      key: "scent",
+      name: "Scent work",
+      description: "Noses.",
+      disciplines: [catalogDiscipline("nosework", "Nosework")],
+    },
+  ],
+};
 const recall = {
   id: "recall",
   name: "Reliable recall",
@@ -75,7 +106,12 @@ vi.mock("@/lib/api-client", () => ({
               ? [{ id: "dog-1", name: "Bára" }]
               : path === "disciplines"
                 ? state.library
-                : recall,
+                : path === "catalog"
+                  ? catalog
+                  : recall,
+    }),
+    post: (path: string, options: unknown) => ({
+      json: () => state.copy(path, options),
     }),
     patch: (path: string, options: unknown) => {
       state.patch(path, options);
@@ -413,6 +449,8 @@ describe("discipline dialog in the guide (O5)", () => {
     id: "recall",
     name: "Reliable recall",
     description: null,
+    category: "everyday",
+    catalogKey: "recall",
     goalCount: 1,
     exerciseCount: 1,
     dogs: [],
@@ -453,7 +491,106 @@ describe("discipline dialog in the guide (O5)", () => {
     );
   });
 
-  it("offers only your own discipline when the library is empty", async () => {
+  const copied = { ...summary, id: "copy-1" };
+
+  it("opens an empty library on the first catalog category, copies the pick and assigns the copy", async () => {
+    state.onboarding = onboarding({
+      status: "active",
+      step: "assignDiscipline",
+    });
+    state.library = [];
+    state.copy.mockImplementation(async () => {
+      // The library refetch after the copy finds it.
+      state.library = [copied];
+      return { id: "copy-1", created: true };
+    });
+    const onClose = vi.fn();
+    const user = renderUi(
+      <AssignDisciplineDialog dog={dog} onClose={onClose} onCustom={vi.fn()} />,
+    );
+
+    expect(
+      await screen.findByRole("tab", { name: "Everyday life" }),
+    ).toHaveAttribute("aria-selected", "true");
+    const recallRadio = screen.getByRole("radio", { name: "Reliable recall" });
+    expect(recallRadio).toBeChecked();
+    // Both disciplines of the category, none from the other tabs.
+    expect(
+      screen.getAllByText("From the catalog · 2 goals · 3 exercises"),
+    ).toHaveLength(2);
+    // Your own discipline stays the last option.
+    const radios = screen.getAllByRole("radio");
+    expect(radios.at(-1)).toHaveAccessibleName("Your own discipline");
+    await user.click(screen.getByRole("radio", { name: "Loose-lead walking" }));
+    await user.click(screen.getByRole("radio", { name: "Reliable recall" }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    await user.click(await screen.findByRole("button", { name: "Select all" }));
+    expect(state.copy).toHaveBeenCalledWith("catalog/recall/copy", {
+      json: { lng: "en" },
+    });
+    await user.click(screen.getByRole("button", { name: /Assign/ }));
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(state.put).toHaveBeenCalledWith(
+      "dogs/dog-1/disciplines/copy-1/selection",
+      { json: { goals: [{ goalId: "home", exerciseIds: ["on-name"] }] } },
+    );
+  });
+
+  it("stays on the first step with an error when copying fails, and retries", async () => {
+    state.onboarding = onboarding();
+    state.library = [];
+    state.copy.mockRejectedValueOnce(new Error("offline"));
+    state.copy.mockImplementation(async () => {
+      state.library = [copied];
+      return { id: "copy-1", created: true };
+    });
+    const user = renderUi(
+      <AssignDisciplineDialog dog={dog} onClose={vi.fn()} onCustom={vi.fn()} />,
+    );
+    await screen.findByRole("radio", { name: "Reliable recall" });
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    expect(
+      await screen.findByText(
+        "The discipline couldn't be added to your library. Please try again.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Step 1 of 2 · Discipline")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    expect(
+      await screen.findByRole("button", { name: "Select all" }),
+    ).toBeInTheDocument();
+    expect(state.copy).toHaveBeenCalledTimes(2);
+  });
+
+  it("uses the library copy of a catalog discipline and disables one the dog trains", async () => {
+    state.onboarding = onboarding();
+    state.library = [summary];
+    const trained = {
+      ...dog,
+      disciplines: [{ id: "recall" }],
+    } as unknown as DogProfile;
+    const user = renderUi(
+      <AssignDisciplineDialog dog={trained} onClose={vi.fn()} />,
+    );
+
+    // Nothing left to assign from the library: a hint points to the catalog.
+    expect(
+      await screen.findByText(/Ready-made disciplines are in the catalog/),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "Everyday life" }));
+    expect(
+      screen.getByRole("radio", { name: "Reliable recall" }),
+    ).toBeDisabled();
+    expect(screen.getByText("Bára already trains it")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("radio", { name: "Your own discipline" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("hands over to your own discipline from a catalog category", async () => {
     state.onboarding = onboarding();
     state.library = [];
     const onCustom = vi.fn();
@@ -465,12 +602,13 @@ describe("discipline dialog in the guide (O5)", () => {
       />,
     );
 
-    expect(
+    await user.click(
       await screen.findByRole("radio", { name: "Your own discipline" }),
-    ).toBeChecked();
+    );
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
     expect(onCustom).toHaveBeenCalled();
+    expect(state.copy).not.toHaveBeenCalled();
     expect(state.put).not.toHaveBeenCalled();
   });
 });

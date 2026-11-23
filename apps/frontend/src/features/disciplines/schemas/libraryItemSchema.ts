@@ -20,6 +20,12 @@ export const libraryItemSchema = z.object({
     .string()
     .trim()
     .max(TEXT_MAX_LENGTH, keyFromSelector(messageSelectors.textTooLong)),
+  // Disciplines only: a catalog category key, "" for none.
+  category: z.string().optional(),
 });
+
+/** The `category` a discipline form sends: null clears it. */
+export const categoryOf = (values: LibraryItemValues) =>
+  values.category || null;
 
 export type LibraryItemValues = z.infer<typeof libraryItemSchema>;

@@ -116,6 +116,7 @@ beforeEach(() => {
   state.get = new Map<string, () => unknown>([
     ["users/me/subscription", () => createPlusSubscription()],
     ["events", () => []],
+    ["catalog", () => ({ categories: [] })],
     ["dogs", () => [emptyDog]],
     ["dogs/dog-1", () => emptyDog],
     ["disciplines", () => [summary]],
@@ -254,7 +255,7 @@ describe("dog profile", () => {
       await screen.findByRole("button", { name: "Assign discipline" }),
     );
     await user.click(
-      await screen.findByRole("menuitem", { name: /From library/ }),
+      await screen.findByRole("menuitem", { name: /Choose a discipline/ }),
     );
     const dialog = await screen.findByRole("dialog");
     await user.click(
@@ -291,7 +292,7 @@ describe("dog profile", () => {
       await screen.findByRole("button", { name: "Assign discipline" }),
     );
     await user.click(
-      await screen.findByRole("menuitem", { name: /From library/ }),
+      await screen.findByRole("menuitem", { name: /Choose a discipline/ }),
     );
     const dialog = await screen.findByRole("dialog");
     await user.click(

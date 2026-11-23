@@ -1,4 +1,3 @@
-import type { LibraryItemValues } from "../schemas/libraryItemSchema";
 import {
   type InvalidateQueryFilters,
   useMutation,
@@ -20,6 +19,10 @@ import {
   type Goal,
 } from "../api/disciplinesQueryOptions";
 import { sortByIds } from "../lib/exerciseOrder";
+import {
+  categoryOf,
+  type LibraryItemValues,
+} from "../schemas/libraryItemSchema";
 
 type Saved = { id: string };
 
@@ -115,7 +118,11 @@ const path = (...segments: string[]) =>
 export function useSaveDiscipline() {
   return useLibraryMutation(
     ({ id, values }: { id?: string; values: LibraryItemValues }) => {
-      const json = { name: values.name, description: values.text };
+      const json = {
+        name: values.name,
+        description: values.text,
+        category: categoryOf(values),
+      };
       return (
         id
           ? api.patch(path("disciplines", id), { json })
@@ -123,6 +130,18 @@ export function useSaveDiscipline() {
       ).json<Saved>();
     },
     { refreshesEvents: isEdit },
+  );
+}
+
+/**
+ * Copies a catalog discipline into the library (#14). Idempotent: a discipline
+ * already copied returns the existing copy's id (`created: false`).
+ */
+export function useCopyCatalogDiscipline() {
+  return useLibraryMutation(({ key, lng }: { key: string; lng: string }) =>
+    api
+      .post(path("catalog", key, "copy"), { json: { lng } })
+      .json<{ id: string; created: boolean }>(),
   );
 }
 

@@ -6,7 +6,9 @@ import {
   Form,
   Input,
   Label,
+  ListBox,
   Modal,
+  Select,
   TextArea,
   TextField,
 } from "@heroui/react";
@@ -20,6 +22,8 @@ import {
   libraryItemSchema,
   type LibraryItemValues,
 } from "../schemas/libraryItemSchema";
+
+const NO_CATEGORY = "none";
 
 export type LibraryItemLabels = {
   name: string;
@@ -39,6 +43,8 @@ type LibraryItemDialogProps = {
   // Extra content under the fields, e.g. an informational alert.
   notice?: ReactNode;
   labels: LibraryItemLabels;
+  /** Disciplines: the catalog categories for the optional category field. */
+  categories?: { key: string; name: string }[];
   submitLabel: string;
   defaultValues?: LibraryItemValues;
   isPending: boolean;
@@ -87,6 +93,7 @@ function LibraryItemForm({
   context,
   notice,
   labels,
+  categories,
   submitLabel,
   defaultValues = { name: "", text: "" },
   isPending,
@@ -164,6 +171,49 @@ function LibraryItemForm({
             </TextField>
           )}
         />
+        {categories ? (
+          <Controller
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <Select
+                isDisabled={isSubmitting}
+                name={field.name}
+                value={field.value || NO_CATEGORY}
+                onChange={(value) =>
+                  field.onChange(value === NO_CATEGORY ? "" : String(value))
+                }
+                onBlur={field.onBlur}
+              >
+                <Label>{t(($) => $.disciplines.disciplineForm.category)}</Label>
+                <Select.Trigger ref={field.ref}>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {[
+                      {
+                        key: NO_CATEGORY,
+                        name: t(($) => $.disciplines.disciplineForm.noCategory),
+                      },
+                      ...categories,
+                    ].map((category) => (
+                      <ListBox.Item
+                        key={category.key}
+                        id={category.key}
+                        textValue={category.name}
+                      >
+                        {category.name}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+            )}
+          />
+        ) : null}
         {notice}
         {form.formState.errors.root ? (
           <Description role="alert" className="text-danger">
