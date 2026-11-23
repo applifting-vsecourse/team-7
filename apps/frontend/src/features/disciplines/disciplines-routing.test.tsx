@@ -216,15 +216,16 @@ describe("disciplines", () => {
     }));
   });
 
-  it("lists every discipline by area, open where a dog trains one", async () => {
+  it("lists every discipline by area, all collapsed at first", async () => {
     const user = userEvent.setup();
     renderRoute("/disciplines?lng=en");
 
     const obedience = await screen.findByRole("button", {
       name: /^Obedience sports/,
     });
-    expect(obedience).toHaveAttribute("aria-expanded", "true");
+    expect(obedience).toHaveAttribute("aria-expanded", "false");
     expect(within(obedience).getByText("training 1 of 1")).toBeInTheDocument();
+    await user.click(obedience);
     const card = screen.getByRole("link", { name: /Poslušnost/ });
     expect(card).toHaveAttribute("href", "/disciplines/d1?lng=en");
     expect(screen.getByText("3 goals")).toBeInTheDocument();
@@ -325,8 +326,11 @@ describe("disciplines", () => {
     renderRoute("/disciplines?lng=en");
 
     // Both dogs of Poslušnost train it: only Rex is left, so no picker.
+    await user.click(
+      await screen.findByRole("button", { name: /^Obedience sports/ }),
+    );
     expect(
-      await screen.findByRole("button", { name: "Add Poslušnost to a dog" }),
+      screen.getByRole("button", { name: "Add Poslušnost to a dog" }),
     ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /^Everyday life/ }));
     await user.click(
@@ -702,7 +706,7 @@ describe("disciplines", () => {
 
   it("doesn't refetch a cached detail when its link is preloaded", async () => {
     const router = renderRoute("/disciplines?lng=en", poslusnostDetail);
-    await screen.findByRole("link", { name: /Poslušnost/ });
+    await screen.findByRole("button", { name: /^Obedience sports/ });
     vi.mocked(api.get).mockClear();
 
     await router.preloadRoute({
