@@ -140,9 +140,13 @@ function PlusOfferDialog({
           );
         }
         offer.onSuccess?.();
-      }
+      } else offer.onDismiss?.();
     },
   });
+  const dismiss = () => {
+    onClose();
+    offer.onDismiss?.();
+  };
   const titles = {
     dogs: t(($) => $.limits.dogsTitle, {
       limit: subscription.plusDogLimit,
@@ -155,6 +159,7 @@ function PlusOfferDialog({
   const descriptions = {
     dogs: t(($) => $.limits.dogsDescription, {
       count: subscription.freeDogLimit,
+      limit: subscription.plusDogLimit,
     }),
     goals: t(($) => $.limits.goalsDescription, {
       limit: subscription.goalLimit,
@@ -169,7 +174,7 @@ function PlusOfferDialog({
       isDismissable={!mutation.isPending}
       isKeyboardDismissDisabled={mutation.isPending}
       onOpenChange={(open) => {
-        if (!open && !mutation.isPending) onClose();
+        if (!open && !mutation.isPending) dismiss();
       }}
     >
       <Modal.Container scroll="outside">
@@ -282,7 +287,7 @@ function PlusOfferDialog({
               variant="secondary"
               className="flex-auto sm:flex-none"
               isDisabled={mutation.isPending}
-              onPress={onClose}
+              onPress={dismiss}
             >
               {t(($) => $.limits.notNow)}
             </Button>

@@ -111,6 +111,7 @@ const poslusnostDetail: DisciplineDetail = {
         { id: "dog-1", name: "Terminátor" },
         { id: "dog-2", name: "Mája" },
       ],
+      dogCount: 2,
     },
     {
       id: "g2",
@@ -118,8 +119,10 @@ const poslusnostDetail: DisciplineDetail = {
       criterion: null,
       exercises: [],
       dogs: [],
+      dogCount: 0,
     },
   ],
+  dogCount: 1,
   dogs: [
     {
       id: "dog-1",

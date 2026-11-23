@@ -18,6 +18,7 @@ const state = vi.hoisted(() => ({
   data: {} as Subscription,
   calls: vi.fn(),
   continue: vi.fn(),
+  dismiss: vi.fn(),
   hang: false,
   choices: "ok" as "ok" | "empty" | "error",
 }));
@@ -105,7 +106,13 @@ function Trigger() {
   const offer = usePlusOffer();
   return (
     <Button
-      onPress={() => offer({ reason: "dogs", onSuccess: state.continue })}
+      onPress={() =>
+        offer({
+          reason: "dogs",
+          onSuccess: state.continue,
+          onDismiss: state.dismiss,
+        })
+      }
     >
       Add dog
     </Button>
@@ -169,6 +176,7 @@ describe("subscription UI boundaries", () => {
     };
     state.calls.mockClear();
     state.continue.mockClear();
+    state.dismiss.mockClear();
     state.hang = false;
     state.choices = "ok";
   });
@@ -271,12 +279,19 @@ describe("subscription UI boundaries", () => {
       expect.anything(),
     );
     expect(state.continue).not.toHaveBeenCalled();
+    await user.click(within(dialog).getByRole("button", { name: "Not now" }));
+    expect(state.dismiss).toHaveBeenCalledOnce();
   });
   it("offers a card-free trial with the selected plan and continues the original action", async () => {
     const { user } = setup();
     await user.click(screen.getByRole("button", { name: "Add dog" }));
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText("Up to 5 dogs with Plus")).toBeVisible();
+    expect(
+      within(dialog).getByText(
+        "Free plan dog limit: 1. With Plus you can have up to 5.",
+      ),
+    ).toBeVisible();
     await user.click(
       within(dialog).getByRole("radio", { name: "Monthly · CZK 69" }),
     );
@@ -284,6 +299,7 @@ describe("subscription UI boundaries", () => {
       within(dialog).getByRole("button", { name: "Try 14 days free" }),
     );
     await waitFor(() => expect(state.continue).toHaveBeenCalledOnce());
+    expect(state.dismiss).not.toHaveBeenCalled();
     expect(state.calls).toHaveBeenCalledWith("users/me/subscription", {
       action: "trial",
       billingPeriod: "monthly",

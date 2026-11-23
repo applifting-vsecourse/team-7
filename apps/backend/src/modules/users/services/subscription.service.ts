@@ -86,28 +86,31 @@ export class SubscriptionService {
       await lockSubscription(tx, userId);
       const current = await this.get(userId, tx);
       const now = new Date();
-      // Retrying a failed renewal extends the period that is still paid, so
-      // no paid days are lost (changeCard keeps them too).
-      const paidUntil = new Date(
-        action === "pay" &&
-          current.status === "pastDue" &&
-          current.paidUntil &&
-          current.paidUntil > now
+      // Paying extends what is still covered, so no days are lost: the paid
+      // period of a failed renewal, or the rest of a running trial
+      // (changeCard keeps the paid days too).
+      const covered =
+        current.status === "pastDue"
           ? current.paidUntil
-          : now,
+          : current.status === "trial"
+            ? current.trialEndsAt
+            : null;
+      const paidUntil = new Date(
+        action === "pay" && covered && covered > now ? covered : now,
       );
       const period = ["pay", "trial"].includes(action)
         ? (billingPeriod ?? current.billingPeriod)
         : current.billingPeriod;
-      if (period === "monthly") {
-        const day = paidUntil.getUTCDate();
-        paidUntil.setUTCDate(1);
-        paidUntil.setUTCMonth(paidUntil.getUTCMonth() + 1);
-        const lastDay = new Date(
-          Date.UTC(paidUntil.getUTCFullYear(), paidUntil.getUTCMonth() + 1, 0),
-        ).getUTCDate();
-        paidUntil.setUTCDate(Math.min(day, lastDay));
-      } else paidUntil.setUTCFullYear(paidUntil.getUTCFullYear() + 1);
+      // Clamp to the month's last day (31 Jan → 28 Feb, 29 Feb → 28 Feb).
+      const day = paidUntil.getUTCDate();
+      paidUntil.setUTCDate(1);
+      paidUntil.setUTCMonth(
+        paidUntil.getUTCMonth() + (period === "monthly" ? 1 : 12),
+      );
+      const lastDay = new Date(
+        Date.UTC(paidUntil.getUTCFullYear(), paidUntil.getUTCMonth() + 1, 0),
+      ).getUTCDate();
+      paidUntil.setUTCDate(Math.min(day, lastDay));
       const trialEndsAt = new Date(now);
       trialEndsAt.setUTCDate(trialEndsAt.getUTCDate() + 14);
       if (

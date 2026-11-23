@@ -76,7 +76,7 @@ export function GoalCard({
           name: goal.name,
         })}
         body={t(($) => $.disciplines.deleteDialog.goalBody)}
-        affectedDogCount={goal.dogs.length}
+        affectedDogCount={goal.dogCount}
         isPending={remove.isPending}
         isError={remove.isError}
         onConfirm={() => remove.mutate(goal.id, { onSuccess: close })}

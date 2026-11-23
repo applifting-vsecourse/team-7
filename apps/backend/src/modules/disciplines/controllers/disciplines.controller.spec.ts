@@ -225,6 +225,43 @@ describe("discipline library API", () => {
     ]);
   });
 
+  it("hides dogs locked on Free but counts them in delete warnings", async () => {
+    Object.assign(access, { isPlus: false, activeDogId: "dog-a" });
+    const active = { id: "dog-a", name: "Mája" };
+    const locked = { id: "dog-b", name: "Rex" };
+    prisma.discipline.findFirst.mockResolvedValue({
+      id: "d1",
+      name: "Poslušnost",
+      description: null,
+      goals: [
+        {
+          id: "g1",
+          name: "Přivolání",
+          criterion: null,
+          exercises: [
+            { id: "e1", name: "Z 5 m", procedure: null, _count: { dogs: 2 } },
+          ],
+          dogs: [
+            { dog: active, status: "in_progress", _count: { exercises: 1 } },
+            { dog: locked, status: "in_progress", _count: { exercises: 1 } },
+          ],
+        },
+      ],
+    });
+    try {
+      const detail = await (await request("GET", "/disciplines/d1")).json();
+
+      expect(detail.dogs.map(({ id }: { id: string }) => id)).toEqual([
+        "dog-a",
+      ]);
+      expect(detail.dogCount).toBe(2);
+      expect(detail.goals[0]).toMatchObject({ dogs: [active], dogCount: 2 });
+      expect(detail.goals[0].exercises[0].dogCount).toBe(2);
+    } finally {
+      Object.assign(access, { isPlus: true, activeDogId: null });
+    }
+  });
+
   it("returns 404 for a discipline the user does not own", async () => {
     prisma.discipline.findFirst.mockResolvedValue(null);
 
@@ -392,11 +429,12 @@ describe("discipline library API", () => {
   });
 });
 
+const access = vi.hoisted(() => ({
+  isPlus: true,
+  activeDogId: null as string | null,
+  needsDogChoice: false,
+}));
 vi.mock("@/shared/subscription/subscription-access", async (original) => ({
   ...(await original<object>()),
-  subscriptionAccess: async () => ({
-    isPlus: true,
-    activeDogId: null,
-    needsDogChoice: false,
-  }),
+  subscriptionAccess: async () => ({ ...access }),
 }));

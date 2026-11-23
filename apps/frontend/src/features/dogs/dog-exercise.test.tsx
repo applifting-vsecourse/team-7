@@ -34,7 +34,7 @@ const state = vi.hoisted(() => ({
   assigned: true,
   status: "in_progress",
   goalStatus: "in_progress",
-  fail: false,
+  fail: false as boolean | "dogLocked",
   archivedAt: null as string | null,
   remove: vi.fn(),
   post: vi.fn(),
@@ -94,6 +94,11 @@ vi.mock("@/lib/api-client", () => ({
         if (path === "dogs") return [dog];
         if (path === "dogs/dog-a") return dog;
         if (path === "dogs/dog-a/exercises/e1") {
+          if (state.fail === "dogLocked") {
+            throw Object.assign(new Error("locked"), {
+              subscriptionCode: "dogLocked",
+            });
+          }
           if (state.fail) throw new Error("offline");
           return {
             dog: { ...dog, archivedAt: state.archivedAt },
@@ -363,6 +368,14 @@ describe("dog exercise detail page", () => {
         level: 1,
       }),
     ).toBeInTheDocument();
+  });
+  it("shows the locked-dog panel instead of a retry for a dog locked on Free", async () => {
+    state.fail = "dogLocked";
+    setup();
+    expect((await screen.findAllByText("This dog is locked"))[0]).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "Try again" }),
+    ).not.toBeInTheDocument();
   });
   it.each([
     [
