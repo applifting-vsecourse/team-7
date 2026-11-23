@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { openMorph, reopenedMorph } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
+import { displayRate } from "../lib/displayRate";
 import { AverageRating } from "./AverageRating";
 import { LastTraining } from "./LastTraining";
 
@@ -88,7 +89,7 @@ export function DogDisciplineCard({
               ? t(($) => $.dogProfile.noData)
               : new Intl.NumberFormat(i18n.resolvedLanguage ?? "cs", {
                   style: "percent",
-                }).format(discipline.averageSuccessRate)}
+                }).format(displayRate(discipline.averageSuccessRate))}
           </span>
         </div>
         <p className="text-xs leading-5 text-muted">

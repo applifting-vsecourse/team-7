@@ -45,6 +45,7 @@ import {
   dogDisciplinePath,
 } from "../api/dogProfileQueryOptions";
 import { useStatusMutation } from "../hooks/useStatusMutation";
+import { displayRate } from "../lib/displayRate";
 import { exerciseHistory } from "../lib/exerciseHistory";
 import { isPlannable } from "../lib/exerciseStatus";
 import { ActionsMenu, type MenuAction } from "./ActionsMenu";
@@ -312,7 +313,7 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
           value={
             stats.successRate === null
               ? t(($) => $.dogProfile.noData)
-              : percent.format(stats.successRate)
+              : percent.format(displayRate(stats.successRate))
           }
           label={t(($) => $.exerciseDetail.averageSuccess)}
         />
@@ -487,10 +488,10 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
                   id: event.id,
                   date: event.completedAt!,
                   value: rate,
-                  text: percent.format(rate),
+                  text: percent.format(displayRate(rate)),
                   title: t(($) => $.exerciseDetail.successChartPoint, {
                     date: dateFormatter.format(parseISO(event.completedAt!)),
-                    rate: percent.format(rate),
+                    rate: percent.format(displayRate(rate)),
                   }),
                 };
               })}

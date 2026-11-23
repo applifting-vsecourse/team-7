@@ -1,4 +1,4 @@
-import { isBefore, parseISO, startOfDay, subDays } from "date-fns";
+import { isBefore, parseISO, startOfDay } from "date-fns";
 
 import type { ScheduledEvent } from "@/features/events/api/eventsQueryOptions";
 
@@ -17,10 +17,12 @@ export function exerciseHistory(events: ScheduledEvent[], today: Date) {
   const completed = history.filter(
     (event) => event.completedAt !== null && event.rating !== null,
   );
-  const since = subDays(today, 30).getTime();
-  const recent = completed.filter(
-    (event) => timestamp(event) >= since && timestamp(event) <= today.getTime(),
-  );
+  // A fixed 30×24 h window, the same as the backend's discipline rate.
+  const since = today.getTime() - 30 * 86400000;
+  // No upper bound: completedAt is set by the server, so it is never in the
+  // future, and a session finished after `today` (the page was opened earlier)
+  // must still count.
+  const recent = completed.filter((event) => timestamp(event) >= since);
   // Success rate counts only clicker-measured sessions: all successful
   // attempts over all attempts, like the overview's weekly rate.
   const measured = completed.filter((event) => event.totalAttempts);

@@ -562,7 +562,7 @@
     "chart": "Vývoj hodnocení",
     "chartWaiting": "Graf se zobrazí po dvou a více trénincích",
     "successChart": "Vývoj úspěšnosti",
-    "successChartWaiting": "Graf se ukáže po dvou změřených cvičeních. Cvičení změříte tlačítkem „Spustit cvičení“ v dialogu cvičení.",
+    "successChartWaiting": "Graf se ukáže po dvou změřených cvičeních s alespoň jedním pokusem. Cvičení změříte tlačítkem „Spustit cvičení“ v dialogu cvičení.",
     "successChartPoint": "{{date}}: {{rate}} úspěšných pokusů",
     "emptyTitle": "Zatím žádný trénink",
     "emptyDescription": "Naplánujte cvičení v kalendáři. Po prvním tréninku tu uvidíte jeho historii a hodnocení.",

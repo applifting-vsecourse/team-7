@@ -73,6 +73,16 @@ describe("exercise history statistics", () => {
     expect(result.measured.map((item) => item.id)).toEqual(["old", "a", "b"]);
     expect(result.successRate).toBe(6 / 10);
   });
+  it("counts a session finished after the page was opened", () => {
+    const later = {
+      ...event("later", "2026-10-24T13:00Z", 2),
+      successfulAttempts: 1,
+      totalAttempts: 2,
+    };
+    const result = exerciseHistory([later], today);
+    expect(result.average).toBe(2);
+    expect(result.successRate).toBe(1 / 2);
+  });
   it("uses no-data values when there are no completed sessions", () => {
     const result = exerciseHistory(
       [event("missed", "2026-10-20T08:00Z")],
@@ -82,5 +92,13 @@ describe("exercise history statistics", () => {
     expect(result.lastTraining).toBeNull();
     expect(result.successRate).toBeNull();
     expect(result.completed).toHaveLength(0);
+  });
+});
+describe("displayRate", () => {
+  it("keeps 0 % and 100 % for exact rates only", async () => {
+    const { displayRate } = await import("./displayRate");
+    expect([0, 0.004, 0.5, 0.995, 1].map(displayRate)).toEqual([
+      0, 0.01, 0.5, 0.99, 1,
+    ]);
   });
 });
