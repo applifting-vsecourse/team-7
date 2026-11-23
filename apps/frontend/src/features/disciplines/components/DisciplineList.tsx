@@ -22,7 +22,8 @@ import { DisciplineTile } from "./DisciplineTile";
 
 /**
  * Every discipline the handler can train, ready-made and their own, in one
- * list by area (#14). Areas with something a dog trains start open.
+ * list by area (#14). Every area starts collapsed, so the page opens calm;
+ * the header says what is trained in it.
  */
 export function DisciplineList() {
   const { t } = useTranslation();
@@ -86,13 +87,7 @@ export function DisciplineList() {
   const groups = disciplines.groups;
   return (
     <>
-      <Accordion
-        allowsMultipleExpanded
-        defaultExpandedKeys={groups
-          .filter((group) => group.items.some((item) => item.dogs.length > 0))
-          .map((group) => group.key)}
-        className="flex flex-col gap-2"
-      >
+      <Accordion allowsMultipleExpanded className="flex flex-col gap-2">
         {groups.map((group) => (
           <Accordion.Item key={group.key} id={group.key}>
             <Accordion.Heading level={2}>

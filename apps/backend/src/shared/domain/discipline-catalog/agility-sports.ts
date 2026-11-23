@@ -35,8 +35,8 @@ export const agilitySports: CatalogCategory = {
         en: "Agility – basics",
       },
       description: {
-        cs: "Pes probíhá parkur ze skoků, tunelů, slalomu a zónových překážek a psovod ho vede tělem a povely. Začít se dá už se štěnětem: start z odložení, práce na obou stranách, sebeovládání a nízké překážky. Dokud nemá pes uzavřené růstové chrupavky (obvykle 12–18 měsíců podle velikosti), vynechte plné výšky skoků, plné zóny i zavřený slalom. Před začátkem nechte psa prohlédnout veterinářem. Na závody FCI může pes nejdřív v 18 měsících.",
-        en: "The dog runs a course of jumps, tunnels, weave poles and contact obstacles while you handle them with your body and cues. Puppies can start foundations: start-line stay, working on both sides, self-control and low equipment. Until the growth plates close (usually 12–18 months, depending on size), skip full-height jumps, full contacts and closed weaves. Get a vet check before you start. FCI trials accept dogs from 18 months.",
+        cs: "Pes probíhá parkur ze skoků, tunelů a slalomu a psovod ho vede tělem a povely.",
+        en: "The dog runs a course of jumps, tunnels and weaves, guided by your body and cues.",
       },
       goals: [
         {
@@ -178,8 +178,8 @@ export const agilitySports: CatalogCategory = {
         en: "Hoopers – distance handling",
       },
       description: {
-        cs: "Pes probíhá trať z obručí, barelů, branek a tunelů a psovod ho vede z prostoru psovoda (2 × 2 m) jen hlasem a tělem. Neskáče se a nejsou tu zóny, proto je hoopers šetrný ke kloubům a hodí se pro mladé, starší i těžší psy. Hodnotí se čistý a plynulý běh, ne čas. Na závodech FCI se pes měří nejdřív v 15 měsících. U psa s kloubními potížemi se nejdřív poraďte s veterinářem.",
-        en: "The dog runs a course of hoops, barrels, gates and tunnels while you handle them from a 2 × 2 m handling area, using only voice and body. There are no jumps or contacts, so hoopers is easy on the joints and suits young, senior and heavier dogs. A clear, flowing run counts for more than speed. In FCI competition, dogs are measured from 15 months. If your dog has joint problems, check with your vet first.",
+        cs: "Pes probíhá trať z obručí, barelů a tunelů a psovod ho vede z jednoho místa hlasem a tělem.",
+        en: "The dog runs hoops, barrels and tunnels while you guide them from one spot by voice and body.",
       },
       goals: [
         {
@@ -321,8 +321,8 @@ export const agilitySports: CatalogCategory = {
         en: "Disc dog – toss and fetch",
       },
       description: {
-        cs: "Psovod hází disk, pes ho chytá a přináší zpět. Začíná se hrou, kutálením disku po zemi a krátkými nízkými hody, později přibývají delší hody (toss and fetch). Používejte měkké disky určené pro psy. Do roka (u velkých plemen déle) neházejte vysoko, aby pes nemusel skákat. Odrazy od psovoda (vaulty) do začátků nepatří; pokud vůbec, tak až po 18 měsících, po prohlídce u veterináře a pod vedením zkušeného trenéra. Trénujte na trávě a ne v horku.",
-        en: "The handler throws the disc, the dog catches it and brings it back. Start with play, rolled discs and short low throws, then build up to longer throws (toss and fetch). Use soft discs made for dogs. Until about a year old (longer for large breeds), don't throw high, so the dog doesn't need to leap. Vaults off the handler are not for beginners: if at all, only after 18 months, a vet check and hands-on coaching. Train on grass and avoid the heat.",
+        cs: "Psovod hází disk, pes ho chytá a přináší zpět.",
+        en: "You throw a disc, and your dog catches it and brings it back.",
       },
       goals: [
         {

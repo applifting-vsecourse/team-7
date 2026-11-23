@@ -30,8 +30,8 @@ export const obedienceSports: CatalogCategory = {
         en: "Obedience – beginner class",
       },
       description: {
-        cs: "Sportovní poslušnost podle třídy OB-Z: odložení ve skupině, chůze u nohy, odložení za chůze, přivolání, vyslání do čtverce, držení činky, ovladatelnost na dálku a skok. Hodí se pro psy, kteří už znají sedni, lehni a přivolání. Na zkoušku musí mít pes aspoň 10 měsíců. Skok trénujte nízko (v OB-Z nejvýš 50 cm) a u mladého psa ho zvyšujte až po ukončení růstu a prohlídce u veterináře.",
-        en: "Competitive obedience based on the Czech beginner class (OB-Z): group stay, heelwork, positions on the move, recall, send-away to a square, dumbbell hold, distance control and a jump. Suits dogs that already know sit, down and recall. Dogs must be at least 10 months old to enter. Keep the jump low (50 cm max in this class) and raise it for a young dog only once they have finished growing and a vet has checked them.",
+        cs: "Sportovní poslušnost pro začátečnickou třídu: chůze u nohy, odložení, přivolání a další cviky.",
+        en: "Competitive obedience for the beginner class: heelwork, stays, recall and more.",
       },
       goals: [
         {
@@ -203,8 +203,8 @@ export const obedienceSports: CatalogCategory = {
         en: "Rally obedience – beginners",
       },
       description: {
-        cs: "Tým prochází parkur s kartami (u začátečníků 15–18 karet) a na každé provede předepsaný cvik: zastavení, polohy, obraty, změny tempa, předsednutí, slalom či spirálu. Pochvala a mluvení na psa jsou vítané a v začátečnické třídě může pes jít na volném vodítku. Hodí se pro každého psa od 10 měsíců, i pro starší a méně sportovní psy.",
-        en: "The team works through a course of signs (15–18 at beginner level) and performs the exercise shown on each: halts, positions, turns, pace changes, fronts, slalom or spiral. Praise and talking to the dog are encouraged, and in the beginner class the dog may work on a loose lead. Suits any dog from 10 months, including older and less athletic dogs.",
+        cs: "Tým prochází parkur s kartami a na každé provede předepsaný cvik.",
+        en: "You and your dog work through a course of signs, performing the exercise on each.",
       },
       goals: [
         {
@@ -376,8 +376,8 @@ export const obedienceSports: CatalogCategory = {
         en: "Dog dancing – heelwork and freestyle",
       },
       description: {
-        cs: "Sestava na hudbu, ve které pes s psovodem předvádějí prvky v pozicích u nohy (heelwork to music) a volné triky (freestyle). Cviky vycházejí z postupových zkoušek 1. stupně, na které může pes od 10 měsíců. Hodí se pro psy všech velikostí. Psa rozcvičujte, trénujte na neklouzavém povrchu a u mladých psů vynechte skoky, panáčkování a dlouhé couvání.",
-        en: "A routine to music in which dog and handler perform moves in heel positions (heelwork to music) and free tricks (freestyle). The exercises follow the Czech level 1 dog dancing tests, open to dogs from 10 months. Suits dogs of any size. Warm the dog up, train on a non-slip surface, and leave out jumps, sitting up on the hind legs and long back-ups for young dogs.",
+        cs: "Sestava na hudbu z prvků u nohy a volných triků.",
+        en: "A routine to music made of heelwork moves and free tricks.",
       },
       goals: [
         {

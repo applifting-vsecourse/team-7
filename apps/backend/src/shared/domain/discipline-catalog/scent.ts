@@ -39,8 +39,8 @@ export const scent: CatalogCategory = {
         en: "Nosework – first steps",
       },
       description: {
-        cs: "Pes hledá ukrytý pachový vzorek (skořici nebo pomerančovou kůru, jak je používá Nosework CZ) v krabicích, v místnosti i venku a psovod ohlásí nález. Hodí se pro každého psa bez ohledu na věk a plemeno, i pro psy plaché nebo po zranění. Se štěnětem můžete hrát krabicovou hru hned, na zkoušku základního stupně musí mít pes 10 měsíců. Pracuje se na volno nebo na volném vodítku, jen v obojku či postroji, který psa netlačí.",
-        en: "The dog searches for a hidden odour (cinnamon or orange peel, as used by Nosework CZ) in boxes, rooms and outdoors, and the handler calls the find. It suits any dog of any age or breed, including shy dogs and dogs recovering from injury. Puppies can play the box game straight away; the Czech basic-level trial requires a dog of at least 10 months. Dogs work off lead or on a slack lead, only in a collar or harness that doesn't pinch.",
+        cs: "Pes hledá ukrytý pachový vzorek v krabicích, v místnosti i venku.",
+        en: "Your dog searches for a hidden scent in boxes, rooms and outdoors.",
       },
       goals: [
         {
@@ -192,8 +192,8 @@ export const scent: CatalogCategory = {
         en: "Tracking – foundations",
       },
       description: {
-        cs: "Pes jde s nízkým nosem krok po kroku po stopě člověka přes trávu nebo pole a zalehnutím označuje předměty, které na ní kladeč nechal. Stopa je součástí zkoušek podle NZŘ (ZM, ZVV) i FCI IGP. Začít se dá už se štěnětem na krátkých stopách s pamlsky, na zkoušku ZM musí mít pes 12 měsíců. Pracuje se v postroji na 10m stopovací šňůře. Netrénujte v poledním horku a po tréninku psa prohlédněte kvůli klíšťatům a poraněným tlapkám.",
-        en: "The dog follows a person's footstep track over grass or fields with their nose down, step by step, and indicates the articles the tracklayer dropped by lying down. Tracking is part of Czech NZŘ trials (ZM, ZVV) and FCI IGP. Puppies can start on short food tracks; the ZM trial requires a dog of at least 12 months. The dog works in a harness on a 10 m tracking line. Avoid midday heat and check the dog for ticks and sore paws after each session.",
+        cs: "Pes jde s nízkým nosem po stopě člověka a označuje předměty na ní.",
+        en: "Your dog follows a person's track nose down and indicates the articles on it.",
       },
       goals: [
         {
@@ -345,8 +345,8 @@ export const scent: CatalogCategory = {
         en: "Mantrailing – first steps",
       },
       description: {
-        cs: "Pes v postroji na dlouhém vodítku (5–10 m) hledá v přírodě i ve městě konkrétního člověka podle pachu, který si načichne z pachového předmětu. Protože pes nikdy nejde na volno, hodí se i pro psy bez spolehlivého přivolání nebo pro psy reaktivní. Štěně si může hrát na krátká hledání, systematický trénink se obvykle začíná kolem 6 měsíců. Stopy bývají dlouhé, proto psa s ortopedickými potížemi nechte nejdřív prohlédnout veterinářem a v teple noste vodu.",
-        en: "The dog, in a harness on a long line (5–10 m), finds one particular person, in the countryside or in town, by the scent they take from a scent article. Because the dog never works off lead, it suits dogs without a reliable recall and reactive dogs. Puppies can play short searches; systematic training usually starts around 6 months. Trails can be long, so have a dog with orthopaedic issues checked by a vet first and carry water in warm weather.",
+        cs: "Pes na dlouhém vodítku hledá konkrétního člověka podle jeho pachu.",
+        en: "On a long line, your dog finds one particular person by their scent.",
       },
       goals: [
         {

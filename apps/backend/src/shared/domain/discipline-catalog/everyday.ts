@@ -37,8 +37,8 @@ export const everyday: CatalogCategory = {
         en: "Obedience basics",
       },
       description: {
-        cs: "Základní slušné chování na vodítku i mezi lidmi podle testu AKC Canine Good Citizen, s povely, jaké znáte z cvičiště (k noze, sedni, lehni, zůstaň). Hodí se pro každého psa zhruba od 5 měsíců i pro dospělé psy bez výcviku. Pracujte jen s odměnou, na plochém obojku nebo dobře padnoucím postroji, bez stahovacích, ostnatých a elektrických obojků.",
-        en: "Everyday manners on lead and around people, based on the AKC Canine Good Citizen test. Suits any dog from about 5 months, as well as untrained adults. Train with rewards only, on a flat collar or a well-fitted harness; no choke, prong or electronic collars.",
+        cs: "Slušné chování na vodítku i mezi lidmi a základní povely sedni, lehni a zůstaň.",
+        en: "Good manners on lead and around people, plus sit, down and stay.",
       },
       goals: [
         {
@@ -210,8 +210,8 @@ export const everyday: CatalogCategory = {
         en: "Reliable recall",
       },
       description: {
-        cs: "Přivolání, na které se dá spolehnout na procházce, v parku i u jiných psů: od her doma přes dlouhé vodítko až po přivolání od rozptýlení. Hodí se pro štěňata i dospělé psy. Volejte jednou, každý příchod odměňte a nikdy nevolejte psa kvůli něčemu nepříjemnému. Na volno pouštějte jen tam, kde je to dovolené a bezpečné; do té doby používejte dlouhé vodítko připnuté k postroji.",
-        en: "A recall you can trust on walks, in the park and around other dogs, from games at home through a long line to recalls away from distractions. Suits puppies and adults. Call once, reward every recall and never call your dog for something unpleasant. Only let them off lead where it is allowed and safe; until then use a long line clipped to a harness.",
+        cs: "Přivolání, na které se dá spolehnout na procházce i u jiných psů.",
+        en: "A recall you can rely on, on walks and around other dogs.",
       },
       goals: [
         {
@@ -353,8 +353,8 @@ export const everyday: CatalogCategory = {
         en: "Puppy & socialisation",
       },
       description: {
-        cs: "Bezpečné seznamování štěněte se světem a první domácí návyky. Nejdůležitější období socializace jsou první tři měsíce života, proto začněte hned po příchodu domů (zhruba od 8 týdnů). Do štěněcí školky může štěně zhruba týden po první vakcinaci a odčervení; o místech, kde chodí cizí psi, se poraďte s veterinářem. Každý zážitek má být příjemný: postupujte pomalu a při známkách strachu přidejte odstup.",
-        en: "Safely introducing a puppy to the world, plus first house manners. The first three months of life are the key socialisation window, so start as soon as the puppy comes home (around 8 weeks). Puppy classes are fine from about a week after the first vaccination and deworming; ask your vet about places used by unknown dogs. Every experience should be pleasant: go slowly and add distance at any sign of fear.",
+        cs: "Bezpečné seznamování štěněte se světem a první domácí návyky.",
+        en: "Safely introducing a puppy to the world, plus first house manners.",
       },
       goals: [
         {
@@ -496,8 +496,8 @@ export const everyday: CatalogCategory = {
         en: "Calm at home & alone time",
       },
       description: {
-        cs: "Pes, který umí doma odpočívat, zvládne chvíle bez vás a nedělá drama z odchodů. Hodí se pro štěňata i dospělé psy, zvlášť po adopci. Tempo určují reakce psa; nikdy ho nenechte „vyplakat se“. Dospělého psa nenechávejte samotného déle než asi 4 hodiny. Pokud pes v samotě vyje, ničí, čůrá nebo se zraňuje, může jít o separační úzkost: poraďte se s veterinářem a veterinárním etologem.",
-        en: "A dog who can rest at home, cope with time on their own and take your departures in their stride. Suits puppies and adults, especially newly adopted dogs. Let the dog's reactions set the pace and never let them “cry it out”. Don't leave an adult dog alone for more than about 4 hours. If your dog howls, destroys things, soils or hurts themselves when alone, it may be separation anxiety: talk to your vet and a qualified behaviourist.",
+        cs: "Pes, který umí doma odpočívat a zvládne chvíle bez vás.",
+        en: "A dog who can settle at home and cope with time on their own.",
       },
       goals: [
         {
@@ -639,8 +639,8 @@ export const everyday: CatalogCategory = {
         en: "Tricks",
       },
       description: {
-        cs: "Triky pro radost, procvičení hlavy a lepší spolupráci. Postup se volně drží úrovní AKC Trick Dog: začátečnické triky s návnadou, pak triky bez pamlsku v ruce a nakonec krátká sestava. Hodí se pro psy každého věku. Dokud štěně neukončí růst (zhruba 12–18 měsíců podle velikosti plemene), vynechte skoky a triky na zadních nohách a cvičte na protiskluzovém povrchu.",
-        en: "Tricks for fun, mental exercise and better teamwork, loosely following the AKC Trick Dog levels: novice tricks with a lure, then tricks with no food in your hand, and finally a short routine. Suits dogs of any age. Until a puppy has finished growing (roughly 12–18 months depending on size), skip jumps and tricks on the hind legs, and train on a non-slip surface.",
+        cs: "Triky pro radost, procvičení hlavy a lepší spolupráci.",
+        en: "Tricks for fun, mental exercise and better teamwork.",
       },
       goals: [
         {

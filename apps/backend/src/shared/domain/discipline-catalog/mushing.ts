@@ -35,8 +35,8 @@ export const mushing: CatalogCategory = {
         en: "Canicross – first steps",
       },
       description: {
-        cs: "Běh se psem, který v tažném postroji táhne psovoda; je k jeho bedernímu pásu připnutý šňůrou s amortizérem. Hodí se pro zdravé a aktivní psy i psovody, kteří rádi běhají v terénu. Začněte po prohlídce u veterináře, nejdřív ve 12 měsících (velká plemena v 15–18 měsících). Běhejte na měkkém povrchu, při teplotě pod 15–20 °C, kontrolujte tlapky a jako začátečníci nejvýš 3× týdně.",
-        en: "Running with your dog pulling you in a harness, clipped to your waist belt with a bungee line. Suits healthy, active dogs and handlers who enjoy trail running. Start after a vet check and not before 12 months (large breeds 15–18 months). Run on soft ground below 15–20 °C, check the paws, and as a beginner keep to at most 3 runs a week.",
+        cs: "Běh se psem, který vás v tažném postroji táhne na šňůře s amortizérem.",
+        en: "Running with your dog pulling you in a harness on a bungee line.",
       },
       goals: [
         {
@@ -188,8 +188,8 @@ export const mushing: CatalogCategory = {
         en: "Bikejoring – first steps",
       },
       description: {
-        cs: "Pes v tažném postroji běží před horským kolem, ke kterému je připnutý šňůrou s amortizérem přes rameno (anténu). Hodí se pro psy, kteří už zvládají povely z canicrossu. Pes musí být plně dospělý (12–18 měsíců) a mít za sebou prohlídku u veterináře. Přilba a rukavice jsou povinné. Jezděte po měkkých a rovných cestách při teplotě pod 15 °C, kratší úseky než při canicrossu a zpočátku 1–2× týdně.",
-        en: "The dog runs in a pulling harness in front of a mountain bike, on a bungee line attached via a bike antenna. Suits dogs that already know their canicross cues. The dog must be fully grown (12–18 months) and vet-checked. A helmet and gloves are a must. Ride flat, soft trails below 15 °C, keep runs shorter than in canicross, and start with 1–2 sessions a week.",
+        cs: "Pes v tažném postroji běží před horským kolem.",
+        en: "Your dog runs in a pulling harness in front of a mountain bike.",
       },
       goals: [
         {
@@ -331,8 +331,8 @@ export const mushing: CatalogCategory = {
         en: "Dogtrekking – long-distance hiking",
       },
       description: {
-        cs: "Dálkový pochod se psem v postroji připnutým k bedernímu pásu nebo na vodítku. Trasu hledáte podle mapy a procházíte kontroly. Akce mají od zhruba 30 km (midy) po 80–100 km i víc, s povinnou výbavou: mapa, čelovka, miska, voda, lékárnička a dvě botičky na psa. Pes musí mít alespoň 12 měsíců a být zdravý; krátkonosým plemenům se nehodí. Kondici i tlapky budujte postupně a v teple dbejte na stín a dostatek vody.",
-        en: "Long-distance hiking with your dog in a harness clipped to your waist belt or on a lead, finding your way by map between checkpoints. Events range from about 30 km (mid) to 80–100 km and more, with mandatory gear: map, headlamp, bowl, water, first-aid kit and two booties per dog. The dog must be at least 12 months old and healthy; it is not suitable for flat-faced breeds. Build fitness and paw pads gradually, and plan for shade and plenty of water in warm weather.",
+        cs: "Dálkový pochod se psem podle mapy přes kontroly.",
+        en: "Long-distance hiking with your dog, navigating by map between checkpoints.",
       },
       goals: [
         {
