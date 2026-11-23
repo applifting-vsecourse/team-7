@@ -12,6 +12,8 @@ import { ROUTES } from "@/app/routes";
 import HeroImg from "@/assets/landing-hero.jpg";
 import Layout from "@/components/Layout";
 
+import { DisciplineSamples } from "./DisciplineSamples";
+
 const features = [
   { id: "plan", icon: Hierarchy },
   { id: "calendar", icon: Calendar },
@@ -21,7 +23,7 @@ const features = [
 
 /**
  * Public landing page: a photo-backed intro with the sign-up / sign-in CTAs,
- * then what the app does, then a closing sign-up prompt for visitors who read
+ * samples of the ready-made disciplines, then what the app does, then a closing sign-up prompt for visitors who read
  * to the end.
  */
 export function LandingPage() {
@@ -63,6 +65,8 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+
+      <DisciplineSamples />
 
       <section
         aria-labelledby="landing-features"
