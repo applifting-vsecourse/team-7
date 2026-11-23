@@ -54,7 +54,8 @@ export function ExerciseTrendChart({
     month: "numeric",
   });
   const colors = tones[tone];
-  // Desktop shows every date; the narrow plot only about four of them.
+  // About eight dates on desktop, four on the narrow plot, counted back from
+  // the last one so it is always labelled and never crowds its neighbour.
   const plot = (
     width: number,
     [gridStart, gridEnd]: [number, number],
@@ -114,7 +115,7 @@ export function ExerciseTrendChart({
             >
               <title>{point.title}</title>
             </circle>
-            {(index % labelEvery === 0 || index === points.length - 1) && (
+            {(points.length - 1 - index) % labelEvery === 0 && (
               <text
                 x={x(index)}
                 y={194}
@@ -131,7 +132,14 @@ export function ExerciseTrendChart({
   };
   return (
     <div className="w-full rounded-2xl bg-background p-4">
-      {plot(800, [64, 784], [72, 776], 5, 1, "hidden sm:block")}
+      {plot(
+        800,
+        [64, 784],
+        [72, 776],
+        5,
+        Math.max(1, Math.ceil(points.length / 8)),
+        "hidden sm:block",
+      )}
       {plot(
         320,
         [56, 312],

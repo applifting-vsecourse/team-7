@@ -52,12 +52,19 @@ import { ActionsMenu, type MenuAction } from "./ActionsMenu";
 import { DogStat } from "./DogStat";
 import { ExerciseTrendChart } from "./ExerciseTrendChart";
 
-export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
+export function DogExerciseView({
+  detail,
+  updatedAt,
+}: {
+  detail: DogExerciseDetail;
+  // When the data was fetched: the 30-day window moves with each refetch.
+  updatedAt: number;
+}) {
   const { t, i18n } = useTranslation();
   const { user } = useSession();
   const navigate = useNavigate();
   const client = useQueryClient();
-  const [today] = useState(() => new Date());
+  const today = new Date(updatedAt);
   const [scheduling, setScheduling] = useState(false);
   const { dog, exercise } = detail;
   const { goal, status, goalStatus } = exercise;
@@ -472,6 +479,9 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
                 <Alert.Title>
                   {t(($) => $.exerciseDetail.successChartWaiting)}
                 </Alert.Title>
+                <Alert.Description>
+                  {t(($) => $.exerciseDetail.successChartHint)}
+                </Alert.Description>
               </Alert.Content>
             </Alert>
           ) : (

@@ -50,7 +50,11 @@ function DogExercisePage() {
           </div>
         )}
         {query.data && (
-          <DogExerciseView key={`${dogId}/${exerciseId}`} detail={query.data} />
+          <DogExerciseView
+            key={`${dogId}/${exerciseId}`}
+            detail={query.data}
+            updatedAt={query.dataUpdatedAt}
+          />
         )}
       </section>
     </Layout>
