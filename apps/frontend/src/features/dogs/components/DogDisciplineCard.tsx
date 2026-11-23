@@ -22,7 +22,7 @@ export function DogDisciplineCard({
   dogId: string;
   discipline: DogDiscipline;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const done = isDisciplineDone(discipline);
   const titleRef = useRef<HTMLSpanElement>(null);
   return (
@@ -75,6 +75,24 @@ export function DogDisciplineCard({
         </div>
         <p className="text-xs leading-5 text-muted">
           {t(($) => $.dogProfile.ratingPeriod)}
+        </p>
+      </div>
+      {/* Figma U3 792:32057: success rate under the rating, "—" without data. */}
+      <div>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm leading-6">
+          <span className="font-medium">
+            {t(($) => $.dogProfile.averageSuccess)}
+          </span>
+          <span className="text-muted">
+            {discipline.averageSuccessRate === null
+              ? t(($) => $.dogProfile.noData)
+              : new Intl.NumberFormat(i18n.resolvedLanguage ?? "cs", {
+                  style: "percent",
+                }).format(discipline.averageSuccessRate)}
+          </span>
+        </div>
+        <p className="text-xs leading-5 text-muted">
+          {t(($) => $.dogProfile.successPeriod)}
         </p>
       </div>
       <Separator className="my-1" />

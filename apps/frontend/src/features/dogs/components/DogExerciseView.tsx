@@ -10,6 +10,7 @@ import {
   Flag,
   Plus,
   Star,
+  Target,
   TrashBin,
 } from "@gravity-ui/icons";
 import {
@@ -48,7 +49,7 @@ import { exerciseHistory } from "../lib/exerciseHistory";
 import { isPlannable } from "../lib/exerciseStatus";
 import { ActionsMenu, type MenuAction } from "./ActionsMenu";
 import { DogStat } from "./DogStat";
-import { ExerciseRatingChart } from "./ExerciseRatingChart";
+import { ExerciseTrendChart } from "./ExerciseTrendChart";
 
 export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
   const { t, i18n } = useTranslation();
@@ -167,6 +168,9 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
   const dateFormatter = new Intl.DateTimeFormat(i18n.resolvedLanguage ?? "cs", {
     day: "numeric",
     month: "numeric",
+  });
+  const percent = new Intl.NumberFormat(i18n.resolvedLanguage ?? "cs", {
+    style: "percent",
   });
   const weekdayFormatter = new Intl.DateTimeFormat(
     i18n.resolvedLanguage ?? "cs",
@@ -301,6 +305,17 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
           }
           label={t(($) => $.exerciseDetail.lastTraining)}
         />
+        {/* Figma U1 792:28830 "Stat · Úspěšnost". */}
+        <DogStat
+          icon={Target}
+          tone="success"
+          value={
+            stats.successRate === null
+              ? t(($) => $.dogProfile.noData)
+              : percent.format(stats.successRate)
+          }
+          label={t(($) => $.exerciseDetail.averageSuccess)}
+        />
       </div>
       {remove.isError && (
         <p role="alert" className="text-sm text-danger">
@@ -413,7 +428,73 @@ export function DogExerciseView({ detail }: { detail: DogExerciseDetail }) {
               </Alert.Content>
             </Alert>
           ) : (
-            <ExerciseRatingChart events={stats.completed} />
+            <ExerciseTrendChart
+              tone="accent"
+              label={t(($) => $.exerciseDetail.chart)}
+              valueHeader={t(($) => $.training.rating)}
+              ticks={[1, 2, 3, 4, 5].map((rating) => (
+                <tspan key={rating} className="text-warning">
+                  {"★".repeat(rating)}
+                  <tspan className="text-muted">{"☆".repeat(5 - rating)}</tspan>
+                </tspan>
+              ))}
+              points={stats.completed.map((event) => ({
+                id: event.id,
+                date: event.completedAt!,
+                value: (event.rating! - 1) / 4,
+                text: event.rating,
+                title: t(($) => $.exerciseDetail.chartPoint, {
+                  date: dateFormatter.format(parseISO(event.completedAt!)),
+                  rating: event.rating,
+                }),
+              }))}
+            />
+          )}
+        </section>
+      )}
+      {/* Figma U1 792:29313 / U2: success chart, points only for measured sessions. */}
+      {stats.history.length > 0 && (
+        <section
+          className="flex w-full max-w-200 flex-col gap-4"
+          aria-labelledby="exercise-success-heading"
+        >
+          <h2
+            id="exercise-success-heading"
+            className="text-2xl font-semibold tracking-tight"
+          >
+            {t(($) => $.exerciseDetail.successChart)}
+          </h2>
+          {stats.measured.length < 2 ? (
+            <Alert status="accent">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Title>
+                  {t(($) => $.exerciseDetail.successChartWaiting)}
+                </Alert.Title>
+              </Alert.Content>
+            </Alert>
+          ) : (
+            <ExerciseTrendChart
+              tone="success"
+              label={t(($) => $.exerciseDetail.successChart)}
+              valueHeader={t(($) => $.weeklyStats.successRate)}
+              ticks={[0, 0.25, 0.5, 0.75, 1].map((rate) =>
+                percent.format(rate),
+              )}
+              points={stats.measured.map((event) => {
+                const rate = event.successfulAttempts! / event.totalAttempts!;
+                return {
+                  id: event.id,
+                  date: event.completedAt!,
+                  value: rate,
+                  text: percent.format(rate),
+                  title: t(($) => $.exerciseDetail.successChartPoint, {
+                    date: dateFormatter.format(parseISO(event.completedAt!)),
+                    rate: percent.format(rate),
+                  }),
+                };
+              })}
+            />
           )}
         </section>
       )}

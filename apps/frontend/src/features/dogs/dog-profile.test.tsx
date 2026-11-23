@@ -144,6 +144,7 @@ describe("dog profile", () => {
           ...summary,
           completedGoalCount: 0,
           averageRating: 11 / 3,
+          averageSuccessRate: 0.72,
           lastTrainingAt: "2026-10-20T12:00:00Z",
           exerciseTraining: [
             { exerciseId: "e1", lastTrainingAt: "2026-10-20T12:00:00Z" },
@@ -168,6 +169,11 @@ describe("dog profile", () => {
       "2026-10-20T12:00:00Z",
     );
     expect(screen.queryByText("No ratings yet")).not.toBeInTheDocument();
+    expect(
+      within(screen.getByText("Average success rate").parentElement!).getByText(
+        "72%",
+      ),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole("link", { name: /Obedience/ }));
     expect(
       await screen.findByRole("heading", { level: 1, name: "Obedience" }),
@@ -190,6 +196,11 @@ describe("dog profile", () => {
     const user = userEvent.setup();
     renderRoute();
     expect(await screen.findByText("No ratings yet")).toBeInTheDocument();
+    expect(
+      within(screen.getByText("Average success rate").parentElement!).getByText(
+        "—",
+      ),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole("link", { name: /Obedience/ }));
     const label = await screen.findByText("Average rating (30 days)");
     expect(within(label.parentElement!).getByText("—")).toBeInTheDocument();

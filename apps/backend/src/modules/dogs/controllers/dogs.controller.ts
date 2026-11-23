@@ -123,7 +123,7 @@ export class DogsController {
       this.prisma.scheduledExercise.groupBy({
         by: ["exerciseId"],
         where: { ...trainingWhere, completedAt: { gte: since, lte: now } },
-        _sum: { rating: true },
+        _sum: { rating: true, successfulAttempts: true, totalAttempts: true },
         _count: { rating: true },
       }),
       this.prisma.scheduledExercise.groupBy({
@@ -139,19 +139,25 @@ export class DogsController {
     const disciplineByExercise = new Map(
       exercises.map((exercise) => [exercise.id, exercise.goal.disciplineId]),
     );
-    const ratings = new Map<string, { total: number; count: number }>();
+    const ratings = new Map<
+      string,
+      { total: number; count: number; successful: number; attempts: number }
+    >();
     // Lessons with a trainer (#70) have no exercise and no discipline.
-    for (const exercise of recentRatings) {
-      const disciplineId = disciplineByExercise.get(exercise.exerciseId ?? "");
-      if (
-        !disciplineId ||
-        exercise._sum.rating === null ||
-        !exercise._count.rating
-      )
-        continue;
-      const aggregate = ratings.get(disciplineId) ?? { total: 0, count: 0 };
-      aggregate.total += exercise._sum.rating;
-      aggregate.count += exercise._count.rating;
+    for (const { exerciseId, _sum, _count } of recentRatings) {
+      const disciplineId = disciplineByExercise.get(exerciseId ?? "");
+      if (!disciplineId) continue;
+      const aggregate = ratings.get(disciplineId) ?? {
+        total: 0,
+        count: 0,
+        successful: 0,
+        attempts: 0,
+      };
+      aggregate.total += _sum.rating ?? 0;
+      aggregate.count += _count.rating;
+      // Measurement fields are saved together, so unmeasured rows add nothing.
+      aggregate.successful += _sum.successfulAttempts ?? 0;
+      aggregate.attempts += _sum.totalAttempts ?? 0;
       ratings.set(disciplineId, aggregate);
     }
     const lastTraining = new Map<string, Date>();
@@ -179,7 +185,10 @@ export class DogsController {
           id: discipline.id,
           name: discipline.name,
           description: discipline.description,
-          averageRating: rating ? rating.total / rating.count : null,
+          averageRating: rating?.count ? rating.total / rating.count : null,
+          averageSuccessRate: rating?.attempts
+            ? rating.successful / rating.attempts
+            : null,
           lastTrainingAt: lastTraining.get(discipline.id) ?? null,
           exerciseTraining: Array.from(
             exerciseTraining.get(discipline.id) ?? [],
