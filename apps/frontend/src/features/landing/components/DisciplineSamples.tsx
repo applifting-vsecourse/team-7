@@ -94,17 +94,18 @@ export function DisciplineSamples() {
         }
       >
         {/* Every area visible without scrolling: 2 per row on phones, 3 on
-            tablets, all 5 from desktop; a long name wraps inside its tab. */}
+            tablets, all in one row from desktop. Tabs grow to fill their row,
+            so a row with fewer tabs leaves no gap; long names wrap. */}
         <Tabs.ListContainer className="w-full">
           <Tabs.List
             aria-label={t(($) => $.catalog.categories)}
-            className="grid w-full grid-cols-2 gap-1 sm:grid-cols-3 lg:grid-cols-5"
+            className="flex w-full flex-wrap gap-1"
           >
             {categories.map((c) => (
               <Tabs.Tab
                 key={c.key}
                 id={c.key}
-                className="h-auto min-h-8 px-3 py-1.5 leading-5"
+                className="h-auto min-h-8 grow basis-2/5 px-3 py-1.5 leading-5 sm:basis-1/4 lg:basis-0"
               >
                 {c.name}
                 <Tabs.Indicator />
