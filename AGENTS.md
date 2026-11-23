@@ -32,6 +32,16 @@ Deliberately sparse — this file grows as the team learns what it expects from 
 - If you added or modified tests, also run `pnpm check-all`.
 - Fix any failures caused by your changes before finishing. Report any remaining failures.
 
+### Delegate to cheap subagents (Claude Code)
+
+Project subagents in `.claude/agents/` keep long output out of the main context and run on cheaper models. They return only the result:
+
+- `verifier` (Haiku): runs `pnpm check` / tests / `check-all` and returns `PASS`, or the failures as `path:line` lines.
+- `ui-snapshot` (Haiku): screenshots a page or dialog from the running app (desktop + phone) and returns the PNG paths.
+- `design-reviewer` (Sonnet): checks a UI diff against `DESIGN.md` and returns up to 10 violations, or `OK`.
+
+Use them instead of reading full command output or re-reading the design contract in the main session. Give them exact file paths and the screens to capture, so they don't have to explore.
+
 ### UI controls come from HeroUI
 
 Import controls directly from `@heroui/react` and use HeroUI v3 compound APIs (`Alert.Content`, `Avatar.Fallback`, `Dropdown.Menu`). What you remember about HeroUI v3 is likely wrong: check the docs before introducing a component. Claude Code: use the `heroui-react` skill / MCP. Other agents: read [`HEROUI.md`](HEROUI.md), a generated index of the docs in `.heroui-docs/react` (gitignored; if the folder is missing, tell the developer the docs are missing and give them the command `pnpm docs:heroui`; never run it yourself). Don't hand-roll a control the kit already has.
