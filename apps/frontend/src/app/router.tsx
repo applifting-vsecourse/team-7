@@ -12,6 +12,11 @@ export const router = createRouter({
   defaultPreload: "intent",
   defaultPreloadStaleTime: 0,
   scrollRestoration: true,
+  // From md up, sidebar pages scroll <main>, not the window. Without this the
+  // router carries <main>'s scroll position over to the next page, so a
+  // detail opened from a scrolled list started halfway down. Back and forward
+  // still restore the position.
+  scrollToTopSelectors: ["window", "main[data-page-scroller]"],
   defaultViewTransition: true,
   defaultNotFoundComponent: NotFound,
   defaultErrorComponent: ({ error }) => <RootErrorBoundary error={error} />,
