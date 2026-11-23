@@ -89,11 +89,13 @@ export function DisciplineList({
         <section
           key={group.key}
           aria-labelledby={`category-${group.key}`}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-3"
         >
+          {/* The one small label style (DESIGN.md): a group label must not
+              outweigh the card titles under it. */}
           <h2
             id={`category-${group.key}`}
-            className="text-2xl leading-8 font-semibold tracking-tight"
+            className="text-xs leading-5 font-semibold tracking-widest text-muted uppercase"
           >
             {group.name}
           </h2>
