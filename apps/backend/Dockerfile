@@ -1,9 +1,10 @@
 # syntax=docker/dockerfile:1.7
-FROM node:24-alpine
+FROM node:26-alpine
 
 USER root
 
 RUN apk add --no-cache openssl ffmpeg
+RUN npm install -g corepack
 RUN corepack enable
 
 
