@@ -1,8 +1,8 @@
 # Build context must be the repo root:
 #   docker build -f apps/frontend/Dockerfile.deploy -t frontend .
 
-FROM node:24-alpine AS builder
-
+FROM node:26-alpine AS builder
+RUN npm install -g corepack
 RUN corepack enable
 
 WORKDIR /app

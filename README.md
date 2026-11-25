@@ -26,7 +26,8 @@ Product background (lean canvas, interview notes, costs) lives in `Docs/` on the
 
 ## Prerequisites
 
-- Node.js 24 — the version in [`.nvmrc`](.nvmrc). With nvm or fnm, `nvm use` picks it up from anywhere in the repo (they search parent directories), and every `package.json` declares it too, so pnpm warns if you are on an older one.
+- Node.js 26 — the version in [`.nvmrc`](.nvmrc). With nvm or fnm, `nvm use` picks it up from anywhere in the repo (they search parent directories), and every `package.json` declares it too, so pnpm warns if you are on an older one.
+- corepack - `npm install -g corepack` installs corepack so that you can use pnpm
 - pnpm — `corepack enable` picks the version from `package.json`
 - Docker (for the database)
 - FFmpeg (including `ffprobe`) on your PATH for local video processing, with H.264 (`libx264`) and AAC support. On macOS, install it with `brew install ffmpeg`; on Ubuntu/Debian, use `sudo apt install ffmpeg`.
